@@ -25,15 +25,15 @@ rig.yaml (Claude)         ┴─► gen.py ─► skeleton.json ─► validate.
 | `config/pack-symbols.json` | Default Spine CLI pack settings (contract §2.2). Production copy belongs in `config/spine/pack-symbols.json`; `export.sh` prefers that file when it exists |
 | `preview/` | Vite-free preview page (`index.html` + `preview.mjs`, import map into `node_modules`), `serve.mjs` static server, and `capture.mjs` (Playwright contact sheets) |
 | `examples/demo_symbol/` | End-to-end demo: `make_parts.mjs` (resvg-js cel-shaded parts), `rig.yaml`, `parts.json`, `images/`, `build.sh`, `provenance.json` |
-| `test/` | `run.sh` (everything), `test_spinegen.py`, `validate.test.mjs` (20 negative cases), `export.test.sh` + `fake-spine.sh` |
+| `test/` | `run.sh` (everything), `test_spinegen.py`, `validate.test.mjs` (baseline + 21 negative cases), `export.test.sh` + `fake-spine.sh` |
 
 Shipped demo: `public/assets/spine/demo/{sym_demo.json, sym_demo.atlas, sym_demo.png}` (PMA, 568×512).
 
 ## Setup
 
 ```bash
-python3 -m venv .venv-spine && .venv-spine/bin/pip install -r tools/requirements-spine.txt   # PyYAML, numpy, pillow, shapely
-export PYTHON=$PWD/.venv-spine/bin/python
+python3 -m venv tools/.venv && tools/.venv/bin/pip install -r tools/requirements-spine.txt   # PyYAML, numpy, pillow, shapely
+export PYTHON=$PWD/tools/.venv/bin/python
 pnpm install     # spine-core, spine-pixi-v8, pixi.js, @resvg/resvg-js, playwright are already in package.json
 ```
 
@@ -42,7 +42,7 @@ pnpm install     # spine-core, spine-pixi-v8, pixi.js, @resvg/resvg-js, playwrig
 | Step | Who | Command | Output | Gate |
 |---|---|---|---|---|
 | 1. Parts | split stage (`tools/split`, PIPELINE 3.1) or `make_parts.mjs` for vector art | – | `images/sym_<ID>/<part>.png` (2x, 2–4 px padding) + `parts.json` | rest-pose SSIM/IoU (split stage) |
-| 2. Blur variants | script | `$PYTHON tools/spine/make_blur.py <parts.json>` | `<part>_blur.png`, `blur: true` in parts.json | – |
+| 2. Blur variants | script | `$PYTHON tools/spine/make_blur.py <parts.json> [--provenance f]` | `<part>_blur.png`, `blur: true` in parts.json | – |
 | 3. Rig | **Claude writes `rig.yaml`** (bones, physics, meshes, motion overrides, accents, events) | – | `art/source/symbols/<ID>/rig.yaml` | – |
 | 4. Generate | script | `$PYTHON tools/spine/gen.py art/source/symbols/<ID>/rig.yaml -o build/spine/sym_<ID>.json` | 4.3 JSON | generator errors (names, budgets, phys pairing, windows) |
 | 5. Validate | script | `node tools/spine/validate.mjs build/spine/sym_<ID>.json` | report (`--report file.json`) | **exit 0 required** |
@@ -56,7 +56,7 @@ Claude never types keyframes or curve numbers: every key comes from the motion l
 ### Demo, end to end
 
 ```bash
-PYTHON=$PWD/.venv-spine/bin/python tools/spine/examples/demo_symbol/build.sh \
+PYTHON=$PWD/tools/.venv/bin/python tools/spine/examples/demo_symbol/build.sh \
     --build-dir build/spine/demo --capture build/spine/demo/capture
 ```
 
@@ -95,10 +95,12 @@ accents:                       # overlap on top of the base motion; at = frame o
 events:                        # extra payload events: sfx = SfxId, vfx = FX id, shake = trauma 0-1
   win: [{name: vfx, at: peak, string: fx_sparkle}]
 skins: {gold: {body: body_gold}}   # optional skins: part → variant image (same size)
-compat: {runtime_aliases: false}   # true = also emit anticipation_loop, impact, burst (today's src/)
+compat: {runtime_aliases: false}   # true = also emit the legacy names anticipation_loop, impact, burst
 ```
 
-**parts.json** (written by the split stage): `{symbol, canvas: [360, 360], images: "images", parts: [{name, bbox: [x, y, w, h], z, bone, parent?, joint?, tip?, blend?, color?, blur?}]}`. Images live at `<images>/sym_<ID>/<name>.png`. `bbox` must match the PNG size.
+**parts.json** (written by the split stage): `{symbol, canvas: [360, 360], images: "images", parts: [{name, bbox: [x, y, w, h], z, bone, parent?, joint?, tip?, blend?, color?, blur?}]}`. Images live at `<images>/sym_<ID>/<name>.png`, with `<images>` relative to parts.json. In the production layout (parts.json in `art/source/symbols/<ID>/`, parts in `art/source/spine/images/sym_<ID>/`) that is `"images": "../../spine/images"`, and `gen.py -o build/spine/sym_<ID>.json` then writes the contract's `skeleton.images` = `../../art/source/spine/images/`. `bbox` must match the PNG size.
+
+Unknown keys anywhere in rig.yaml (top level, `bones[]`, `meshes.*`, `physics[]`, `accents.*[]`, `events.*[]`, `compat`, `roles`) and `accents`/`events` for an animation that is not generated are errors, so a typo never silently falls back to the defaults. Keys starting with `$` or `x_` are comments.
 
 **Bone rules**:
 - Names are snake_case with contract prefixes: `ctrl_`, `ik_`, `phys_`, `face_`, `fx_`.
@@ -146,13 +148,13 @@ Accent types:
 
 An accent on a bone/property the base motion already keys is an error, so the conflict is never silent.
 
-**Headroom:** `land` must stay inside the 300×300 cell, and the validator applies the runtime physics kick with both signs. A full-height symbol stretched by the 6% rebound overflows the cell. Keep the content at about 85% of the cell height, or lower `motion.land.rebound`. The demo is 257 px tall on a 300 px cell.
+**Headroom (open contract conflict):** the validator's `land` gate is the contract's literal rule: the pose, with the physics kick applied in both directions, stays inside ±150 skeleton units around `root`. But `SymbolRig.fit()` rescales every rig so its rest content fills `cellScale` of the cell (highs 0.95–0.97, specials 1.02–1.12; ART_BIBLE cellFill = 288–300 / 306–345 px @2x). So authoring the art smaller buys no headroom in the game, and a special sized per the art bible fails this gate at rest. The validator's `runtimeFit` info line shows what the game will show, for example the demo: rest 112 % of the cell at cellScale 1.12, and land adds +9.8 % at the top. Until ANIMATION_CONTRACT decides (allow overflow into the gap, cap the rebound, or define the gate relative to the rest silhouette), pass `--cell <units>` for specials and review with `runtimeFit`. The demo is 257 px tall (86 %) and does not follow the art bible fill.
 
 ## validate.mjs
 
 ```bash
 node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind auto|high|special|royal|any] \
-     [--cell 300] [--kick 26] [--report out.json] [--strict] [--quiet]
+     [--cell 300] [--kick 36] [--cell-scale f] [--report out.json] [--strict] [--quiet]
 ```
 
 **Static checks** (on the JSON):
@@ -174,7 +176,8 @@ node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind aut
 - required events fire, and `explode_burst` lands on frame 2–3;
 - loop seams match, sampled with loop=false;
 - the end poses match (see the list under the motion table);
-- `land` stays inside the cell with the kick applied.
+- `land` squashes the `squash` bone to sy 0.83–0.87 (warning), inside the 0.80–0.88 feel gate (error), with sx = 1/√sy (warning beyond ±0.03);
+- `land` stays inside the cell with the kick applied (default ±36 = `SpineRig`'s 26 × the largest runtime land multiplier 1.378, a `special` landing at max velocity), plus the `runtimeFit` report line described under **Headroom**.
 
 Exit codes: 0 = pass; 1 = failure (with `--strict`, warnings also fail); 2 = usage error.
 
@@ -199,12 +202,14 @@ export SPINE=/opt/spine/Spine.sh SPINE_VERSION=4.3.23      # an exact 4.3 patch;
 tools/spine/export.sh symbol H1              # import -r → clean -m → export -e binary (+ json copy in build/) → pack -p
 tools/spine/export.sh import build/spine/sym_H1.json art/source/spine/sym_H1.spine
 tools/spine/export.sh import-anims build/spine/sym_W.anims.json art/source/spine/sym_W.spine sym_W win win_loop
+tools/spine/export.sh version                # runs $SPINE -u $SPINE_VERSION --version (PIPELINE phase 0 pin check)
 tools/spine/export.sh [--dry-run] [--log-dir build/spine/logs] [--settings file] clean|export|pack …
 ```
 
 - Every step tees stdout to `build/spine/logs/<step>.log`. A step fails on a non-zero exit **or** on any line matching `warn|error|exception|missing|not found|could not|unable to|failed` (override with `SPINE_FAIL_PATTERN`), because the CLI exits 0 on missing images.
+- Skeleton, animation and atlas names must match `[A-Za-z0-9_][A-Za-z0-9_.-]*`: they go into Spine's `--to`/`-a`/`-n` and into log file names.
 - It **cannot run in a cloud session**: there is no Spine licence there.
-- Argument handling is tested with `test/fake-spine.sh` (`test/export.test.sh`, 26 cases).
+- Argument handling is tested with `test/fake-spine.sh` (`test/export.test.sh`, 34 cases, including name sanitising for log paths).
 
 ## Preview and capture (real runtime, no Vite)
 
@@ -223,8 +228,8 @@ node tools/spine/preview/capture.mjs --skel public/assets/spine/demo/sym_demo.js
 Each sheet shows the frame number, ms and events, plus a motion plot: squash sy, body scale, and each physics bone's rotation or dy. Tiles are 224 px, so the 300 px cell reads at about 160 px, the in-game review size.
 
 `--kick` uses runtime y-down units:
-- **−27** is the contract research sign: the parts overshoot downward.
-- **+26** is what `SpineRig.kick` does today (ANIMATION_CONTRACT §10.4).
+- **−27** is the contract research value (`−impact·0.006`): the parts overshoot downward.
+- The runtime (`SpineRig.impact`) now calls `physicsTranslate(0, −26·squash)`, the same sign. The validator still checks both signs (±36 by default) until ANIMATION_CONTRACT §10.4 is signed off in `?dev=lab`.
 
 ## Registering a rig in the game (`src/assets/manifest.ts`, owned by src)
 
@@ -242,7 +247,7 @@ spine: [
 
 `id` is the `SYMBOLS` key; add `skin: 'gold'` for a non-default skin. For a quick in-game check without editing `src/`, the dev harness can load it with `await __symbolsDemo(__slot.ctx, { ids: ['H1'] }).loadSpine('H1', { skeleton: './assets/spine/demo/sym_demo.json', atlas: './assets/spine/demo/sym_demo.atlas' })`.
 
-Until ANIMATION_CONTRACT §10 items 1–2 land, today's `SpinePool`/`SymbolRig` listen for `impact`/`burst` and use `anticipation_loop`. Generate with `compat: {runtime_aliases: true}` to also emit those names.
+`SpinePool` (`SPINE_EVENT`, `SPINE_ANIM`) accepts both the contract names (`land_impact`, `explode_burst`, `anticipation`) and the legacy ones (`impact`, `burst`, `anticipation_loop`), and sets the §3 per-pair mixes, so generated rigs need no aliases. `compat: {runtime_aliases: true}` still emits the legacy names for older runtimes.
 
 ## Provenance
 

@@ -2,16 +2,20 @@
 """Make `<part>_blur.png` spin-blur variants for Spine parts and flag them in parts.json.
 
     python tools/spine/make_blur.py tools/spine/examples/demo_symbol/parts.json [--size-y 14] [--only a,b] [--skip fx_]
+        [--provenance build/spine/provenance.json] [--manifest art/manifest.json] [--license-id owned-code]
 
 Vertical box blur of radius --size-y px (PIPELINE 2.1: ffmpeg avgblur sizeX=1:sizeY=14) on a
 canvas padded by the same amount top and bottom, done in PREMULTIPLIED space so edges do not
 darken. The blur keeps the part's centre, so gen.py places it without extra data. Parts
 whose bone starts with a --skip prefix (default: fx_) get no blur. Deterministic; rewrites
-parts.json only when it changes. Exit 1 on missing images.
+parts.json and the PNGs only when they change. --provenance / --manifest append one row per
+blur image (art/manifest.schema.json, stage spine-authoring, route code; refHashes = the source
+part; content-addressed ids, so re-runs add nothing). Exit 1 on missing images.
 """
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import sys
 
@@ -20,6 +24,11 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from spinegen import provenance as prov  # noqa: E402
+
+BLUR_VERSION = "1.0.0"
 
 
 def vblur(rgba: np.ndarray, r: int) -> np.ndarray:
@@ -49,15 +58,23 @@ def main(argv=None) -> int:
     ap.add_argument("--size-y", type=int, default=14, help="vertical blur radius in px (@2x)")
     ap.add_argument("--only", default="", help="comma-separated part names (default: all but --skip)")
     ap.add_argument("--skip", default="fx_", help="comma-separated bone prefixes to skip")
+    ap.add_argument("--provenance", default=None, help="append provenance rows to this rows file")
+    ap.add_argument("--manifest", default=None, help="also append rows to this manifest (e.g. art/manifest.json)")
+    ap.add_argument("--license-id", default="owned-code", help="licenseId for the rows (licenses/allowlist.json)")
     a = ap.parse_args(argv)
     pj = Path(a.parts)
-    doc = json.loads(pj.read_text(encoding="utf-8"))
+    try:
+        doc = json.loads(pj.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        print(f"make_blur.py: ERROR: cannot read {pj}: {e}", file=sys.stderr)
+        return 1
     root = pj.parent / doc.get("images", "images")
     prefix = f"sym_{doc['symbol']}"
     only = {s for s in a.only.split(",") if s}
     skip = [s for s in a.skip.split(",") if s]
     r = max(1, a.size_y)
     changed = False
+    rows = []
     for p in doc["parts"]:
         if (only and p["name"] not in only) or any(p.get("bone", "body").startswith(s) for s in skip):
             continue
@@ -68,19 +85,26 @@ def main(argv=None) -> int:
         rgba = np.asarray(Image.open(src).convert("RGBA"))
         out = vblur(rgba, r)
         dst = src.with_name(f"{src.stem}_blur.png")
-        buf = Image.fromarray(out)
-        tmp = dst.with_suffix(".tmp.png")
-        buf.save(tmp, optimize=False, compress_level=9)
-        if dst.exists() and dst.read_bytes() == tmp.read_bytes():
-            tmp.unlink()
-        else:
-            tmp.replace(dst)
+        buf = io.BytesIO()
+        Image.fromarray(out).save(buf, format="PNG", optimize=False, compress_level=9)
+        data = buf.getvalue()
+        if not dst.exists() or dst.read_bytes() != data:
+            dst.write_bytes(data)
+        if a.provenance or a.manifest:
+            rows.append(prov.make_row(asset_id=f"{prefix}.{p['name']}_blur", path=dst, stage="spine-authoring",
+                                      model="tools/spine/make_blur.py", version=BLUR_VERSION, inputs=[src],
+                                      license_id=a.license_id,
+                                      notes=f"spin-blur variant of {prov.rel(src)} (vertical box blur r={r} px)"))
         if p.get("blur") is not True:
             p["blur"] = True
             changed = True
         print(f"make_blur.py: {dst.relative_to(root)} {out.shape[1]}x{out.shape[0]}")
     if changed:
         pj.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    for f in (a.provenance, a.manifest):
+        if f and rows:
+            n = prov.append_rows(f, rows, "tools/spine/make_blur.py")
+            print(f"make_blur.py: provenance: {n} row(s) added -> {f}")
     return 0
 
 

@@ -56,8 +56,12 @@ async function main(argv) {
     const request = { route: 'elevenlabs', endpoint: 'v1/sound-generation', outputFormat, promptHash: hash, params, takes };
     const fp = fingerprint(request);
     const asset = `audio_sfx_${id}`;
-    const { dir, state } = allocate(asset, fp, root, a['force-new']);
-    const need = state === 'done' ? [] : Array.from({ length: takes }, (_, i) => i + 1).filter((t) => !fs.existsSync(path.join(dir, `raw_${String(t).padStart(2, '0')}.wav`)));
+    const alloc = allocate(asset, fp, root, a['force-new']);
+    const { dir } = alloc;
+    // allocate() calls a folder 'done' as soon as ANY raw_* exists; a run that died after take 2 of 4
+    // must resume the missing takes and still write the rows, so completeness is judged per take
+    const need = Array.from({ length: takes }, (_, i) => i + 1).filter((t) => !fs.existsSync(path.join(dir, `raw_${String(t).padStart(2, '0')}.wav`)));
+    const state = need.length === 0 && fs.existsSync(path.join(dir, 'manifest.json')) ? 'done' : alloc.state === 'new' ? 'new' : 'resume';
     credits += need.length * Math.ceil(c.duration * CREDITS_PER_SECOND);
     plan.push({ id, c, text, hash, takes, body, request, fp, asset, dir, state, need });
   }
@@ -77,7 +81,9 @@ async function main(argv) {
     fs.mkdirSync(p.dir, { recursive: true });
     fs.writeFileSync(path.join(p.dir, 'args.json'), `${JSON.stringify({ tool: TOOL, fingerprint: p.fp, request: p.request, cues: rel(file) }, null, 2)}\n`);
     fs.writeFileSync(path.join(p.dir, 'prompt.txt'), p.text);
-    const jobs = [];
+    const jobFile = path.join(p.dir, 'job.json');
+    let jobs = [];
+    try { jobs = JSON.parse(fs.readFileSync(jobFile, 'utf8')).jobs ?? []; } catch { jobs = []; }
     const rows = [];
     for (const t of p.need) {
       const r = await client.request('POST', 'v1/sound-generation', { query: { output_format: outputFormat }, json: p.body });
@@ -85,9 +91,10 @@ async function main(argv) {
       const ch = guessChannels(r.body.length, p.c.duration);
       const out = path.join(p.dir, `raw_${String(t).padStart(2, '0')}.wav`);
       fs.writeFileSync(out, wavBuffer(r.body, { rate: 48000, channels: ch }));
-      jobs.push({ take: t, requestId: r.headers['request-id'] ?? r.headers['x-request-id'] ?? null, bytes: r.body.length, channels: ch });
+      jobs = [...jobs.filter((x) => x.take !== t), { take: t, requestId: r.headers['request-id'] ?? r.headers['x-request-id'] ?? null, bytes: r.body.length, channels: ch }]
+        .sort((x, y) => x.take - y.take);
+      fs.writeFileSync(jobFile, `${JSON.stringify({ jobs }, null, 2)}\n`);   // after every take: a crash keeps the ids
     }
-    fs.writeFileSync(path.join(p.dir, 'job.json'), `${JSON.stringify({ jobs }, null, 2)}\n`);
     for (let t = 1; t <= p.takes; t++) {
       const out = path.join(p.dir, `raw_${String(t).padStart(2, '0')}.wav`);
       if (!fs.existsSync(out)) continue;

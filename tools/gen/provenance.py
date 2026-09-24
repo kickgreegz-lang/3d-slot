@@ -89,7 +89,9 @@ def make_row(*, id: str, path: str | os.PathLike, stage: str, sha256: str, vendo
         raise ValueError(f"row id {id!r} does not match {ID_RE.pattern}")
     row = {
         "id": id,
-        "path": rel(path) if Path(str(path)).is_absolute() else str(path),
+        # a Path is a filesystem path (relative to the cwd: CLI args) -> repo-relative; a str that is
+        # not absolute is taken as already repo-relative (what rel() returns)
+        "path": rel(path) if isinstance(path, os.PathLike) or Path(str(path)).is_absolute() else str(path),
         "stage": stage,
         "shipped": bool(shipped),
         "vendor": vendor,
@@ -225,6 +227,11 @@ def record(rows: list[dict], *, sidecar: str | os.PathLike | None, manifest: str
     if manifest and str(manifest).lower() != "none":
         return append_rows(manifest, rows, generated_by)
     return 0
+
+
+def lookup_manifest(manifest_arg) -> Path:
+    """The manifest to look parents up in: the one a tool appends to, else art/manifest.json."""
+    return Path(manifest_arg) if manifest_arg and str(manifest_arg).lower() != "none" else MANIFEST
 
 
 def inherit_license(parent_ids, manifest: str | os.PathLike = MANIFEST, default: str | None = None) -> str | None:

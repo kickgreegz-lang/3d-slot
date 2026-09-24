@@ -77,6 +77,51 @@ def rigify_map(arm) -> dict:
     return out
 
 
+def rename_bones(arm, renames: dict, log) -> dict:
+    """Rename bones old -> new without Blender's '.001' collision suffixes.
+
+    A generated Rigify rig already has CONTROL bones called hips/chest/neck/head/torso; renaming
+    DEF-spine to 'hips' next to them silently yields 'hips.001', which three.js sanitises to
+    'hips001' and the runtime never finds. Non-deform bones that hold a target name are moved out
+    of the way ('<name>_ctrl'); a deform bone holding one, or two bones mapped to one name, is an
+    error. Renames go through temporary names, so swaps and chains work. Blender updates vertex
+    groups, constraints and action F-curve paths on every rename."""
+    bones = arm.data.bones
+    missing = sorted(k for k in renames if k not in bones)
+    if missing:
+        log.warn(f"rename: bones not found {missing[:12]}{' ...' if len(missing) > 12 else ''}")
+    todo = {o: n for o, n in renames.items() if o in bones and o != n}
+    targets = list(todo.values())
+    dup = sorted({n for n in targets if targets.count(n) > 1})
+    if dup:
+        raise cli.ToolError(f"rename: several bones map to {dup}")
+    moved = {}
+    for n in set(targets):
+        b = bones.get(n)
+        if b is None or b.name in todo:            # free, or itself being renamed
+            continue
+        if b.use_deform:
+            raise cli.ToolError(f"rename: deform bone '{n}' already exists; add it to the rename map")
+        alt, i = f"{n}_ctrl", 1
+        while alt in bones or alt in targets:
+            alt, i = f"{n}_ctrl{i}", i + 1
+        b.name = alt
+        moved[n] = alt
+    if moved:
+        log(f"rename: moved {len(moved)} non-deform bone(s) out of the way: {moved}")
+    tmp = {}
+    for i, old in enumerate(sorted(todo)):
+        bones[old].name = f"__slot_rename_{i}"
+        tmp[f"__slot_rename_{i}"] = todo[old]
+    for t, new in tmp.items():
+        bones[t].name = new
+    bad = [n for n in todo.values() if n not in bones]
+    if bad:
+        raise cli.ToolError(f"rename: Blender refused the names {bad}")
+    log(f"renamed {len(todo)} bone(s) for export")
+    return {"renamed": len(todo), "movedAside": moved, "missing": missing}
+
+
 def glb_json(path) -> dict:
     data = Path(path).read_bytes()
     if data[:4] != b"glTF":
@@ -128,22 +173,23 @@ def export(out: Path, arm=None, keep_actions=None, rename_map=None, rigify=False
                 if ad.action == a:
                     ad.action = None
             bpy.data.actions.remove(a)
+    if (rigify or rename_map) and arm is None:
+        raise cli.ToolError("bone renames need exactly one armature (pass --armature NAME)")
     renames = {}
-    if arm is not None and rigify:
-        renames.update(rigify_map(arm))
+    if rigify:
+        rmap = rigify_map(arm)
+        if not rmap:
+            log.warn("--rigify-names: no DEF-* bones found; nothing renamed")
+        renames.update(rmap)
     if rename_map:
         renames.update(rename_map)
     if renames:
-        if arm is None:
-            raise cli.ToolError("bone renames need an armature")
-        missing = [k for k in renames if k not in arm.data.bones]
-        if missing and rename_map and any(k in rename_map for k in missing):
-            log.warn(f"rename map: bones not found {missing}")
-        for old, new in renames.items():
-            b = arm.data.bones.get(old)
-            if b is not None:
-                b.name = new
-        log(f"renamed {sum(1 for k in renames if k not in missing)} bone(s) for export")
+        rename_bones(arm, renames, log)
+        if rigify:
+            names = {b.name for b in arm.data.bones if b.use_deform or not def_bones}
+            lost = [n for n in ("hips", "spine", "chest", "neck", "head") if n not in names]
+            if lost:
+                log.warn(f"--rigify-names: no exported bone named {lost} (src/mascots/procedural.ts looks for them)")
     S.export_glb(out, export_def_bones=def_bones, export_image_format=image_format)
     info = glb_summary(out)
     log(f"GLB {info['path']}: {info['bytes']} bytes, animations {info['animations']}, joints {info['joints']}, "
@@ -175,7 +221,12 @@ def main(argv):
     bpy.context.scene.render.fps = args.fps
     bpy.context.scene.render.fps_base = 1.0
     arms = [o for o in bpy.data.objects if o.type == "ARMATURE"]
-    arm = bpy.data.objects.get(args.armature) if args.armature else (arms[0] if len(arms) == 1 else None)
+    if args.armature:
+        arm = bpy.data.objects.get(args.armature)
+        if arm is None or arm.type != "ARMATURE":
+            raise cli.ToolError(f"--armature '{args.armature}' not found (have {[a.name for a in arms]})")
+    else:
+        arm = arms[0] if len(arms) == 1 else None
     keep = [a.strip() for a in args.actions.split(",")] if args.actions else None
     if args.glb and arm is not None and not args.keep_rigid:
         S.prepare_rig_for_export(arm, src, log)

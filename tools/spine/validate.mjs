@@ -4,7 +4,7 @@
  * OFFICIAL runtime @esotericsoftware/spine-core 4.3.13 — the same code the game ships.
  *
  *   node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind auto|high|special|royal|any]
- *        [--cell 300] [--kick 26] [--report <out.json>] [--strict] [--quiet] [--help]
+ *        [--cell 300] [--kick 36] [--cell-scale <f>] [--report <out.json>] [--strict] [--quiet] [--help]
  *
  * Static checks (raw JSON): 4.3 header + unified root `constraints[]` in IK -> transform ->
  *   (path) -> physics -> slider order (a 4.2-format file loads with every constraint
@@ -21,7 +21,10 @@
  *   land/appear/anticipation_out end on the setup pose, explode ends at alpha 0, `land`
  *   squashes the `squash` bone to sy 0.83-0.87 (error outside the 0.80-0.88 feel gate; warning
  *   when sx != 1/sqrt(sy)), and `land` stays inside the cell (+-cell/2 skeleton units) with the
- *   runtime's physics kick applied.
+ *   runtime's physics kick applied (default +-36 = SpineRig's 26 x the max land multiplier 1.38
+ *   for a `special` weight at max velocity; --kick overrides). The report also gives the land
+ *   growth at the RUNTIME content fit (SymbolRig.fit scales content to cellScale of the cell;
+ *   cellScale from src/config/game.ts for sym_<ID>, else the art bible cellFill, or --cell-scale).
  * --kind auto: sym_W / sym_S -> special, other sym_H* -> high, sym_L* -> royal (nothing
  *   required), anything else -> special (strictest). Exit 0 = pass (warnings allowed unless
  *   --strict), 1 = contract failure, 2 = usage / unreadable input.
@@ -48,15 +51,23 @@ if (flag('help') || flag('h') || argv.length === 0) {
   console.log(src.slice(src.indexOf('/**') + 3, src.indexOf('*/')).replace(/^ \* ?/gm, '').trim());
   process.exit(argv.length === 0 ? 2 : 0);
 }
-const optNames = new Set(['atlas', 'kind', 'cell', 'kick', 'report']);
+const optNames = new Set(['atlas', 'kind', 'cell', 'kick', 'report', 'cell-scale']);
 const positional = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && optNames.has(argv[i - 1].slice(2))));
 const jsonPath = positional[0];
 const atlasPath = opt('atlas', null);
 const cell = Number(opt('cell', CONTRACT.cellPx));
-const kick = Number(opt('kick', CONTRACT.timing.runtimeKick));
+const kick = Number(opt('kick', CONTRACT.timing.runtimeKickMax ?? CONTRACT.timing.runtimeKick));
+const cellScaleOpt = opt('cell-scale', null);
 const strict = flag('strict');
 const quiet = flag('quiet');
 const reportPath = opt('report', null);
+// a bad number would silently disable a gate (NaN compares false): usage error instead
+for (const [name, v, min] of [['cell', cell, 1], ['kick', kick, -1e6], ['cell-scale', cellScaleOpt === null ? 1 : Number(cellScaleOpt), 0.01]]) {
+  if (!Number.isFinite(v) || v < min) {
+    console.error(`validate: --${name} must be a number${min > 0 ? ' > 0' : ''}`);
+    process.exit(2);
+  }
+}
 
 const errors = [];
 const warnings = [];
@@ -351,6 +362,34 @@ if (data) {
     return poseSnapshot(s);
   };
   const setupSnap = sample(null, 0);
+  // rest silhouette (non-fx slots) and the runtime content fit: SymbolRig.fit() scales EVERY
+  // symbol so its content fills def.cellScale of the cell (src/config/game.ts; art bible cellFill),
+  // whatever size it was authored at on the 360 canvas.
+  const restSk = new spine.Skeleton(data);
+  restSk.setupPose();
+  restSk.updateWorldTransform(spine.Physics.none);
+  const rest = worldBounds(restSk);
+  const symId = skelName.replace(/^sym_/, '');
+  let cellScale = cellScaleOpt !== null ? Number(cellScaleOpt) : null;
+  let cellScaleFrom = '--cell-scale';
+  if (cellScale === null) {
+    try {
+      const game = fs.readFileSync(path.join(REPO, 'src/config/game.ts'), 'utf8');
+      const m = game.match(new RegExp(`id:\\s*'${symId}'[^}]*?cellScale:\\s*([0-9.]+)`));
+      if (m) [cellScale, cellScaleFrom] = [Number(m[1]), `src/config/game.ts ${symId}`];
+    } catch {
+      /* no runtime source */
+    }
+  }
+  if (cellScale === null) {
+    try {
+      const fill = JSON.parse(fs.readFileSync(path.join(REPO, 'art/bible/artbible.json'), 'utf8')).cellFill?.[kind];
+      const cs = fill?.cellScale;
+      if (cs !== undefined) [cellScale, cellScaleFrom] = [Math.max(...[].concat(cs)), `art bible cellFill.${kind} (max)`];
+    } catch {
+      /* no art bible */
+    }
+  }
   const TOL = 0.02; // px / 0.01 matrix units / colour steps
 
   const required = Object.entries(CONTRACT.animations)
@@ -428,6 +467,25 @@ if (data) {
     if (rule.inCell) {
       const over = Math.max(ext.x1 - half, -half - ext.x0, ext.y1 - half, -half - ext.y0);
       if (over > 1) err(`${anim.name}: leaves the ${cell}x${cell} cell by ${over.toFixed(1)} units (extent x ${ext.x0.toFixed(1)}..${ext.x1.toFixed(1)}, y ${ext.y0.toFixed(1)}..${ext.y1.toFixed(1)}, physics kick +-${kick})`);
+      // what the game shows: the same pose after the runtime content fit (report only; the
+      // contract's fixed-cell rule and the art bible's 102-115 % specials still conflict)
+      const D = Math.max(rest.x1 - rest.x0, rest.y1 - rest.y0);
+      if (cellScale && Number.isFinite(D) && D > 0) {
+        const f = (cellScale * cell) / D;
+        const pct = (v) => Math.round((v * f * 1000) / cell) / 10;
+        const cx = (rest.x0 + rest.x1) / 2;
+        rep.runtimeFit = {
+          cellScale,
+          from: cellScaleFrom,
+          scale: Math.round(f * 1000) / 1000,
+          restHeightPct: pct(rest.y1 - rest.y0),
+          topGrowthPct: pct(ext.y1 - rest.y1),
+          belowFeetPct: pct(rest.y0 - ext.y0),
+          sideGrowthPct: pct(Math.max(ext.x1 - cx, cx - ext.x0) - Math.max(rest.x1 - cx, cx - rest.x0)),
+        };
+        const r = rep.runtimeFit;
+        info.push(`${anim.name} at the runtime fit (content ${D.toFixed(0)} u -> cellScale ${cellScale} of the cell, x${r.scale}; ${cellScaleFrom}): rest ${r.restHeightPct}% of the cell tall, land adds top +${r.topGrowthPct}%, sides +${r.sideGrowthPct}%, below feet ${r.belowFeetPct}% of the cell`);
+      }
     }
 
     // seams / end poses (keyed pose only: physics is not part of the animation)

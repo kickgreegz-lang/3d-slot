@@ -46,8 +46,8 @@ def build_parser():
     ap.add_argument("--sharp-angle", type=float, default=40.0, help="smooth-by-angle threshold (deg)")
     ap.add_argument("--target-tris", type=int, default=14000, help="decimate above this (0 = never)")
     ap.add_argument("--remesh", choices=("decimate", "quadriflow"), default="decimate")
-    ap.add_argument("--relax", type=int, default=2, help="Laplacian relax passes after reduction (toon ramps "
-                                                        "turn normal noise into band speckles; 0 = off)")
+    ap.add_argument("--relax", type=int, default=2, help="Laplacian relax passes on meshes that were reduced "
+                                                        "(toon ramps turn decimation noise into band speckles; 0 = off)")
     ap.add_argument("--colors", type=int, default=6, help="palette size (4-8 per ART_BIBLE; 0 = keep materials)")
     ap.add_argument("--palette-mode", choices=("texture", "vertex"), default="texture")
     ap.add_argument("--lightness-weight", type=float, default=0.35,
@@ -213,7 +213,7 @@ def reduce(meshes, target, method, seed, log):
     from slotbl import scene as S
     tot = sum(S.triangle_count(o, False) for o in meshes)
     if not target or tot <= target:
-        return {"method": None, "before": tot, "after": tot}
+        return {"method": None, "before": tot, "after": tot, "meshes": []}
     free = [o for o in meshes if not o.data.shape_keys]
     locked = sum(S.triangle_count(o, False) for o in meshes if o.data.shape_keys)
     if locked:
@@ -243,7 +243,8 @@ def reduce(meshes, target, method, seed, log):
         apply_modifier(o, mod)
     after = sum(S.triangle_count(o, False) for o in meshes)
     log(f"{method}: {tot} -> {after} tris (ratio {ratio:.3f})")
-    return {"method": method, "before": tot, "after": after, "ratio": round(ratio, 4)}
+    return {"method": method, "before": tot, "after": after, "ratio": round(ratio, 4),
+            "meshes": sorted(o.name for o in free)}
 
 
 def adjacency_smooth(me, labels, passes):
@@ -430,10 +431,14 @@ def main(argv):
     # ---- 5) reduce
     report["reduce"] = reduce(meshes, args.target_tris, args.remesh, args.seed, log)
 
-    # ---- 5b) relax + re-shade (meshes with shape keys are skipped: bmesh would desync them)
+    # ---- 5b) relax + re-shade, only where step 5 reduced the mesh (the relax removes the
+    # decimation's normal noise; on an untouched low-poly/hard-surface mesh it only shrinks
+    # parts: it flattened the placeholder robot's feet). Shape-key meshes are skipped: bmesh
+    # would desync them.
     relaxed = []
+    reduced = set(report["reduce"].get("meshes", []))
     for o in meshes:
-        if args.relax <= 0 or o.data.shape_keys:
+        if args.relax <= 0 or o.data.shape_keys or o.name not in reduced:
             continue
         import bmesh
         bm = bmesh.new()

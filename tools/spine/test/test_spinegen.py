@@ -119,6 +119,27 @@ class Generator(unittest.TestCase):
         with self.assertRaises(ValueError):
             motion.merge_params({"land": {"squish": 1}})
 
+    def test_rig_typos_fail_loudly(self):
+        # a typo must never silently fall back to the contract defaults
+        cases = [
+            ("accents:", "accent:"),                                   # unknown top-level key
+            ("amount: 0.25, at: impact+1}", "ammount: 0.25, at: impact+1}"),  # unknown accent key
+            ("{name: vfx, at: peak, string: fx_sparkle}", "{name: vfx, at: peak, strng: fx_sparkle}"),
+            ("  win:\n    - {name: vfx", "  lnad:\n    - {name: vfx"),              # events for an animation not generated
+            ("kind: special", "kind: special\nbones: [oops"),                  # YAML syntax error -> RigError, not a traceback
+            ("    spacing: 40", "    spacng: 40"),                   # unknown mesh key
+        ]
+        for old, new in cases:
+            with self.subTest(new=new), tempfile.TemporaryDirectory() as t:
+                td = Path(t)
+                shutil.copytree(DEMO, td / "demo", ignore=shutil.ignore_patterns("provenance.json"))
+                rig = td / "demo" / "rig.yaml"
+                text = rig.read_text()
+                self.assertIn(old, text)
+                rig.write_text(text.replace(old, new, 1))
+                with self.assertRaises(ValueError):
+                    self.build(rig, td / "a.json")
+
     def test_gen_cli_check(self):
         py = sys.executable
         with tempfile.TemporaryDirectory() as t:
@@ -164,6 +185,31 @@ class Pack(unittest.TestCase):
                 if ln.startswith("size:"):
                     w, h = (int(v) for v in ln[5:].split(","))
                     self.assertEqual((w % 4, h % 4), (0, 0))
+            # --check writes nothing and fails cleanly (exit 1, no traceback) when --out does not exist
+            cmd_new = [c if c != str(td / "o") else str(td / "new") for c in cmd]
+            r = subprocess.run(cmd_new + ["--check"], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 1)
+            self.assertNotIn("Traceback", r.stderr)
+            self.assertFalse((td / "new").exists())
+
+    def test_make_blur_provenance_idempotent(self):
+        py = sys.executable
+        with tempfile.TemporaryDirectory() as t:
+            td = Path(t)
+            shutil.copytree(DEMO, td / "demo", ignore=shutil.ignore_patterns("provenance.json", "*_blur.png"))
+            cmd = [py, str(SPINE / "make_blur.py"), str(td / "demo" / "parts.json"), "--provenance", str(td / "rows.json")]
+            self.assertEqual(subprocess.run(cmd, capture_output=True).returncode, 0)
+            rows = json.loads((td / "rows.json").read_text())["rows"]
+            self.assertEqual(len(rows), 6)  # every non-fx part
+            self.assertTrue(all(r["stage"] == "spine-authoring" and len(r["refHashes"]) == 1 for r in rows))
+            for r in rows:  # byte-identical to the committed demo blur variants
+                name = Path(r["path"]).name
+                self.assertEqual((td / "demo" / "images" / "sym_demo" / name).read_bytes(),
+                                 (DEMO / "images" / "sym_demo" / name).read_bytes())
+            self.assertEqual(subprocess.run(cmd, capture_output=True).returncode, 0)
+            self.assertEqual(len(json.loads((td / "rows.json").read_text())["rows"]), 6)
+            self.assertEqual(subprocess.run([py, str(SPINE / "make_blur.py"), str(td / "nope.json")],
+                                            capture_output=True).returncode, 1)
 
 
 if __name__ == "__main__":

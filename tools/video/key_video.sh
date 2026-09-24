@@ -49,6 +49,14 @@ while [ $# -gt 0 ]; do
     *) echo "error: unknown option $1" >&2; exit 2;;
   esac
 done
+# numeric options go into ffmpeg filter graphs, bash arithmetic and qa.json: validate them up front
+isnum() { [[ "$2" =~ ^-?[0-9]+([.][0-9]+)?$ ]] || { echo "error: $1 expects a number, got '$2'" >&2; exit 2; }; }
+isint() { [[ "$2" =~ ^[0-9]+$ ]] || { echo "error: $1 expects a non-negative integer, got '$2'" >&2; exit 2; }; }
+jesc() { local s=${1//\\/\\\\}; s=${s//\"/\\\"}; printf '%s' "$s"; }   # JSON string body
+isint --size "$SIZE"; isint --fps "$FPS"; isint --fade "$FADE"; isint --erode "$ERODE"
+isnum --similarity "$SIM"; isnum --blend "$BLEND"; isnum --despill-mix "$DMIX"
+[[ "$DENOISE" =~ ^[01]$ ]] || { echo "error: --denoise 0|1" >&2; exit 2; }
+[ "$SIZE" -ge 2 ] && [ "$FPS" -ge 1 ] || { echo "error: --size >= 2 and --fps >= 1" >&2; exit 2; }
 [ -f "$IN" ] || { echo "error: input not found: $IN" >&2; exit 2; }
 [[ "$NAME" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]] || { echo "error: bad NAME $NAME" >&2; exit 2; }
 [[ "$KEYER" =~ ^(chromakey|colorkey)$ ]] || { echo "error: --keyer chromakey|colorkey" >&2; exit 2; }
@@ -132,7 +140,7 @@ if [ "$LOOP" = 1 ] && [ -n "$STEP" ]; then awk -v s="$SEAM" -v t="$STEP" 'BEGIN{
 mkdir -p "$QA_DIR"
 cat >"$QA_DIR/qa.json" <<EOF
 {
-  "tool": "tools/video/key_video.sh", "in": "$IN", "out": "$OUT", "name": "$NAME",
+  "tool": "tools/video/key_video.sh", "in": "$(jesc "$IN")", "out": "$(jesc "$OUT")", "name": "$NAME",
   "fps": $FPS, "inFrames": $N, "expectedFrames": $OUTN, "frames": $GOT, "fade": $([ "$LOOP" = 1 ] && echo "$FADE" || echo 0),
   "key": "#$KEY", "keyer": "$KEYER", "similarity": $SIM, "blend": $BLEND, "despill": "$DESPILL", "erode": $ERODE, "size": $SIZE,
   "seamSSIM": ${SEAM:-null}, "minStepSSIM": ${STEP:-null}, "passed": $PASSED

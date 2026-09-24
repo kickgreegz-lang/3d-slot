@@ -37,6 +37,12 @@ export function splitTemplateRef(ref) {
   return [name, section];
 }
 
+/** Row 'template' value: repo path of the template file, plus '#X' for a section. */
+export function templatePath(ref) {
+  const [name, section] = splitTemplateRef(ref);
+  return `art/bible/prompts/${name}${section ? `#${section}` : ''}`;
+}
+
 export function templateSections(name) {
   const text = fs.readFileSync(path.join(PROMPTS_DIR, name), 'utf8');
   return text.split(/\r?\n/).map((l) => SECTION.exec(l)?.[1]).filter(Boolean);
@@ -249,6 +255,7 @@ export function denylistHits(route, model, deny = loadJson(DENYLIST_PATH)) {
   const vendor = route.split('-')[0];
   const nm = norm(model);
   for (const e of deny.entries ?? []) {
+    if (e.category === 'approval') continue; // hosts / sample assets / npm clients, not generation models
     for (const item of e.appliesTo ?? []) {
       const i = item.indexOf(':');
       let target = item;
@@ -257,7 +264,8 @@ export function denylistHits(route, model, deny = loadJson(DENYLIST_PATH)) {
         target = item.slice(i + 1);
       }
       const t = norm(target.replace(/\(.*?\)/g, ''));
-      if (t.length >= 4 && nm.length >= 4 && (nm.startsWith(t) || t.startsWith(nm))) hits.add(e.id);
+      // the model id equals or extends a denylisted id (gpt_image_2_5 extends gpt-image-2)
+      if (t.length >= 4 && nm.startsWith(t)) hits.add(e.id);
     }
   }
   return [...hits].sort();

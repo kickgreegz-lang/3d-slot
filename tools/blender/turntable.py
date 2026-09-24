@@ -30,7 +30,7 @@ def build_parser():
     ap.add_argument("out_dir", nargs="?", help="output folder (same as --out; PIPELINE §4.1 form)")
     ap.add_argument("--out", help="output folder")
     ap.add_argument("--name", help="file prefix (default: model file stem)")
-    ap.add_argument("--angles", type=int, default=8, help="turntable angles (0 = none)")
+    ap.add_argument("--angles", type=int, default=8, help="turntable angles (>= 1, evenly spaced)")
     ap.add_argument("--action", help="render this action instead of a turntable (contact sheet of the clip)")
     ap.add_argument("--frames", type=int, default=8, help="action: evenly sampled frames")
     ap.add_argument("--frame", type=float, help="turntable: pose frame of the active/--pose action")
@@ -114,6 +114,8 @@ def main(argv):
     args.out = args.out or args.out_dir
     if not args.out:
         ap.error("give an output folder (positional or --out)")
+    if args.angles < 1 or args.frames < 1 or args.size < 8 or args.ss < 1:
+        ap.error("--angles/--frames must be >= 1, --size >= 8, --ss >= 1")
     log = cli.Log("turntable")
     model = cli.repo_path(args.model)
     if not model.exists():

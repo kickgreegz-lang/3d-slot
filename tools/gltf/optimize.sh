@@ -32,8 +32,8 @@ EOF
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
-GT="$REPO/node_modules/.bin/gltf-transform"
-[ -x "$GT" ] || GT="npx --no-install gltf-transform"
+GT=("$REPO/node_modules/.bin/gltf-transform")
+[ -x "${GT[0]}" ] || GT=(npx --no-install gltf-transform)
 
 [ $# -ge 1 ] && { [ "$1" = "-h" ] || [ "$1" = "--help" ]; } && { usage; exit 0; }
 [ $# -ge 2 ] || { usage >&2; exit 1; }
@@ -56,6 +56,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -f "$IN" ] || { echo "ERROR: input not found: $IN" >&2; exit 1; }
+case "$OUT" in *.glb) ;; *) echo "ERROR: output must be a .glb (budget.mjs reads binary glTF only): $OUT" >&2; exit 1 ;; esac
 if [ "$TEX" = "ktx2" ] && [ "$ALLOW_KTX2" != 1 ]; then
   echo "ERROR: --texture-compress ktx2 needs --allow-ktx2 (self-host the Basis transcoder first; Stake forbids the CDN default)" >&2
   exit 1
@@ -66,21 +67,30 @@ mkdir -p "$REPORT" "$(dirname "$OUT")"
 
 if [ "$OPT" = 1 ]; then
   echo "[optimize] $IN -> $OUT (meshopt, $TEX, $TEXSIZE px, join/simplify/flatten off, palette $PALETTE)"
-  # shellcheck disable=SC2086
-  $GT optimize "$IN" "$OUT" --compress meshopt --texture-compress "$TEX" --texture-size "$TEXSIZE" \
-    --join false --simplify false --flatten false --palette "$PALETTE" 2>&1 | tee "$REPORT/optimize.log" | grep -v '^$' || true
-  [ -s "$OUT" ] || { echo "ERROR: optimize produced no output" >&2; exit 1; }
+  # Write to a temp file next to OUT and move it into place only on success, so a failed run
+  # never leaves (or validates) a stale OUT from an earlier run.
+  TMP_OUT="$(dirname "$OUT")/.$(basename "$OUT" .glb).tmp.$$.glb"
+  trap 'rm -f "$TMP_OUT"' EXIT
+  set +e
+  "${GT[@]}" optimize "$IN" "$TMP_OUT" --compress meshopt --texture-compress "$TEX" --texture-size "$TEXSIZE" \
+    --join false --simplify false --flatten false --palette "$PALETTE" > "$REPORT/optimize.log" 2>&1
+  ORC=$?
+  set -e
+  grep -v '^$' "$REPORT/optimize.log" || true
+  if [ $ORC -ne 0 ] || [ ! -s "$TMP_OUT" ]; then
+    echo "ERROR: gltf-transform optimize failed (exit $ORC; see $REPORT/optimize.log)" >&2
+    exit 1
+  fi
+  mv -f "$TMP_OUT" "$OUT"
 else
   OUT="$IN"
 fi
 
 echo "[validate] $OUT"
 set +e
-# shellcheck disable=SC2086
-$GT validate "$OUT" --format md > "$REPORT/validate.md" 2>&1
+"${GT[@]}" validate "$OUT" --format md > "$REPORT/validate.md" 2>&1
 VRC=$?
-# shellcheck disable=SC2086
-$GT inspect "$OUT" --format md > "$REPORT/inspect.md" 2>&1
+"${GT[@]}" inspect "$OUT" --format md > "$REPORT/inspect.md" 2>&1
 IRC=$?
 set -e
 if [ $VRC -ne 0 ]; then

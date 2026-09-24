@@ -121,7 +121,7 @@ def main(argv=None) -> int:
         (qa_dir / "qa.json").write_text(json.dumps(qa, indent=2) + "\n", encoding="utf-8")
 
         digest = prov.sha256_file(dst)
-        lic = a.license_id or prov.inherit_license(a.parent_id, default="python-geometry")
+        lic = a.license_id or prov.inherit_license(a.parent_id, manifest=prov.lookup_manifest(a.manifest), default="python-geometry")
         row = prov.make_row(
             id=prov.safe_id(a.asset_id or dst.stem, "matte", digest[:8]), path=dst, stage=a.stage, sha256=digest,
             vendor="self", model=TOOL, version=tool_version(), license_id=lic, route="code",

@@ -30,6 +30,10 @@ def find_repo_root(start: Path | None = None) -> Path:
 REPO = find_repo_root()
 
 
+_BLENDER_FLAGS = {"-b", "--background", "-P", "--python", "--factory-startup", "--python-exit-code",
+                  "--python-expr", "-noaudio"}
+
+
 def script_argv(argv: list[str] | None = None) -> list[str]:
     """Arguments meant for the script.
 
@@ -39,11 +43,15 @@ def script_argv(argv: list[str] | None = None) -> list[str]:
     - `blender -b -P x.py`          -> []       (Blender's own flags are never parsed)
     """
     argv = list(sys.argv if argv is None else argv)
-    if "--" in argv:
-        return argv[argv.index("--") + 1:]
-    if argv and argv[0].endswith(".py"):
-        return argv[1:]
-    return []
+    head = argv[:argv.index("--")] if "--" in argv else argv
+    if any(a in _BLENDER_FLAGS for a in head[1:]) or (argv and not argv[0].endswith(".py")):
+        # Blender binary (argv[0] is the executable; runpy may have swapped in the script path,
+        # but Blender's own flags are still there): the script's arguments follow `--`
+        return argv[argv.index("--") + 1:] if "--" in argv else []
+    # plain python: everything after the script; a leading `--` is dropped, a later one is left
+    # for argparse (the usual end-of-options marker), never used to cut arguments off
+    rest = argv[1:]
+    return rest[1:] if rest[:1] == ["--"] else rest
 
 
 class Log:
@@ -127,6 +135,30 @@ def out_path(p: str | os.PathLike) -> Path:
     regardless of CWD)."""
     q = Path(p)
     return q if q.is_absolute() else (REPO / q).resolve()
+
+
+WORK_PATTERNS = ("raw_*.png", "qa_*.png", "meta.json")
+
+
+def clear_work_dir(path: str | os.PathLike, patterns=WORK_PATTERNS, remove_dir: bool = False) -> int:
+    """Delete only the scratch files a render writes (never rmtree a user-supplied --work path:
+    `--work .` would otherwise wipe the repo). Removes the folder too when it ends up empty and
+    remove_dir is set. -> number of files deleted."""
+    d = Path(path)
+    if not d.is_dir():
+        return 0
+    n = 0
+    for pat in patterns:
+        for f in d.glob(pat):
+            if f.is_file():
+                f.unlink()
+                n += 1
+    if remove_dir:
+        try:
+            d.rmdir()               # only succeeds when empty
+        except OSError:
+            pass
+    return n
 
 
 def bpy_available() -> bool:

@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import sys
 from pathlib import Path
 
@@ -187,7 +186,7 @@ def process(meta: dict) -> int:
         n = prov.append_to_manifest(meta["manifest"], [row], "tools/blender/frames_post.py")
         log(f"appended {n} row(s) to {meta['manifest']}")
     if not meta.get("keep_raw"):
-        shutil.rmtree(meta["raw_dir"], ignore_errors=True)
+        cli.clear_work_dir(meta["raw_dir"], remove_dir=True)
 
     for k, g in gates.items():
         v = g["value"]

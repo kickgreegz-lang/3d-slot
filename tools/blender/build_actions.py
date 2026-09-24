@@ -473,6 +473,8 @@ def main(argv):
         return 0
     if not spec and not args.describe:
         raise cli.ToolError("nothing to do: give animation JSON files and/or --describe")
+    if args.manifest and not args.export_glb:
+        raise cli.ToolError("--manifest records the exported GLB: add --export-glb")
 
     import bpy
     from slotbl import scene as S

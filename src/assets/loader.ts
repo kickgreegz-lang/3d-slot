@@ -17,10 +17,22 @@ import { ProceduralArt, SYMBOL_CANVAS } from './placeholder/ProceduralArt';
 export const createArt = async (app: Application): Promise<ArtProvider> => {
   const renderer = app.renderer;
   const proc = new ProceduralArt(renderer, renderer.resolution >= 1.75 ? 1.5 : 1);
-  const loaded = await loadManifest(ART_MANIFEST);
+  const loaded = await loadManifest(import.meta.env.DEV ? withDevSpineDemo(ART_MANIFEST) : ART_MANIFEST);
   const art = new ManifestArt(loaded, proc);
   art.warm();
   return art;
+};
+
+/**
+ * DEV only: `?spineDemo=H1` binds the AI-authored demo rig (tools/spine/examples/demo_symbol,
+ * published to public/assets/spine/demo and stripped from production builds) to a symbol, so
+ * the generated Spine land/win/explode + physics can be judged in the real game.
+ */
+const withDevSpineDemo = (m: ArtManifest): ArtManifest => {
+  const id = new URLSearchParams(location.search).get('spineDemo');
+  if (!id || !SYMBOLS[id]) return m;
+  const demo = { id, skeleton: './assets/spine/demo/sym_demo.json', atlas: './assets/spine/demo/sym_demo.atlas' };
+  return { ...m, spine: [...m.spine.filter((e) => e.id !== id), demo] };
 };
 
 interface LoadedManifest {
@@ -71,11 +83,10 @@ const loadManifest = async (m: ArtManifest): Promise<LoadedManifest> => {
       if (!isRelative(e.skeleton) || !isRelative(e.atlas)) continue;
       const skeleton = `spine:${e.id}:skeleton`;
       const atlas = `spine:${e.id}:atlas`;
+      Assets.add({ alias: skeleton, src: e.skeleton });
+      Assets.add({ alias: atlas, src: e.atlas });
       jobs.push(
-        Assets.load([
-          { alias: skeleton, src: e.skeleton },
-          { alias: atlas, src: e.atlas },
-        ]).then(
+        Assets.load([skeleton, atlas]).then(
           () => void out.spine.set(e.id, { skeleton, atlas, skin: e.skin }),
           () => undefined,
         ),

@@ -62,6 +62,9 @@ def main(argv=None) -> int:
     ap.add_argument("--parent-id", action="append", default=[])
     ap.add_argument("--license-id", help="default: parent's licenseId, else blender-5.2")
     a = ap.parse_args(argv)
+    if a.multiple < 1 or a.pad < 0 or a.every < 1 or (a.size is not None and a.size < 1):
+        print("error: --multiple/--every/--size must be >= 1 and --pad >= 0", file=sys.stderr)
+        return 2
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", a.name):
         print("error: --name must match [A-Za-z0-9][A-Za-z0-9_-]*", file=sys.stderr)
         return 2
@@ -152,7 +155,7 @@ def main(argv=None) -> int:
     version = prov.digest_files(sorted(p for p in HERE.glob("*") if p.is_file()), HERE)[:12]
     row = prov.make_row(
         id=prov.safe_id(a.name, "flipbook", digest[:8]), path=out_dir, stage="vfx-bake", sha256=digest, vendor="self",
-        model=TOOL, version=version, license_id=a.license_id or prov.inherit_license(a.parent_id, default="blender-5.2"),
+        model=TOOL, version=version, license_id=a.license_id or prov.inherit_license(a.parent_id, manifest=prov.lookup_manifest(a.manifest), default="blender-5.2"),
         route="code", ref_hashes=[prov.sha256_file(f) for f in files], parents=a.parent_id,
         qa={"passed": meta["passed"], "report": prov.rel(qa_dir / "flipbook.json")},
         notes=f"{len(written)} frames {ow}x{oh}, pivot {a.pivot}, anchor {anchor}")

@@ -28,6 +28,22 @@ def test_script_argv_modes():
     assert cli.script_argv(["tools/blender/x.py", "--", "--clip", "turn"]) == ["--clip", "turn"]
     assert cli.script_argv(["blender", "-b", "--factory-startup", "-P", "x.py"]) == []
     assert cli.script_argv(["blender", "-b", "rig.blend", "-P", "x.py", "--", "a.json"]) == ["a.json"]
+    # plain python: a later `--` is argparse's end-of-options marker, never a cut point
+    assert cli.script_argv(["tools/blender/x.py", "--glb", "r.glb", "--", "a.json"]) == ["--glb", "r.glb", "--", "a.json"]
+    # runpy.run_path swaps argv[0] for the script path; Blender's flags still mark the binary layout
+    assert cli.script_argv(["tools/blender/x.py", "-b", "--factory-startup", "-P", "tools/blender/x.py", "--", "--help"]) == ["--help"]
+
+
+def test_clear_work_dir_only_touches_render_scratch():
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        for n in ("raw_0001.png", "qa_next.png", "meta.json", "keep.txt"):
+            (d / n).write_text("x")
+        (d / "sub").mkdir()
+        assert cli.clear_work_dir(d) == 3
+        assert sorted(p.name for p in d.iterdir()) == ["keep.txt", "sub"]
+        cli.clear_work_dir(d, remove_dir=True)          # not empty -> folder kept
+        assert d.is_dir()
 
 
 # --------------------------------------------------------------------------- easing ---
@@ -101,6 +117,17 @@ def test_spec_errors():
     bad["clips"][0]["tracks"].append({"bone": "b", "channel": "scale", "keys": [{"f": 0, "v": 1}]})
     _raises(bad, "duplicate track")
     _raises({"clips": [{"name": "Bad Name", "length": 3, "tracks": []}]}, "anim.schema.json")
+
+
+def test_offset_cannot_move_keys_outside_the_clip():
+    for off in (-5, 5):
+        raw = {"clips": [{"name": "react_small", "length": 40, "tracks": [{"bone": "b", "channel": "rot", "offset": off,
+               "keys": [{"f": 0, "v": [0, 0, 0]}, {"f": 38, "v": [1, 0, 0]}]}]}]}
+        try:
+            animspec.normalise(raw)
+        except animspec.SpecError:
+            continue
+        raise AssertionError(f"offset {off} accepted")
 
 
 def test_canonical_windows_warn_or_fail():

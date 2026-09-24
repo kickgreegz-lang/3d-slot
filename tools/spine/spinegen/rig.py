@@ -151,7 +151,12 @@ class RigBuilder:
         self.contract = load_contract()
         self.rig_path = Path(rig_path).resolve()
         self.rig_dir = self.rig_path.parent
-        self.rig = yaml.safe_load(self.rig_path.read_text(encoding="utf-8")) or {}
+        try:
+            self.rig = yaml.safe_load(self.rig_path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError as e:
+            raise RigError(f"{rig_path}: invalid YAML: {e}") from None
+        if not isinstance(self.rig, dict):
+            raise RigError(f"{rig_path}: expected a YAML mapping at the top level")
         self._check_schema()
         self.report = Report(inputs=[self.rig_path])
         self.out_path = Path(out_path).resolve() if out_path else None

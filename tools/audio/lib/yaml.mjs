@@ -35,10 +35,14 @@ function scalar(s, where) {
   }
   if (/^[&*!]/.test(t)) throw new YamlError(`${where}: anchors, aliases and tags are not supported`);
   if (t === '|' || t === '>' || /^[|>][-+]?$/.test(t)) throw new YamlError(`${where}: block scalars are not supported; use a quoted single-line string`);
-  if (/^(true|True|TRUE)$/.test(t)) return true;
-  if (/^(false|False|FALSE)$/.test(t)) return false;
+  // YAML 1.1 booleans, as PyYAML resolves them: `loop: no` must be false, not the (truthy) string "no"
+  if (/^(true|True|TRUE|yes|Yes|YES|on|On|ON)$/.test(t)) return true;
+  if (/^(false|False|FALSE|no|No|NO|off|Off|OFF)$/.test(t)) return false;
+  // PyYAML reads 010 as octal 8, 0x10 as 16 and 1_000 as 1000: refuse rather than silently disagree
+  if (/^[-+]?(0[0-9_]+|0[xXoObB][0-9a-fA-F_]+|\d[\d_]*_[\d_]*)$/.test(t)) throw new YamlError(`${where}: ambiguous number ${t}; write it plainly or quote it`);
   if (/^(null|Null|NULL|~)$/.test(t)) return null;
-  if (/^[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?$/.test(t)) return Number(t);
+  // YAML 1.1 numbers, as PyYAML resolves them (a float needs a dot; an exponent needs a sign)
+  if (/^[-+]?\d+$/.test(t) || /^[-+]?(\d+\.\d*|\.\d+)([eE][-+]\d+)?$/.test(t)) return Number(t);
   return t;
 }
 
@@ -117,6 +121,9 @@ export function parseYaml(text, file = 'yaml') {
       if (!rest) {
         pos++;
         out.push(pos < lines.length && lines[pos].indent > indent ? node(lines[pos].indent) : null);
+      } else if (rest === '-' || rest.startsWith('- ')) {
+        lines[pos] = { ...l, indent: indent + 2, text: rest };   // "- - x" opens a nested sequence
+        out.push(seq(indent + 2));
       } else if (KEY.test(rest) && !rest.startsWith('[') && !rest.startsWith('{')) {
         lines[pos] = { ...l, indent: indent + 2, text: rest };   // "- k: v" opens a mapping at indent+2
         out.push(map(indent + 2));

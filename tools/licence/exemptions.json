@@ -1,0 +1,46 @@
+{
+  "$comment": "Files under public/assets that ship WITHOUT an art/manifest.json row because they are third-party assets with their licence text next to them (read by tools/licence/audit.mjs). Every entry needs a licence file that exists; 'licencePerFile' maps each file to its own licence text ({family} = file stem up to the first '-'). 'placeholder: true' entries are dev stand-ins: `audit.mjs --release` fails while they are still shipped. Add an entry only with the licence file committed next to the asset.",
+  "exemptions": [
+    {
+      "id": "fonts-bundled",
+      "paths": [
+        "public/assets/fonts/*.woff2"
+      ],
+      "allowlistId": "fonts-bundled",
+      "licencePerFile": "public/assets/fonts/licenses/{family}-*.txt",
+      "reason": "Self-hosted OFL-1.1 / Apache-2.0 display fonts (Anton, Bebas Neue, Lilita One, Luckiest Guy, Titan One).",
+      "placeholder": false
+    },
+    {
+      "id": "fonts-licence-texts",
+      "paths": [
+        "public/assets/fonts/licenses/*.txt"
+      ],
+      "allowlistId": "fonts-bundled",
+      "reason": "The licence texts the OFL requires to travel with the fonts.",
+      "placeholder": false
+    },
+    {
+      "id": "robot-expressive-cc0",
+      "paths": [
+        "public/assets/characters/placeholder/RobotExpressive.glb",
+        "public/assets/characters/placeholder/LICENSE.txt"
+      ],
+      "licence": "CC0-1.0",
+      "licenceFiles": [
+        "public/assets/characters/placeholder/LICENSE.txt"
+      ],
+      "reason": "Placeholder mascot rig from the three.js examples (Quaternius, CC0); replaced by the production Gumbo / Baron Croak GLBs.",
+      "placeholder": true
+    },
+    {
+      "id": "spine-demo-rig",
+      "paths": [
+        "public/assets/spine/demo/*"
+      ],
+      "allowlistId": "owned-code",
+      "reason": "AI-authored demo Spine rig (tools/spine/examples/demo_symbol) used to test the Spine pipeline in the preview and, in DEV only, in-game via ?spineDemo=<symbolId>. Stripped from production builds by vite.config.ts.",
+      "placeholder": true
+    }
+  ]
+}

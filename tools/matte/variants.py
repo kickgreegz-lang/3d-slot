@@ -147,7 +147,7 @@ def main(argv=None) -> int:
             report["glow"] = {"peak": round(float(ga.max()), 4), "edgeMax": round(float(max(ga[0].max(), ga[-1].max(), ga[:, 0].max(), ga[:, -1].max())), 4)}
         qa_dir.mkdir(parents=True, exist_ok=True)
         (qa_dir / "variants.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        lic = a.license_id or prov.inherit_license(a.parent_id, default="python-geometry")
+        lic = a.license_id or prov.inherit_license(a.parent_id, manifest=prov.lookup_manifest(a.manifest), default="python-geometry")
         version = prov.digest_files(sorted(HERE.glob("*.py")), HERE)[:12]
         for kind, p in outs.items():
             digest = prov.sha256_file(p)

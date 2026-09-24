@@ -229,6 +229,9 @@ def normalise(raw: dict, source: str = "<json>", strict: bool = False) -> tuple[
                 exp = [{**k, "f": k["f"] + offset} for k in exp]
                 if exp[-1]["f"] > length + 1e-9:
                     raise SpecError(f"{tw}: offset {offset} pushes keys past the clip end ({exp[-1]['f']} > {length})")
+                if exp[0]["f"] < -1e-9:
+                    raise SpecError(f"{tw}: offset {offset} pulls keys before frame 0 ({exp[0]['f']}); "
+                                    "only loops wrap around")
                 if exp[0]["f"] > 0:
                     exp.insert(0, {"f": 0.0, "v": exp[0]["v"], "ease": easing.parse_ease("CONSTANT")})
             tracks.append({

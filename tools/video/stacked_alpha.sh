@@ -41,6 +41,13 @@ while [ $# -gt 0 ]; do
     *) echo "error: unknown option $1" >&2; exit 2;;
   esac
 done
+# numeric options go into ffmpeg filter graphs, bash arithmetic and qa.json: validate them up front
+isnum() { [[ "$2" =~ ^-?[0-9]+([.][0-9]+)?$ ]] || { echo "error: $1 expects a number, got '$2'" >&2; exit 2; }; }
+isint() { [[ "$2" =~ ^[0-9]+$ ]] || { echo "error: $1 expects a non-negative integer, got '$2'" >&2; exit 2; }; }
+jesc() { local s=${1//\\/\\\\}; s=${s//\"/\\\"}; printf '%s' "$s"; }   # JSON string body
+isint --fps "$FPS"; isint --crf "$CRF"; isint --max-height "$MAXH"
+[[ "$PRESET" =~ ^[a-z]+$ ]] || { echo "error: --preset expects an x264 preset name" >&2; exit 2; }
+[ "$FPS" -ge 1 ] && [ "$MAXH" -ge 4 ] || { echo "error: --fps >= 1 and --max-height >= 4" >&2; exit 2; }
 FF_NEEDS="format split alphaextract premultiply vstack pad scale libx264"
 # shellcheck source=ffenv.sh
 source "$HERE/ffenv.sh" || exit 2
@@ -52,10 +59,10 @@ if [ -d "$SRC" ]; then
   B=$(basename "$FIRST" .png)
   DIG=$(grep -oE '[0-9]+$' <<<"$B") || { echo "error: $FIRST has no frame number" >&2; exit 2; }
   PAT="$SRC/${B%"$DIG"}%0${#DIG}d.png"; START=$((10#$DIG))
-  INPUTS=$(find "$SRC" -maxdepth 1 -name '*.png' | sort)
+  mapfile -t INPUTS < <(find "$SRC" -maxdepth 1 -name '*.png' | sort)   # an array: paths may contain spaces
 else
   PAT=$SRC; START=$(ls $(dirname "$SRC") 2>/dev/null | grep -oE '[0-9]+\.png$' | sort -n | head -1 | cut -d. -f1); START=$((10#${START:-1}))
-  INPUTS=""
+  INPUTS=()
 fi
 QA_DIR=${QA_DIR:-$REPO/build/qa/video/$(basename "$OUT" .mp4)}
 mkdir -p "$(dirname "$OUT")" "$QA_DIR"
@@ -82,10 +89,9 @@ if [ "$VERIFY" = 1 ]; then
   PY=${PIPELINE_PY:-$REPO/tools/.venv/bin/python}; [ -x "$PY" ] || PY=python3
   FFMPEG="$FF" "$PY" "$HERE/stacked_check.py" "$PAT" "$START" "$OUT" --report "$QA_DIR/qa.json" || PASSED=false
 else
-  printf '{"tool":"tools/video/stacked_alpha.sh","out":"%s","verified":false,"passed":true}\n' "$OUT" >"$QA_DIR/qa.json"
+  printf '{"tool":"tools/video/stacked_alpha.sh","out":"%s","verified":false,"passed":true}\n' "$(jesc "$OUT")" >"$QA_DIR/qa.json"
 fi
-# shellcheck disable=SC2086
-python3 "$HERE/record.py" --path "$OUT" --stage video --model tools/video/stacked_alpha.sh --inputs $INPUTS \
+python3 "$HERE/record.py" --path "$OUT" --stage video --model tools/video/stacked_alpha.sh --inputs "${INPUTS[@]}" \
   --sidecar "$QA_DIR/manifest.json" --manifest "$MANIFEST" --kind stacked --qa-json "$QA_DIR/qa.json" \
   --notes "stacked alpha (premultiplied top, alpha bottom), source ${W}x${H}, stacked height cap $MAXH, $FPS fps, crf $CRF" "${PARENT[@]}" "${LIC[@]}" "${SHIP[@]}" >/dev/null
 echo "$OUT (qa: $QA_DIR/qa.json)"

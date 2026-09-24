@@ -22,7 +22,7 @@ import json
 import math
 import os
 import random
-import shutil
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -121,6 +121,15 @@ def resolve(args, log) -> dict:
     sym = args.sym or (info["id"] if info else None) or args.glyph
     if not sym:
         raise cli.ToolError("name the subject with --sym, --glyph, --proc or --mesh")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", sym):
+        # sym names the output folders (build/frames/<SYM>_<clip>): no separators or dots
+        raise cli.ToolError(f"--sym {sym!r} must be a plain id ([A-Za-z0-9_-]), e.g. L2, W, coin")
+    if args.frames is not None and args.frames < 1:
+        raise cli.ToolError("--frames must be >= 1")
+    if args.size < 8 or args.ss < 1:
+        raise cli.ToolError("--size must be >= 8 and --ss >= 1")
+    if args.static and not cli.repo_path(args.static).is_file():
+        raise cli.ToolError(f"--static not found: {args.static}")
     subject = "mesh" if args.mesh else "proc" if args.proc else "glyph"
     glyph = args.glyph
     if subject == "glyph" and not glyph:
@@ -578,9 +587,8 @@ def main(argv):
     S.configure_render(scene, engine, res, args.samples, threads=args.threads, seed=0)
 
     work = plan["work"]
-    if work.exists():
-        shutil.rmtree(work)
-    work.mkdir(parents=True)
+    cli.clear_work_dir(work)              # only our own raw_/qa_/meta files, never the folder
+    work.mkdir(parents=True, exist_ok=True)
     rest_path = None
     chunks = []
     convex = bool(obj.get("convex", False))

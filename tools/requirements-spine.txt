@@ -1,8 +1,12 @@
 # tools/spine (gen.py, pack.py, make_blur.py, tests). Python >= 3.11.
-#   python -m venv .venv-spine && .venv-spine/bin/pip install -r tools/requirements-spine.txt
+#   python3 -m venv tools/.venv && tools/.venv/bin/pip install -r tools/requirements-spine.txt
+# A strict subset of tools/requirements.txt with the SAME pins, so both files can share
+# tools/.venv (gitignored) without conflicts; bump them together. Outputs (skeleton JSON,
+# atlas pages, blur PNGs) were checked byte-identical on these pins and on the previous ones
+# (numpy 2.2.6, pillow 11.3.0, PyYAML 6.0.2).
 # Licences: allowlist entry "python-geometry" (shapely) + PIL/numpy/PyYAML (MIT-CMU / BSD / MIT).
 # Never add PyPI "triangle" (licenses/denylist.json: pypi-triangle).
-PyYAML==6.0.2
-numpy==2.2.6
-pillow==11.3.0
+PyYAML==6.0.3
+numpy==2.4.6
+pillow==12.3.0
 shapely==2.1.2

@@ -12,3 +12,8 @@ tools/.venv/
 screenshots/
 __pycache__/
 *.local.ts
+# generated pipeline outputs (frames, spine JSON, audio wavs)
+build/
+# python virtualenvs for tools
+.venv*/
+tools/.venv-*/

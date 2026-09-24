@@ -23,12 +23,13 @@ tools/blender/run.sh <x> <args>          # picks $BLENDER if set, else $BPY_PYTH
 | `render_symbol.py` | Toon-shaded, outlined, alpha PNG sequences: `turn`, `spin`, `shatter`, `land`, `static`. Subject: royal glyph (Text object with the bundled font), procedural `coin`/`gem`, or any GLB/OBJ/FBX prop | `build/frames/<SYM>_<clip>/<SYM>_<clip>_0001.png…`, `build/qa/blender/<SYM>_<clip>/{sheet.png,qa.json,anim.json,manifest.json,qa_*.png}` |
 | `frames_post.py` | Lanczos-down in premultiplied alpha, QA gates, contact sheet, `anim.json`, manifest row. Called by render_symbol | (as above) |
 | `build_actions.py` | Animation JSON → slotted Actions on the armature and shape keys, then `.blend` and GLB | `--out-blend`, `--export-glb`, `<glb>.report.json`, `<glb>.manifest.json` |
-| `export_glb.py` | GLB export with the fixed settings of PIPELINE §4.4; optional action filter; Rigify `DEF-*` or explicit bone renames | `<out>.glb`, `<out>.export.json`, `<out>.manifest.json` |
+| `export_glb.py` | GLB export with the fixed settings of PIPELINE §4.4; optional action filter; Rigify `DEF-*` or explicit bone renames (collision-safe, see below) | `<out>.glb`, `<out>.export.json`, `<out>.manifest.json` |
 | `cleanup_mascot.py` | Vendor mesh → weld, clear custom normals, smooth by angle, feet at the origin, facing −Y, height; decimate or QuadriFlow; 4–8 flat toon colours on one palette material; budget report | `<out>.glb`, `<out>.report.json`, `<out>.manifest.json`, optional `.blend` |
 | `turntable.py` | 8-angle toon turntable, or a contact sheet of an action, in the runtime mascot look | `<out>/<name>_turntable{.png,_aNNN.png,.json}` / `<name>_<action>{.png,_fNNNN.png,.json}` |
 | `sheet_post.py` | Pure-Python post step for turntable.py | — |
 | `tests/run_tests.sh` | End-to-end verification (units, every script, gates, determinism, optimize) | `art/_work/test_run/` |
 | `tests/make_fixtures.py` | Deterministic stand-ins for vendor output (dense textured blob, textured jar) | `art/_work/fixtures/` |
+| `tests/make_rigify_fixture.py` | A generated Rigify rig (basic human) with a skinned block, for the `--rigify-names` test | `art/_work/fixtures/rigify_rig.blend` |
 | `tests/sim_blender.py` | Runs a script with Blender's argv layout and Pillow hidden, as inside the Blender binary | — |
 | `tests/compare_frames.py` | Two frame folders: bit-exact, or within tolerance (reported) | — |
 
@@ -48,7 +49,7 @@ python tools/blender/render_symbol.py --glyph K --clip static
 python tools/blender/render_symbol.py --glyph K --clip turn --static build/frames/L2_static/L2_static_0001.png
 ```
 
-**Names.** Outputs use the game id (`--glyph K` resolves to `L2` through `art/bible/artbible.json`), so frames are `build/frames/L2_turn/L2_turn_0001.png`. The frame folder holds frames only: it is one AssetPack `{tps}` folder. Sidecars go to `build/qa/blender/<SYM>_<clip>/`, and supersampled raws to `art/_work/blender/raw/` (deleted after post unless `--keep-raw`).
+**Names.** `--sym` must be a plain id (`[A-Za-z0-9_-]`): it names the output folders. Outputs use the game id (`--glyph K` resolves to `L2` through `art/bible/artbible.json`), so frames are `build/frames/L2_turn/L2_turn_0001.png`. The frame folder holds frames only: it is one AssetPack `{tps}` folder. Sidecars go to `build/qa/blender/<SYM>_<clip>/`, and supersampled raws to `art/_work/blender/raw/` (deleted after post unless `--keep-raw`). Only the render's own scratch files (`raw_*.png`, `qa_*.png`, `meta.json`) are ever deleted from `--work`; the folder itself is removed only when it ends up empty.
 
 **Look.** One shared template for every symbol:
 - **Light:** the key light is fixed in camera space, using `TOON.keyDir` from `src/mascots/toon.ts` (top-left, slightly in front).
@@ -182,6 +183,12 @@ python tools/blender/turntable.py art/_work/mascots/gumbo/raw.glb --action celeb
   1. Every action gets constant keys for the bones it leaves unkeyed. They take the glTF **node default pose**, recovered from the node matrices and inverseBindMatrices. Blender's exporter otherwise resets them to the bind pose, which collapsed the placeholder's clips.
   2. Meshes rigidly parented to bones are converted to 100 %-weight skinned meshes. Blender's glTF IO misplaced them by up to 0.65 m.
   - Verified: after a cleanup round-trip, the placeholder's `Wave` matches the original within ~2 cm on a 4 m rig.
+- **Bone renames** (`--rigify-names`, `--rename-map`): a generated Rigify rig already has **control** bones called `hips`, `chest`, `neck`, `head`, `torso`, `jaw`, `chin`, `nose`, `tongue`. Renaming `DEF-spine` to `hips` next to them would silently become `hips.001` (three.js sanitises that to `hips001`, which `src/mascots/procedural.ts` never finds). The renamer therefore:
+  - moves a non-deform bone that holds a target name aside to `<name>_ctrl` (it is not exported);
+  - fails on a deform bone that holds a target name, or on two bones mapped to one name;
+  - renames through temporary names (swaps and chains work), then checks every final name exactly;
+  - warns when `--rigify-names` leaves any of `hips`, `spine`, `chest`, `neck`, `head` missing.
+  Blender updates vertex groups, constraints and action F-curve paths on each rename. `--armature` must name an armature; renames with zero or several armatures and no `--armature` are an error.
 - **Export settings** (`slotbl.scene.GLTF_EXPORT_SETTINGS`): `export_animation_mode='ACTIONS'`, `export_morph=True`, `export_def_bones=True`, `export_apply=False`, `export_skins=True`, `export_influence_nb=4`, forced sampling, reset pose bones.
 
 ## cleanup_mascot.py and turntable.py: mesh bake-off (PIPELINE §4.1–4.2)
@@ -200,7 +207,7 @@ python tools/blender/cleanup_mascot.py art/_work/mascots/gumbo/cand_tripo.glb --
 - **Output:** one `toon_palette` material with an 8 px-per-colour texture (Closest filtering → glTF NEAREST, UVs at cell centres), or `--palette-mode vertex` (COLOR_0; the runtime `toonify` enables vertexColors).
 
 **Geometry:**
-- `--relax 2` Laplacian passes after decimation remove the normal noise that toon ramps turn into band speckles.
+- `--relax 2` Laplacian passes after decimation remove the normal noise that toon ramps turn into band speckles. They run **only on meshes that were reduced**: on an untouched low-poly or hard-surface part the relax only shrinks it (it flattened the placeholder robot's feet and rounded its arms).
 - Rigged inputs keep their rig: only a root transform is set, and the round-trip prep above is applied.
 - Meshes with shape keys are not decimated. Blender cannot apply Decimate to them; the tool warns.
 
@@ -219,15 +226,16 @@ Options: `--recolor 'Main=#3F9D3A,…'` for untextured placeholders; `--pose ACT
 ## Verified here (2026-09-24, bpy 5.2.2 module, 4 shared vCPUs, no GPU)
 
 `tools/blender/tests/run_tests.sh` covers the following, with outputs in `art/_work/test_run/`:
-- **Unit tests** (15).
+- **Unit tests** (17).
 - **`--help`** for every script, in both invocation styles.
 - **Symbol renders:** the K turn at 256 px × 24 f, coin spin, A shatter, Q land, gem turn, and the K static with the frame-1 gate.
 - **An expected gate failure (exit 3).**
 - **The Blender-binary argv path**, with Pillow hidden.
 - **Determinism and idempotency:** frame-by-frame comparison of re-renders (K turn bit-exact, coin within tolerance), and an unchanged manifest row after an in-place re-run.
-- **Animation:** build_actions, then export, then the clip sheet, then the action-filtered and renamed export.
+- **Animation:** build_actions, then export, then the clip sheet, then the action-filtered and renamed export; `--rigify-names` on a freshly generated Rigify rig must give exact `hips/spine/chest/neck/head` joints (no `.001`).
+- **Safety:** a path-like `--sym` is refused; a `--work` folder with foreign files keeps them.
 - **Cleanup:** fixture and rigged placeholder cleanup, with turntables.
-- **glTF:** optimize on the placeholder, the exported and the cleaned GLBs, two expected budget breaches, and optimize determinism.
+- **glTF:** optimize on the placeholder, the exported and the cleaned GLBs, two expected budget breaches, a failing `gltf-transform optimize` (exit 1, the previous output is not re-validated), and optimize determinism.
 - **Manifest:** schema validation of every sidecar row.
 
 Timing: Cycles CPU emission toon renders a 512 px (256×2) frame in ≈ 0.3–0.5 s. EEVEE on llvmpipe (no GPU) needs ≈ 15 s for its first frame (shader compile).

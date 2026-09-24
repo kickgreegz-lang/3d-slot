@@ -72,6 +72,8 @@
     "anticipationIntroMs": 300,
     "anticipationOutroMs": 250,
     "dimTint": "7f7f7f",
-    "runtimeKick": 26
+    "runtimeKick": 26,
+    "$runtimeKickMax": "validator default: SYMBOL_TIMING.spine.physicsImpulse 26 x the largest land multiplier m = 1 + (1.6 * 1.15 - 1) * 0.45 = 1.378 (TIMING.land.weight.special x maxVelocityFactor, squashKnee), see SymbolRig.land",
+    "runtimeKickMax": 36
   }
 }

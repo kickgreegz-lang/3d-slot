@@ -54,6 +54,15 @@ while [ $# -gt 0 ]; do
 done
 [ -f "$IN" ] || { echo "error: input not found: $IN" >&2; exit 2; }
 [[ "$MODE" =~ ^(music|loop|sfx)$ ]] || { echo "error: --mode music|loop|sfx" >&2; exit 2; }
+# numeric options go into ffmpeg filter graphs, bash arithmetic and qa.json: validate them up front
+isnum() { [[ "$2" =~ ^-?[0-9]+([.][0-9]+)?$ ]] || { echo "error: $1 expects a number, got '$2'" >&2; exit 2; }; }
+isint() { [[ "$2" =~ ^[0-9]+$ ]] || { echo "error: $1 expects a non-negative integer, got '$2'" >&2; exit 2; }; }
+jesc() { local s=${1//\\/\\\\}; s=${s//\"/\\\"}; printf '%s' "$s"; }   # JSON string body
+isnum --lufs "$LUFS"; isnum --tp "$TP"; isnum --lra "$LRA"; isnum --peak "$PEAK"; isnum --trim-db "$TRIM_DB"
+[ -z "$SFX_LUFS" ] || isnum --sfx-lufs "$SFX_LUFS"
+isint --crossfade-ms "$XF_MS"; isint --fade-out-ms "$FO_MS"; isint --opus-kbps "$OPUS"; isint --aac-kbps "$AAC"; isnum --vorbis-q "$VQ"
+[[ "$CH" =~ ^(keep|1|2)$ ]] || { echo "error: --channels keep|1|2" >&2; exit 2; }
+[[ "$FORMATS" =~ ^(webm|m4a|ogg)(,(webm|m4a|ogg))*$ ]] || { echo "error: --formats: comma list of webm,m4a,ogg" >&2; exit 2; }
 FF_NEEDS="loudnorm ebur128 silenceremove areverse afade acrossfade alimiter volume atrim amix concat aresample libopus aac libvorbis"
 # shellcheck source=../video/ffenv.sh
 source "$REPO/tools/video/ffenv.sh" || exit 2
@@ -164,7 +173,7 @@ done
 
 # 4) QA every output (decoded back) + provenance
 printf '%s' "$EXTRA" >"$TMP/extra.json"
-QA_ARGS=(--mode "$MODE" --lufs "$LUFS" --tp "$TP" --peak "$PEAK" --report "$QA_DIR/qa.json" --extra "$TMP/extra.json")
+QA_ARGS=(--mode "$MODE" --lufs "$LUFS" --tp "$TP" --peak "$PEAK" --report "$QA_DIR/qa.json" --extra "$TMP/extra.json" --master "$TMP/n.wav")
 [ -n "$SFX_LUFS" ] && QA_ARGS+=(--lufs-sfx "$SFX_LUFS")
 [ "$AAC_ALIGN" = 0 ] && QA_ARGS+=(--no-seam-ext m4a)
 PASSED=1

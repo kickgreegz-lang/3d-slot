@@ -9,9 +9,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   GenError, RAW_ROOT, allocate, buildValues, defaultAsset, fingerprint, gate, parseArgs, parseVars, render,
-  splitTemplateRef,
+  splitTemplateRef, templatePath,
 } from './lib/genlib.mjs';
-import { MANIFEST, REPO, makeRow, nowIso, record, rel, safeId, sha256File } from './lib/provenance.mjs';
+import { MANIFEST, REPO, isMain, makeRow, nowIso, record, rel, safeId, sha256File } from './lib/provenance.mjs';
 
 const TOOL = 'tools/gen/higgsfield.mjs';
 
@@ -37,7 +37,8 @@ Output / provenance:
   --plan-tier S         e.g. "Higgsfield Ultra"   --max-credits N   abort if the cost preview is higher
   --force-new           new vNN even when the identical request already produced output
   --no-cost-preview     skip 'higgsfield generate cost'
-  --bin PATH            higgsfield executable (default: $HIGGSFIELD_BIN or 'higgsfield')
+  --bin PATH            higgsfield executable (default: $HIGGSFIELD_BIN or 'higgsfield'); result URLs must be
+                        http(s) (file:// only with HIGGSFIELD_ALLOW_FILE_URLS=1, for the offline test double)
   --snapshot-models     save 'higgsfield model list --json' to art/_raw/_meta/higgsfield-models-<date>.json and exit
   --dry-run             print the exact CLI calls, target folder and gate result; write nothing
 Exit codes: 0 ok/skipped, 2 usage, 3 licence refusal, 4 cost cap, 5 vendor failure, 6 download failure.`;
@@ -181,10 +182,15 @@ async function download(url, destNoExt) {
   let buf;
   let type = '';
   if (url.startsWith('file://')) {
+    // only the offline test double answers with local files; a vendor response must not make the
+    // wrapper copy arbitrary local files into art/_raw
+    if (process.env.HIGGSFIELD_ALLOW_FILE_URLS !== '1') throw new GenError(`refusing non-HTTP result URL ${url}`, 6);
     const p = fileURLToPath(url);
+    if (!fs.existsSync(p)) throw new GenError(`download failed for ${url}: no such file`, 6);
     buf = fs.readFileSync(p);
     type = Object.entries(EXT).find(([, e]) => p.toLowerCase().endsWith(e))?.[0] ?? '';
   } else {
+    if (!/^https?:\/\//i.test(url)) throw new GenError(`refusing result URL ${url} (http/https only)`, 6);
     let last;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
@@ -217,6 +223,7 @@ async function main(argv) {
     return 0;
   }
   if (!a.template) throw new GenError('--template is required (see --help)');
+  if (a['no-cost-preview'] && a['max-credits'] !== undefined) throw new GenError('--max-credits needs the cost preview: drop --no-cost-preview');
   // 1) licence gate before anything else
   const g = gate('higgsfield-cli', a.model);
   // 2) prompt
@@ -258,31 +265,57 @@ async function main(argv) {
   const cliVersion = (verOut.stdout || '').trim().split('\n')[0] || 'unknown';
   writeArgs(cliVersion);
 
+  // resume: a previous run of this exact request finished the (paid) job but failed while
+  // downloading: re-download its results instead of generating (and paying) again
+  let job = null;
   let credits = null;
-  if (!a['no-cost-preview']) {
-    const c = runCli(bin, costArgs);
-    credits = creditsOf(parseJsonOut(c.stdout));
-    fs.writeFileSync(path.join(dir, 'cost.json'), c.stdout);
-    console.error(`cost preview: ${credits ?? '?'} credits`);
-    if (a['max-credits'] !== undefined && credits !== null && credits > a['max-credits']) {
-      throw new GenError(`cost ${credits} credits exceeds --max-credits ${a['max-credits']}`, 4);
-    }
+  const jobFile = path.join(dir, 'job.json');
+  if (state === 'resume' && fs.existsSync(jobFile)) {
+    try {
+      const prev = parseJsonOut(fs.readFileSync(jobFile, 'utf8'));
+      resultsOf(prev);
+      job = prev;
+      if (fs.existsSync(path.join(dir, 'cost.json'))) credits = creditsOf(parseJsonOut(fs.readFileSync(path.join(dir, 'cost.json'), 'utf8')));
+      console.error(`resuming ${rel(dir)}: re-downloading the finished job's results (no new generation)`);
+    } catch { job = null; /* failed or unreadable job: generate again */ }
   }
-  const run = runCli(bin, createArgs);
-  fs.writeFileSync(path.join(dir, 'job.json'), run.stdout);
-  const job = parseJsonOut(run.stdout);
+  if (!job) {
+    if (!a['no-cost-preview']) {
+      const c = runCli(bin, costArgs);
+      credits = creditsOf(parseJsonOut(c.stdout));
+      fs.writeFileSync(path.join(dir, 'cost.json'), c.stdout);
+      console.error(`cost preview: ${credits ?? '?'} credits`);
+      if (a['max-credits'] !== undefined && credits === null) {
+        // fail closed: an unparseable preview must not bypass the spending cap
+        throw new GenError(`--max-credits ${a['max-credits']} set but the cost preview had no credit figure (see ${rel(path.join(dir, 'cost.json'))})`, 4);
+      }
+      if (a['max-credits'] !== undefined && credits > a['max-credits']) {
+        throw new GenError(`cost ${credits} credits exceeds --max-credits ${a['max-credits']}`, 4);
+      }
+    }
+    const run = runCli(bin, createArgs);
+    fs.writeFileSync(jobFile, run.stdout);
+    job = parseJsonOut(run.stdout);
+  }
   const { jobId, urls } = resultsOf(job);
   credits = creditsOf(job) ?? credits;
 
   const rows = [];
   const vtag = path.basename(dir);
-  for (let i = 0; i < urls.length; i++) {
-    const out = await download(urls[i], path.join(dir, i === 0 ? 'raw' : `raw_${i + 1}`));
+  const parts = [];
+  for (let i = 0; i < urls.length; i++) parts.push(await download(urls[i], path.join(dir, `.part_${i + 1}`)));
+  const outs = parts.map((p, i) => {
+    const out = path.join(dir, `${i === 0 ? 'raw' : `raw_${i + 1}`}${path.extname(p)}`);
+    fs.renameSync(p, out);
+    return out;
+  });
+  for (let i = 0; i < outs.length; i++) {
+    const out = outs[i];
     rows.push(makeRow({
       id: safeId(asset, 'raw', vtag, i ? String(i + 1) : ''),
       path: rel(out), stage: a.stage ?? (model.kind === 'image' ? '2d-image' : 'video'), route: 'higgsfield-cli',
       vendor: 'Higgsfield', model: a.model, version: cliVersion, seed: null, jobId,
-      promptPath: rel(path.join(dir, 'prompt.txt')), promptHash, template: `art/bible/prompts/${a.template}`,
+      promptPath: rel(path.join(dir, 'prompt.txt')), promptHash, template: templatePath(a.template),
       refHashes, parents: [], planTier: a['plan-tier'] ?? null, tosVersion: g.tosVersion, licenseId: g.licenseId,
       cost: { amount: i === 0 ? credits ?? 0 : 0, currency: 'credits', unit: 'Higgsfield credits', estimated: true },
       sha256: sha256File(out), notes: `upstream: ${model.upstream}; audio off; ${urls.length} output(s)`,
@@ -294,7 +327,7 @@ async function main(argv) {
   return 0;
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMain(import.meta.url)) {
   main(process.argv.slice(2)).then((code) => process.exit(code), (e) => {
     console.error(`error: ${e.message}`);
     process.exit(e instanceof GenError ? e.code : 1);

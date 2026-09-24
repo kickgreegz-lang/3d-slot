@@ -19,6 +19,7 @@ optimize --compress meshopt --texture-compress webp --texture-size 1024 --join f
   - `palette` is off, so material names survive: the placeholder recolours by material name.
   - The runtime already registers the bundled `MeshoptDecoder` (`src/mascots/Mascots.ts`). three's GLTFLoader reads `EXT_texture_webp` natively.
 - **KTX2 is opt-in:** `--texture-compress ktx2 --allow-ktx2`. The Basis transcoder's default location is a CDN, which Stake's no-external-request rule forbids, so the runtime must self-host it first.
+- **Failure safety:** optimize writes to a temporary file and moves it over `<out.glb>` only when `gltf-transform optimize` exits 0, so a failed run never validates or ships a stale output (exit 1).
 - **After optimising:**
   - `gltf-transform validate`: exit 2 on validator errors.
   - `gltf-transform inspect`: reports go to `--report-dir` (default `build/qa/gltf/<stem>/`).
@@ -37,7 +38,8 @@ optimize --compress meshopt --texture-compress webp --texture-size 1024 --join f
 | `KHR_texture_basisu` | fails unless `--allow-ktx2`; KTX2 sizes must be multiples of 4 |
 | Draco | fails (the runtime ships no Draco decoder) |
 | draw calls (primitive instances) | info by default; `--max-draw-calls N` gates |
-| `--mascot` | the 8 canonical clips of ANIMATION_CONTRACT §7.2, morphs `surprised` + `angry`, ≤ 2 draw calls |
+| skin influences | fails on `JOINTS_1`/`WEIGHTS_1` (more than 4 weights per vertex, ANIMATION_CONTRACT §7.6) |
+| `--mascot` | the 8 canonical clips of ANIMATION_CONTRACT §7.2, morphs `surprised` + `angry` (fail) and `blink_L`, `blink_R`, `smile`, `frown` (warn), ≤ 2 draw calls |
 | `--require-clips` / `--require-morphs` | case-insensitive, like the runtime |
 
 Exit codes: 0 pass · 3 breach · 1 error.

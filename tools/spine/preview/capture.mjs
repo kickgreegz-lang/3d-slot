@@ -12,9 +12,9 @@
  * Scenarios: land = runtime-like reel stop (blur while falling, inheritance off; at contact
  * setPositionInheritance(0, 0.6) + physicsTranslate(0, kick) + land -> idle, ANIMATION_CONTRACT 5);
  * win = win -> win_loop; others play once (loops twice). --kick is in runtime y-down units
- * (contract research sign: -impact * 0.006 ~ -27; the current runtime uses +26).
+ * (contract research value: -impact * 0.006 ~ -27; the runtime's SpineRig.impact uses -26 * squash).
  * Output: <out>/<scenario>/f_###.png, <out>/<scenario>.png (sheet), <out>/trace.json.
- * Exit 1 on page errors, missing animations or a failed load.
+ * Exit 1 on page errors, missing animations or a failed load; 2 on bad arguments or missing files.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -37,6 +37,16 @@ const size = Number(args.size ?? 420);
 const tile = Number(args.tile ?? 224);
 const kick = Number(args.kick ?? -27);
 const scenarios = (args.scenarios ?? 'land,win,explode,idle,anticipation').split(',').filter(Boolean);
+for (const [name, v] of [['size', size], ['tile', tile], ['kick', kick]]) {
+  if (!Number.isFinite(v) || (name !== 'kick' && v <= 0)) {
+    console.error(`capture: --${name} must be a number`);
+    process.exit(2);
+  }
+}
+if (!fs.existsSync(skel) || !fs.existsSync(atlas)) {
+  console.error(`capture: not found: ${!fs.existsSync(skel) ? skel : atlas}`);
+  process.exit(2);
+}
 
 // serve the repo, plus the directories of skel/atlas when they live outside it
 const extraRoots = {};

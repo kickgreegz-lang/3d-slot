@@ -55,7 +55,7 @@ def main(argv=None) -> int:
     if a.qa_json:
         rep = json.loads(Path(a.qa_json).read_text(encoding="utf-8"))
         qa = {"passed": bool(rep.get("passed", False)), "report": prov.rel(a.qa_json)}
-    lic = a.license_id or prov.inherit_license(a.parent_id, default="ffmpeg")
+    lic = a.license_id or prov.inherit_license(a.parent_id, manifest=prov.lookup_manifest(a.manifest), default="ffmpeg")
     rows = []
     for p, digest in digests:
         kind = p.suffix.lstrip(".") if a.kind == "ext" else a.kind

@@ -87,6 +87,9 @@ class Api:
 
     @staticmethod
     def fetch(url: str) -> tuple[bytes, str]:
+        # urllib also opens file:// and ftp:// URLs: a vendor-supplied asset URL must be http(s)
+        if urllib.parse.urlsplit(url).scheme not in ("http", "https"):
+            raise genlib.GenError(f"refusing asset URL {url[:200]} (http/https only)", 5)
         with urllib.request.urlopen(url, timeout=300) as r:
             return r.read(), (r.headers.get("Content-Type") or "").split(";")[0].strip()
 
@@ -196,7 +199,11 @@ def run(a) -> int:
     if a.price:
         print(json.dumps({"creativeUnitsCost": cu, "response": preview}, indent=2))
         return 0
-    if a.max_cu is not None and cu is not None and cu > a.max_cu:
+    if a.max_cu is not None and cu is None:
+        # fail closed: an unparseable preview must not bypass the spending cap
+        raise genlib.GenError(f"--max-cu {a.max_cu} set but the cost preview had no CU figure: "
+                              f"{json.dumps(preview)[:300]}", 4)
+    if a.max_cu is not None and cu > a.max_cu:
         raise genlib.GenError(f"cost {cu} CU exceeds --max-cu {a.max_cu}", 4)
     job.prepare({"apiBase": a.api_base, "seed": seed, "costPreviewCU": cu})
     if refs:
@@ -246,7 +253,7 @@ def run(a) -> int:
         rows.append(job.row(
             out, i, stage=a.stage, route=ROUTE, vendor="Scenario", model=a.model_id,
             version=f"base={a.base}; {a.lora_version}".strip("; "), seed=seed, job_id=job_id, prompt_hash=phash,
-            template=f"art/bible/prompts/{a.template}", ref_hashes=ref_hashes, parents=[],
+            template=genlib.template_path(a.template), ref_hashes=ref_hashes, parents=[],
             plan_tier=a.plan_tier, tos_version=gate["tosVersion"], license_id=gate["licenseId"],
             cost={"amount": (cu or 0) if i == 0 else 0, "currency": "credits", "unit": "Scenario CU", "estimated": cu is None},
             notes=f"scenario asset {aid}; LoRA base {a.base} (Apache-2.0)"))

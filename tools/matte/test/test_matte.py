@@ -178,6 +178,26 @@ class MatteTests(unittest.TestCase):
                 "--qa-dir", WORK / "qa_flat")
         self.assertEqual(r.returncode, 2)
 
+    def test_rembg_wrapper_licence_guard(self):
+        # rembg's default model (bria-rmbg, CC BY-NC) and non-allowlisted models are refused before rembg
+        # runs; allowed models always get an explicit -m plus -dc (checked with a fake rembg on PATH)
+        import os
+        fake_bin = WORK / "fakebin"
+        fake_bin.mkdir(parents=True, exist_ok=True)
+        log = WORK / "rembg_argv.txt"
+        (fake_bin / "rembg").write_text(f'#!/bin/sh\necho "$@" > "{log}"\ncp "$5" "$6"\n')
+        (fake_bin / "rembg").chmod(0o755)
+        env = {**os.environ, "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}
+        sh = str(MATTE / "rembg_matte.sh")
+        src = WORK / "green_warm" / "art.png"
+        for model in ("bria-rmbg", "u2net", "isnet-anime", "", "birefnet-general;id"):
+            r = subprocess.run([sh, model, str(src), str(WORK / "rembg_out.png")], capture_output=True, text=True, env=env)
+            self.assertEqual(r.returncode, 3, (model, r.stderr))
+        self.assertFalse(log.exists())
+        r = subprocess.run([sh, "birefnet-general", str(src), str(WORK / "rembg_out.png")], capture_output=True, text=True, env=env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(log.read_text().split()[:4], ["i", "-m", "birefnet-general", "-dc"])
+
     def test_alpha_from_external_matte(self):
         d = WORK / "magenta_teal_slop"
         ext = WORK / "external_rgba.png"

@@ -3,6 +3,7 @@
 // answers `version`, `generate cost`, `generate create ... --wait --json`, `model list --json`
 // with the JSON shapes documented for @higgsfield/cli 1.1.x (id + result_url).
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import zlib from 'node:zlib';
@@ -32,14 +33,23 @@ function png(r, g, b) {
 const [cmd, sub, model] = argv;
 if (cmd === 'version') { console.log('higgsfield 1.1.26 (fake)'); process.exit(0); }
 if (cmd === 'model' && sub === 'list') { console.log(JSON.stringify([{ id: 'nano_banana_2', name: 'Nano Banana Pro' }])); process.exit(0); }
-if (cmd === 'generate' && sub === 'cost') { console.log(JSON.stringify({ model, credits: 12 })); process.exit(0); }
+if (cmd === 'generate' && sub === 'cost') {
+  // FAKE_HF_COST_UNKNOWN: a response without any recognised credit field (the wrapper must fail closed)
+  console.log(JSON.stringify(process.env.FAKE_HF_COST_UNKNOWN ? { model, estimate: 'twelve' } : { model, credits: 12 }));
+  process.exit(0);
+}
 if (cmd === 'generate' && sub === 'create') {
   if (!argv.includes('--wait') || !argv.includes('--json')) { console.error('fake: expected --wait --json'); process.exit(9); }
   if (process.env.FAKE_HF_FAIL) { console.log(JSON.stringify({ id: 'job-fail', status: 'failed' })); process.exit(0); }
-  const dir = process.env.FAKE_HF_OUT ?? fs.mkdtempSync('/tmp/fakehf-');
+  const dir = process.env.FAKE_HF_OUT ?? fs.mkdtempSync(path.join(os.tmpdir(), 'fakehf-'));
   fs.mkdirSync(dir, { recursive: true });
   const out = path.join(dir, `result_${model}.png`);
   fs.writeFileSync(out, png(0, 255, 0));
+  if (process.env.FAKE_HF_TWO) {
+    // two results; the second file does not exist yet (a download that fails until the test creates it)
+    console.log(JSON.stringify({ id: 'job-0002', status: 'completed', result_urls: [pathToFileURL(out).href, pathToFileURL(path.join(dir, 'second.png')).href] }));
+    process.exit(0);
+  }
   console.log(JSON.stringify({ id: 'job-0001', status: 'completed', job_set_type: model, result_url: pathToFileURL(out).href }));
   process.exit(0);
 }

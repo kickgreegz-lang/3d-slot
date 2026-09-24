@@ -22,7 +22,7 @@ while [ $# -gt 0 ]; do
     --quick) QUICK=1; shift ;;
     --out) OUT="$2"; shift 2 ;;
     --shots) SHOTS="$2"; shift 2 ;;
-    -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown option $1" >&2; exit 1 ;;
   esac
 done
@@ -75,6 +75,12 @@ run 3 "gate failure: Q counter closed by a full-width hull" $R --glyph Q --clip 
   --out $OUT/frames/L3_bleed --qa-dir $OUT/qa/L3_bleed --work $OUT/raw/L3_bleed
 run 0 "blender-binary argv + no Pillow (subprocess post)" "$PY" $TB/tests/sim_blender.py $TB/render_symbol.py -- \
   --glyph J --clip static --size 128 --samples 4 --out $OUT/frames/L4_static --qa-dir $OUT/qa/L4_static --work $OUT/raw/L4_static
+run 1 "path-like --sym is refused" $R --sym ../escape --glyph K --clip static --dry-run
+# --work must only lose the render's own scratch files, never unrelated content
+mkdir -p $OUT/raw/L4_keep && echo keep > $OUT/raw/L4_keep/keep.txt
+run 0 "render into a --work folder with foreign files" $R --glyph J --clip static --size 128 --samples 4 \
+  --out $OUT/frames/L4_keep --qa-dir $OUT/qa/L4_keep --work $OUT/raw/L4_keep
+run 0 "foreign file in --work survived" test -f $OUT/raw/L4_keep/keep.txt
 # determinism: an identical re-render into a second folder must match frame by frame
 run 0 "coin spin re-render (determinism)" $R --sym coin --proc coin --clip spin --size $SIZE --frames $FRAMES \
   --out $OUT/frames/coin_spin_b --qa-dir $OUT/qa/coin_spin_b --work $OUT/raw/coin_spin_b
@@ -103,6 +109,15 @@ run 0 "exported GLB has clip/morph/renamed bones" node tools/gltf/budget.mjs $OU
 run 0 "renamed joints present" "$POST" -c "import json,sys; d=json.load(open('$OUT/anim/robot_celebrate_only.export.json')); \
 sys.exit(0 if {'head','neck'} <= set(d['jointNames']) and d['animations']==['celebrate_test'] else 1)"
 
+# Rigify rename: a generated Rigify rig has control bones called hips/chest/neck/head, so the
+# DEF-* -> runtime renames must not end up as 'hips.001' (three.js: 'hips001', never found)
+run 0 "Rigify fixture (generated rig)" "$PY" $TB/tests/make_rigify_fixture.py --out $OUT/fixtures/rigify_rig.blend
+run 0 "export_glb --rigify-names on a generated Rigify rig" "$PY" $TB/export_glb.py --blend $OUT/fixtures/rigify_rig.blend \
+  --out $OUT/anim/rigify_renamed.glb --rigify-names
+run 0 "Rigify runtime names exact (no .001)" "$POST" -c "import json,sys; j=json.load(open('$OUT/anim/rigify_renamed.export.json'))['jointNames']; \
+bad=[n for n in j if '.' in n or n.startswith('DEF-')]; need={'hips','spine','chest','neck','head'}; print(len(j),'joints; missing',need-set(j),'bad',bad[:5]); \
+sys.exit(0 if need <= set(j) and not bad else 1)"
+
 # 5. vendor-mesh cleanup + bake-off turntables
 run 0 "fixtures" "$PY" $TB/tests/make_fixtures.py --out $OUT/fixtures
 run 0 "cleanup fixture (46k tris, baked-light texture)" "$PY" $TB/cleanup_mascot.py $OUT/fixtures/fixture_mascot.glb \
@@ -113,6 +128,8 @@ run 0 "turntable cleaned candidate" "$PY" $TB/turntable.py $OUT/mascots/clean_fi
   --size 256 --threads $THREADS
 run 0 "cleanup rigged placeholder (43 bones, morphs, rigid parts)" "$PY" $TB/cleanup_mascot.py $ROBOT \
   --out $OUT/mascots/clean_robot.glb --height 1.8 --colors 4 --strict
+run 0 "cleanup leaves unreduced low-poly parts unrelaxed" "$POST" -c "import json,sys; r=json.load(open('$OUT/mascots/clean_robot.report.json')); \
+print('reduce', r['reduce']['method'], 'relaxed', r['relax']['meshes']); sys.exit(0 if r['reduce']['method'] is None and not r['relax']['meshes'] else 1)"
 run 0 "turntable cleaned rig posed (Wave f20)" "$PY" $TB/turntable.py $OUT/mascots/clean_robot.glb --pose Wave --frame 20 \
   --angles 4 --size 192 --threads $THREADS --out "$SHOTS" --name clean_robot_wave
 run 0 "prop GLB through render_symbol --mesh" $R --sym jar --mesh $OUT/fixtures/fixture_prop.glb --clip turn --size 128 --frames 8 \
@@ -128,6 +145,8 @@ run 3 "budget breach: raw 46k-tri candidate" bash tools/gltf/optimize.sh $OUT/fi
   --report-dir $OUT/gltf/raw_fixture
 run 3 "budget breach: --mascot preset on the placeholder" bash tools/gltf/optimize.sh $ROBOT $OUT/gltf/robot_mascot_gate.opt.glb \
   --report-dir $OUT/gltf/robot_mascot_gate --mascot
+run 1 "optimize failure never keeps a stale output" bash tools/gltf/optimize.sh $ROBOT $OUT/gltf/RobotExpressive.opt.glb \
+  --report-dir $OUT/gltf/robot_bad --texture-compress bogus
 cp $OUT/gltf/RobotExpressive.opt.glb $OUT/gltf/RobotExpressive.opt.first.glb
 run 0 "optimize is deterministic" bash -c "bash tools/gltf/optimize.sh $ROBOT $OUT/gltf/RobotExpressive.opt.glb \
   --report-dir $OUT/gltf/robot >/dev/null && cmp $OUT/gltf/RobotExpressive.opt.glb $OUT/gltf/RobotExpressive.opt.first.glb"

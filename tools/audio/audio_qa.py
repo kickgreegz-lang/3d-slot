@@ -11,6 +11,10 @@ relative to the median |x[n+1] - x[n]| (a click at the loop point shows up as a 
 `check` applies the gates: music/loop integrated loudness within +-1 LU of the target and true
 peak <= tp + tol; sfx sample peak <= ceiling + tol, where tol = 0.1 dB for WAV and 1.0 dB for the
 lossy encodes (AAC/Opus/Vorbis overshoot the master's peaks); loop seam ratio <= 8.
+With --master PCM (what master.sh encoded from), the sfx ceiling is gated on that master (tol 0.1 dB)
+and the lossy encodes only have to stay unclipped (sample peak <= -0.1 dBFS): codec overshoot on
+abrupt attacks and noise bursts (clicks, zaps) reaches +2..5 dB and is not a mastering error, so
+gating it against the ceiling rejected ordinary SFX. The overshoot is reported per file.
 """
 from __future__ import annotations
 
@@ -98,21 +102,41 @@ def loudnorm_json(text: str) -> dict:
     return json.loads(blocks[-1])
 
 
+LOSSLESS = (".wav", ".flac")
+CLIP_DBFS = -0.1
+
+
 def check(a) -> int:
     results = []
     ok = True
+    master = None
+    if a.master:
+        master = measure(a.master)
+        master["file"] = "master (pre-encode PCM)"
+        mg = {}
+        if a.mode == "sfx" and a.lufs_sfx is None:
+            mg["peakCeiling"] = master["samplePeak"] <= a.peak + 0.1
+            mg["trimmed"] = master["leadSilence"] <= 0.02
+        master["gates"] = mg
+        master["passed"] = all(mg.values())
+        ok &= master["passed"]
     for f in a.files:
         m = measure(f)
         gates = {}
+        lossless = Path(f).suffix.lower() in LOSSLESS
         # lossy codecs overshoot the master's peaks a little (AAC most): 1 dB allowance, 0.1 for PCM
-        tol = 0.1 if Path(f).suffix.lower() in (".wav", ".flac") else 1.0
+        tol = 0.1 if lossless else 1.0
         m["peakTolerance"] = tol
         if a.mode in ("music", "loop") or a.lufs_sfx is not None:
             target = a.lufs if a.mode != "sfx" else a.lufs_sfx
             gates["loudness"] = m["I"] is not None and abs(m["I"] - target) <= 1.0
             gates["truePeak"] = m["TP"] is not None and m["TP"] <= a.tp + tol
         if a.mode == "sfx":
-            gates["peakCeiling"] = m["samplePeak"] <= a.peak + tol
+            if master is not None and not lossless and a.lufs_sfx is None:
+                m["peakOvershootDb"] = round(m["samplePeak"] - a.peak, 2) if math.isfinite(m["samplePeak"]) else None
+                gates["noClip"] = m["samplePeak"] <= CLIP_DBFS
+            else:
+                gates["peakCeiling"] = m["samplePeak"] <= a.peak + tol
             gates["trimmed"] = m["leadSilence"] <= 0.02
         if a.mode == "loop" and Path(f).suffix.lstrip(".").lower() not in (a.no_seam_ext or []):
             gates["seam"] = m["seamJumpRatio"] is not None and m["seamJumpRatio"] <= 8
@@ -121,7 +145,7 @@ def check(a) -> int:
         ok &= m["passed"]
         results.append(m)
     rep = {"tool": "tools/audio/master.sh", "mode": a.mode, "targetLUFS": a.lufs, "targetTP": a.tp,
-           "sfxPeakCeiling": a.peak, "outputs": results, "passed": ok}
+           "sfxPeakCeiling": a.peak, "master": master, "outputs": results, "passed": ok}
     if a.extra:
         rep.update(json.loads(Path(a.extra).read_text()))
     text = json.dumps(rep, indent=2, default=lambda x: None if isinstance(x, float) and math.isinf(x) else x)
@@ -148,6 +172,7 @@ def main(argv=None) -> int:
     c.add_argument("--report")
     c.add_argument("--no-seam-ext", action="append", help="skip the loop seam gate for this extension")
     c.add_argument("--extra", help="JSON file merged into the report (e.g. loudnorm pass-2 stats)")
+    c.add_argument("--master", help="the PCM master the outputs were encoded from (sfx ceiling gated on it)")
     a = ap.parse_args(argv)
     if a.cmd == "measure":
         print(json.dumps(measure(a.file), indent=2).replace("-Infinity", "null"))

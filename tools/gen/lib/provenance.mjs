@@ -21,8 +21,31 @@ export const sha256File = (p) => sha256Bytes(fs.readFileSync(p));
 export const digestFiles = (files, base = null) =>
   sha256Text(files.map((f) => `${base ? path.relative(base, f).split(path.sep).join('/') : path.basename(f)}:${sha256File(f)}\n`).sort().join(''));
 
+/** Absolute path with symlinks resolved as far as the path exists (REPO itself is a realpath, so a
+ *  path reached through a symlinked checkout or cwd must be resolved the same way to compare). */
+export const realish = (p) => {
+  let abs = path.resolve(p);
+  const tail = [];
+  while (!fs.existsSync(abs)) {
+    const parent = path.dirname(abs);
+    if (parent === abs) break;
+    tail.unshift(path.basename(abs));
+    abs = parent;
+  }
+  try { abs = fs.realpathSync(abs); } catch { /* keep the resolved path */ }
+  return path.join(abs, ...tail);
+};
+
+/** True when `metaUrl` (import.meta.url) is the script node was started with. Compares real paths:
+ *  `new URL(u).pathname` is percent-encoded (spaces -> %20) and import.meta.url is symlink-resolved
+ *  while process.argv[1] is not, so a naive comparison silently skips main() and exits 0. */
+export function isMain(metaUrl) {
+  if (!process.argv[1]) return false;
+  try { return fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(metaUrl)); } catch { return false; }
+}
+
 export const rel = (p) => {
-  const abs = path.resolve(p);
+  const abs = realish(p);
   const r = path.relative(REPO, abs);
   return r.startsWith('..') || path.isAbsolute(r) ? abs.split(path.sep).join('/') : r.split(path.sep).join('/');
 };

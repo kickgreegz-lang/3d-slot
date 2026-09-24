@@ -4,8 +4,9 @@
 // (1024 samples @ 48 kHz) so AAC/Opus priming never smears a neighbour into a clip.
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { GenError, parseArgs } from '../gen/lib/genlib.mjs';
-import { MANIFEST, makeRow, record, rel, safeId, sha256File, digestFiles } from '../gen/lib/provenance.mjs';
+import { MANIFEST, REPO, makeRow, record, rel, safeId, sha256File, digestFiles } from '../gen/lib/provenance.mjs';
 import { decodePcm, encodeWeb, wavBuffer } from './lib/ff.mjs';
 
 const TOOL = 'tools/audio/sprite.mjs';
@@ -47,6 +48,8 @@ async function main(argv) {
   if (!files.length) throw new GenError('no input clips');
   const ch = a.channels;
   if (![1, 2].includes(ch)) throw new GenError('--channels 1|2');
+  if (!Number.isInteger(a.align) || a.align < 1) throw new GenError('--align must be a positive integer (samples)');
+  if (!(a['gap-ms'] >= 0)) throw new GenError('--gap-ms must be >= 0');
   const formats = a.formats.split(',').map((s) => s.trim()).filter(Boolean);
   const keys = new Set();
   const parts = [];
@@ -79,7 +82,7 @@ async function main(argv) {
   const total = pcm.length / (2 * ch);
   const outBase = a.out;
   fs.mkdirSync(path.dirname(outBase), { recursive: true });
-  const qaDir = a['qa-dir'] ?? path.join('build', 'qa', 'audio', path.basename(outBase));
+  const qaDir = a['qa-dir'] ?? path.join(REPO, 'build', 'qa', 'audio', path.basename(outBase));
   fs.mkdirSync(qaDir, { recursive: true });
   const wav = path.join(qaDir, `${path.basename(outBase)}.sprite.wav`);
   fs.writeFileSync(wav, wavBuffer(pcm, { rate: RATE, channels: ch }));
@@ -115,7 +118,7 @@ async function main(argv) {
     const digest = sha256File(o);
     return makeRow({
       id: safeId(path.basename(outBase), 'sprite', path.extname(o).slice(1), digest.slice(0, 8)), path: rel(o), stage: 'audio-post',
-      route: 'ffmpeg', vendor: 'self', model: TOOL, version: digestFiles([new URL(import.meta.url).pathname]).slice(0, 12),
+      route: 'ffmpeg', vendor: 'self', model: TOOL, version: digestFiles([fileURLToPath(import.meta.url)]).slice(0, 12),
       licenseId: a['license-id'], refHashes: files.map((f) => sha256File(f)), parents: a['parent-id'], sha256: digest,
       shipped: a.shipped, qa: { passed: ok, report: rel(path.join(qaDir, 'qa.json')) },
       notes: `${Object.keys(map.samples).length} clips, ${(total / RATE).toFixed(3)} s`,

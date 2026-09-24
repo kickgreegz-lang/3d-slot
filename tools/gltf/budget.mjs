@@ -7,7 +7,8 @@
  *
  * Budgets (docs/ANIMATION_CONTRACT.md §7.6, docs/PIPELINE.md §4.4):
  *   triangles < 15,000 · bones <= 65 (target 30-60) · textures <= 1024 px · file <= 1.5 MiB
- *   --mascot adds: every canonical clip (§7.2), morphs surprised + angry (§7.4), <= 2 draw calls
+ *   --mascot adds: every canonical clip (§7.2), morphs surprised + angry (§7.4), <= 2 draw calls;
+ *   warns on missing blink_L/blink_R/smile/frown. Always: <= 4 skin influences per vertex (§7.6).
  *   KHR_texture_basisu fails unless --allow-ktx2 (the default Basis transcoder is a CDN fetch,
  *   which Stake's no-external-request rule forbids; self-host it first).
  * Exit: 0 pass · 3 budget breach · 1 error (unreadable file, bad arguments).
@@ -17,6 +18,9 @@ import { dirname, resolve } from 'node:path';
 
 const CANONICAL_CLIPS = ['idle', 'idle_bored', 'anticipation', 'react_small', 'win_big', 'celebrate', 'fs_trigger', 'fs_end'];
 const MASCOT_MORPHS = ['surprised', 'angry'];
+// ANIMATION_CONTRACT §7.4 lists these as required too; the runtime degrades gracefully without
+// them (regex match), so --mascot reports them as warnings rather than failures.
+const MASCOT_MORPHS_WARN = ['blink_L', 'blink_R', 'smile', 'frown'];
 
 const HELP = `usage: node tools/gltf/budget.mjs <file.glb> [options]
   --max-tris N          default 15000 (fails when tris >= N)
@@ -27,13 +31,14 @@ const HELP = `usage: node tools/gltf/budget.mjs <file.glb> [options]
   --require-clips a,b   case-insensitive (the runtime matches names case-insensitively)
   --require-morphs a,b  case-insensitive
   --mascot              canonical clips + surprised/angry morphs + 2 draw calls
+                        (warns on missing blink_L/blink_R/smile/frown)
   --allow-ktx2          accept KHR_texture_basisu (only with self-hosted transcoders)
   --json PATH           write the report as JSON
   -h, --help`;
 
 function parseArgs(argv) {
   const o = { maxTris: 15000, maxBones: 65, bonesTarget: [30, 60], maxTexture: 1024, maxBytes: 1572864,
-    maxDrawCalls: null, clips: [], morphs: [], allowKtx2: false, json: null, file: null };
+    maxDrawCalls: null, clips: [], morphs: [], morphsWarn: [], allowKtx2: false, json: null, file: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => { if (i + 1 >= argv.length) throw new Error(`${a} needs a value`); return argv[++i]; };
@@ -46,7 +51,7 @@ function parseArgs(argv) {
     else if (a === '--max-draw-calls') o.maxDrawCalls = Number(next());
     else if (a === '--require-clips') o.clips.push(...next().split(',').filter(Boolean));
     else if (a === '--require-morphs') o.morphs.push(...next().split(',').filter(Boolean));
-    else if (a === '--mascot') { o.clips.push(...CANONICAL_CLIPS); o.morphs.push(...MASCOT_MORPHS); o.maxDrawCalls ??= 2; }
+    else if (a === '--mascot') { o.clips.push(...CANONICAL_CLIPS); o.morphs.push(...MASCOT_MORPHS); o.morphsWarn.push(...MASCOT_MORPHS_WARN); o.maxDrawCalls ??= 2; }
     else if (a === '--allow-ktx2') o.allowKtx2 = true;
     else if (a === '--json') o.json = next();
     else if (a.startsWith('-')) throw new Error(`unknown option ${a}`);
@@ -55,6 +60,8 @@ function parseArgs(argv) {
   }
   if (!o.file) throw new Error('missing <file.glb>');
   for (const k of ['maxTris', 'maxBones', 'maxTexture', 'maxBytes']) if (!Number.isFinite(o[k])) throw new Error(`bad --${k}`);
+  if (o.maxDrawCalls !== null && !Number.isFinite(o.maxDrawCalls)) throw new Error('bad --max-draw-calls');
+  if (o.bonesTarget.length !== 2 || !o.bonesTarget.every(Number.isFinite)) throw new Error('bad --bones-target (use A-B)');
   return o;
 }
 
@@ -111,7 +118,7 @@ function analyse(path) {
     if (nodes[i]?.mesh !== undefined) meshNodes.push(i);
     stack.push(...(nodes[i]?.children ?? []));
   }
-  let tris = 0; let drawCalls = 0; let verts = 0;
+  let tris = 0; let drawCalls = 0; let verts = 0; let over4 = 0;
   const morphs = new Set();
   for (const ni of meshNodes) {
     const m = meshes[nodes[ni].mesh];
@@ -121,6 +128,7 @@ function analyse(path) {
       const mode = p.mode ?? 4;
       const count = p.indices !== undefined ? acc[p.indices].count : acc[p.attributes.POSITION].count;
       verts += acc[p.attributes.POSITION].count;
+      if (p.attributes.JOINTS_1 !== undefined || p.attributes.WEIGHTS_1 !== undefined) over4++;
       if (mode === 4) tris += count / 3;
       else if (mode === 5 || mode === 6) tris += Math.max(0, count - 2);
     }
@@ -147,7 +155,7 @@ function analyse(path) {
     return { name: a.name ?? '', channels: a.channels.length, seconds: Math.round(dur * 1000) / 1000 };
   });
   return {
-    file: path, bytes, tris: Math.round(tris), verts, drawCalls, meshNodes: meshNodes.length,
+    file: path, bytes, tris: Math.round(tris), verts, drawCalls, meshNodes: meshNodes.length, primitivesOver4Weights: over4,
     materials: (j.materials ?? []).length, skins, bones: joints.size,
     morphs: [...morphs], animations, images,
     extensionsUsed: j.extensionsUsed ?? [], extensionsRequired: j.extensionsRequired ?? [],
@@ -172,6 +180,7 @@ function main() {
   const maxTex = Math.max(0, ...r.images.map((i) => Math.max(i.w, i.h)));
   add('textureSize', maxTex <= o.maxTexture, maxTex, `<= ${o.maxTexture} px`);
   add('fileSize', r.bytes <= o.maxBytes, r.bytes, `<= ${o.maxBytes} bytes`);
+  add('weights4', r.primitivesOver4Weights === 0, r.primitivesOver4Weights, 'no JOINTS_1/WEIGHTS_1 (<= 4 influences per vertex)');
   const badImg = r.images.filter((i) => i.format === 'missing' || i.format === 'unknown');
   add('imagesReadable', badImg.length === 0, badImg.map((i) => i.index), 'all images decodable (png/jpeg/webp/ktx2)');
   const ktx2 = r.extensionsUsed.includes('KHR_texture_basisu');
@@ -187,6 +196,8 @@ function main() {
   const haveM = new Set(r.morphs.map((m) => m.toLowerCase()));
   const missM = [...new Set(o.morphs)].filter((m) => !haveM.has(m.toLowerCase()));
   if (o.morphs.length) add('morphs', missM.length === 0, missM.length ? `missing ${missM.join(',')}` : 'all present', o.morphs.join(','));
+  const missW = [...new Set(o.morphsWarn)].filter((m) => !haveM.has(m.toLowerCase()));
+  if (o.morphsWarn.length) add('morphsContract', missW.length === 0, missW.length ? `missing ${missW.join(',')}` : 'all present', `${o.morphsWarn.join(',')} (ANIMATION_CONTRACT §7.4)`, 'warn');
 
   const failed = checks.filter((c) => c.level === 'fail');
   const report = { ...r, checks, passed: failed.length === 0, limits: o };

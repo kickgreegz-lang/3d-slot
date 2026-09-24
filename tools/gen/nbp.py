@@ -91,7 +91,17 @@ def index_path(jsonl: Path) -> Path:
     return jsonl.with_name(jsonl.name + ".index.json")
 
 
+def require_sdk() -> None:
+    """Real calls need google-genai (tools/requirements.txt); --dry-run works without it."""
+    try:
+        import google.genai  # noqa: F401
+    except ImportError as e:
+        raise genlib.GenError("google-genai is not installed in this Python: use tools/.venv/bin/python "
+                              "(pip install -r tools/requirements.txt), or --dry-run") from e
+
+
 def client(project: str | None, location: str):
+    require_sdk()
     from google import genai
     project = project or os.environ.get("GOOGLE_CLOUD_PROJECT")
     if not project:
@@ -132,7 +142,7 @@ def images_from_prediction(line: dict) -> list[tuple[bytes, str]]:
 def row_kwargs(a, gate: dict, prompt_hash: str, ref_hashes: list[str], cost: float | None, job_id, batch: bool) -> dict:
     return dict(stage=a.stage, route=ROUTE, vendor="Google Cloud", model=a.model,
                 version=f"google-genai {genai_version()}; image_size={a.image_size}", seed=None, job_id=job_id,
-                prompt_hash=prompt_hash, template=f"art/bible/prompts/{a.template}", ref_hashes=ref_hashes,
+                prompt_hash=prompt_hash, template=genlib.template_path(a.template) if a.template else None, ref_hashes=ref_hashes,
                 parents=[], plan_tier=a.plan_tier or "Vertex pay-as-you-go", tos_version=gate["tosVersion"],
                 license_id=gate["licenseId"],
                 cost={"amount": cost or 0, "currency": "USD", "unit": "per image" + (" (batch 50%)" if batch else ""),
@@ -196,6 +206,8 @@ def cmd_generate(a) -> int:
     if job.state == "done":
         print(f"already generated: {prov.rel(job.dir)} (identical request; --force-new to regenerate)")
         return 0
+    if not batch:
+        require_sdk()   # before any file is written
     job.prepare({"price": est, "sdk": genai_version()})
     if batch:
         key = f"{asset}/{job.dir.name}"
@@ -207,11 +219,12 @@ def cmd_generate(a) -> int:
         if key not in idx:
             with jl.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(line, ensure_ascii=False) + "\n")
-            idx[key] = {"labels": labels, "promptHash": phash, "rawDir": prov.rel(job.dir)}
+            idx[key] = {"labels": labels, "promptHash": phash, "rawDir": prov.rel(job.dir), "template": a.template}
             index_path(jl).write_text(json.dumps(idx, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         job.write("batch.json", json.dumps({"key": key, "jsonl": prov.rel(jl), "state": "staged"}, indent=2) + "\n")
         print(json.dumps({"staged": key, "rawDir": prov.rel(job.dir), "jsonl": prov.rel(jl)}, indent=2))
         return 0
+    require_sdk()
     from google.genai import errors as gerr
     c = client(a.project, a.location)
     try:
@@ -239,6 +252,7 @@ def cmd_batch_submit(a) -> int:
         print(json.dumps({"dryRun": True, "gate": gate, "batches.create": req,
                           "upload": f"gsutil cp {a.jsonl or '<batch.jsonl>'} {a.src}"}, indent=2))
         return 0
+    require_sdk()
     from google.genai import types
     c = client(a.project, a.location)
     job = c.batches.create(model=a.model, src=a.src,
@@ -274,7 +288,7 @@ def cmd_batch_collect(a) -> int:
         args = json.loads((vdir / "args.json").read_text(encoding="utf-8"))
         rq = args["request"]
         ns = argparse.Namespace(stage=a.stage, model=rq["model"], image_size=rq["imageSize"],
-                                template=a.template or "unknown", plan_tier=a.plan_tier)
+                                template=a.template or idx[key].get("template"), plan_tier=a.plan_tier)
         gate = genlib.gate(ROUTE, rq["model"])
         job = genlib.RawJob.existing(vdir, asset, TOOL)
         rows = []
@@ -308,7 +322,7 @@ def main(argv=None) -> int:
         else:
             ap.add_argument("--results", required=True, help="downloaded predictions JSONL")
             ap.add_argument("--job", help="batch job name (recorded as jobId)")
-            ap.add_argument("--template", help="template recorded in the rows")
+            ap.add_argument("--template", help="template recorded in the rows (default: the one recorded when staging)")
             ap.add_argument("--out-root", default=str(genlib.RAW_ROOT))
             ap.add_argument("--manifest", default=str(prov.MANIFEST))
             ap.add_argument("--stage", default="2d-image")

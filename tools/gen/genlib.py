@@ -65,6 +65,12 @@ def split_template_ref(ref: str) -> tuple[str, str | None]:
     return name, (section or None)
 
 
+def template_path(ref: str) -> str:
+    """Row 'template' value: repo path of the template file, plus '#X' for a section."""
+    name, section = split_template_ref(ref)
+    return f"art/bible/prompts/{name}" + (f"#{section}" if section else "")
+
+
 def template_sections(name: str) -> list[str]:
     text = (PROMPTS_DIR / name).read_text(encoding="utf-8")
     return [m.group(1) for line in text.splitlines() if (m := SECTION.match(line))]
@@ -309,6 +315,8 @@ def denylist_hits(route: str, model: str, deny: dict | None = None) -> list[str]
     vendor = route.split("-")[0]
     nm = _norm(model)
     for e in deny.get("entries", []):
+        if e.get("category") == "approval":
+            continue  # hosts / sample assets / npm clients, not generation models
         for item in e.get("appliesTo", []):
             scope, sep, name = item.partition(":")
             if sep:
@@ -318,7 +326,8 @@ def denylist_hits(route: str, model: str, deny: dict | None = None) -> list[str]
             else:
                 target = item
             t = _norm(re.sub(r"\(.*?\)", "", target))
-            if len(t) >= 4 and len(nm) >= 4 and (nm.startswith(t) or t.startswith(nm)):
+            # the model id equals or extends a denylisted id (gpt_image_2_5 extends gpt-image-2)
+            if len(t) >= 4 and nm.startswith(t):
                 hits.append(e["id"])
     return sorted(set(hits))
 

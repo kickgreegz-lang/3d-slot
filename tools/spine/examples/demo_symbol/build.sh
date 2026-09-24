@@ -22,13 +22,17 @@ CAPTURE=""
 KICK="-27"
 
 usage() { sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; }
+# portable (GNU/BSD) absolute + relative paths; the target need not exist yet
+abspath() { node -e 'console.log(require("path").resolve(process.argv[1]))' "$1"; }
+relpath() { node -e 'console.log(require("path").relative(process.argv[2], process.argv[1]).split(require("path").sep).join("/"))' "$1" "$2"; }
+need_val() { [ $# -ge 2 ] && [ -n "$2" ] || { echo "build.sh: $1 needs a value" >&2; exit 2; }; }
 while [ $# -gt 0 ]; do
   case "$1" in
-    --build-dir) BUILD="$(realpath -m "$2")"; shift 2 ;;
-    --publish) PUBLISH="$(realpath -m "$2")"; shift 2 ;;
+    --build-dir) need_val "$@"; BUILD="$(abspath "$2")"; shift 2 ;;
+    --publish) need_val "$@"; PUBLISH="$(abspath "$2")"; shift 2 ;;
     --no-publish) DO_PUBLISH=0; shift ;;
-    --capture) CAPTURE="$(realpath -m "$2")"; shift 2 ;;
-    --kick) KICK="$2"; shift 2 ;;
+    --capture) need_val "$@"; CAPTURE="$(abspath "$2")"; shift 2 ;;
+    --kick) need_val "$@"; KICK="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "build.sh: unknown argument $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -39,10 +43,10 @@ mkdir -p "$BUILD"
 echo "== 1/6 parts (resvg-js)"
 node "$HERE/make_parts.mjs"
 echo "== 2/6 blur variants"
-"$PY" tools/spine/make_blur.py "$HERE/parts.json"
+"$PY" tools/spine/make_blur.py "$HERE/parts.json" --provenance "$BUILD/provenance.json"
 echo "== 3/6 generate skeleton"
 # images path as seen from the published JSON (Spine editor import resolves it relative to the file)
-IMAGES_REL="$(realpath -m --relative-to="$PUBLISH" "$HERE/images")/"
+IMAGES_REL="$(relpath "$HERE/images" "$PUBLISH")/"
 "$PY" tools/spine/gen.py "$HERE/rig.yaml" -o "$BUILD/sym_demo.json" --images-path "$IMAGES_REL" \
   --provenance "$BUILD/provenance.json"
 echo "== 4/6 validate (synthetic atlas)"

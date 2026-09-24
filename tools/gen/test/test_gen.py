@@ -221,7 +221,7 @@ class HiggsfieldTests(unittest.TestCase):
         shutil.rmtree(self.w, ignore_errors=True)
         self.w.mkdir(parents=True)
         self.env = {**os.environ, "FAKE_HF_OUT": str(self.w / "vendor"), "FAKE_HF_LOG": str(self.w / "calls.log"),
-                    "SOURCE_DATE_EPOCH": "1790000000"}
+                    "SOURCE_DATE_EPOCH": "1790000000", "HIGGSFIELD_ALLOW_FILE_URLS": "1"}
 
     def hf(self, *args):
         return subprocess.run([NODE, str(GEN / "higgsfield.mjs"), "--bin", str(GEN / "test" / "fake-higgsfield.mjs"),
@@ -293,6 +293,39 @@ class HiggsfieldTests(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(sorted(p.name for p in (self.w / "raw" / "sym_H2").iterdir()), ["v01"])
 
+    def test_local_result_urls_refused_outside_tests(self):
+        self.env = {k: v for k, v in self.env.items() if k != "HIGGSFIELD_ALLOW_FILE_URLS"}
+        r = self.hf("--template", "symbol.txt", "--symbol", "W")
+        self.assertEqual(r.returncode, 6, r.stderr)
+        self.assertIn("refusing non-HTTP result URL", r.stderr)
+
+    def test_cost_cap_fails_closed(self):
+        # an unrecognised cost-preview shape must not slip past --max-credits
+        self.env = {**self.env, "FAKE_HF_COST_UNKNOWN": "1"}
+        r = self.hf("--template", "symbol.txt", "--symbol", "H4", "--max-credits", "100")
+        self.assertEqual(r.returncode, 4, r.stderr)
+        self.assertNotIn("create", (self.w / "calls.log").read_text())
+        r = self.hf("--template", "symbol.txt", "--symbol", "H4", "--max-credits", "100", "--no-cost-preview")
+        self.assertEqual(r.returncode, 2, r.stderr)
+
+    def test_failed_download_resumes_without_regenerating(self):
+        # job finished (paid) but result 2 failed to download: no raw* file may be left behind (else the
+        # next run says 'already generated' with rows never written), and the resume re-downloads the
+        # same job's results instead of paying for a new generation
+        self.env = {**self.env, "FAKE_HF_TWO": "1"}
+        r = self.hf("--template", "symbol.txt", "--symbol", "S")
+        self.assertEqual(r.returncode, 6, r.stderr)
+        v = self.w / "raw" / "sym_S" / "v01"
+        self.assertEqual([p.name for p in v.iterdir() if p.name.startswith("raw")], [])
+        (self.w / "vendor" / "second.png").write_bytes((self.w / "vendor" / "result_nano_banana_2.png").read_bytes())
+        r = self.hf("--template", "symbol.txt", "--symbol", "S")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual((self.w / "calls.log").read_text().count('"create"'), 1)
+        self.assertTrue((v / "raw.png").is_file() and (v / "raw_2.png").is_file())
+        doc = validate_rows(self, self.w / "manifest.json")
+        self.assertEqual([x["id"] for x in doc["rows"]], ["sym_s.raw.v01", "sym_s.raw.v01.2"])
+        self.assertEqual(doc["rows"][0]["jobId"], "job-0002")
+
 
 class NbpTests(unittest.TestCase):
     def setUp(self):
@@ -350,6 +383,7 @@ class NbpTests(unittest.TestCase):
 
 class _Scenario(http.server.BaseHTTPRequestHandler):
     polls = 0
+    cost_unknown = False
     seen: list = []
 
     def log_message(self, *a):
@@ -376,7 +410,7 @@ class _Scenario(http.server.BaseHTTPRequestHandler):
             return self._json(200, {"asset": {"id": "asset_ref1"}})
         if self.path.startswith("/v1/generate/custom/model_test"):
             if "dryRun=true" in self.path:
-                return self._json(200, {"creativeUnitsCost": 5})
+                return self._json(200, {"estimate": "5 CU"} if _Scenario.cost_unknown else {"creativeUnitsCost": 5})
             return self._json(200, {"job": {"jobId": "job_1", "status": "queued"}, "creativeUnitsCost": 5})
         self._json(404, {})
 
@@ -459,6 +493,15 @@ class ScenarioTests(unittest.TestCase):
     def test_cost_cap(self):
         r = self.sc("--max-cu", "1")
         self.assertEqual(r.returncode, 4)
+
+    def test_cost_cap_fails_closed(self):
+        _Scenario.cost_unknown = True
+        try:
+            r = self.sc("--max-cu", "100")
+        finally:
+            _Scenario.cost_unknown = False
+        self.assertEqual(r.returncode, 4, r.stderr)
+        self.assertFalse(any(p.startswith("/v1/generate/custom/model_test") and "dryRun" not in p for p, _ in _Scenario.seen[-3:]))
 
 
 class ProvenanceTests(unittest.TestCase):

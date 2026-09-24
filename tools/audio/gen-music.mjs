@@ -141,6 +141,9 @@ async function main(argv) {
       fs.writeFileSync(path.join(dir, 'job.json'), `${JSON.stringify({ songId, channels: ch, bytes: r.body.length, requestId: r.headers['request-id'] ?? null }, null, 2)}\n`);
       rows.push(makeRow({ ...common, id: safeId(asset, 'raw', path.basename(dir)), path: rel(out), sha256: sha256File(out), jobId: songId,
         notes: `stem ${stem}; ${plan ? 'plan' : 'prompt'} mode; ${c.conditionOn ? `conditioned on ${c.conditionOn} (${condSong})` : 'unconditioned'}` }));
+      // record the paid master now: raw.wav makes the folder 'done', so a later stem/video failure
+      // must not leave it without provenance (the final record() below re-writes the same rows + more)
+      record(rows, { sidecar: path.join(dir, 'manifest.json'), manifest, generatedBy: TOOL });
     }
     // 3) stems
     if (c.stems && !a['no-stems']) {

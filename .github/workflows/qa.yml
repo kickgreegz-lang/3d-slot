@@ -1,0 +1,94 @@
+# QA for every push / PR: typecheck + build, licence audit (make it a REQUIRED status check),
+# pipeline tool self-tests (no GPU, no API keys) and the Stake approval smoke on the production build.
+# GPU / Spine / vendor jobs run elsewhere (self-hosted `gpu` runner, see docs/PIPELINE.md).
+name: qa
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: qa-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+
+jobs:
+  licence-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # no install needed: the audit is dependency-free
+      - name: licence-audit
+        run: node tools/licence/audit.mjs --json build/qa/licence-audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: licence-audit
+          path: build/qa/licence-audit.json
+
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: typecheck
+        run: pnpm typecheck
+      - name: build
+        run: pnpm build
+      - name: approval smoke (7 viewports, host allowlist, zero console output)
+        run: |
+          npx playwright install --with-deps chromium
+          node tools/qa/approval.mjs --serve --port 4173 --out screenshots/approval
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: approval
+          path: screenshots/approval
+
+  pipeline-tools:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SOURCE_DATE_EPOCH: "1790000000"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: tools/requirements.txt
+      - run: pnpm install --frozen-lockfile
+      - name: python deps (pinned; imageio-ffmpeg brings a full static ffmpeg)
+        run: |
+          python -m venv tools/.venv
+          tools/.venv/bin/pip install -r tools/requirements.txt
+      - name: generation wrappers (dry-run, fake CLI, mock REST)
+        run: tools/.venv/bin/python tools/gen/test/test_gen.py
+      - name: matte
+        run: tools/.venv/bin/python tools/matte/test/test_matte.py
+      - name: video
+        run: tools/.venv/bin/python tools/video/test/test_video.py
+      - name: audio
+        run: tools/.venv/bin/python tools/audio/test/test_audio.py
+      - name: assetpack
+        run: tools/.venv/bin/python tools/assets/test/test_assets.py
+      - name: licence audit fixtures
+        run: node --test tools/licence/test/audit.test.mjs
+      - name: provenance chain (matte -> variants -> key -> flipbook -> pack -> audit)
+        run: tools/.venv/bin/python tools/assets/test/test_chain.py

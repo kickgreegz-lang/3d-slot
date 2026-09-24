@@ -534,7 +534,8 @@ export class Board implements GameModule {
             sv.view.position.set(p.x, p.y);
           }
           sv.view.zIndex = zOf(reel, row);
-          sv.view.visible = true;
+          // resting padding stays hidden; anything moving (incl. row 0 sliding in) shows
+          sv.view.visible = isVisibleRow(row) || src.fromRow !== row;
           col.push(sv);
           // "fresh" = the player has not seen it yet (new, or sliding in from padding row 0)
           const fresh = !isVisibleRow(src.fromRow);

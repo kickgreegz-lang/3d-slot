@@ -23,7 +23,7 @@ const LOCAL = {
   /** flicker burst length (s) */
   flickerBurst: 0.55,
   haze: { speed: 14, alpha: 0.07 },
-  cone: { alpha: 0.34, breathe: 0.06, period: 7.5, sway: 1.2 },
+  cone: { alpha: 0.46, breathe: 0.07, period: 7.5, sway: 1.2 },
 };
 
 interface Fly {

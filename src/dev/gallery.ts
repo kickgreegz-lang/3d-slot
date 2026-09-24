@@ -34,6 +34,8 @@ interface Cell {
   state: GalleryState;
   sv: SymbolView;
   holder: Container;
+  /** land row only: clips the drop to the row band so it never overlaps rows above */
+  clip?: Graphics;
 }
 
 export class SymbolGallery {
@@ -54,7 +56,13 @@ export class SymbolGallery {
         const holder = new Container({ label: `gallery-${id}-${state}` });
         holder.addChild(sv.view);
         this.root.addChild(holder);
-        this.cells.push({ state, sv, holder });
+        const cell: Cell = { state, sv, holder };
+        if (state === 'land') {
+          cell.clip = new Graphics();
+          holder.mask = cell.clip;
+          this.root.addChild(cell.clip);
+        }
+        this.cells.push(cell);
       }
     }
     ctx.game.on('layout:change', () => this.layout());
@@ -115,8 +123,11 @@ export class SymbolGallery {
     for (const cell of this.cells) {
       const col = SYMBOL_IDS.indexOf(cell.sv.id);
       const row = STATES.indexOf(cell.state);
+      const cx = HEADER.left + cw * (col + 0.5);
+      const cy = HEADER.top + ch * (row + 0.5);
       cell.holder.scale.set(scale);
-      cell.holder.position.set(HEADER.left + cw * (col + 0.5), HEADER.top + ch * (row + 0.5));
+      cell.holder.position.set(cx, cy);
+      cell.clip?.clear().rect(cx - cw / 2, cy - ch / 2, cw, ch).fill(0xffffff);
     }
   }
 

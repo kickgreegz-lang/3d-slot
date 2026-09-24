@@ -42,9 +42,9 @@ const append = (el: Node, children: Array<Child | Child[]>): void => {
 };
 
 /** Inline SVG from trusted, static markup (icons only — never user or server text). */
-export const svg = (markup: string, cls = 'ui-svg'): HTMLElement => {
+export const svg = (markup: string, cls = ''): HTMLElement => {
   const wrap = document.createElement('span');
-  wrap.className = cls;
+  wrap.className = cls ? `ui-svg ${cls}` : 'ui-svg';
   wrap.setAttribute('aria-hidden', 'true');
   wrap.innerHTML = markup;
   return wrap;

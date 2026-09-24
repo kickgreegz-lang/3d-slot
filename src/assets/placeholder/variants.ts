@@ -1,4 +1,4 @@
-import { BlurFilter, ColorMatrixFilter, Container, FillGradient, Graphics, Rectangle, type Renderer, Sprite, type Texture } from 'pixi.js';
+import { BlurFilter, ColorMatrixFilter, Container, Graphics, Rectangle, type Renderer, Sprite, type Texture } from 'pixi.js';
 
 /**
  * Derived symbol variants — work on ANY static symbol texture (procedural or a
@@ -53,21 +53,18 @@ const edgeFade = (renderer: Renderer, canvas: number, resolution: number): Textu
   const key = `${canvas}@${resolution}`;
   let t = edgeFades.get(key);
   if (t) return t;
-  const g = new Graphics().rect(0, 0, canvas, canvas).fill(
-    new FillGradient({
-      type: 'radial',
-      center: { x: 0.5, y: 0.5 },
-      innerRadius: 0,
-      outerCenter: { x: 0.5, y: 0.5 },
-      outerRadius: 0.5,
-      colorStops: [
-        { offset: 0, color: 'rgba(255,255,255,0)' },
-        { offset: 0.78, color: 'rgba(255,255,255,0)' },
-        { offset: 1, color: 'rgba(255,255,255,1)' },
-      ],
-      textureSpace: 'local',
-    }),
-  );
+  const c = canvas / 2;
+  const r0 = canvas * 0.36;
+  const r1 = canvas * 0.5;
+  const g = new Graphics().rect(-8, -8, canvas + 16, canvas + 16).fill(0xffffff);
+  g.circle(c, c, r1).cut();
+  // smoothstep falloff ring by ring (r0 -> r1)
+  const rings = 18;
+  const w = (r1 - r0) / rings;
+  for (let i = 0; i < rings; i++) {
+    const u = (i + 0.5) / rings;
+    g.circle(c, c, r0 + w * (i + 0.5)).stroke({ width: w + 0.6, color: 0xffffff, alpha: u * u * (3 - 2 * u) });
+  }
   t = renderer.generateTexture({ target: g, frame: new Rectangle(0, 0, canvas, canvas), resolution });
   g.destroy();
   edgeFades.set(key, t);

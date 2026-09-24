@@ -28,7 +28,7 @@ import { ToonOutline } from './ToonOutline';
 /** Framing of a character inside its render target (all local look-dev constants). */
 export const FRAME = {
   /** RT width / height (pixel count stays within the tier budget's w*h) */
-  aspect: 0.82,
+  aspect: 0.9,
   /** vertical field of view (deg): narrow = flatter, closer to the 2D art */
   fov: 20,
   /** standing height as a fraction of the RT height (the rest is jump/arm headroom) */
@@ -196,7 +196,7 @@ export class Mascot {
     const w = this.widthFor(h);
     this.wantSize = { w, h };
     this.view.position.set(this.feetX, rect.y + rect.h);
-    this.applySpriteScale(w, h);
+    this.applySpriteScale(this.target.width, this.target.height); // re-applied after the RT resize
     const sw = this.displayH * FRAME.fill * FRAME.shadow;
     this.shadow.scale.set(sw, sw);
     if (this.focus.kind === 'board') this.focus = { kind: 'board', x: boardCentre.x, y: boardCentre.y };
@@ -227,6 +227,8 @@ export class Mascot {
   }
 
   update(dt: number): void {
+    // un-offset first: actions started below bind (and snapshot) clean bone values
+    this.procedural.restore();
     for (let i = this.pending.length - 1; i >= 0; i--) {
       const p = this.pending[i];
       p.left -= dt;
@@ -236,7 +238,6 @@ export class Mascot {
     }
     this.updateFocus(dt);
     this.controller.update(dt);
-    this.procedural.restore();
     this.mixer.update(dt * speedScale());
     this.placement.updateMatrixWorld(true);
     this.procedural.apply(dt, this.controller.state, this.controller.stateTime);

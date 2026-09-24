@@ -19,7 +19,7 @@ import type { ProbeTarget } from './motion';
 export type InspectorPlacement = 'left' | 'center' | 'right';
 
 /** Card geometry in cells (1x) around the symbol's rest point (cell centre). */
-const CARD = { halfW: 0.74, top: 1.34, bottom: 0.74, margin: 12 } as const;
+const CARD = { halfW: 0.66, top: 1.34, bottom: 0.74, margin: 12 } as const;
 /** Speed above which the falling symbol shows its motion-blur variant (design px/s). */
 const BLUR_SPEED = 1500;
 
@@ -205,7 +205,7 @@ export class SymbolInspector {
     this.card
       .clear()
       .roundRect(-w / 2, top, w, bottom - top, 18)
-      .fill({ color: COLORS.card, alpha: 0.9 })
+      .fill({ color: COLORS.card, alpha: 0.96 })
       .stroke({ width: 2, color: COLORS.cardEdge, alpha: 1 });
     this.clip.clear().roundRect(-w / 2, top, w, bottom - top, 18).fill(0xffffff);
 

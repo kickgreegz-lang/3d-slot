@@ -1,0 +1,310 @@
+{
+  "_meta": {
+    "purpose": "Tools, models, services and asset sources that must NOT be used to produce anything that ships, or must not be bundled into the runtime. The licence-audit check fails if a manifest row, a ComfyUI workflow, a dependency or a prompt log references an entry here.",
+    "updated": "2026-09-24",
+    "source": "docs/research/stack-final.md (decision log and per-stage 'Excluded' lines) plus the stage deep-dives.",
+    "categoryValues": {
+      "policy": "The vendor's usage policy prohibits this use (e.g. real-money gambling).",
+      "licence": "Non-commercial, territory-restricted, revenue-capped or unstated licence.",
+      "approval": "Would fail Stake Engine approval.",
+      "availability": "No usable API, shut down, or exports disabled.",
+      "engineering": "Wrong format/version or unsafe to automate; not a legal problem."
+    },
+    "unblock": "Entries with an 'unblockIf' value can move to allowlist.json once that condition is met and the evidence PDF is filed in licenses/clearances/."
+  },
+  "entries": [
+    {
+      "id": "openai-gpt-image",
+      "name": "OpenAI GPT Image 2 / 2.5 (Sunburst, Flare) / gpt-image-1.5, on any platform",
+      "category": "policy",
+      "reason": "OpenAI Usage Policies (effective 2025-10-29) list 'real money gambling' as a prohibited use; the Commerce Policies also bar gambling services. The policy follows the model through every reseller: Higgsfield (gpt_image_2, gpt_image_2_5), fal, Replicate, Layer and Scenario.",
+      "appliesTo": ["gpt-image-2", "gpt-image-2.5-sunburst", "gpt-image-2.5-flare", "gpt-image-1.5", "higgsfield:gpt_image_2", "higgsfield:gpt_image_2_5"],
+      "unblockIf": "Written confirmation from OpenAI that producing art for a licensed real-money slot is permitted.",
+      "alternative": "vertex-nano-banana-pro + toonout/birefnet matting; ideogram-v3-api for native alpha after clearance.",
+      "source": ["https://github.com/OpenTermsArchive/genai-versions/blob/main/ChatGPT/Acceptable%20Use%20Policy.md", "https://openai.com/policies/usage-policies/", "https://openai.com/policies/commerce-policies/"]
+    },
+    {
+      "id": "openai-gpt-6-astra",
+      "name": "GPT-6 Astra via Codex CLI or API (the 'ChatGPT Astra' co-orchestrator / reviewer)",
+      "category": "policy",
+      "reason": "Same OpenAI real-money-gambling prohibition. It is kept out of the build, the art and the review loop until cleared.",
+      "appliesTo": ["openai/gpt-6-astra", "codex-cli"],
+      "unblockIf": "Written OpenAI clearance. It can then join as a blind second judge through Codex CLI (MCP via config.toml).",
+      "alternative": "google-gemini-3.1-pro as the second judge.",
+      "source": ["https://github.com/OpenTermsArchive/genai-versions/blob/main/ChatGPT/Acceptable%20Use%20Policy.md", "https://developers.openai.com/api/docs/models/gpt-6-astra"]
+    },
+    {
+      "id": "openai-sora-2",
+      "name": "Sora 2",
+      "category": "availability",
+      "reason": "The OpenAI Sora 2 API shuts down on 2026-09-24 and is absent from the Higgsfield CLI catalog. The OpenAI gambling policy also applies.",
+      "appliesTo": ["sora-2"],
+      "alternative": "Blender renders from the real rigs; Higgsfield seedance/kling for animatics only.",
+      "source": ["https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation"]
+    },
+    {
+      "id": "chatgpt-atlas",
+      "name": "ChatGPT Atlas browser agent",
+      "category": "availability",
+      "reason": "Reportedly shut down on 2026-08-09 (secondary sources only). The OpenAI gambling policy would apply regardless.",
+      "appliesTo": ["chatgpt-atlas"],
+      "alternative": "Claude in Chrome (claude --chrome) on your own Mac/Windows machine for web-only steps.",
+      "source": ["https://raw.githubusercontent.com/danielvaughan/codex-blog/main/_posts/2026-08-01-atlas-sunset-august-9-codex-cli-browser-agent-migration-chatgpt-desktop-playwright-mcp.md", "https://raw.githubusercontent.com/comparethe/comparethe/main/ChatGPT%20Atlas%20is%20shutting%20down.md"]
+    },
+    {
+      "id": "midjourney",
+      "name": "Midjourney (any version)",
+      "category": "availability",
+      "reason": "No official API, and its Terms prohibit automated tools. The Disney/Universal litigation adds IP-provenance risk. It may be used for human moodboarding only; nothing from it ships or trains.",
+      "appliesTo": ["midjourney"],
+      "alternative": "vertex-nano-banana-pro, scenario.",
+      "source": ["https://docs.midjourney.com/hc/en-us/articles/32083055291277-Terms-of-Service"]
+    },
+    {
+      "id": "tencent-hunyuan",
+      "name": "Tencent Hunyuan family: HunyuanImage 3.0, Hunyuan3D 2.x/3.x, HY-Motion 1.0, HunyuanVideo-Foley",
+      "category": "licence",
+      "reason": "The licences 'DO NOT APPLY IN THE EUROPEAN UNION, UNITED KINGDOM AND SOUTH KOREA', and outputs may not be used outside that territory. That is incompatible with an international EU/UK product. Disable the Hunyuan3D tool in mcp-for-blender.",
+      "appliesTo": ["HunyuanImage-3.0", "Hunyuan3D-2.0", "Hunyuan3D-2.1", "Hunyuan3D-3.x", "HY-Motion-1.0", "HunyuanVideo-Foley"],
+      "alternative": "tripo / meshy / hyper3d-rodin for meshes; qwen-image-* for images.",
+      "source": ["https://github.com/Tencent-Hunyuan/HunyuanImage-3.0/blob/main/LICENSE", "https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1/blob/main/LICENSE", "https://github.com/Tencent-Hunyuan/HY-Motion-1.0/blob/master/License.txt", "https://github.com/Tencent-Hunyuan/HunyuanVideo-Foley/blob/main/LICENSE"]
+    },
+    {
+      "id": "flux-dev-self-hosted",
+      "name": "Self-hosted FLUX.1 [dev], FLUX.1 Fill [dev], FLUX.2 [dev], FLUX.2 [klein] 9B",
+      "category": "licence",
+      "reason": "FLUX Non-Commercial licence. Production or revenue use of the model needs a BFL commercial licence. Never use these as a LoRA base.",
+      "appliesTo": ["FLUX.1-dev", "FLUX.1-Fill-dev", "FLUX.2-dev", "FLUX.2-klein-9B"],
+      "unblockIf": "A purchased BFL self-hosted commercial licence.",
+      "alternative": "bfl-flux-fill-pro-api (hosted), flux2-klein-4b-base (Apache-2.0).",
+      "source": ["https://github.com/black-forest-labs/flux2/blob/main/model_licenses/LICENSE-FLUX-NON-COMMERICAL", "https://bfl.ai/licensing"]
+    },
+    {
+      "id": "qwen-image-2.1",
+      "name": "Qwen-Image-2.1 (native RGBA, 2026-09-20)",
+      "category": "licence",
+      "reason": "Qwen Research licence (non-commercial).",
+      "appliesTo": ["Qwen-Image-2.1"],
+      "alternative": "qwen-image-layered, qwen-image-edit-2511 (Apache-2.0).",
+      "source": ["https://github.com/QwenLM/Qwen-Image-Layered"]
+    },
+    {
+      "id": "ideogram-4-weights",
+      "name": "Ideogram 4.0 open weights",
+      "category": "licence",
+      "reason": "The weights are under a non-commercial model agreement. Only the code is Apache-2.0.",
+      "appliesTo": ["ideogram-4.0-weights"],
+      "alternative": "ideogram-v3-api (hosted, after clearance).",
+      "source": ["https://runware.ai/docs/models/ideogram-4-0"]
+    },
+    {
+      "id": "bria-rmbg-2.0",
+      "name": "BRIA RMBG-2.0 self-hosted, including rembg's DEFAULT model (bria-rmbg)",
+      "category": "licence",
+      "reason": "CC BY-NC 4.0: non-commercial without a paid BRIA agreement. rembg picks it silently when no -m flag is given.",
+      "appliesTo": ["briaai/RMBG-2.0", "rembg:bria-rmbg (default)"],
+      "alternative": "toonout, lucida, birefnet-rembg with an explicit -m birefnet-general.",
+      "source": ["https://huggingface.co/briaai/RMBG-2.0", "https://github.com/danielgatis/rembg"]
+    },
+    {
+      "id": "trellis-2-default",
+      "name": "Microsoft TRELLIS.2 default install",
+      "category": "licence",
+      "reason": "Code and weights are MIT, but the texture pipeline depends on nvdiffrast/nvdiffrec, which are under NVIDIA non-commercial source licences. R&D only.",
+      "appliesTo": ["TRELLIS.2"],
+      "alternative": "tripo, meshy, hyper3d-rodin.",
+      "source": ["https://github.com/microsoft/TRELLIS.2", "https://github.com/NVlabs/nvdiffrast/blob/main/LICENSE.txt"]
+    },
+    {
+      "id": "video-matting-nc",
+      "name": "MatAnyone / MatAnyone 2, VideoMaMa, SAM2Matting, TransPixeler",
+      "category": "licence",
+      "reason": "MatAnyone: NTU S-Lab 1.0 (non-commercial). VideoMaMa: CC BY-NC 4.0. SAM2Matting: CC BY-NC-SA 4.0. TransPixeler: Adobe Research licence (non-commercial).",
+      "appliesTo": ["MatAnyone", "MatAnyone2", "VideoMaMa", "SAM2Matting", "TransPixeler", "TransPixar"],
+      "alternative": "sam3/sam2.1 tracked mask + birefnet-rembg per frame, or wan-alpha-2.",
+      "source": ["https://github.com/pq-yang/MatAnyone/blob/main/LICENSE", "https://github.com/cvlab-kaist/VideoMaMa", "https://github.com/FudanCVL/SAM2Matting", "https://github.com/wileewang/TransPixar/blob/main/LICENSE.md"]
+    },
+    {
+      "id": "audio-nc-models",
+      "name": "Meta AudioCraft (MusicGen, AudioGen) weights, MMAudio",
+      "category": "licence",
+      "reason": "Weights and checkpoints are CC BY-NC 4.0.",
+      "appliesTo": ["MusicGen", "AudioGen", "MMAudio"],
+      "alternative": "elevenlabs (Enterprise), stability-audio-api.",
+      "source": ["https://raw.githubusercontent.com/facebookresearch/audiocraft/main/README.md", "https://raw.githubusercontent.com/hkchengrex/MMAudio/main/README.md"]
+    },
+    {
+      "id": "suno",
+      "name": "Suno",
+      "category": "availability",
+      "reason": "No public API (partner programme is application-only), and unofficial wrappers violate its ToS. Suno reportedly retains underlying ownership (secondary source). Unsuitable for a regulated product.",
+      "appliesTo": ["suno"],
+      "alternative": "elevenlabs music (Enterprise).",
+      "source": ["https://raw.githubusercontent.com/vibewatch/startup/main/reports/20260521061525-suno/evidence.yaml"]
+    },
+    {
+      "id": "udio",
+      "name": "Udio",
+      "category": "availability",
+      "reason": "Walled garden with exports disabled since the UMG settlement.",
+      "appliesTo": ["udio"],
+      "alternative": "elevenlabs music (Enterprise).",
+      "source": ["https://raw.githubusercontent.com/frankxai/frankx.ai-vercel-website/main/content/blog/suno-vs-udio-2026.mdx"]
+    },
+    {
+      "id": "ace-step-shipped",
+      "name": "ACE-Step (for SHIPPED cues)",
+      "category": "licence",
+      "reason": "The code is MIT/Apache, but its training-data provenance is undisclosed and its README warns of stylistic-similarity infringement. That is a reputational and legal risk for a regulated gambling product. Local sketches are fine; nothing from it ships.",
+      "appliesTo": ["ACE-Step-1.5 (shipped)"],
+      "alternative": "elevenlabs, stability-audio-api.",
+      "source": ["https://raw.githubusercontent.com/ace-step/ACE-Step-1.5/main/README.md"]
+    },
+    {
+      "id": "stable-audio-3-open-over-1m",
+      "name": "Stable Audio 3 open weights (above USD 1M annual revenue)",
+      "category": "licence",
+      "reason": "The Stability AI Community License terminates above $1M annual revenue; an Enterprise licence is then required.",
+      "appliesTo": ["stable-audio-3-small", "stable-audio-3-medium"],
+      "unblockIf": "Stability Enterprise licence, or revenue below the threshold (confirm with counsel).",
+      "alternative": "stability-audio-api (hosted).",
+      "source": ["https://stability.ai/community-license-agreement"]
+    },
+    {
+      "id": "higgsfield-audio",
+      "name": "Higgsfield audio models (mirelo_text_to_audio, sonilo_music)",
+      "category": "licence",
+      "reason": "Terms for these third-party audio models are unknown. They may be used for drafts only, until cleared.",
+      "appliesTo": ["higgsfield:mirelo_text_to_audio", "higgsfield:sonilo_music"],
+      "unblockIf": "Written terms from Higgsfield covering these models for commercial real-money use.",
+      "alternative": "elevenlabs, stability-audio-api.",
+      "source": ["https://github.com/higgsfield-ai/cli"]
+    },
+    {
+      "id": "see-through",
+      "name": "See-through (shitagaki-lab) layer decomposition weights",
+      "category": "licence",
+      "reason": "The code is Apache-2.0, but no licence is stated for the model files, and the training data is 9,102 scraped Live2D models. Keep it out of any path that writes to art/source.",
+      "appliesTo": ["see-through", "ComfyUI-See-through"],
+      "alternative": "sam3 masks + hidden-area fill.",
+      "source": ["https://github.com/shitagaki-lab/see-through"]
+    },
+    {
+      "id": "genielabs-spine-animation-ai",
+      "name": "GenielabsOpenSource/spine-animation-ai",
+      "category": "licence",
+      "reason": "PolyForm Noncommercial 1.0.0. Reimplement the idea; do not copy the code.",
+      "appliesTo": ["spine-animation-ai"],
+      "alternative": "tools/spine/gen.py (own code) or spine-rigc.",
+      "source": ["https://github.com/GenielabsOpenSource/spine-animation-ai"]
+    },
+    {
+      "id": "community-spine-mcps",
+      "name": "All community Spine MCPs (e.g. nihatcagri44/spine-motion-mcp, egorfedorov/spine-mcp, ampersante/spine2d-animation-mcp, K-ulucay/spine_anim_mcp, 1425sd/spine-MCP, neko233-com/spine233-agent-cli)",
+      "category": "engineering",
+      "reason": "They target the Spine 4.2/3.8 formats. A 4.2-format file loads in 4.3 with every constraint silently dropped. One README shows a cracked Spine build, one reverse-engineers the .spine binary, and one is PolyForm-NC. There is no official Spine MCP.",
+      "appliesTo": ["spine-motion-mcp", "spine-mcp", "spine2d-animation-mcp", "spine_anim_mcp", "spine-MCP", "spine233-agent-cli"],
+      "alternative": "Official Spine CLI wrapped by committed scripts.",
+      "source": ["https://github.com/nihatcagri44/spine-motion-mcp", "https://github.com/egorfedorov/spine-mcp", "https://github.com/1425sd/spine-MCP"]
+    },
+    {
+      "id": "legacy-rodin-mcp",
+      "name": "Legacy rodin-api-mcp and blender-mcp's Rodin 'Sketch' tier",
+      "category": "engineering",
+      "reason": "Superseded by the official rodin3d-skills plugin (Gen-2.5).",
+      "appliesTo": ["rodin-api-mcp", "blender-mcp:rodin-sketch"],
+      "alternative": "hyper3d-rodin via DeemosTech/rodin3d-skills.",
+      "source": ["https://github.com/DeemosTech/rodin3d-skills"]
+    },
+    {
+      "id": "academic-text-to-motion",
+      "name": "MoMask / MotionGPT-family text-to-motion",
+      "category": "licence",
+      "reason": "The code is MIT, but the SMPL/SMPL-X and HumanML3D licences may restrict commercial use.",
+      "appliesTo": ["MoMask", "MotionGPT"],
+      "alternative": "Claude-written anim JSON + Blender; uthana for bipeds.",
+      "source": ["https://github.com/EricGuo5513/momask-codes"]
+    },
+    {
+      "id": "mixamo",
+      "name": "Mixamo",
+      "category": "availability",
+      "reason": "No API, so it only works through a browser agent (T3), and its Adobe terms were unverified. Not in the automated path.",
+      "appliesTo": ["mixamo"],
+      "alternative": "Claude-written anim JSON; Meshy/Tripo presets as a seed.",
+      "source": ["https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html"]
+    },
+    {
+      "id": "houdini-indie",
+      "name": "Houdini Indie / Apprentice",
+      "category": "licence",
+      "reason": "Indie is void above $100k revenue; Apprentice is non-commercial.",
+      "appliesTo": ["houdini-indie", "houdini-apprentice"],
+      "alternative": "houdini-fx (only if needed), Blender flipbooks.",
+      "source": ["https://www.sidefx.com/products/houdini-indie/"]
+    },
+    {
+      "id": "gui-only-fx",
+      "name": "JangaFX EmberGen / IlluGen / LiquiGen, Cascadeur",
+      "category": "engineering",
+      "reason": "GUI-only (T3/T4), so they stay out of the automated path. A human may use them if art review demands, after checking their revenue-tier EULA.",
+      "appliesTo": ["embergen", "illugen", "liquigen", "cascadeur"],
+      "alternative": "Blender headless flipbooks; Claude-written anim JSON.",
+      "source": ["https://jangafx.com/legal/end-user-license-agreement"]
+    },
+    {
+      "id": "theatre-js-studio",
+      "name": "@theatre/studio",
+      "category": "licence",
+      "reason": "AGPL-3.0. Never bundle it into the game.",
+      "appliesTo": ["@theatre/studio"],
+      "alternative": "Tweakpane dev panel (DEV-only).",
+      "source": ["https://registry.npmjs.org/@theatre/studio"]
+    },
+    {
+      "id": "pixi-legacy-emitter",
+      "name": "@pixi/particle-emitter 5.x / pixi-particles 4.x",
+      "category": "engineering",
+      "reason": "Pixi below v8 only.",
+      "appliesTo": ["@pixi/particle-emitter", "pixi-particles"],
+      "alternative": "Custom SoA integrator, pixi-particle-system, revolt-fx.",
+      "source": ["https://github.com/pixijs-userland/particle-emitter/issues?q=v8"]
+    },
+    {
+      "id": "pypi-triangle",
+      "name": "PyPI 'triangle' (bundles Shewchuk's Triangle)",
+      "category": "licence",
+      "reason": "Its C licence allows distribution in commercial systems only by direct arrangement with the author.",
+      "appliesTo": ["triangle"],
+      "alternative": "shapely constrained_delaunay_triangles, mapbox-earcut.",
+      "source": ["https://pypi.org/project/shapely/"]
+    },
+    {
+      "id": "stake-web-sdk-sample-assets",
+      "name": "Stake web-sdk sample backgrounds, symbols, animations and Spine files",
+      "category": "approval",
+      "reason": "Stake's frontend requirements say sample assets will NOT be approved; every audio and visual asset must be unique.",
+      "appliesTo": ["StakeEngine/web-sdk apps/*/static/**"],
+      "alternative": "Original assets from this pipeline.",
+      "source": ["https://github.com/StakeEngine/docs/blob/main/src/routes/docs/approval/frontend-requirements/+page.svx"]
+    },
+    {
+      "id": "stake-engine-npm-client",
+      "name": "npm 'stake-engine' (engineio/ts-client) in the shipped build",
+      "category": "approval",
+      "reason": "It console.logs its version (the approval team checks for logging) and has no replay support.",
+      "appliesTo": ["stake-engine"],
+      "alternative": "src/rgs client (own ~150 LOC).",
+      "source": ["https://www.npmjs.com/package/stake-engine", "https://github.com/engineio/ts-client"]
+    },
+    {
+      "id": "runtime-external-requests",
+      "name": "Any runtime request to a host other than the page origin and rgs_url: Google Fonts, Typekit, analytics/Sentry, hot-linked vendor output URLs (Higgsfield, Scenario, etc.), default KTX2/Basis transcoder CDN paths",
+      "category": "approval",
+      "reason": "Stake enforces a strict XSS policy: the build must be static files and 'All images and fonts must be loaded from the Stake Engine CDN'. Pixi and three default their KTX2/Basis transcoder paths to a public CDN.",
+      "appliesTo": ["fonts.googleapis.com", "use.typekit.net", "cdn.jsdelivr.net (transcoders)", "*.higgsfield.ai result URLs"],
+      "alternative": "Bundle everything; copy the transcoders into public/ and point the setters at relative paths. tools/qa/approval.mjs enforces the host allowlist.",
+      "source": ["https://github.com/StakeEngine/docs/blob/main/src/routes/docs/approval/frontend-requirements/+page.svx"]
+    }
+  ]
+}

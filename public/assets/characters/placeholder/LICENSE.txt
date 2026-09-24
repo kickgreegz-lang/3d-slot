@@ -1,0 +1,10 @@
+RobotExpressive.glb — PLACEHOLDER mascot rig (replaced by the production Gumbo / Baron Croak GLBs)
+
+Model by Tomás Laulhé (Quaternius, https://quaternius.com), modifications by Don McCurdy
+(https://donmccurdy.com), as distributed with the three.js examples
+(examples/models/gltf/RobotExpressive).
+
+License: CC0 1.0 Universal (Public Domain Dedication)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+No attribution is required; this notice is kept for provenance.

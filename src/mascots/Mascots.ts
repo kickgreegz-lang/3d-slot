@@ -87,7 +87,7 @@ export class Mascots implements GameModule {
 
     this.offs.push(clock.onUpdate(this.tick));
     this.bindEvents();
-    if (import.meta.env.DEV) window.__mascots = { list: this.mascots, cue: (c: MascotCue) => this.onCue(c) };
+    if (import.meta.env.DEV) window.__mascots = { list: this.mascots, cue: (c: MascotCue) => this.onCue(c), module: this };
   }
 
   /** Compile toon + ink programs for every mascot off the critical path (KHR_parallel_shader_compile). */
@@ -144,7 +144,6 @@ export class Mascots implements GameModule {
     // low tier renders at 30 fps (every other frame); a frozen clock (hit-stop) renders nothing
     const interval = 1 / this.ctx.budget.mascotRT.fps;
     if (this.accum < interval * 0.75 && !this.dirty) return;
-    if (this.accum <= 0 && !this.dirty) return;
     const step = this.accum;
     this.accum = 0;
     this.dirty = false;
@@ -296,6 +295,6 @@ export class Mascots implements GameModule {
 declare global {
   interface Window {
     /** DEV only: mascot handles for look-dev / capture scripts. */
-    __mascots?: { list: Mascot[]; cue: (c: MascotCue) => void };
+    __mascots?: { list: Mascot[]; cue: (c: MascotCue) => void; module: Mascots };
   }
 }

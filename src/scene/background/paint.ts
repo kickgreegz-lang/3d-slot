@@ -471,20 +471,20 @@ export const paintScene = (c: Composition, p: ScenePalette, glow: Texture): Cont
 /** Cone-of-light texture source (white, soft), drawn pointing down from (0,0). */
 export const paintCone = (len: number, spread: number): Container => {
   const g = new Graphics();
-  g.moveTo(-14, 0)
-    .lineTo(14, 0)
+  g.moveTo(-34, 0)
+    .lineTo(34, 0)
     .lineTo(spread / 2, len)
     .lineTo(-spread / 2, len)
     .closePath()
-    .fill(alphaGrad(0xffffff, [[0, 0.7], [0.3, 0.32], [0.7, 0.08], [1, 0]]));
+    .fill(alphaGrad(0xffffff, [[0, 0.75], [0.35, 0.4], [0.75, 0.12], [1, 0]]));
   // brighter core
-  g.moveTo(-8, 0)
-    .lineTo(8, 0)
-    .lineTo(spread * 0.22, len * 0.8)
-    .lineTo(-spread * 0.22, len * 0.8)
+  g.moveTo(-16, 0)
+    .lineTo(16, 0)
+    .lineTo(spread * 0.2, len * 0.75)
+    .lineTo(-spread * 0.2, len * 0.75)
     .closePath()
-    .fill(alphaGrad(0xffffff, [[0, 0.5], [0.4, 0.12], [1, 0]]));
-  return soften(g, 10);
+    .fill(alphaGrad(0xffffff, [[0, 0.6], [0.45, 0.15], [1, 0]]));
+  return soften(g, 12);
 };
 
 /** Lit neon tubes (sign-local coords) for additive flicker in BgFx. */

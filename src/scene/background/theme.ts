@@ -174,9 +174,8 @@ const LANDSCAPE_COMP = (panel: Rect): Composition => ({
     { x0: 1590, y0: 30, x1: 1950, y1: 18, sag: 64 },
   ],
   cones: [
-    { x: 150, y: -20, len: 1000, spread: 430, angle: 22 },
-    { x: 1800, y: -20, len: 1000, spread: 430, angle: -24 },
-    { x: 700, y: -20, len: 900, spread: 360, angle: -8 },
+    { x: 300, y: -20, len: 1000, spread: 420, angle: -12 },
+    { x: 1640, y: -20, len: 1000, spread: 420, angle: 13 },
   ],
   speakers: { x: 1760, y: 720, scale: 1 },
   calm: panel,

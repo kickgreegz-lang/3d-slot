@@ -35,6 +35,16 @@
  * skeleton is y-down, so "the skeleton jolted UP" and the parts keep falling past
  * the contact frame, then spring back. Container motion is inherited only after the
  * impact (setPositionInheritance(0, 0.6)), never during the fast drop.
+ *
+ * TRANSFORM PITFALL (why inheritance is armed by the pool, not set directly):
+ * SkeletonPhysicsMovement reads `spine.worldTransform`, which Pixi v8 composes from the
+ * render-group-relative transform refreshed only during RENDER. A pooled instance that was
+ * just re-parented into another SymbolView therefore reports its PREVIOUS owner's
+ * position on its first update, and the next frame's "movement" is the jump between the
+ * two cells (hundreds of skeleton units) -> the physics bones fly off, the weighted body
+ * mesh stretches then pancakes. The pool enables inheritance only after the instance has
+ * been rendered once in its new place, re-baselines it, and drops any per-frame jump larger
+ * than SYMBOL_TIMING.spine.maxInheritStep (teleports: re-parenting, board repositioning).
  */
 import {
   type AnimationStateListener,
@@ -55,10 +65,20 @@ interface SpineMeta {
   events: Set<string>;
 }
 
+/** Deferred / guarded container-motion inheritance of one active instance. */
+interface Inherit {
+  factor: number;
+  /** ticks to wait until the world transform is trustworthy (rendered in the new parent) */
+  wait: number;
+  x: number;
+  y: number;
+}
+
 class SpinePoolImpl {
   private readonly free = new Map<string, Spine[]>();
   private readonly meta = new Map<string, SpineMeta>();
   private readonly active = new Set<Spine>();
+  private readonly inheriting = new Map<Spine, Inherit>();
   private offTick: (() => void) | null = null;
 
   /** Borrow an instance (created on demand; pooled per skeleton+atlas+skin). */
@@ -70,9 +90,20 @@ class SpinePoolImpl {
     return spine;
   }
 
+  /**
+   * Physics inherit `factor` of the container's vertical motion. 0 switches it off at once;
+   * > 0 is armed only after the instance has been rendered where it now lives (see header).
+   */
+  inherit(spine: Spine, factor: number): void {
+    spine.skeletonPhysics.setPositionInheritance(0, 0);
+    if (factor > 0 && this.active.has(spine)) this.inheriting.set(spine, { factor, wait: 2, x: 0, y: 0 });
+    else this.inheriting.delete(spine);
+  }
+
   /** Return an instance: tracks cleared, setup pose restored, detached. */
   release(ref: SpineRef, spine: Spine): void {
     if (!this.active.delete(spine)) return;
+    this.inheriting.delete(spine);
     spine.state.clearListeners();
     spine.state.clearTracks();
     spine.state.timeScale = 1;
@@ -141,8 +172,31 @@ class SpinePoolImpl {
 
   private readonly tick = (dt: number): void => {
     const d = dt * speedScale();
-    for (const spine of this.active) spine.update(d);
+    for (const spine of this.active) {
+      const inh = this.inheriting.get(spine);
+      if (inh) this.guard(spine, inh);
+      spine.update(d);
+    }
   };
+
+  /** Arm inheritance once the transform is valid; discard teleports (re-parenting, repositioning). */
+  private guard(spine: Spine, inh: Inherit): void {
+    const phys = spine.skeletonPhysics;
+    const wt = spine.worldTransform;
+    if (inh.wait > 0) {
+      inh.wait--;
+      if (inh.wait === 0) {
+        phys.resetTransform();
+        phys.setPositionInheritance(0, inh.factor);
+      }
+    } else {
+      // screen px per skeleton unit, so the limit is resolution / layout independent
+      const unit = Math.max(1e-6, Math.hypot(wt.a, wt.b));
+      if (Math.hypot(wt.tx - inh.x, wt.ty - inh.y) / unit > SYMBOL_TIMING.spine.maxInheritStep) phys.resetTransform();
+    }
+    inh.x = wt.tx;
+    inh.y = wt.ty;
+  }
 }
 
 export const spinePool = new SpinePoolImpl();
@@ -240,18 +294,17 @@ export class SpineRig {
 
   /** Physics ignores container motion (fast drops would fling the parts off). */
   detachPhysics(): void {
-    this.spine.skeletonPhysics.setPositionInheritance(0, 0);
+    spinePool.inherit(this.spine, 0);
   }
 
   /**
-   * Contact frame: jolt the skeleton UP (y-down runtime) so physics parts keep falling
-   * past the contact, then let the post-impact hop / squash drive them (inheritance 0.6).
+   * Contact frame: jolt the skeleton UP (y-down runtime) so physics parts keep falling past
+   * the contact, then let the post-impact hop / squash drive them (inheritance armed by the
+   * pool one rendered frame later, see header).
    */
   impact(impulse: number): void {
-    const phys = this.spine.skeletonPhysics;
-    phys.resetTransform();
-    phys.setPositionInheritance(0, SYMBOL_TIMING.spine.landInheritance);
-    this.spine.skeleton.physicsTranslate(0, -impulse);
+    spinePool.inherit(this.spine, SYMBOL_TIMING.spine.landInheritance);
+    this.spine.skeleton.physicsTranslate(0, -Math.min(impulse, SYMBOL_TIMING.spine.maxImpulse));
   }
 
   /** Fire any pending one-shot handlers (e.g. interrupted before `burst`). */

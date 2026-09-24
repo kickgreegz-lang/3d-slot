@@ -11,7 +11,8 @@ This is a premium, animation-first video slot for **Stake Engine**, produced wit
 | If you want to… | Read |
 |---|---|
 | Know what to buy, install and pay for, and what AI can't do | **[STACK.md](STACK.md)** (start with the TL;DR and "Image route") |
-| Run production step by step | **[PIPELINE.md](PIPELINE.md)** |
+| Run production step by step | **[PIPELINE.md](PIPELINE.md)** (start with "Tooling status" and "How Claude runs the pipeline") |
+| Run one pipeline tool (flags, outputs, gates, exit codes) | Its README: [gen](../tools/gen/README.md), [matte](../tools/matte/README.md), [spine](../tools/spine/README.md), [blender](../tools/blender/README.md), [gltf](../tools/gltf/README.md), [video](../tools/video/README.md), [audio](../tools/audio/README.md), [assets](../tools/assets/README.md), [licence](../tools/licence/README.md) |
 | Know the exact names, frames, events and feel constants the art must hit | **[ANIMATION_CONTRACT.md](ANIMATION_CONTRACT.md)** |
 | Keep the look consistent and non-sloppy | **[ART_BIBLE.md](ART_BIBLE.md)** + [`art/bible/artbible.json`](../art/bible/artbible.json) + [`art/bible/prompts/`](../art/bible/prompts/README.md) |
 | Pass Stake Engine approval | **[STAKE_ENGINE.md](STAKE_ENGINE.md)** |
@@ -51,7 +52,8 @@ flowchart LR
 **Conductor:**
 - **Claude Code (Opus 5.5)** on a Linux GPU workstation via Remote Control, in Anthropic cloud sessions, and in GitHub Actions.
 - MCP servers are used for exploring; **committed scripts do production**.
-- Every file gets a provenance row (`art/manifest.json`), and a `licence-audit` check blocks anything off the allowlist.
+- Every file gets a provenance row (`art/manifest.json`), and a `licence-audit` check (`pnpm licence:audit`) blocks anything off the allowlist.
+- Every tool has an npm script: `gen:*`, `matte`, `matte:variants`, `spine:*`, `blender:*`, `anim:check`, `gltf:*`, `video:*`, `audio:*`, `assets:pack`, `licence:audit`, `capture`, `qa:review`, `qa:approval`, `lab`, `gallery`. [PIPELINE § Tooling status](PIPELINE.md#tooling-status) says what exists, what is planned and what is not verified yet: the real Spine CLI, the real Blender binary with GPU EEVEE, and live vendor calls.
 - **Gemini 3.1 Pro** is the blind second judge. OpenAI models are excluded unless OpenAI clears real-money gambling in writing ([why](STACK.md#openai-gpt-6-astra-and-chatgpt-atlas)).
 
 ### 2. Front-end runtime
@@ -93,12 +95,13 @@ flowchart LR
 **Speed:** one gameplay timeline scaled 1× / 2× / 3× for normal, turbo and super turbo, all within the jurisdiction flags.
 
 **Dev and QA hooks:**
-- `?dev=lab` (Tweakpane, scenarios, timing export);
-- `?dev=gallery`;
-- `window.__slot.scenario(name)`;
-- `tools/capture/shot.mjs`;
-- `tools/qa/animation-review.mjs`;
-- `tools/qa/approval.mjs`;
+- `?dev=lab` (`pnpm lab`): Tweakpane, scenarios, and timing export. Every module's timing table registered with `registerTiming` is tunable, not just the core `TIMING`;
+- `?dev=gallery` (`pnpm gallery`);
+- `?spineDemo=<symbolId>` (DEV only): binds the AI-authored demo Spine rig to a symbol in game. It is stripped from `dist/`;
+- `window.__slot.scenario(name)`, `__slot.setTiming(path, value)`;
+- `tools/capture/shot.mjs` (`pnpm capture`);
+- `tools/qa/animation-review.mjs` (`pnpm qa:review`);
+- `tools/qa/approval.mjs` (`pnpm qa:approval`);
 - the mock RGS with 7x5 fixture books (`mock/`).
 
 Architecture decisions and their evidence: [research/frontend-decisions.md](research/frontend-decisions.md).
@@ -110,6 +113,8 @@ Architecture decisions and their evidence: [research/frontend-decisions.md](rese
 3. **Budget tier and hardware.** Start with Phase 1 lean (no workstation) or go straight to Full AAA (RTX PRO 6000 or RTX 5090). Spine Professional vs **Enterprise** depends on whether company revenue plus financing reaches $500k/yr.
 4. **People and contracts.** A character animator for the mascots (recommended), an optional Spine animator, gaming/IP counsel, and **ElevenLabs Enterprise** or a human sound designer.
 5. **OpenAI.** Ask for written clearance (to use GPT-6 Astra / GPT Image 2.5), or accept the exclusion.
+6. **Symbol `land` headroom (you or the art lead).** The Spine validator's "land stays inside the cell" rule conflicts with the art bible's cell fill and the runtime's fit-to-cell. Choose: allow overflow into the gap, cap the rebound, require headroom, or gate relative to the rest silhouette. See [ANIMATION_CONTRACT §3.1](ANIMATION_CONTRACT.md#31-land-contact-frame-and-cell-gate-open-decision).
+7. **Required mascot morphs (you or the art lead).** Are all six morphs required, or only `surprised`/`angry` (what the GLB gate enforces today)? See [ANIMATION_CONTRACT §7.4](ANIMATION_CONTRACT.md#74-morph-targets--15).
 
 Also pending, from the math side:
 - whether spot multipliers grow additively or by doubling;
@@ -124,9 +129,10 @@ Also pending, from the math side:
   - **(U)** / **UNVERIFIED**: from a secondary source or a blocked vendor page; check before paying.
   - **[planned]**: not in the repo yet.
   - **[delta]**: the runtime needs a small change.
+  - **OPEN DECISION**: the pipeline and the runtime or art bible disagree; the options are listed where it appears.
 - **Where things live:**
   - `art/_raw/`, `art/_work/`: generated and gitignored.
   - `art/source/`: approved sources, git-LFS.
   - `public/assets/`: written only by scripts.
-  - `build/`: generated.
-- **Ownership:** docs, the art bible, licences and the MCP example live here. `src/**` and `tools/capture|qa/**` are owned by the runtime and QA engineers.
+  - `build/`: generated and gitignored (`build/frames`, `build/spine`, `build/pack`, `build/qa`).
+- **Ownership:** docs, the art bible, licences and the MCP example live here. `src/**` and `tools/capture|qa/**` are owned by the runtime and QA engineers. Each pipeline tool under `tools/` documents itself in its own README.

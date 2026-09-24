@@ -152,6 +152,10 @@ export const SYMBOL_TIMING = registerTiming('symbol', {
     physicsImpulse: 26,
     /** Container-motion inheritance for physics after the impact (hop/squash drive the parts). */
     landInheritance: 0.6,
+    /** Largest container move (skeleton units per frame) still inherited; bigger = teleport, dropped. */
+    maxInheritStep: 40,
+    /** Cap on the land kick (skeleton units) however fast the drop was. */
+    maxImpulse: 36,
     /** docs/ANIMATION_CONTRACT.md §3 mixes (seconds). '*' = from any animation. */
     mix: 0.08,
     mixes: [

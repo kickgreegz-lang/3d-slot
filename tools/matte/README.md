@@ -52,7 +52,7 @@ into the prompt: `#00FF00`, `#FF00FF` for green/teal assets, `#0000FF` when both
 rotate by `restAngle` into screen space, squash 0.97×1.12, 7 weighted ghost copies at ±{4.5, 9, 14}
 design px, light vertical Gaussian, rotate back; `--blur-mode box` = the PIPELINE ffmpeg recipe
 (`avgblur sizeY=14` @2x). `glow` = alpha dilated 7 px, Gaussian σ 14 px, radial smoothstep fade before
-the canvas edge, **white** (the runtime tints it with the symbol colour; PIPELINE 2.1 still says gold).
+the canvas edge, **white** (the runtime tints it with the symbol colour; see [PIPELINE 2.1](../../docs/PIPELINE.md#phase-2-2d-generation)).
 
 ## Tests
 

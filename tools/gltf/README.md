@@ -39,7 +39,7 @@ optimize --compress meshopt --texture-compress webp --texture-size 1024 --join f
 | Draco | fails (the runtime ships no Draco decoder) |
 | draw calls (primitive instances) | info by default; `--max-draw-calls N` gates |
 | skin influences | fails on `JOINTS_1`/`WEIGHTS_1` (more than 4 weights per vertex, ANIMATION_CONTRACT §7.6) |
-| `--mascot` | the 8 canonical clips of ANIMATION_CONTRACT §7.2, morphs `surprised` + `angry` (fail) and `blink_L`, `blink_R`, `smile`, `frown` (warn), ≤ 2 draw calls |
+| `--mascot` | the 8 canonical clips of ANIMATION_CONTRACT §7.2, morphs `surprised` + `angry` (fail) and `blink_L`, `blink_R`, `smile`, `frown` (warn; an [open decision](../../docs/ANIMATION_CONTRACT.md#74-morph-targets--15)), ≤ 2 draw calls |
 | `--require-clips` / `--require-morphs` | case-insensitive, like the runtime |
 
 Exit codes: 0 pass · 3 breach · 1 error.

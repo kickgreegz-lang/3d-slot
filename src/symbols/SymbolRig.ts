@@ -226,9 +226,7 @@ export class SymbolRig implements SymbolView {
       this.fadeGlow(0);
       const ref = this.spineRef();
       if (ref && SpineRig.supports(ref, 'blur')) {
-        const rig = this.useSpine(ref);
-        rig.detachPhysics();
-        void rig.play('blur', true);
+        void this.useSpine(ref).play('blur', true);
       }
       if (this._state === 'static' || this._state === 'land') this._state = 'blur';
     } else if (this._state === 'blur') {
@@ -840,6 +838,10 @@ export class SymbolRig implements SymbolView {
     return this._id ? this.ctx.art.spine(this._id) : null;
   }
 
+  /**
+   * Borrow (or keep) the Spine rig for a new action. Physics stop inheriting container
+   * motion for every action; only `land` re-arms it (SpineRig.impact).
+   */
   private useSpine(ref: SpineRef): SpineRig {
     if (!this.rig) {
       this.dropJelly();
@@ -850,6 +852,7 @@ export class SymbolRig implements SymbolView {
       this.sprite.visible = false;
       this.rig = rig;
     }
+    this.rig.detachPhysics();
     return this.rig;
   }
 

@@ -148,7 +148,7 @@ Accent types:
 
 An accent on a bone/property the base motion already keys is an error, so the conflict is never silent.
 
-**Headroom (open contract conflict):** the validator's `land` gate is the contract's literal rule: the pose, with the physics kick applied in both directions, stays inside ±150 skeleton units around `root`. But `SymbolRig.fit()` rescales every rig so its rest content fills `cellScale` of the cell (highs 0.95–0.97, specials 1.02–1.12; ART_BIBLE cellFill = 288–300 / 306–345 px @2x). So authoring the art smaller buys no headroom in the game, and a special sized per the art bible fails this gate at rest. The validator's `runtimeFit` info line shows what the game will show, for example the demo: rest 112 % of the cell at cellScale 1.12, and land adds +9.8 % at the top. Until ANIMATION_CONTRACT decides (allow overflow into the gap, cap the rebound, or define the gate relative to the rest silhouette), pass `--cell <units>` for specials and review with `runtimeFit`. The demo is 257 px tall (86 %) and does not follow the art bible fill.
+**Headroom (open contract conflict):** the validator's `land` gate is the contract's literal rule: the pose, with the physics kick applied in both directions, stays inside ±150 skeleton units around `root`. But `SymbolRig.fit()` rescales every rig so its rest content fills `cellScale` of the cell (highs 0.95–0.97, specials 1.02–1.12; ART_BIBLE cellFill = 288–300 / 306–345 px @2x). So authoring the art smaller buys no headroom in the game, and a special sized per the art bible fails this gate at rest. The validator's `runtimeFit` info line shows what the game will show, for example the demo: rest 112 % of the cell at cellScale 1.12, and land adds +9.8 % at the top. Until [ANIMATION_CONTRACT §3.1](../../docs/ANIMATION_CONTRACT.md#31-land-contact-frame-and-cell-gate-open-decision) decides (allow overflow into the gap, cap the rebound, require headroom, or define the gate relative to the rest silhouette), pass `--cell <units>` for specials and review with `runtimeFit`. The demo is 257 px tall (86 %) and does not follow the art bible fill.
 
 ## validate.mjs
 
@@ -262,4 +262,4 @@ spine: [
 - `pack.py` never rotates regions and does no polygon packing, so production atlases still come from the Spine CLI.
 - The skeleton is exported as JSON. Binary `.skel` needs the editor (`export.sh export`).
 - Deform (FFD) timelines are not generated: jelly comes from weighted meshes plus physics bones.
-- `spine-rigc` 1.1.0 (PIPELINE 3.2 "evaluate first") has not been evaluated. This generator covers the same ground and is contract-specific.
+- `spine-rigc` 1.1.0 (suggested in [PIPELINE 3.2](../../docs/PIPELINE.md#phase-3-2d--spine-symbols) as a format reference) has not been evaluated. This generator covers the same ground and is contract-specific.

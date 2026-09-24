@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0420" />
+    <link rel="icon" href="data:," />
+    <title>Swamp Funk</title>
+    <style>
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0a0420; touch-action: none; -webkit-user-select: none; user-select: none; }
+      #app { position: fixed; inset: 0; }
+      #app canvas { display: block; width: 100%; height: 100%; }
+      #ui-root { position: fixed; inset: 0; pointer-events: none; }
+      #ui-root > * { pointer-events: auto; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="ui-root"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -161,9 +161,9 @@ export class Mascot {
     this.sprite.label = `${def.id}:rt`;
     this.shadow = new Graphics()
       .ellipse(0, 0, 1, 0.24)
-      .fill({ color: 0x12061c, alpha: 0.22 })
+      .fill({ color: 0x12061c, alpha: 0.26 })
       .ellipse(0, 0, 0.7, 0.17)
-      .fill({ color: 0x12061c, alpha: 0.32 });
+      .fill({ color: 0x12061c, alpha: 0.4 });
     this.shadow.label = `${def.id}:shadow`;
     this.view = new Container({ label: `mascot:${def.id}` });
     this.view.addChild(this.shadow, this.sprite);

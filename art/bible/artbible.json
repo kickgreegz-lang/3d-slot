@@ -1,0 +1,252 @@
+{
+  "$comment": "Machine-readable style lock for the working theme SWAMP FUNK. Every generation prompt is rendered from art/bible/prompts/*.txt using these values; see docs/ART_BIBLE.md for the human-readable version and rationale. Symbol ids match src/config/game.ts. Values marked 'calibrate' are starting thresholds, to be tuned on the approved paintover pack.",
+  "version": "0.1.0",
+  "updated": "2026-09-24",
+  "theme": {
+    "id": "swamp-funk",
+    "status": "working theme (placeholder, swappable). Swapping the theme = new palette, briefs and mascots; the rules below (outline, light, extrusion, canvas, gates) stay.",
+    "setting": "Neon bayou juke joint at night: string lights, cypress silhouettes behind the windows, a shelf of glowing firefly jars on the left, a neon gator sign (icon only, no letters) and a magenta booth on the right.",
+    "referenceQualityTarget": "Match the quality, layout and energy of a premium Stake Engine 7x5 cluster slot. Never copy its IP, characters, names or palette-as-identity."
+  },
+  "styleFormula": "Premium 2D slot-game art, bold cel shading: one flat base tone, two hard-edged shadow tones and one crisp white specular streak, no soft gradients, no texture noise. Uniform thick pure-black outline around every shape with thinner black interior lines; chunky rounded exaggerated forms with a short dark-plum extrusion toward the lower right. Key light from the upper left on every object. Warm saturated candy colours for symbols and characters, molten gold for special features; foreground objects carry no rim light or glow, neon exists only in the deep violet-indigo environment. Clean readable silhouettes, adult characters.",
+  "styleFormulaRules": [
+    "Paste byte-identical into every image prompt. Never edit it per asset; per-asset needs go in the subject line or the suffix.",
+    "Supersedes the earlier Higgsfield-brief formula (dark-plum outline, cyan rim light, glossy sheen). The reference was pixel-measured: pure-black outlines, plum only in the extrusion, no rim light or neon on foreground assets.",
+    "Keying/background words never go in the formula; they go in the per-kind suffix.",
+    "No brand, studio, artist or existing-game names in any prompt (IP hygiene; also avoids vendor 'ip_detected' failures)."
+  ],
+  "suffixes": {
+    "symbol": "Single object, centred, filling {FILL_PCT}% of the frame height with equal empty margin on all four sides, upright, no text, no letters, no numbers. On a solid uniform flat {KEY_HEX} background, no gradient, no vignette, no cast shadow, no floor, no glow on the background, nothing cropped at the edges.",
+    "symbolEdit": "Same symbol as the reference: identical silhouette, outline thickness, colours, framing and flat {KEY_HEX} background. Change only: {CHANGE}.",
+    "mascotDesignSheet": "Solid uniform flat {KEY_HEX} background, no text, no labels, no grid lines, no shadows.",
+    "mascot3dInput": "Single full-body figure, orthographic {VIEW} view, relaxed A-pose with arms held away from the torso and legs slightly apart, flat unlit colours, no outlines, no cel shadows, no specular, plain 50% grey #808080 background, no floor, no cast shadow, whole figure in frame with margin.",
+    "background": "No characters, no UI elements, no text, no letters, no readable signage, no logos. Darker, lower-detail area in the central 60% where the reel grid sits; brightest neon masses at the far left and far right edges; thinner, lower-contrast linework than the foreground; soft depth layering.",
+    "framePiece": "Single game UI element, orthographic front view, crisp edges, no drop shadow outside the element, no text, no neon, no glow. Any enclosed opening is solid flat {KEY_HEX}. Solid uniform flat {KEY_HEX} background.",
+    "vfxKey": "Single effect element, centred, on a solid uniform flat {KEY_HEX} background, no text, no characters, hard-edged cel-shaded shapes, pure-black outline where shapes are solid."
+  },
+  "keyColors": {
+    "default": "#00FF00",
+    "forGreenAssets": "#FF00FF",
+    "whenBothClash": "#0000FF",
+    "rules": [
+      "The same hex goes into the prompt and into the keyer.",
+      "The keyer must also clear ENCLOSED key-coloured regions (holes, handles, frame openings).",
+      "ffmpeg despill supports green/blue only; magenta-keyed assets rely on the closed black outline (outline_matte) or ToonOut/BiRefNet matting.",
+      "Alternative for Nano Banana: render the same edit once on #FFFFFF and once on #000000 and difference-matte for true soft alpha."
+    ]
+  },
+  "palette": [
+    { "id": "ink", "hex": "#000000", "group": "line", "role": "All outer outlines and interior lines, foreground and mascots." },
+    { "id": "plum", "hex": "#4B283D", "group": "line", "role": "Extrusion toward the lower right (royals, symbols, logo). Never used as an outline." },
+    { "id": "plum_light", "hex": "#6B3A57", "group": "line", "role": "Lit face of the extrusion." },
+    { "id": "specular", "hex": "#FFFFFF", "group": "shade", "role": "One crisp specular streak per object." },
+    { "id": "cel_light", "hex": "#FFF6D8", "group": "shade", "role": "Light-tone tint (warm cream) for cel highlights." },
+    { "id": "cel_shadow_hue", "hex": "#6A1030", "group": "shade", "role": "Shadow tones shift toward warm plum, never toward grey or black." },
+    { "id": "gold_base", "hex": "#FFC629", "group": "special", "role": "Molten gold for specials, coins, the boombox and the mic." },
+    { "id": "gold_shade", "hex": "#E2861A", "group": "special", "role": "Gold first shadow." },
+    { "id": "gold_deep", "hex": "#9A4A0C", "group": "special", "role": "Gold second shadow." },
+    { "id": "gold_light", "hex": "#FFF0A0", "group": "special", "role": "Gold highlight." },
+    { "id": "env_walls", "hex": "#2A0F5E", "group": "environment", "role": "Juke-joint walls (deep violet)." },
+    { "id": "env_ambient", "hex": "#4B3BFF", "group": "environment", "role": "Ambient indigo-blue fill light in the background only." },
+    { "id": "env_floor", "hex": "#0A0420", "group": "environment", "role": "Floor / deepest background; also the app clear colour." },
+    { "id": "neon_cyan", "hex": "#35F2E0", "group": "environment", "role": "Background neon (firefly jars, sign). Foreground never glows." },
+    { "id": "neon_magenta", "hex": "#FF3FA8", "group": "environment", "role": "Background neon (booth, arcs)." },
+    { "id": "frame_face", "hex": "#B8742F", "group": "frame", "role": "Weathered cypress plank face." },
+    { "id": "frame_underside", "hex": "#5A2A18", "group": "frame", "role": "Beam underside / sill top shadow." },
+    { "id": "panel_top", "hex": "#0C3149", "group": "board", "role": "Glass panel gradient top (drawn in code)." },
+    { "id": "panel_bottom", "hex": "#080418", "group": "board", "role": "Glass panel gradient bottom (drawn in code)." },
+    { "id": "tile_unlit", "hex": "#1F2E4D", "group": "board", "role": "Unlit multiplier-spot tile (drawn in code)." },
+    { "id": "royal_A", "hex": "#D13242", "group": "royal", "role": "L1 'A' enamel face." },
+    { "id": "royal_K", "hex": "#F1C81C", "group": "royal", "role": "L2 'K' enamel face." },
+    { "id": "royal_Q", "hex": "#75D92A", "group": "royal", "role": "L3 'Q' enamel face." },
+    { "id": "royal_J", "hex": "#E6A37F", "group": "royal", "role": "L4 'J' enamel face." },
+    { "id": "royal_10", "hex": "#AA621B", "group": "royal", "role": "L5 '10' enamel face." },
+    { "id": "h1", "hex": "#FFC629", "shade": "#8A4B0A", "group": "high", "role": "H1 Golden Boombox." },
+    { "id": "h2", "hex": "#FF3FA8", "shade": "#5A0F3C", "group": "high", "role": "H2 Vinyl Record (hot pink label/sleeve). Same hue as background neon: must read as flat enamel, never glowing." },
+    { "id": "h3", "hex": "#FF5A2A", "shade": "#6B1608", "group": "high", "role": "H3 Crawfish." },
+    { "id": "h4", "hex": "#E8262E", "shade": "#5C0B10", "group": "high", "role": "H4 Hot Sauce." },
+    { "id": "wild", "hex": "#35F2E0", "shade": "#0B3B52", "group": "special", "role": "W Wild (teal enamel + gold). Flat enamel, no glow baked." },
+    { "id": "scatter", "hex": "#FFD54A", "shade": "#7A3E00", "group": "special", "role": "S Golden Mic." },
+    { "id": "gumbo_skin", "hex": "#3F9D3A", "group": "mascot", "role": "Gumbo skin." },
+    { "id": "gumbo_shade", "hex": "#2B6B2A", "group": "mascot", "role": "Gumbo shadow tone." },
+    { "id": "gumbo_belly", "hex": "#EEE0AB", "group": "mascot", "role": "Gumbo belly/cream." },
+    { "id": "gumbo_accent", "hex": "#F2C230", "group": "mascot", "role": "Gumbo gold tooth / accents." },
+    { "id": "croak_skin", "hex": "#8FBF3A", "group": "mascot", "role": "Baron Croak skin." },
+    { "id": "croak_shade", "hex": "#5F8A26", "group": "mascot", "role": "Baron Croak shadow tone." },
+    { "id": "croak_belly", "hex": "#F2E79A", "group": "mascot", "role": "Baron Croak throat/belly." },
+    { "id": "croak_accent", "hex": "#FF5FA2", "group": "mascot", "role": "Baron Croak hot-pink accents." },
+    { "id": "ui_label", "hex": "#F8D828", "group": "ui", "role": "HUD labels (condensed caps, 2 px black stroke)." },
+    { "id": "ui_value", "hex": "#FFFFFF", "group": "ui", "role": "HUD values." },
+    { "id": "ui_icon", "hex": "#E8E8E8", "group": "ui", "role": "Icons and spin arrow." },
+    { "id": "ui_stroke", "hex": "#8A8A8A", "group": "ui", "role": "Small hex button stroke (2 px) over 85% black fill." },
+    { "id": "ui_buy_accent", "hex": "#F828C8", "group": "ui", "role": "The ONLY saturated UI accent: bonus-buy button." }
+  ],
+  "heatTiers": {
+    "$comment": "Multiplier-spot tile skins, drawn in code (src/config/game.ts SPOT_BANDS decides which tier a value gets). Measured on the reference; SWAMP FUNK reskin proposal: lily pads under glass, teal -> lime -> orange -> gold.",
+    "T0": { "fill": "#1F2E4D", "note": "no spot" },
+    "T1": { "note": "marked, teal/gold payframe glow, no number" },
+    "T2": { "text": ["#67400D", "#833206"], "note": "dim number" },
+    "T3": { "tileBottom": "#5C1C10", "text": "#B02800" },
+    "T4": { "fill": ["#AE231F", "#D7371A", "#DC4812"], "rim": "#FF5A1E", "text": "#FFCC00", "textStroke": "#000000" },
+    "T5": { "fill": "T4", "stroke": ["#FF6600", "#FFCC03", "#FFFF10"], "specular": "#FFFFDC", "glow": "#FF7E20" }
+  },
+  "outline": {
+    "colour": "#000000",
+    "symbolOuter": { "designPx": 4.6, "at2x": 9, "at2048Master": 52, "measuredReferenceRangeDesignPx": [3, 5], "pctOfCell": 3 },
+    "symbolInterior": { "designPx": 2.6, "at2x": 5, "at2048Master": 30 },
+    "bottomRightHeavierUpToDesignPx": 7,
+    "mascotAtDisplayPx": [3, 4],
+    "uiTextStrokePx": [2, 3],
+    "logoPx": [6, 13],
+    "backgroundLinePx": 2,
+    "note": "1 design px = 2 px on the 360 @2x canvas = ~5.7 px on a 2048 master. Research round 2's '14 px at 2048, darkened local hue' is superseded: it would render ~1.2 design px and does not match the reference."
+  },
+  "extrusion": {
+    "colour": "#4B283D",
+    "direction": "lower-right (away from the top-left key light)",
+    "depthDesignPx": [6, 10],
+    "depthAt2x": [12, 20],
+    "note": "The outline wraps the face and the extrusion together."
+  },
+  "light": {
+    "key": "top-left, 45 degrees, on every asset (symbols, mascots, frame, logo, 3D)",
+    "cel": "1 flat base + 2 hard-edged shadow tones + 1 white specular streak; no gradients except runtime glows",
+    "rimLightOnForeground": false,
+    "bakedGlowBloomBlurShadow": false,
+    "neon": "background only",
+    "threeD": { "material": "MeshToonMaterial", "gradientMapSteps": [90, 170, 255], "filter": "NearestFilter", "lights": ["DirectionalLight top-left", "HemisphereLight fill"], "outline": "OutlineEffect #000, ~3 px at display size" }
+  },
+  "camera": {
+    "symbols": "one camera for every object symbol: frontal three-quarter, slight low angle; royals straight-on",
+    "mascots": "three-quarter, turned toward the reels (Gumbo faces screen-right, Croak screen-left)",
+    "background": "wide establishing view, eye level"
+  },
+  "canvas": {
+    "symbolCanvasAt2x": 360,
+    "designCell": 150,
+    "designCanvas": 180,
+    "anchor": [0.5, 0.5],
+    "masterSize": 2048,
+    "masterAlpha": "straight",
+    "downsample": "Lanczos; never upscale masters",
+    "deliverUpright": true,
+    "rotationNote": "The runtime rotates each symbol by restAngle (src/config/game.ts). Deliver art upright. For negative restAngle (counter-clockwise tilt) ask for the key light a little more from above (by about |restAngle|) so it still reads top-left after rotation."
+  },
+  "cellFill": {
+    "$comment": "Content height as % of the 150 px cell; matches src/config/game.ts cellScale.",
+    "royal": { "pct": [85, 90], "cellScale": 0.86, "at2xContentPx": [255, 270] },
+    "high": { "pct": [95, 100], "cellScale": [0.95, 0.97], "at2xContentPx": [288, 300] },
+    "special": { "pct": [102, 115], "cellScale": [1.02, 1.12], "at2xContentPx": [306, 345] },
+    "promptFillPctOfFrame": { "royal": 80, "high": 85, "special": 85, "note": "Generation framing only (leaves margin for the matte). The matte/fit step rescales content onto the 360 @2x canvas to hit the cellFill height above." }
+  },
+  "symbols": {
+    "H1": {
+      "label": "Golden Boombox", "kind": "high", "payOrder": 1, "restAngle": -6, "landWeight": "heavy", "keyHex": "#00FF00",
+      "brief": "Chunky retro boombox in molten gold with two big round speaker cones, a carry handle and a cassette door; plum extrusion; chrome-free (gold + black + white specular only).",
+      "rigParts": ["body", "handle", "speaker_L", "speaker_R", "cassette_door", "antenna (phys_)"],
+      "motionIdeas": "Speaker cones pump on land_impact and win_peak; antenna jiggles via physics."
+    },
+    "H2": {
+      "label": "Vinyl Record", "kind": "high", "payOrder": 2, "restAngle": 0, "landWeight": "medium", "keyHex": "#00FF00",
+      "brief": "Glossy black vinyl record half out of a hot-pink sleeve, blank label (no text), grooves as 2-3 interior lines only.",
+      "rigParts": ["sleeve", "disc", "label", "fx_glint"],
+      "motionIdeas": "Disc spins in win_loop; sleeve squashes on land."
+    },
+    "H3": {
+      "label": "Crawfish", "kind": "high", "payOrder": 3, "restAngle": -14, "landWeight": "medium", "keyHex": "#00FF00",
+      "brief": "Adult-proportioned cartoon crawfish, red-orange shell, big claws raised in a swagger pose, two long antennae; attitude, not cute.",
+      "rigParts": ["body", "tail_fan", "claw_L", "claw_R", "antenna_L (phys_)", "antenna_R (phys_)", "eye_L", "eye_R", "lid_L", "lid_R"],
+      "motionIdeas": "Claws snap on win_peak; antennae trail the drop via setPositionInheritance."
+    },
+    "H4": {
+      "label": "Hot Sauce", "kind": "high", "payOrder": 4, "restAngle": -12, "landWeight": "medium", "keyHex": "#00FF00",
+      "brief": "Bayou hot-sauce bottle, deep red sauce, cork/cap, blank label with a chili pictogram (no words), small cartoon flame wisp.",
+      "rigParts": ["bottle", "sauce (phys_ slosh)", "cap", "label", "fx_flame"],
+      "motionIdeas": "Sauce sloshes on land; cap pops on win_peak."
+    },
+    "L1": { "label": "Ace", "glyph": "A", "kind": "royal", "restAngle": 0, "face": "#D13242", "keyHex": "#00FF00" },
+    "L2": { "label": "King", "glyph": "K", "kind": "royal", "restAngle": 0, "face": "#F1C81C", "keyHex": "#00FF00" },
+    "L3": { "label": "Queen", "glyph": "Q", "kind": "royal", "restAngle": 0, "face": "#75D92A", "keyHex": "#FF00FF" },
+    "L4": { "label": "Jack", "glyph": "J", "kind": "royal", "restAngle": 0, "face": "#E6A37F", "keyHex": "#00FF00" },
+    "L5": { "label": "Ten", "glyph": "10", "kind": "royal", "restAngle": 0, "face": "#AA621B", "keyHex": "#00FF00" },
+    "royalsCommon": {
+      "brief": "Chunky carved-wood letterform with a glossy coloured enamel face (one hue per letter), pure-black outline, plum extrusion lower-right. Built as vector geometry from the bundled display fonts (Lilita One / Titan One), rasterised with resvg; optional AI material pass (royal_material_pass.txt) re-matted and registered back onto the vector alpha.",
+      "animation": "GSAP + shaders only (pop, shine mesh shader, particle burst); no Spine rig by default."
+    },
+    "W": {
+      "label": "Wild", "kind": "wild", "restAngle": 0, "landWeight": "special", "keyHex": "#FF00FF",
+      "brief": "PROPOSAL (art director confirms): a gold-capped alligator-tooth charm on a short chain, teal enamel inlay, bold and heraldic. The word WILD is live text in code, never painted.",
+      "rigParts": ["tooth", "cap", "chain (phys_ chain)", "fx_glow"],
+      "motionIdeas": "Chain swings with physics on land; anticipation pulse on the enamel."
+    },
+    "S": {
+      "label": "Golden Mic", "kind": "scatter", "restAngle": -18, "landWeight": "special", "keyHex": "#00FF00",
+      "brief": "Vintage golden ribbon microphone with a short coiled cable, molten gold, oversized grille; reads as the most precious object on the board.",
+      "rigParts": ["grille", "body", "cable (phys_ chain)", "fx_glint"],
+      "motionIdeas": "Anticipation heartbeat on the grille; cable whips on land."
+    }
+  },
+  "mascots": {
+    "rules": {
+      "adultProportions": "Head about 1/4 of total height (head:body >= 1:3). Adult body language and attire. Stake rejects child-like characters in any gambling context.",
+      "forbiddenPromptWords": ["kid", "child", "cute", "chibi", "baby"],
+      "identityLock": "Exactly the same character as the references: same face, markings, outfit and colours; nothing added, removed or recoloured; same proportions."
+    },
+    "gumbo": {
+      "name": "Gumbo", "side": "left", "species": "alligator", "role": "bouncer", "keyHex": "#FF00FF",
+      "brief": "Heavyset adult alligator bouncer in a tank top, gold tooth, toothpick, arms crossed; stands next to a cooler he slams on big wins.",
+      "build": { "width": 1.14, "height": 0.97, "tempo": 0.92 },
+      "springBones": ["tail", "jowl", "belly"],
+      "acting": "Idle breathing and tail swish; slow, heavy weight shifts; big win = cooler slam."
+    },
+    "croak": {
+      "name": "Baron Croak", "side": "right", "species": "bullfrog", "role": "DJ", "keyHex": "#0000FF",
+      "brief": "Lanky adult bullfrog DJ with headphones, gold chain and a turntable on a crate; olive/yellow-green with hot-pink accents.",
+      "build": { "width": 0.93, "height": 1.05, "tempo": 1.06 },
+      "springBones": ["jowl (throat pouch)", "chain", "belly"],
+      "acting": "Idle head-nod on the beat; scratching during tumbles; throat-pouch pump on multiplier upgrade; mic-drop on feature trigger."
+    }
+  },
+  "environment": {
+    "background": {
+      "keys": ["bg_landscape", "bg_portrait", "bg_fs_landscape", "bg_fs_portrait"],
+      "masters": { "landscape": [3072, 1536], "portrait": [1536, 3072] },
+      "generate": "Landscape: 21:9 at 4K, crop to 2:1. Portrait: 9:16 at 4K, outpaint to 1:2.",
+      "layers": ["back", "mid", "front", "neon_additive (edit pass: same scene, only the neon tubes, on flat black)"],
+      "composition": "Firefly-jar shelf and cyan light bar at far left; neon gator sign (icon only) and magenta booth at far right; cypress silhouettes behind windows; string lights across the top; dark floor from the bottom ~11%; low-detail darker centre 60% behind the grid.",
+      "freeSpinsVariant": "PROPOSAL: same set after hours, denser swamp fog and a moonlit window; the palette shifts toward cyan."
+    },
+    "frame": {
+      "keys": ["frame_beam", "frame_post", "frame_sill"],
+      "brief": "Weathered cypress planks with a rope wrap and black iron rivets; face #B8742F, underside #5A2A18. The neon tube along the beam is a runtime effect, not painted.",
+      "construction": "Orthographic pieces (beam, post, sill, corner cap) on the key colour; 3-slice: posts tile vertically, the beam stretches only in its centre segment."
+    },
+    "logo": {
+      "key": "logo",
+      "brief": "Working title TBD (must be unique; no 'Megaways'/'Xways'; no Stake/Kick branding). Chunky slanted letters, 6-13 px black outline, 5-15 px extrusion lower-right, tri-band fill proposal: swamp green / gold / hot pink. AI makes the emblem only (no letters); a typographer sets the word-mark as vector; trademark search before release."
+    },
+    "ui": {
+      "smallHex": { "size": [72, 70], "fill": "rgba(0,0,0,0.85)", "stroke": "2 px #8A8A8A" },
+      "spinHex": { "size": [293, 271], "fill": "rgba(0,0,0,0.30)", "stroke": "2 px rgba(255,255,255,0.6)", "tiltDeg": 20 },
+      "states": ["default", "hover", "pressed", "disabled"],
+      "fonts": { "labels": "Bebas Neue / Anton", "values": "Titan One", "spotNumbersAndRoyals": "Lilita One" },
+      "rule": "Vector (Recraft SVG or hand SVG) rasterised with resvg. No words baked into any button or badge; all copy is live text (i18n + social mode)."
+    },
+    "gameTile": {
+      "brief": "Built in the ACP Tile Editor: a brighter, light-edged daytime variant of the background plus a transparent foreground of both mascots rendered from the real GLBs at 2048 px. No text or multipliers in either image. The foreground fills the key-focus box."
+    }
+  },
+  "gates": {
+    "readability64": { "method": "Contact sheet of every symbol at 64 px, plus 150 and 75 px on the real panel colour; Claude + Gemini identify each blind.", "pass": "every symbol identified by both judges" },
+    "silhouetteConfusion": { "method": "Greyscale/alpha silhouettes of all symbols, pairwise aligned-IoU confusion matrix.", "pass": "no off-diagonal pair >= 0.85 IoU", "status": "calibrate" },
+    "paletteDeltaE": { "method": "k-means dominant colours per asset vs bible role colours (CIEDE2000).", "pass": "every dominant cluster within 10 dE of an allowed role colour; hidden-area fills < 3 dE vs the visible part", "status": "calibrate (the 3 dE fill rule is from research; the 10 dE cluster rule is a starting value)" },
+    "outlineHistogram": { "method": "OpenCV distance-transform width histogram of dark (max RGB < 70) boundary pixels at final display size.", "pass": "outer outline 3-5 design px (bottom-right up to 7); >= 3 px for baked 3D inserts", "status": "calibrate" },
+    "styleSimilarity": { "method": "DINOv2 cosine similarity to the canonical paintover pack; mascot identity vs the canonical front view.", "status": "calibrate on the pack" },
+    "halo": { "method": "Composite on pure black and pure white; count key-tinted edge pixels.", "pass": "zero key-tinted edge pixels" },
+    "noText": { "method": "OCR spot-check.", "pass": "no text except royal glyphs" },
+    "canvasAndPivot": { "method": "360x360 @2x, content bbox height within the cellFill range, content centred, straight alpha.", "pass": "all true" },
+    "adultProportions": { "method": "Head bbox height / total height + vision rubric.", "pass": "<= 0.27 and judged adult by both judges", "status": "calibrate" },
+    "lightDirection": { "method": "Vision rubric on the rotated in-game composite.", "pass": "reads top-left" },
+    "retryBudget": "2 automatic regenerations per asset, then best-of goes to human review."
+  }
+}

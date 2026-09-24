@@ -227,6 +227,7 @@ export class ProceduralLayers {
   private time = 0;
   private nextBlink: number;
   private kick = 0;
+  private groove: number;
 
   constructor(
     private readonly rig: ProceduralRig,
@@ -258,6 +259,7 @@ export class ProceduralLayers {
       }
     });
     this.baseScale.copy(rig.build.scale);
+    this.groove = persona.groove;
     this.nextBlink = this.blinkGap();
   }
 
@@ -270,6 +272,11 @@ export class ProceduralLayers {
   /** Set the build scale (heavyset vs lanky); squash multiplies on top. */
   setBuild(width: number, height: number): void {
     this.baseScale.set(width, height, width);
+  }
+
+  /** Change the idle groove tempo (BPM, 0 = none), e.g. hotter in free spins. */
+  setGroove(bpm: number): void {
+    this.groove = bpm;
   }
 
   /** Short-lived expression over the state expression (e.g. a sulk after a dead spin). */
@@ -353,7 +360,7 @@ export class ProceduralLayers {
     const pitch = this.pitch.step(pitchT, dt);
 
     // groove: DJ nods on the beat (idle only); nod spring carries kicks from cues
-    const beat = idle && this.persona.groove > 0 ? (this.time * this.persona.groove) / 60 : 0;
+    const beat = idle && this.groove > 0 ? (this.time * this.groove) / 60 : 0;
     const pulse = beat ? Math.max(0, Math.cos(beat * Math.PI * 2)) ** 3 : 0;
     const nod = this.nod.step(0, dt) + pulse * 0.09;
     const bob = this.head ? this.head.a.x : 0;

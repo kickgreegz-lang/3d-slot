@@ -68,8 +68,9 @@ export const FALLBACK_CLIPS: Record<ClipKey, Performance> = {
 
 /** Local timing (seconds, animation time) — not gameplay pacing, so it stays out of TIMING. */
 const LOCAL = {
-  /** idle -> idle_bored after this long without a cue */
+  /** idle -> idle_bored after this long without a cue (+ up to boredJitter, per character) */
   boredAfter: 20,
+  boredJitter: 8,
   /** ignore a repeat of the same one-shot within this window (flow + scene events can double-cue) */
   dedupe: 0.3,
 };
@@ -90,6 +91,7 @@ export class MascotController {
   private idleTime = 0;
   private lastOneShot: { key: ClipKey; at: number } = { key: 'idle', at: -1 };
   private clockTime = 0;
+  private readonly boredAfter: number;
 
   constructor(
     private readonly mixer: AnimationMixer,
@@ -99,6 +101,7 @@ export class MascotController {
     idlePhase: number,
   ) {
     for (const c of clips) this.clips.set(c.name.toLowerCase(), c);
+    this.boredAfter = LOCAL.boredAfter + rand() * LOCAL.boredJitter;
     this.enter('idle', 0);
     if (this.current) this.current.time = idlePhase * this.current.getClip().duration;
   }
@@ -139,7 +142,7 @@ export class MascotController {
     this.stateTime += dt;
     if (this.state === 'idle') {
       this.idleTime += dt;
-      if (this.idleTime > LOCAL.boredAfter) this.play('idle_bored');
+      if (this.idleTime > this.boredAfter) this.play('idle_bored');
     }
     const a = this.current;
     if (!a || !this.isOneShot()) return;

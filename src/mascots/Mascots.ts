@@ -23,6 +23,8 @@ const REACT = {
   sulkChance: 0.4,
   /** feet line inside the beam when standing on it (fraction of beam height from its top) */
   beamFooting: 0.3,
+  /** free-spin groove BPM for both mascots */
+  fsGroove: 112,
 };
 
 /**
@@ -129,7 +131,7 @@ export class Mascots implements GameModule {
     this.enabled = slots !== null;
     const pixelScale = this.ctx.scale * this.ctx.app.renderer.resolution;
     const centre = cellCenter(L, 3, 2);
-    const feet = (r: { x: number; y: number; w: number; h: number }): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h * 0.35 });
+    const faceOf = (r: { x: number; y: number; w: number; h: number }): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h * 0.35 });
     // a slot whose floor line falls inside the frame beam (portrait) stands ON the beam's top
     const beamTop = L.frame.y;
     const beamBottom = L.frame.y + L.frameParts.beam;
@@ -140,7 +142,7 @@ export class Mascots implements GameModule {
     for (const m of this.mascots) {
       const rect = slots ? slots[m.def.side] : null;
       const other = slots ? slots[m.def.side === 'left' ? 'right' : 'left'] : null;
-      m.layout(rect, pixelScale, centre, other ? feet(other) : null, rect ? ground(rect) : undefined);
+      m.layout(rect, pixelScale, centre, other ? faceOf(other) : null, rect ? ground(rect) : undefined);
       m.show(this.enabled);
     }
     this.dirty = true;
@@ -184,6 +186,8 @@ export class Mascots implements GameModule {
         this.onCue('spinStart');
       }),
       g.on('board:reveal', ({ anticipation }) => {
+        // a new board (next free spin) ends any held celebration
+        this.releaseHeld();
         const reels = anticipation.map((a, i) => (a > 0 ? i : -1)).filter((i) => i >= 0);
         if (!reels.length) return;
         this.lookAtCells([{ reel: reels[0], row: 3 }], 3);
@@ -205,7 +209,13 @@ export class Mascots implements GameModule {
         this.lookAtCells(positions, 2.5);
         this.onCue('fsTrigger');
       }),
+      g.on('fs:update', () => this.releaseHeld()),
+      g.on('win:final', () => this.releaseHeld()),
       g.on('fs:end', () => this.onCue('fsEnd')),
+      g.on('mode:change', ({ gameType }) => {
+        // the club gets hotter in free spins: both mascots groove to the beat
+        for (const m of this.mascots) m.procedural.setGroove(gameType === 'freegame' ? REACT.fsGroove : m.def.persona.groove);
+      }),
       g.on('round:end', ({ totalWin }) => {
         this.anticipationLeft = 0;
         this.all('release');
@@ -262,6 +272,12 @@ export class Mascots implements GameModule {
         this.all('fs_end');
         break;
     }
+  }
+
+  /** Drop held loops (celebrate / anticipation / bored) — the presentation they belonged to is over. */
+  private releaseHeld(): void {
+    this.anticipationLeft = 0;
+    this.all('release');
   }
 
   private all(key: ClipKey | 'release'): void {

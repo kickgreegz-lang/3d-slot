@@ -14,6 +14,7 @@ import { clock } from '../core/clock';
 import type { GameContext, GameModule } from '../game/context';
 import { buildLogo } from './frame/logo';
 import { WOOD, nail, plank, ropeWrap, sillPart } from './frame/wood';
+import { registerTiming } from '../core/timing';
 
 /**
  * Reel frame (owns ctx.layers.panel, ctx.layers.frame, ctx.layers.logo):
@@ -26,7 +27,7 @@ import { WOOD, nail, plank, ropeWrap, sillPart } from './frame/wood';
  * MSAA) and re-baked on 'layout:change'. Production art (env keys panel /
  * frame_post / frame_beam / frame_sill / logo) replaces the procedural parts.
  */
-const LOCAL_TIMING = {
+const LOCAL_TIMING = registerTiming('scene', {
   /** logo shine sweep: duration and gap (s, UI time) */
   shineDuration: 0.9,
   shineGap: 6,
@@ -34,7 +35,7 @@ const LOCAL_TIMING = {
   tubePeriod: 3.2,
   /** base <-> free-spins neon recolour (s), matches the background crossfade */
   modeCrossfade: 1.4,
-};
+});
 const NEON = 0x35f2e0;
 const NEON_HOT = 0xff3fa8;
 

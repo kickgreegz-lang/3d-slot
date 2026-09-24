@@ -264,15 +264,15 @@ export class SymbolRig implements SymbolView {
     if (rig) {
       this.squashGain = T.spine.squashScale;
       rig.impact(T.spine.physicsImpulse * m);
-      if (rig.hasEvent(SPINE_EVENT.impact)) rig.once(SPINE_EVENT.impact, () => this.landFeedback(weight, m, !!opts.tumble));
-      else this.landFeedback(weight, m, !!opts.tumble);
+      if (rig.hasEvent(SPINE_EVENT.impact)) rig.once(SPINE_EVENT.impact, () => this.landFeedback(weight, m, !!opts.tumble, !!opts.silent));
+      else this.landFeedback(weight, m, !!opts.tumble, !!opts.silent);
       void rig.play('land', false, true).then(() => {
         if (this.rig === rig && (this._state === 'land' || this._state === 'static')) this.releaseSpine();
       });
     } else {
       this.releaseSpine();
       this.squashGain = 1;
-      this.landFeedback(weight, m, !!opts.tumble);
+      this.landFeedback(weight, m, !!opts.tumble, !!opts.silent);
       this.ensureJelly();
       this.lag.v += T.jelly.landLagKick * m;
       this.bulge.v += T.jelly.landBulgeKick * m;
@@ -868,12 +868,12 @@ export class SymbolRig implements SymbolView {
 
   // ── feedback ──
 
-  private landFeedback(weight: LandWeight, m: number, tumble: boolean): void {
+  private landFeedback(weight: LandWeight, m: number, tumble: boolean, silent: boolean): void {
     const L = T.land;
     const now = clock.time * 1000;
     const id = `land_${weight}` as SfxId;
     const last = feedback.lastSfx.get(id) ?? -Infinity;
-    if (now - last >= T.feedback.sfxMinGap) {
+    if (!silent && now - last >= T.feedback.sfxMinGap) {
       feedback.lastSfx.set(id, now);
       const volume = (L.sfxVolume[weight] ?? 0.7) * (tumble ? L.tumbleVolume : 1);
       this.ctx.game.broadcast('sfx', { id, volume, rate: 0.96 + this.seed * 0.08 });

@@ -1,4 +1,5 @@
 import type { SfxId } from '../game/events';
+import { registerTiming } from '../core/timing';
 
 /**
  * The mixing desk: bus levels, per-sound play rules and audio-only timings.
@@ -91,7 +92,7 @@ export const SFX_RULES: Record<SfxId, SfxRule> = {
 };
 
 /** Audio-only timings (s). Gameplay timings stay in core/timing.ts. */
-export const AUDIO_TIMING = {
+export const AUDIO_TIMING = registerTiming('audio', {
   /** mute / hide fade of the master bus */
   masterFade: 0.06,
   /** voice-steal fade */
@@ -116,4 +117,4 @@ export const AUDIO_TIMING = {
   anticipationFadeOut: 0.14,
   /** longest an anticipation loop may run without an 'anticipation_end' */
   anticipationMax: 12,
-} as const;
+} as const);

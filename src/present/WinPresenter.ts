@@ -3,18 +3,19 @@ import { BitmapText, Container, Sprite } from 'pixi.js';
 import type { ClusterWin } from '../book/types';
 import { SYMBOLS } from '../config/game';
 import { cellCenter, gridSize, type LayoutSpec } from '../config/layout';
-import { s, stagger, TIMING } from '../core/timing';
+import { registerTiming, s, stagger, TIMING } from '../core/timing';
 import { glowTexture } from '../fx/textures';
 import { lighten } from '../fx/util';
 import type { GameContext, GameModule } from '../game/context';
 import type { GameEvents } from '../game/events';
 import { ensureLabelFont, ensureValueFont } from './common/fonts';
 import { placementFor } from './common/placement';
+import { scaleTo } from './common/anim';
 import { Plate } from './common/Plate';
 import { label } from './common/text';
 
 /** Local choreography (ms, speed-scaled via s()). Candidates for TIMING.win. */
-export const WIN_PRESENT_TIMING = {
+export const WIN_PRESENT_TIMING = registerTiming('winPresent', {
   /** stagger between several cluster labels of one winInfo */
   labelStagger: 90,
   /** tumble plate count-up per increase */
@@ -22,7 +23,7 @@ export const WIN_PRESENT_TIMING = {
   platePunch: 260,
   plateIn: 300,
   plateOut: 220,
-} as const;
+} as const);
 
 /** One pooled cluster-win label: symbol-coloured glow + money value + optional xN badge. */
 class ClusterLabel extends Container {
@@ -71,8 +72,16 @@ export class WinPresenter implements GameModule {
     const labelFont = ensureLabelFont(renderer);
     ctx.layers.overlay.addChild(this.layer);
 
-    this.plateLabel = new BitmapText({ text: label('win', 'WIN'), style: { fontFamily: labelFont, fontSize: 30 }, anchor: { x: 0, y: 0.5 } });
-    this.plateValue = new BitmapText({ text: '', style: { fontFamily: this.valueFont, fontSize: 44 }, anchor: { x: 0, y: 0.52 } });
+    this.plateLabel = new BitmapText({
+      text: label('win', 'WIN'),
+      style: { fontFamily: labelFont, fontSize: 30 },
+      anchor: { x: 0, y: 0.5 },
+    });
+    this.plateValue = new BitmapText({
+      text: '',
+      style: { fontFamily: this.valueFont, fontSize: 44 },
+      anchor: { x: 0, y: 0.52 },
+    });
     this.plate.addChild(this.plateBg, this.plateLabel, this.plateValue);
     this.plate.visible = false;
     this.layer.addChild(this.plate);
@@ -195,7 +204,7 @@ export class WinPresenter implements GameModule {
       this.plateCount.v = 0;
       this.renderPlate(0);
       this.plate.scale.set(base * 0.4);
-      this.plateTweens.push(gsap.to(this.plate.scale, { x: base, y: base, duration: s(P.plateIn), ease: 'back.out(2.4)' }));
+      this.plateTweens.push(scaleTo(this.plate.scale, base, { duration: s(P.plateIn), ease: 'back.out(2.4)' }));
     } else if (amount > prev) {
       this.plateTweens.push(
         gsap.fromTo(
@@ -232,7 +241,7 @@ export class WinPresenter implements GameModule {
     for (const t of this.plateTweens) t.kill();
     const base = this.plateBaseScale;
     this.plateTweens = [
-      gsap.to(this.plate.scale, { x: base * 0.8, y: base * 0.8, duration: s(WIN_PRESENT_TIMING.plateOut), ease: 'power2.in' }),
+      scaleTo(this.plate.scale, base * 0.8, { duration: s(WIN_PRESENT_TIMING.plateOut), ease: 'power2.in' }),
       gsap.to(this.plate, {
         alpha: 0,
         duration: s(WIN_PRESENT_TIMING.plateOut),

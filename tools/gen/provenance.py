@@ -183,7 +183,12 @@ def append_rows(path: str | os.PathLike, rows: list[dict], generated_by: str) ->
     p.parent.mkdir(parents=True, exist_ok=True)
     with _lock(p):
         doc = read_manifest(p) if p.exists() else _empty(generated_by)
-        have = {r.get("id") for r in doc["rows"]}
+        have = {r.get("id"): r for r in doc["rows"]}
+        for r in rows:
+            old = have.get(r["id"])
+            if old is not None and old.get("sha256") != r["sha256"]:
+                raise ValueError(f"{p}: row id {r['id']!r} already exists with a different sha256 "
+                                 f"(rows are immutable; write a new version instead)")
         added = [r for r in rows if r["id"] not in have]
         if added or not p.exists():
             doc["rows"].extend(added)

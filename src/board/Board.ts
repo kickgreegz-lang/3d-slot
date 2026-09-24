@@ -342,7 +342,7 @@ export class Board implements GameModule {
           const impactAt = at + T;
           tl.call(() => {
             sv.setBlur(false);
-            lands.push(sv.land({ velocity: vImpact }));
+            lands.push(sv.land({ velocity: vImpact, silent: true }));
             if (isScatter(id)) {
               scatterCount++;
               this.scatterLanded(sv, reel, row, scatterCount, impactAt < antTease);
@@ -562,7 +562,7 @@ export class Board implements GameModule {
           firstImpact = Math.min(firstImpact, at + T);
           tl.call(() => {
             m.sv.setBlur(false);
-            lands.push(m.sv.land({ velocity: (g * T) / 1000, tumble: true }));
+            lands.push(m.sv.land({ velocity: (g * T) / 1000, tumble: true, silent: true }));
             if (m.fresh && isScatter(m.sv.id)) {
               scatters++;
               this.scatterLanded(m.sv, reel, m.to, scatters, false);

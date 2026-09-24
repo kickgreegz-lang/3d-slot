@@ -2,7 +2,7 @@ import { gsap } from 'gsap';
 import { Container, Sprite, Texture } from 'pixi.js';
 import type { ParticleKey } from '../assets/art';
 import { clock } from '../core/clock';
-import { s } from '../core/timing';
+import { registerTiming, s } from '../core/timing';
 import type { GameContext, GameModule } from '../game/context';
 import type { GameEvents } from '../game/events';
 import { configureFilterBudget } from './filters/budget';
@@ -12,11 +12,11 @@ import { type BurstContext, spawnBurst } from './presets';
 import { ScreenShake } from './shake';
 
 /** Local FX tuning (candidates for TIMING.fx — see contract requests). */
-export const FX_TIMING = {
+export const FX_TIMING = registerTiming('fx', {
   flash: { defaultDuration: 150, defaultAlpha: 0.35 },
   /** scatter hit: displacement ring on the whole design space */
   scatterShock: { duration: 560, radius: 540, amplitude: 22, width: 150 },
-} as const;
+} as const);
 
 /**
  * FX module: particles, camera shake and screen flashes.

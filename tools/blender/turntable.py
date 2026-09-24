@@ -27,7 +27,8 @@ def build_parser():
     ap = argparse.ArgumentParser(prog="turntable.py", description=__doc__.split("\n\n")[0],
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("model", help=".glb/.gltf/.obj/.fbx/.blend")
-    ap.add_argument("--out", required=True, help="output folder")
+    ap.add_argument("out_dir", nargs="?", help="output folder (same as --out; PIPELINE §4.1 form)")
+    ap.add_argument("--out", help="output folder")
     ap.add_argument("--name", help="file prefix (default: model file stem)")
     ap.add_argument("--angles", type=int, default=8, help="turntable angles (0 = none)")
     ap.add_argument("--action", help="render this action instead of a turntable (contact sheet of the clip)")
@@ -108,16 +109,18 @@ def load_model(path):
 
 
 def main(argv):
-    args = build_parser().parse_args(argv)
+    ap = build_parser()
+    args = ap.parse_args(argv)
+    args.out = args.out or args.out_dir
+    if not args.out:
+        ap.error("give an output folder (positional or --out)")
     log = cli.Log("turntable")
     model = cli.repo_path(args.model)
     if not model.exists():
         raise cli.ToolError(f"model not found: {model}")
     import bpy
     from mathutils import Vector
-    from slotbl import imgtools as it
     from slotbl import scene as S
-    from PIL import Image
 
     load_model(model)
     scene = bpy.context.scene
@@ -217,24 +220,17 @@ def main(argv):
     S.configure_render(scene, args.engine, args.size * args.ss, args.samples, threads=args.threads)
 
     tag = f"{name}_{act.name}" if args.action else f"{name}_turntable"
-    imgs, labels, files = [], [], []
+    raws, labels, files = [], [], []
     for i, (yaw, fr) in enumerate(shots):
         pose(yaw, fr)
         raw = out / f".raw_{tag}_{i:03d}.png"
         S.render_still(scene, raw)
-        with Image.open(raw) as im:
-            small = it.downscale_premult(im, args.size)
-        raw.unlink()
-        fname = out / (f"{tag}_f{int(round(fr)):04d}.png" if args.action else f"{tag}_a{int(round(yaw)):03d}.png")
-        it.save_png(small, fname)
-        imgs.append(small)
-        files.append(fname)
+        raws.append(str(raw))
+        files.append(out / (f"{tag}_f{int(round(fr)):04d}.png" if args.action else f"{tag}_a{int(round(yaw)):03d}.png"))
         labels.append(f"f{fr:g}" if args.action else f"{yaw:g} deg")
     title = (f"{name} - {'clip ' + act.name if args.action else 'turntable'} - {tris} tris"
              + (f", {len(arm.data.bones)} bones" if arm else ""))
-    sheet = it.contact_sheet(imgs, labels, cols=min(8, len(imgs)), cell=min(args.size, 320), bg=args.bg, title=title)
     sheet_path = out / f"{tag}.png"
-    sheet.save(sheet_path, format="PNG", compress_level=6)
     metrics = {
         "model": cli.rel(model), "tris": tris, "bones": len(arm.data.bones) if arm else 0,
         "deformBones": sum(1 for b in arm.data.bones if b.use_deform) if arm else 0,
@@ -243,7 +239,23 @@ def main(argv):
         "shots": [{"yaw": y, "frame": f, "file": cli.rel(p)} for (y, f), p in zip(shots, files)],
         "sheet": cli.rel(sheet_path), "outlinePx": args.outline_px, "engine": args.engine,
     }
-    (out / f"{tag}.json").write_text(json.dumps(metrics, indent=2) + "\n")
+    job = {"raw": raws, "files": [str(f) for f in files], "labels": labels, "size": args.size, "bg": args.bg,
+           "title": title, "sheet": str(sheet_path), "metrics": metrics, "metrics_path": str(out / f"{tag}.json")}
+    try:
+        import numpy  # noqa: F401
+        import PIL  # noqa: F401
+        import sheet_post
+        rc = sheet_post.process(job)
+    except ImportError:
+        import os
+        import subprocess
+        job_path = out / f".{tag}.job.json"
+        job_path.write_text(json.dumps(job))
+        py = os.environ.get("SLOT_PYTHON") or "python3"
+        log(f"Pillow not importable here; post-processing with {py}")
+        rc = subprocess.call([py, str(Path(__file__).with_name("sheet_post.py")), "--job", str(job_path)])
+    if rc:
+        return rc
     log(f"{len(files)} images + sheet {cli.rel(sheet_path)} ({tris} tris) in {log.elapsed():.1f}s")
     return 0
 

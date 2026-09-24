@@ -1,9 +1,11 @@
+import { registerTiming } from '../core/timing';
+
 /**
  * Board-local timing/physics constants that are not (yet) part of the shared
  * TIMING bible in core/timing.ts. Same units: ms, design px, design px/ms.
  * Candidates for promotion into TIMING (see contractRequests in the report).
  */
-export const BOARD_TIMING = {
+export const BOARD_TIMING = registerTiming('board', {
   /** Motion-blur texture above this speed (design px / ms). */
   blurSpeed: 1.5,
   /** Blur switches off this long before impact so the squash frame is crisp. */
@@ -37,4 +39,4 @@ export const BOARD_TIMING = {
   explodeTraumaBase: 0.12,
   explodeTraumaPerSymbol: 0.035,
   explodeTraumaMax: 0.55,
-} as const;
+} as const);

@@ -45,6 +45,8 @@ def build_parser():
     src.add_argument("--blend", help="rig .blend to open (default: the file Blender was started with)")
     src.add_argument("--glb", help="rig GLB/GLTF to import into an empty scene")
     ap.add_argument("--armature", help="armature object name (default: the only armature)")
+    ap.add_argument("--keep-rigid", action="store_true", help="--glb: skip the round-trip prep (default-pose "
+                                                              "keys for unkeyed bones, skinning rigid bone children)")
     ap.add_argument("--check", action="store_true", help="validate the JSON only; do not load Blender data")
     ap.add_argument("--strict", action="store_true", help="contract warnings (clip names/windows) are errors")
     ap.add_argument("--keep-existing", action="store_true", help="error instead of replacing same-name actions")
@@ -455,6 +457,9 @@ def main(argv):
     args = build_parser().parse_args(argv)
     log = cli.Log("build_actions")
     anim_paths = [cli.repo_path(p) for p in args.anim]
+    missing = [str(p) for p in anim_paths if not p.exists()]
+    if missing:
+        raise cli.ToolError(f"animation JSON not found: {', '.join(missing)}")
     spec = None
     if anim_paths:
         spec, warnings = animspec.load(anim_paths, strict=args.strict)
@@ -473,6 +478,10 @@ def main(argv):
     from slotbl import scene as S
     from slotbl import provenance as prov
 
+    for opt in ("glb", "blend"):
+        val = getattr(args, opt)
+        if val and not cli.repo_path(val).exists():
+            raise cli.ToolError(f"--{opt} not found: {val}")
     refs = []
     if args.glb:
         S.reset_scene()
@@ -489,6 +498,11 @@ def main(argv):
     else:
         raise cli.ToolError("no rig: pass --glb or --blend (or start Blender with the .blend)")
     arm = find_armature(args.armature)
+    rig_prep = None
+    if args.glb and not args.keep_rigid:
+        # glTF clips may rely on node default poses and rigid bone-parented parts; make the
+        # rig round-trip safe before anything is built or exported (slotbl.scene docstrings)
+        rig_prep = S.prepare_rig_for_export(arm, rig, log)
     key_meshes = shape_key_meshes(arm)
     scene = bpy.context.scene
 
@@ -504,7 +518,7 @@ def main(argv):
     scene.render.fps = spec["fps"]
     scene.render.fps_base = 1.0
     report = {"rig": cli.rel(rig), "armature": arm.name, "fps": spec["fps"], "clips": [], "sources":
-              [cli.rel(s) for s in spec["sources"]]}
+              [cli.rel(s) for s in spec["sources"]], "rigPrep": rig_prep}
     for clip in spec["clips"]:
         act, stats = build_clip(clip, arm, key_meshes, log, keep_existing=args.keep_existing)
         seam = check_loop(act, arm, key_meshes, clip["length"], stats["bones"]) if clip["loop"] else None
@@ -528,6 +542,8 @@ def main(argv):
         log(f"saved {cli.rel(out_blend)}")
         report["blend"] = cli.rel(out_blend)
 
+    if not out_blend and not args.export_glb:
+        log.warn("actions were built in memory only: pass --save, --out-blend or --export-glb to keep them")
     rows = []
     if args.export_glb:
         import export_glb

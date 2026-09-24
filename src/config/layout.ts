@@ -103,7 +103,8 @@ export const PORTRAIT: LayoutSpec = {
   panel: { x: 54, y: 608, w: 972, h: 700 },
   frame: { x: 20, y: 556, w: 1040, h: 812 },
   frameParts: { post: 34, beam: 52, sill: 52 },
-  logo: { x: 190, y: 30, w: 700, h: 110 },
+  // below the top-left status line (title | clock)
+  logo: { x: 205, y: 46, w: 670, h: 100 },
   mascots: {
     left: { x: 30, y: 150, w: 420, h: 450 },
     right: { x: 630, y: 150, w: 420, h: 450 },
@@ -134,7 +135,8 @@ export const TABLET: LayoutSpec = {
   grid: { x: 413, y: 569 },
   panel: { x: 401, y: 557, w: 1098, h: 790 },
   frame: { x: 326, y: 492, w: 1260, h: 922 },
-  logo: { x: 592, y: 330, w: 741, h: 105 },
+  // sits on the frame beam, as in landscape
+  logo: { x: 592, y: 440, w: 741, h: 105 },
   mascots: {
     left: { x: 0, y: 977, w: 434, h: 496 },
     right: { x: 1531, y: 861, w: 389, h: 568 },

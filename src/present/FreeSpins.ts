@@ -4,7 +4,7 @@ import type { Position } from '../book/types';
 import { FONTS } from '../assets/fonts';
 import { cellCenter, type LayoutSpec } from '../config/layout';
 import { clock } from '../core/clock';
-import { s, stagger, TIMING } from '../core/timing';
+import { registerTiming, s, stagger, TIMING } from '../core/timing';
 import { GodRays } from '../fx/filters/GodRays';
 import { rand } from '../fx/util';
 import type { GameContext, GameModule } from '../game/context';
@@ -15,11 +15,12 @@ import { OverlayStage, releaseTitlesIfIdle } from './common/OverlayStage';
 import { placementFor, visibleDesignRect } from './common/placement';
 import { Plate } from './common/Plate';
 import { label } from './common/text';
+import { punchScale, scaleTo } from './common/anim';
 import { Title } from './common/Title';
 import { Wipe } from './common/Wipe';
 
 /** Local choreography (ms, speed-scaled with s()). Candidates for TIMING.freeSpins. */
-export const FS_TIMING = {
+export const FS_TIMING = registerTiming('freeSpinsPresent', {
   scatterStagger: 140,
   /** scatter celebration before the banner */
   scatterHold: 1100,
@@ -31,14 +32,21 @@ export const FS_TIMING = {
   letterIn: 420,
   letterStagger: 40,
   /** taps are ignored until the banner has landed */
-  tapLock: 500,
+  tapLock: 900,
   exit: 420,
   retriggerHold: 1500,
   outroCount: 1800,
   outroIn: 480,
-} as const;
+} as const);
 
 const COUNTER_ACCENT = 0x35f2e0;
+
+/** Display type for banners (sizes are landscape design px; the stage scales per layout). */
+const TYPE = { family: FONTS.title, extrude: 0.1 } as const;
+const NUMBER_STYLE: GlyphStyle = { ...TYPE, size: 330, palette: GOLD, outline: 0.06, tracking: 0.02 };
+const WORDS_STYLE: GlyphStyle = { ...TYPE, size: 165, palette: CYAN, outline: 0.07, tracking: 0.03 };
+const PLUS_STYLE: GlyphStyle = { ...TYPE, size: 260, palette: PINK, outline: 0.06 };
+const TOTAL_STYLE: GlyphStyle = { ...TYPE, size: 140, palette: GOLD, outline: 0.065, tracking: 0.03 };
 
 /** "FREE SPINS 3 / 10" plate, shown during the free game. */
 class FsCounter extends Container {
@@ -54,7 +62,11 @@ class FsCounter extends Container {
 
   constructor(labelFont: string, valueFont: string) {
     super({ label: 'fsCounter' });
-    this.caption = new BitmapText({ text: label('freeSpins', 'FREE SPINS'), style: { fontFamily: labelFont, fontSize: 34 }, anchor: 0.5 });
+    this.caption = new BitmapText({
+      text: label('freeSpins', 'FREE SPINS'),
+      style: { fontFamily: labelFont, fontSize: 34 },
+      anchor: 0.5,
+    });
     this.value = new BitmapText({ text: '', style: { fontFamily: valueFont, fontSize: 58 }, anchor: 0.5 });
     this.addChild(this.plate, this.caption, this.value);
     this.visible = false;
@@ -95,7 +107,7 @@ class FsCounter extends Container {
     this.arrange();
     if (!this.shown || punch <= 0) return;
     this.tweens.push(
-      gsap.fromTo(this.scale, { x: this.base * 1.22, y: this.base * 1.22 }, { x: this.base, y: this.base, duration: punch, ease: 'back.out(3)' }),
+      punchScale(this.scale, 1.22, punch, 'back.out(3)', this.base),
     );
     if (grew) {
       this.plate.accentColor = 0xff3fa8;
@@ -231,7 +243,9 @@ export class FreeSpins implements GameModule {
     if (p.retrigger) {
       const added = prevTotal > 0 && p.total > prevTotal ? p.total - prevTotal : p.total;
       await this.retrigger(added);
-      if (this.counter.shown && p.total > this.counter.total) this.counter.set(this.counter.current, p.total, s(TIMING.freeSpins.counterPunch));
+      if (this.counter.shown && p.total > this.counter.total) {
+        this.counter.set(this.counter.current, p.total, s(TIMING.freeSpins.counterPunch));
+      }
       return;
     }
     await this.intro(p.total);
@@ -270,12 +284,11 @@ export class FreeSpins implements GameModule {
     rays.scale.set(0);
     this.stage.backdrop.addChild(rays);
 
-    const numStyle: GlyphStyle = { family: FONTS.title, size: 330, palette: GOLD, outline: 0.06, extrude: 0.1, tracking: 0.02 };
-    const number = new Title([{ text: String(total), style: numStyle }], res, { maxWidth: 900 });
+    const number = new Title([{ text: String(total), style: NUMBER_STYLE }], res, { maxWidth: 900 });
     number.y = -120;
     number.scale.set(0);
     const words = new Title(
-      [{ text: label('freeSpins', 'FREE SPINS'), style: { family: FONTS.title, size: 165, palette: CYAN, outline: 0.07, extrude: 0.1, tracking: 0.03 } }],
+      [{ text: label('freeSpins', 'FREE SPINS'), style: WORDS_STYLE }],
       res,
       { maxWidth: placementFor(L).overlayMaxWidth },
     );
@@ -287,7 +300,6 @@ export class FreeSpins implements GameModule {
     });
     hint.y = 325;
     hint.alpha = 0;
-    hint.tint = 0xffffff;
     content.addChild(number, words, hint);
     for (const g of words.glyphs) g.sprite.alpha = 0;
     const offTick = clock.onUpdate((dt) => {
@@ -299,15 +311,21 @@ export class FreeSpins implements GameModule {
     const land = s(F.wipe * 0.5);
     tweens.push(
       gsap.to(rays.scale, { x: 1, y: 1, duration: s(700), delay: land, ease: 'back.out(1.5)' }),
-      gsap.fromTo(number.scale, { x: 2.4, y: 2.4 }, { x: 1, y: 1, duration: s(F.numberSlam), delay: land, ease: 'back.out(1.7)', immediateRender: false }),
+      gsap.fromTo(
+        number.scale,
+        { x: 2.4, y: 2.4 },
+        { x: 1, y: 1, duration: s(F.numberSlam), delay: land, ease: 'back.out(1.7)', immediateRender: false },
+      ),
       gsap.delayedCall(land + s(F.numberSlam * 0.35), () => {
         const c = this.design(0, number.y);
         ctx.game.broadcast('fx:shake', { trauma: 0.55 });
         ctx.game.broadcast('fx:flash', { color: 0xffe08a, alpha: 0.32, durationMs: 200 });
         ctx.game.broadcast('fx:burst', { kind: 'scatter', x: c.x, y: c.y, color: 0xffd54a, power: 1.4 });
         const Lc = ctx.layout;
-        ctx.game.broadcast('fx:burst', { kind: 'confetti', x: Lc.width * 0.12, y: Lc.height + 20, count: 50, power: 1.5 });
-        ctx.game.broadcast('fx:burst', { kind: 'confetti', x: Lc.width * 0.88, y: Lc.height + 20, count: 50, power: 1.5 });
+        for (const fx of [0.12, 0.88]) {
+          const x = Lc.width * fx;
+          ctx.game.broadcast('fx:burst', { kind: 'confetti', x, y: Lc.height + 20, count: 50, power: 1.5 });
+        }
       }),
       gsap.delayedCall(land + s(F.numberSlam * 0.5), () => {
         tweens.push(words.popIn({ duration: s(F.letterIn), stagger: s(F.letterStagger), lineDelay: 0 }));
@@ -318,7 +336,8 @@ export class FreeSpins implements GameModule {
     );
     if (!this.autoplay) {
       tweens.push(gsap.to(hint, { alpha: 1, duration: s(300), delay: land + s(900) }));
-      tweens.push(gsap.to(hint.scale, { x: 1.06, y: 1.06, duration: s(600), delay: land + s(900), ease: 'sine.inOut', yoyo: true, repeat: -1 }));
+      const pulse = { duration: s(600), delay: land + s(900), ease: 'sine.inOut', yoyo: true, repeat: -1 };
+      tweens.push(scaleTo(hint.scale, 1.06, pulse));
     }
 
     // idle sparkle while waiting
@@ -335,7 +354,9 @@ export class FreeSpins implements GameModule {
     await this.waitTapOrTimeout(TIMING.freeSpins.introDuration, F.tapLock);
     offSpark();
 
-    // exit: banner collapses, reverse wipe sweeps the game back in
+    // exit: banner collapses, the curtain carries on and reveals the game
+    for (const t of tweens) t.kill();
+    tweens.length = 0;
     const exit = s(F.exit);
     tweens.push(
       gsap.to(number.scale, { x: 0, y: 0, duration: exit, ease: 'back.in(2)' }),
@@ -363,12 +384,10 @@ export class FreeSpins implements GameModule {
     const content = this.stage.content;
     this.stage.open({ dim: 0.45, fadeIn: s(F.dimIn), liftMascots: true, liftFx: true });
     ctx.game.broadcast('sfx', { id: 'fs_intro', volume: 0.8 });
-    const plus = new Title([{ text: `+${added}`, style: { family: FONTS.title, size: 260, palette: PINK, outline: 0.06, extrude: 0.1 } }], res, {
-      maxWidth: 800,
-    });
+    const plus = new Title([{ text: `+${added}`, style: PLUS_STYLE }], res, { maxWidth: 800 });
     plus.y = -70;
     const words = new Title(
-      [{ text: label('freeSpins', 'FREE SPINS'), style: { family: FONTS.title, size: 112, palette: CYAN, outline: 0.07, extrude: 0.1, tracking: 0.03 } }],
+      [{ text: label('freeSpins', 'FREE SPINS'), style: { ...WORDS_STYLE, size: 112 } }],
       res,
       { maxWidth: placementFor(ctx.layout).overlayMaxWidth },
     );
@@ -436,7 +455,7 @@ export class FreeSpins implements GameModule {
     const plate = new Plate(0xffd54a, 0.86, 'round');
     plate.resize(920, 430);
     const title = new Title(
-      [{ text: label('totalWin', 'TOTAL WIN'), style: { family: FONTS.title, size: 140, palette: GOLD, outline: 0.065, extrude: 0.1, tracking: 0.03 } }],
+      [{ text: label('totalWin', 'TOTAL WIN'), style: TOTAL_STYLE }],
       res,
       { maxWidth: 860 },
     );
@@ -492,7 +511,7 @@ export class FreeSpins implements GameModule {
       ctx.game.broadcast('fx:burst', { kind: 'confetti', x: c.x + 260, y: c.y, count: 45, power: 1.2 });
       ctx.game.broadcast('fx:burst', { kind: 'coins', x: c.x, y: c.y, count: 26, power: 1.2 });
       ctx.game.broadcast('fx:shake', { trauma: 0.3 });
-      tweens.push(gsap.fromTo(amount.scale, { x: amount.scale.x * 1.2, y: amount.scale.y * 1.2 }, { x: amount.scale.x, y: amount.scale.y, duration: s(420), ease: 'elastic.out(1, 0.5)' }));
+      tweens.push(punchScale(amount.scale, 1.2, s(420), 'elastic.out(1, 0.5)', amount.scale.x));
       void title.sweep(s(620));
     };
     const count = gsap.to(state, {

@@ -1,11 +1,11 @@
-import { TIMING } from '../../core/timing';
+import { registerTiming, TIMING } from '../../core/timing';
 
 /**
  * HUD micro-interaction timing (ms, UI time — never speed-profile scaled; use sUi()).
  * TIMING.ui holds press/hover; the rest is LOCAL until it is promoted into
  * core/timing.ts (see the UI module's contractRequests).
  */
-export const HUD_TIMING = {
+export const HUD_TIMING = registerTiming('hud', {
   ...TIMING.ui,
   /** spring back after a press */
   releaseDuration: 240,
@@ -41,4 +41,4 @@ export const HUD_TIMING = {
   fsPunch: 260,
   /** replay chip dot pulse period */
   replayPulse: 1400,
-} as const;
+} as const);

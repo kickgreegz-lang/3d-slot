@@ -1,0 +1,229 @@
+#!/usr/bin/env python3
+"""Self-tests for tools/matte on synthetic cel-shaded art with exact ground truth.
+
+  tools/.venv/bin/python tools/matte/test/test_matte.py
+Gates asserted (art bible §10): zero key-tinted edge pixels (on black, on white, and in the
+straight-alpha texels), alpha IoU vs ground truth > 0.98 at master and canvas resolution,
+360x360 canvas with the content at cellScale x 300 px, centred; straight alpha; idempotent.
+Scratch: art/_work/test-matte/ (gitignored).
+"""
+from __future__ import annotations
+
+import json
+import math
+import shutil
+import subprocess
+import sys
+import unittest
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
+
+MATTE = Path(__file__).resolve().parents[1]
+REPO = MATTE.parents[1]
+sys.path.insert(0, str(MATTE))
+sys.path.insert(0, str(REPO / "tools" / "gen"))
+import mattelib as ml  # noqa: E402
+import provenance as prov  # noqa: E402
+import variants  # noqa: E402
+
+WORK = REPO / "art" / "_work" / "test-matte"
+PY = sys.executable
+CASES = {
+    # name: (key, palette, extra synthetic flags)
+    "green_warm": ("00FF00", "warm", []),
+    "magenta_teal_slop": ("FF00FF", "teal", ["--slop"]),
+    "green_gap": ("00FF00", "warm", ["--gap", "3"]),
+    "blue_gold_slop": ("0000FF", "gold", ["--slop"]),
+}
+
+
+def rgba(path):
+    a = np.asarray(Image.open(path).convert("RGBA"), np.float32) / 255.0
+    return a[..., :3], a[..., 3]
+
+
+def run(*args):
+    return subprocess.run([PY, *map(str, args)], capture_output=True, text=True, cwd=REPO)
+
+
+class MatteTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        shutil.rmtree(WORK, ignore_errors=True)
+        WORK.mkdir(parents=True)
+        cls.results = {}
+        for name, (key, pal, extra) in CASES.items():
+            d = WORK / name
+            r = run(MATTE / "make_synthetic.py", d, "--key", key, "--palette", pal, "--size", "640", *extra)
+            assert r.returncode == 0, r.stderr
+            r = run(MATTE / "outline_matte.py", d / "art.png", d / "out.png", "--key", key, "--content-px", "300",
+                    "--emit-master", d / "master.png", "--qa-dir", d / "qa", "--asset-id", f"test_{name}")
+            cls.results[name] = r
+
+    def test_exit_and_report(self):
+        for name, r in self.results.items():
+            self.assertEqual(r.returncode, 0, f"{name}: {r.stdout}\n{r.stderr}")
+            qa = json.loads((WORK / name / "qa" / "qa.json").read_text())
+            self.assertTrue(qa["passed"], name)
+
+    def test_zero_key_tinted_edge_pixels(self):
+        for name, (key, _, _) in CASES.items():
+            rgb, a = rgba(WORK / name / "out.png")
+            h = ml.halo_report(rgb, a, ml.parse_hex(key))
+            self.assertEqual(h["keyTintedEdgePx"], 0, f"{name}: {h}")
+            self.assertGreater(h["edgePx"], 500)
+            # independent check: no visible pixel anywhere is close to the key colour
+            vis = a > 0.05
+            dist = np.linalg.norm(rgb - ml.parse_hex(key), axis=-1)
+            self.assertEqual(int(np.count_nonzero(vis & (dist < 0.35))), 0, name)
+
+    def test_iou_vs_ground_truth(self):
+        for name in CASES:
+            d = WORK / name
+            gt = np.asarray(Image.open(d / "gt_alpha.png"), np.float32) / 255.0
+            _, m = rgba(d / "master.png")
+            _, o = rgba(d / "out.png")
+            tf = json.loads((d / "qa" / "qa.json").read_text())["transform"]
+            self.assertGreater(ml.iou(m, gt), 0.98, f"{name} master IoU")
+            self.assertGreater(ml.iou(o, ml.transform_alpha(gt, tf)), 0.98, f"{name} canvas IoU")
+
+    def test_canvas_and_pivot(self):
+        for name in CASES:
+            rgb, a = rgba(WORK / name / "out.png")
+            self.assertEqual(a.shape, (360, 360))
+            rep = ml.canvas_report(a, 300, 360, "max")
+            self.assertLessEqual(abs(rep["contentPx"] - 300), 2, rep)
+            self.assertLessEqual(max(map(abs, rep["centreOffset"])), 1.0, rep)
+            self.assertEqual(float(a[0].max() + a[-1].max() + a[:, 0].max() + a[:, -1].max()), 0.0)
+
+    def test_straight_alpha_and_colours_kept(self):
+        for name, (_, pal, _) in CASES.items():
+            d = WORK / name
+            gt = json.loads((d / "gt.json").read_text())
+            rgb, a = rgba(d / "out.png")
+            tf = json.loads((d / "qa" / "qa.json").read_text())["transform"]
+            px, py = gt["baseProbe"]
+            cx = int(round((px - tf["srcOrigin"][0]) * tf["scale"]))
+            cy = int(round((py - tf["srcOrigin"][1]) * tf["scale"]))
+            self.assertEqual(a[cy, cx], 1.0)
+            want = ml.parse_hex(gt["colours"]["base"])
+            self.assertLess(float(np.abs(rgb[cy - 2:cy + 3, cx - 2:cx + 3] - want).max()), 3 / 255, name)
+            # semi-transparent edge texels carry the unmixed ink colour, not a premultiplied darkening of a hue
+            semi = (a > 0.1) & (a < 0.9)
+            self.assertLess(float(rgb[semi].max(axis=-1).mean()), 0.25, name)
+
+    def test_hole_is_transparent_and_gap_sealed(self):
+        d = WORK / "green_warm"
+        _, m = rgba(d / "master.png")
+        gt = np.asarray(Image.open(d / "gt_alpha.png"), np.float32) / 255.0
+        hole = gt == 0
+        inside = np.zeros_like(hole)
+        s = gt.shape[0] / 1000
+        inside[int(530 * s):int(590 * s), int(650 * s):int(700 * s)] = True   # centre of the ring opening
+        self.assertTrue((hole & inside).any())
+        self.assertEqual(float(m[hole & inside].max()), 0.0)
+        qa = json.loads((WORK / "green_gap" / "qa" / "qa.json").read_text())
+        self.assertGreaterEqual(qa["matte"]["seal"], 1)
+        self.assertEqual(json.loads((WORK / "green_warm" / "qa" / "qa.json").read_text())["matte"]["seal"], 0)
+
+    def test_idempotent(self):
+        d = WORK / "green_warm"
+        before = (prov.sha256_file(d / "out.png"), (d / "qa" / "manifest.json").read_text())
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "out.png", "--key", "00FF00", "--content-px", "300",
+                "--emit-master", d / "master.png", "--qa-dir", d / "qa", "--asset-id", "test_green_warm")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(before, (prov.sha256_file(d / "out.png"), (d / "qa" / "manifest.json").read_text()))
+
+    def test_manifest_row(self):
+        doc = json.loads((WORK / "green_warm" / "qa" / "manifest.json").read_text())
+        row = doc["rows"][0]
+        self.assertEqual(row["stage"], "matting")
+        self.assertEqual(row["licenseId"], "python-geometry")
+        self.assertEqual(row["sha256"], prov.sha256_file(WORK / "green_warm" / "out.png"))
+        self.assertTrue(row["qa"]["passed"])
+        try:
+            import jsonschema
+        except ImportError:
+            return
+        schema = json.loads((REPO / "art" / "manifest.schema.json").read_text())
+        jsonschema.Draft202012Validator(schema, format_checker=jsonschema.FormatChecker()).validate(doc)
+
+    def test_symbol_sizes_from_game_ts(self):
+        t = ml.symbol_targets()
+        self.assertEqual(set(t), {"H1", "H2", "H3", "H4", "L1", "L2", "L3", "L4", "L5", "W", "S"})
+        self.assertEqual(ml.content_px_for(symbol="H1"), 291)
+        self.assertEqual(ml.content_px_for(symbol="S"), 336)
+        self.assertEqual(ml.content_px_for(symbol="L3"), 258)
+        self.assertEqual(t["H3"]["restAngle"], -14.0)
+        d = WORK / "magenta_teal_slop"
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "out_S.png", "--key", "FF00FF", "--symbol", "S",
+                "--qa-dir", d / "qa_S")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        _, a = rgba(d / "out_S.png")
+        self.assertLessEqual(abs(ml.canvas_report(a, 336, 360, "max")["contentPx"] - 336), 2)
+
+    def test_refusals(self):
+        d = WORK / "green_warm"
+        small = WORK / "small.png"
+        Image.open(d / "art.png").resize((200, 200), Image.Resampling.LANCZOS).save(small)
+        r = run(MATTE / "outline_matte.py", small, WORK / "small_out.png", "--key", "00FF00", "--content-px", "300",
+                "--qa-dir", WORK / "qa_small")
+        self.assertEqual(r.returncode, 2)
+        self.assertIn("never upscale", r.stderr)
+        flat = WORK / "flat.png"
+        Image.new("RGB", (64, 64), (0, 255, 0)).save(flat)
+        r = run(MATTE / "outline_matte.py", flat, WORK / "flat_out.png", "--key", "00FF00", "--content-px", "30",
+                "--qa-dir", WORK / "qa_flat")
+        self.assertEqual(r.returncode, 2)
+
+    def test_alpha_from_external_matte(self):
+        d = WORK / "magenta_teal_slop"
+        ext = WORK / "external_rgba.png"
+        rgb = np.asarray(Image.open(d / "art.png").convert("RGB"))
+        gt = np.asarray(Image.open(d / "gt_alpha.png"))
+        Image.fromarray(np.dstack([rgb, gt]), "RGBA").save(ext)
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "out_ext.png", "--key", "FF00FF", "--content-px", "300",
+                "--alpha-from", ext, "--qa-dir", d / "qa_ext")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+
+class VariantTests(unittest.TestCase):
+    def test_variants(self):
+        src = WORK / "green_warm" / "out.png"
+        if not src.exists():
+            self.skipTest("run with MatteTests")
+        out = WORK / "variants"
+        r = run(MATTE / "variants.py", src, "--out-dir", out, "--name", "sym_T", "--symbol", "H3",
+                "--qa-dir", out / "qa")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        brgb, ba = rgba(out / "sym_T_blur.png")
+        grgb, ga = rgba(out / "sym_T_glow.png")
+        self.assertEqual(ba.shape, (360, 360))
+        self.assertEqual(ga.shape, (360, 360))
+        self.assertTrue(np.all(grgb[ga > 0] == 1.0))                     # white silhouette
+        self.assertEqual(float(max(ga[0].max(), ga[-1].max(), ga[:, 0].max(), ga[:, -1].max())), 0.0)
+        self.assertGreater(float(ga.max()), 0.9)
+        _, a = rgba(src)
+        self.assertGreater(float(ba.sum()), 0.8 * float(a.sum()))
+
+    def test_blur_is_vertical_in_screen_space(self):
+        size = 180
+        alpha = np.zeros((size, size), np.float32)
+        alpha[85:95, 85:95] = 1
+        rgb = np.zeros((size, size, 3), np.float32)
+        for angle in (0.0, -14.0, -18.0):
+            _, b = variants.blur_variant(rgb, alpha, angle, mode="box")
+            screen = variants._affine(b, angle)                          # what the runtime displays
+            ys, xs = np.nonzero(screen > 0.01)
+            w = screen[ys, xs]
+            my, mx = np.average(ys, weights=w), np.average(xs, weights=w)
+            cov = np.cov(np.vstack([ys - my, xs - mx]), aweights=w)
+            theta = 0.5 * math.degrees(math.atan2(2 * cov[0, 1], cov[0, 0] - cov[1, 1]))
+            self.assertLess(abs(theta), 1.5, f"smear axis {theta:.2f} deg off vertical at restAngle {angle}")
+            self.assertGreater(cov[0, 0], 4 * cov[1, 1])
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

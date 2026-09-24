@@ -40,38 +40,68 @@ const DEFAULT_COLOR: Record<BurstKind, number> = {
   scatter: 0xffd54a,
 };
 
-const ring = (c: BurstContext, x: number, y: number, k: number, from: number, to: number, life: number, color: number, alpha = 0.95): Sim | null => {
+/** One additive light element (ring / glow) growing from `from` to `to` px. */
+interface LightSpec {
+  from: number;
+  to: number;
+  life: number;
+  color: number;
+  alpha?: number;
+  mode?: number;
+}
+
+const ring = (c: BurstContext, x: number, y: number, k: number, o: LightSpec): Sim | null => {
   const s = c.sys.acquire(c.tex('ring'), 'add', 2);
   if (!s) return null;
   s.x = x;
   s.y = y;
-  s.size0 = from * k;
-  s.size1 = to * k;
+  s.size0 = o.from * k;
+  s.size1 = o.to * k;
   s.sizeMode = SIZE.easeOut;
-  s.life = life;
-  s.alpha0 = alpha;
-  s.alphaMode = ALPHA.fade;
-  s.color = color;
+  s.life = o.life;
+  s.alpha0 = o.alpha ?? 0.95;
+  s.alphaMode = o.mode ?? ALPHA.fade;
+  s.color = o.color;
   s.rot = rand(0, TAU);
   return s;
 };
 
-const glow = (c: BurstContext, x: number, y: number, k: number, from: number, to: number, life: number, color: number, alpha = 0.85, mode: number = ALPHA.flash): Sim | null => {
+const glow = (c: BurstContext, x: number, y: number, k: number, o: LightSpec): Sim | null => {
   const s = c.sys.acquire(c.tex('glow'), 'add', 2);
   if (!s) return null;
   s.x = x;
   s.y = y;
-  s.size0 = from * k;
-  s.size1 = to * k;
+  s.size0 = o.from * k;
+  s.size1 = o.to * k;
   s.sizeMode = SIZE.easeOut;
-  s.life = life;
-  s.alpha0 = alpha;
-  s.alphaMode = mode;
-  s.color = color;
+  s.life = o.life;
+  s.alpha0 = o.alpha ?? 0.85;
+  s.alphaMode = o.mode ?? ALPHA.flash;
+  s.color = o.color;
   return s;
 };
 
-const sparks = (c: BurstContext, x: number, y: number, k: number, n: number, color: number, speed: [number, number], opts: { up?: number; spread?: number; g?: number; size?: [number, number]; life?: [number, number] } = {}): void => {
+type Range = [number, number];
+
+interface SparkOpts {
+  /** set to aim the cone upward instead of radially */
+  up?: number;
+  spread?: number;
+  g?: number;
+  size?: Range;
+  life?: Range;
+}
+
+const sparks = (
+  c: BurstContext,
+  x: number,
+  y: number,
+  k: number,
+  n: number,
+  color: number,
+  speed: Range,
+  opts: SparkOpts = {},
+): void => {
   const tex = c.tex('spark');
   for (let i = 0; i < n; i++) {
     const s = c.sys.acquire(tex, 'add', 2);
@@ -95,7 +125,24 @@ const sparks = (c: BurstContext, x: number, y: number, k: number, n: number, col
   }
 };
 
-const stars = (c: BurstContext, x: number, y: number, k: number, n: number, color: number, radial: [number, number], opts: { radius?: [number, number]; life?: [number, number]; size?: [number, number]; delay?: number } = {}): void => {
+interface StarOpts {
+  radius?: Range;
+  life?: Range;
+  size?: Range;
+  /** random start delay up to this many seconds */
+  delay?: number;
+}
+
+const stars = (
+  c: BurstContext,
+  x: number,
+  y: number,
+  k: number,
+  n: number,
+  color: number,
+  radial: Range,
+  opts: StarOpts = {},
+): void => {
   const tex = c.tex('star');
   for (let i = 0; i < n; i++) {
     const s = c.sys.acquire(tex, 'add', 2);
@@ -128,8 +175,8 @@ const explode = (c: BurstContext, p: BurstPayload, k: number, power: number, col
   const n = p.count !== undefined ? Math.max(3, Math.round(p.count * 0.45)) : randInt(6, 10);
   const nSparks = p.count !== undefined ? Math.max(3, p.count - n) : randInt(8, 12);
   // light first (additive flash + ring) so the eye lands on the impact
-  glow(c, x, y, k, 260, 150, 0.2, lighten(color, 0.45), 1);
-  ring(c, x, y, k, 60, 300 * (0.8 + 0.2 * power), 0.34, lighten(color, 0.5), 0.95);
+  glow(c, x, y, k, { from: 260, to: 150, life: 0.2, color: lighten(color, 0.45), alpha: 1 });
+  ring(c, x, y, k, { from: 60, to: 300 * (0.8 + 0.2 * power), life: 0.34, color: lighten(color, 0.5) });
   // smoke puff behind
   const smoke = c.tex('smoke');
   for (let i = 0; i < 3; i++) {
@@ -266,8 +313,8 @@ const confetti = (c: BurstContext, p: BurstPayload, k: number, power: number): v
 };
 
 const spotSpark = (c: BurstContext, p: BurstPayload, k: number, power: number, color: number): void => {
-  glow(c, p.x, p.y, k, 120, 70, 0.14, lighten(color, 0.4), 0.8);
-  ring(c, p.x, p.y, k, 36, 150, 0.24, lighten(color, 0.3), 0.9);
+  glow(c, p.x, p.y, k, { from: 120, to: 70, life: 0.14, color: lighten(color, 0.4), alpha: 0.8 });
+  ring(c, p.x, p.y, k, { from: 36, to: 150, life: 0.24, color: lighten(color, 0.3), alpha: 0.9 });
   sparks(c, p.x, p.y, k, p.count ?? 8, color, [260, 680], {
     up: 1,
     spread: 0.65,
@@ -280,9 +327,9 @@ const spotSpark = (c: BurstContext, p: BurstPayload, k: number, power: number, c
 
 const scatter = (c: BurstContext, p: BurstPayload, k: number, power: number, color: number): void => {
   const { x, y } = p;
-  glow(c, x, y, k, 250, 390, 0.75, lighten(color, 0.2), 0.95, ALPHA.inOut);
-  ring(c, x, y, k, 120, 640 * (0.75 + 0.25 * power), 0.58, lighten(color, 0.25), 1);
-  ring(c, x, y, k, 80, 420, 0.5, 0xffffff, 0.8)?.delay(0.08);
+  glow(c, x, y, k, { from: 250, to: 390, life: 0.75, color: lighten(color, 0.2), alpha: 0.95, mode: ALPHA.inOut });
+  ring(c, x, y, k, { from: 120, to: 640 * (0.75 + 0.25 * power), life: 0.58, color: lighten(color, 0.25), alpha: 1 });
+  ring(c, x, y, k, { from: 80, to: 420, life: 0.5, color: 0xffffff, alpha: 0.8 })?.delay(0.08);
   stars(c, x, y, k, p.count ?? 18, color, [360, 900], { size: [24, 42], life: [0.7, 1.1] });
   sparks(c, x, y, k, 12, color, [900, 1700], { size: [18, 30], life: [0.3, 0.55] });
   // a few music notes float up — theme flavour

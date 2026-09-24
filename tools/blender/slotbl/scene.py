@@ -495,6 +495,218 @@ def export_glb(path: str | os.PathLike, **overrides) -> Path:
     return path
 
 
+# ------------------------------------------------------- glTF default pose completion --
+def _read_glb(path):
+    import json
+    import struct
+    data = Path(path).read_bytes()
+    if data[:4] != b"glTF":
+        return None, None
+    n = struct.unpack_from("<I", data, 12)[0]
+    j = json.loads(data[20:20 + n])
+    off = 20 + n
+    blob = b""
+    if off + 8 <= len(data):
+        bl = struct.unpack_from("<I", data, off)[0]
+        blob = data[off + 8:off + 8 + bl]
+    return j, blob
+
+
+def _accessor_mat4(j, blob, idx):
+    import struct
+    a = j["accessors"][idx]
+    bv = j["bufferViews"][a["bufferView"]]
+    base = bv.get("byteOffset", 0) + a.get("byteOffset", 0)
+    stride = bv.get("byteStride", 64)
+    out = []
+    for k in range(a["count"]):
+        v = struct.unpack_from("<16f", blob, base + k * stride)
+        out.append(Matrix([v[0:4], v[4:8], v[8:12], v[12:16]]).transposed())   # column-major
+    return out
+
+
+def _node_local(n):
+    from mathutils import Quaternion
+    if "matrix" in n:
+        v = n["matrix"]
+        return Matrix([v[0:4], v[4:8], v[8:12], v[12:16]]).transposed()
+    t = n.get("translation", [0, 0, 0])
+    r = n.get("rotation", [0, 0, 0, 1])
+    sc = n.get("scale", [1, 1, 1])
+    return (Matrix.Translation(t) @ Quaternion((r[3], r[0], r[1], r[2])).to_matrix().to_4x4()
+            @ Matrix.Diagonal((*sc, 1.0)))
+
+
+def gltf_default_pose(path, arm) -> dict:
+    """Pose-basis (loc, quat, scale) per bone equal to the glTF NODE default TRS.
+
+    glTF clips may leave joints unkeyed and rely on the node's default transform (FBX2glTF
+    rigs such as the RobotExpressive placeholder do). Blender imports the bind pose as rest and
+    its exporter resets unkeyed bones to rest, so a plain round-trip collapses those clips.
+    The importer's per-bone axis correction K is recovered from the bind pose:
+        rest_world = C @ armature_node_world @ inverse(IBM) @ K  ->  default_world = C @ node_world @ K
+    (C = glTF Y-up -> Blender Z-up)."""
+    import bpy
+    j, blob = _read_glb(path)
+    if not j or not j.get("skins"):
+        return {}
+    nodes = j["nodes"]
+    parent = {c: i for i, n in enumerate(nodes) for c in n.get("children", [])}
+    memo = {}
+
+    def world(i):
+        if i not in memo:
+            p = parent.get(i)
+            memo[i] = (world(p) if p is not None else Matrix.Identity(4)) @ _node_local(nodes[i])
+        return memo[i]
+    C = Matrix.Rotation(math.radians(90), 4, "X")
+    skin = j["skins"][0]
+    ibms = _accessor_mat4(j, blob, skin["inverseBindMatrices"]) if "inverseBindMatrices" in skin else None
+    # Blender's importer treats inverse(IBM) as relative to the skeleton's PARENT node (the
+    # armature node), not the skinned mesh node (whose transform glTF ignores anyway).
+    joints = set(skin["joints"])
+    root = skin.get("skeleton")
+    if root is None:
+        root = next((ji for ji in skin["joints"] if parent.get(ji) not in joints), skin["joints"][0])
+    space = world(parent[root]) if parent.get(root) is not None else Matrix.Identity(4)
+    targets = {}
+    for k, ji in enumerate(skin["joints"]):
+        name = nodes[ji].get("name")
+        bone = arm.data.bones.get(name) if name else None
+        if bone is None or ibms is None:
+            continue
+        rest_world = arm.matrix_world @ bone.matrix_local
+        K = (C @ space @ ibms[k].inverted()).inverted() @ rest_world
+        targets[name] = arm.matrix_world.inverted() @ (C @ world(ji) @ K)
+    ad = arm.animation_data
+    saved = (ad.action, ad.action_slot) if ad else (None, None)
+    if ad:
+        ad.action = None
+    depth = {b.name: len(b.parent_recursive) for b in arm.data.bones}
+    for pb in sorted(arm.pose.bones, key=lambda p: depth[p.name]):
+        if pb.name in targets:
+            pb.matrix = targets[pb.name]
+            bpy.context.view_layer.update()
+    pose = {}
+    for pb in arm.pose.bones:
+        loc, rot, sca = pb.matrix_basis.decompose()
+        pose[pb.name] = (loc.copy(), rot.copy(), sca.copy())
+    if ad and saved[0] is not None:
+        ad.action = saved[0]
+        if saved[1] is not None:
+            ad.action_slot = saved[1]
+    return pose
+
+
+def complete_actions(arm, pose: dict) -> dict:
+    """Give every action constant keys for the bones it does not animate (their default pose),
+    so each clip is self-contained and survives export_reset_pose_bones."""
+    import bpy
+    from bpy_extras import anim_utils
+    added = {}
+    for act in bpy.data.actions:
+        slot = next((s for s in act.slots if s.target_id_type == "OBJECT"
+                     and s.name_display == arm.name), None)
+        if slot is None:
+            continue
+        cb = anim_utils.action_ensure_channelbag_for_slot(act, slot)
+        keyed = {fc.data_path.split('"')[1] for fc in cb.fcurves if fc.data_path.startswith("pose.bones[")}
+        f0, f1 = act.frame_range
+        n = 0
+        for pb in arm.pose.bones:
+            if pb.name in keyed or pb.name not in pose:
+                continue
+            loc, rot, sca = pose[pb.name]
+            rpath, rval = ("rotation_quaternion", tuple(rot)) if pb.rotation_mode == "QUATERNION" else \
+                ("rotation_euler", tuple(rot.to_euler(pb.rotation_mode)))
+            for path, vals in (("location", tuple(loc)), (rpath, rval), ("scale", tuple(sca))):
+                for i, v in enumerate(vals):
+                    fc = cb.fcurves.new(f'pose.bones["{pb.name}"].{path}', index=i, group_name=pb.name)
+                    for f in (f0, f1):
+                        fc.keyframe_points.insert(f, v, options={"FAST"})
+            n += 1
+        if n:
+            added[act.name] = n
+    return added
+
+
+def apply_pose_basis(arm, pose: dict) -> None:
+    ad = arm.animation_data
+    if ad:
+        ad.action = None
+        for t in ad.nla_tracks:
+            t.mute = True
+    for pb in arm.pose.bones:
+        if pb.name in pose:
+            loc, rot, sca = pose[pb.name]
+            pb.location = loc
+            if pb.rotation_mode == "QUATERNION":
+                pb.rotation_quaternion = rot
+            else:
+                pb.rotation_euler = rot.to_euler(pb.rotation_mode)
+            pb.scale = sca
+    import bpy
+    bpy.context.view_layer.update()
+
+
+def skin_rigid_children(arm, pose: dict | None = None) -> list[str]:
+    """Convert meshes parented to BONES (rigid parts) into meshes skinned 100% to that bone.
+
+    Blender's glTF exporter misplaces bone-parented objects when the file's default pose is not
+    its rest/bind pose (the RobotExpressive placeholder's torso lands 0.65 m low), while skinned
+    meshes round-trip exactly. At the default pose P the part keeps its world placement W:
+        v_rest(armature space) = R_b @ P_b^-1 @ arm_world^-1 @ W @ v
+    so skinning with weight 1 reproduces W @ v at pose P and follows the bone like before."""
+    import bpy
+    if pose:
+        apply_pose_basis(arm, pose)
+    bpy.context.view_layer.update()
+    aw = arm.matrix_world.copy()
+    done = []
+    for o in [o for o in bpy.data.objects if o.parent == arm and o.parent_type == "BONE" and o.type == "MESH"]:
+        bname = o.parent_bone
+        pb = arm.pose.bones.get(bname)
+        if pb is None:
+            continue
+        W = o.matrix_world.copy()
+        T = pb.bone.matrix_local @ pb.matrix.inverted() @ aw.inverted() @ W
+        if o.data.users > 1:
+            o.data = o.data.copy()
+        o.data.transform(T)
+        if o.data.shape_keys:
+            for kb in o.data.shape_keys.key_blocks:
+                for v in kb.data:
+                    v.co = T @ v.co
+        for vg in list(o.vertex_groups):
+            o.vertex_groups.remove(vg)
+        vg = o.vertex_groups.new(name=bname)
+        vg.add(list(range(len(o.data.vertices))), 1.0, "REPLACE")
+        o.parent = arm
+        o.parent_type = "OBJECT"
+        o.parent_bone = ""
+        o.matrix_parent_inverse.identity()
+        o.matrix_basis.identity()
+        mod = next((m for m in o.modifiers if m.type == "ARMATURE"), None) or o.modifiers.new("Armature", "ARMATURE")
+        mod.object = arm
+        done.append(o.name)
+    for c in [c for c in bpy.data.objects if c.parent == arm and c.parent_type == "BONE" and c.type == "EMPTY"
+              and not c.children]:
+        bpy.data.objects.remove(c)       # glTF importer's '<bone>_end' leaf markers
+    bpy.context.view_layer.update()
+    return done
+
+
+def prepare_rig_for_export(arm, source_glb=None, log=None) -> dict:
+    """Make an imported rig round-trip safe: complete every action with the glTF default pose
+    of its unkeyed bones, then skin rigid bone-parented parts. -> summary for the report."""
+    pose = gltf_default_pose(source_glb, arm) if source_glb and str(source_glb).lower().endswith(".glb") else {}
+    added = complete_actions(arm, pose) if pose else {}
+    skinned = skin_rigid_children(arm, pose or None)
+    if log and (added or skinned):
+        log(f"rig prep: default-pose keys added to {len(added)} action(s); {len(skinned)} rigid part(s) skinned")
+    return {"defaultPoseKeys": added, "skinnedRigidParts": skinned}
+
+
 # ------------------------------------------------------------------------------ fonts --
 def _font_makes_geometry(font) -> bool:
     cu = bpy.data.curves.new("_fontprobe", "FONT")

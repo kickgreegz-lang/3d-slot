@@ -169,7 +169,6 @@ def resolve(args, log) -> dict:
 
 # ------------------------------------------------------------------------- subjects ---
 def build_glyph(args, plan, log):
-    import bmesh  # noqa: F401
     from slotbl import scene as S
     font_path = cli.repo_path(args.font)
     if not font_path.exists():
@@ -319,10 +318,10 @@ def build_mesh(args, plan, log):
     for o in new:
         if o.type == "ARMATURE":
             log.warn("armature ignored: props are rendered in their rest/import pose")
+    others = [o for o in new if o.type != "MESH"]       # join() frees the other mesh objects
     obj = S.join_meshes(meshes)
-    for o in new:
-        if o != obj and o.name in bpy.data.objects and o.type != "MESH":
-            bpy.data.objects.remove(o)
+    for o in others:
+        bpy.data.objects.remove(o)
     for m in list(obj.modifiers):
         obj.modifiers.remove(m)
     S.bake_transform(obj)

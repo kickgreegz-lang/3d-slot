@@ -1,0 +1,16 @@
+# tools/blender Python dependencies (pinned; verified 2026-09-24 in a Python 3.13.7 venv).
+# bpy 5.2.2 requires Python ==3.13.* (manylinux x86_64 / macOS arm64 / Windows wheels).
+#
+#   uv venv -p 3.13 ~/.venvs/bpy
+#   uv pip install --python ~/.venvs/bpy -r tools/blender/requirements.txt
+#   export BPY_PYTHON=~/.venvs/bpy/bin/python          # used by tools/blender/run.sh
+#
+# With the Blender binary instead of the bpy module, Blender's bundled Python already has
+# numpy; the pure-Python post steps (frames_post.py, sheet_post.py) then run in SLOT_PYTHON
+# (default python3), which needs numpy + pillow from this file.
+bpy==5.2.2
+numpy==2.5.3
+pillow==12.3.0
+# optional: only when Blender cannot read a font directly (it reads the bundled woff2 fine)
+fonttools==4.66.0
+brotli==1.2.0

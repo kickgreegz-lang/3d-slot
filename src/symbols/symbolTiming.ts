@@ -1,3 +1,5 @@
+import { registerTiming } from '../core/timing';
+
 /**
  * Symbol-local animation constants that are NOT (yet) in the TIMING bible
  * (core/timing.ts is a frozen contract). Everything here is a tuning knob for the
@@ -7,7 +9,7 @@
  * Squash is expressed in "squash units" `a`: a = 1 reproduces TIMING.land.squashX/Y
  * exactly; a < 0 is stretch. See SymbolView.applySquash().
  */
-export const SYMBOL_TIMING = {
+export const SYMBOL_TIMING = registerTiming('symbol', {
   land: {
     /** Impact speed (design px/s) that produces the nominal TIMING squash (≈ a full spin drop). */
     refVelocity: 4500,
@@ -161,4 +163,4 @@ export const SYMBOL_TIMING = {
       ['idle', 'blur', 0],
     ] as ReadonlyArray<readonly [string, string, number]>,
   },
-} as const;
+} as const);

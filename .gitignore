@@ -10,3 +10,4 @@ art/_work/
 public/dev-only/
 tools/.venv/
 screenshots/
+__pycache__/

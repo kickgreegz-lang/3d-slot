@@ -102,7 +102,8 @@ export class Title extends Container {
       tl.to(g.sprite, { alpha: 1, duration: o.duration * 0.25, ease: 'none' }, i * o.stagger);
       // stretched while falling, squash on landing, settle
       tl.to(g.sprite.scale, { x: 1.18, y: 0.82, duration: o.duration * 0.42, ease: 'power2.in' }, i * o.stagger);
-      tl.to(g.sprite.scale, { x: 1, y: 1, duration: o.duration * 0.58, ease: 'elastic.out(1.1, 0.45)' }, i * o.stagger + o.duration * 0.42);
+      const settleAt = i * o.stagger + o.duration * 0.42;
+      tl.to(g.sprite.scale, { x: 1, y: 1, duration: o.duration * 0.58, ease: 'elastic.out(1.1, 0.45)' }, settleAt);
     });
     return tl;
   }

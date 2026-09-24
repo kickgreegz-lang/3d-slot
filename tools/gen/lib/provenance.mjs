@@ -114,7 +114,11 @@ export function appendRows(p, rows, generatedBy) {
   return withLock(p, () => {
     const exists = fs.existsSync(p);
     const doc = exists ? readManifest(p) : { schemaVersion: 1, generatedBy, rows: [] };
-    const have = new Set(doc.rows.map((r) => r.id));
+    const have = new Map(doc.rows.map((r) => [r.id, r]));
+    for (const r of rows) {
+      const old = have.get(r.id);
+      if (old && old.sha256 !== r.sha256) throw new Error(`${p}: row id '${r.id}' already exists with a different sha256 (rows are immutable; write a new version instead)`);
+    }
     const added = rows.filter((r) => !have.has(r.id));
     if (added.length || !exists) {
       doc.rows.push(...added);

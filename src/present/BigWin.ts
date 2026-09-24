@@ -3,7 +3,7 @@ import { BitmapText, Container } from 'pixi.js';
 import { FONTS } from '../assets/fonts';
 import { WIN_TIERS, type WinTierKey } from '../config/game';
 import { clock } from '../core/clock';
-import { sUi, TIMING } from '../core/timing';
+import { registerTiming, sUi, TIMING } from '../core/timing';
 import { pulseChromatic } from '../fx/filters/effects';
 import { GodRays } from '../fx/filters/GodRays';
 import { rand } from '../fx/util';
@@ -15,13 +15,14 @@ import { OverlayStage, releaseTitlesIfIdle } from './common/OverlayStage';
 import { placementFor } from './common/placement';
 import { Plate } from './common/Plate';
 import { label, titleLines } from './common/text';
+import { punchScale, scaleTo } from './common/anim';
 import { Title, type TitleLine } from './common/Title';
 
 /**
  * Local choreography for the big-win sequence (ms, unscaled: the player controls
  * this screen with taps, so it does not speed up in turbo). Candidates for TIMING.bigWin.
  */
-export const BIGWIN_TIMING = {
+export const BIGWIN_TIMING = registerTiming('bigWinPresent', {
   dim: 0.72,
   dimIn: 260,
   raysIn: 650,
@@ -31,8 +32,10 @@ export const BIGWIN_TIMING = {
   countDelay: 420,
   amountIn: 380,
   /** hold after the count completes before auto-closing (manual play) */
-  hold: 3200,
+  hold: 2600,
   outro: 520,
+  /** amount punch when the count lands */
+  finalPunch: 420,
   tickEvery: 95,
   glintEvery: 2300,
   glintDuration: 620,
@@ -42,7 +45,7 @@ export const BIGWIN_TIMING = {
   startShake: 0.4,
   tierShake: 0.62,
   chroma: { duration: 260, amount: 0.028 },
-} as const;
+} as const);
 
 /** Per-tier accent (god rays, plate rim, flash tint). */
 const TIER_TINT: Record<WinTierKey, number> = {
@@ -128,7 +131,9 @@ export class BigWin implements GameModule {
     const words = titleLines(text);
     const res = Math.min(2, this.ctx.app.renderer.resolution * this.ctx.scale * this.stage.scale * 1.1);
     const style = { family: FONTS.title, size: 250, palette: GOLD, outline: 0.065, extrude: 0.1, tracking: 0.03 };
-    const lines = words.map((t, i) => ({ text: t, style: i === words.length - 1 && words.length > 1 ? { ...style, size: 210 } : style }));
+    // "MEGA" over a slightly smaller "WIN"
+    const lastSmall = (i: number): boolean => words.length > 1 && i === words.length - 1;
+    const lines = words.map((t, i) => ({ text: t, style: lastSmall(i) ? { ...style, size: 210 } : style }));
     return { lines, res };
   }
 
@@ -264,6 +269,8 @@ export class BigWin implements GameModule {
       };
 
       // --- tier punch ------------------------------------------------------
+      const punchMs = TIMING.bigWin.tierPunch;
+      const punchEase = TIMING.bigWin.tierPunchEase;
       const punch = (tier: number): void => {
         tierIdx = tier;
         const tint = TIER_TINT[TIER_KEYS[tier]];
@@ -278,12 +285,12 @@ export class BigWin implements GameModule {
         this.titleHolder.addChild(next);
         this.title = next;
         timelines.push(
-          next.slamIn({ duration: sUi(TIMING.bigWin.tierPunch * 1.6), stagger: sUi(22), ease: TIMING.bigWin.tierPunchEase }),
+          next.slamIn({ duration: sUi(punchMs * 1.6), stagger: sUi(22), ease: punchEase }),
           gsap.to(next, { waveAmp: 7, duration: sUi(900), delay: sUi(300) }),
           gsap.delayedCall(sUi(TIMING.bigWin.tierPunch), () => void next.sweep(sUi(T.glintDuration))),
-          gsap.fromTo(this.titleHolder.scale, { x: 1.18, y: 1.18 }, { x: 1, y: 1, duration: sUi(TIMING.bigWin.tierPunch), ease: TIMING.bigWin.tierPunchEase }),
-          gsap.fromTo(rays.scale, { x: 1.25, y: 1.25 }, { x: 1, y: 1, duration: sUi(TIMING.bigWin.tierPunch * 2), ease: 'power2.out' }),
-          gsap.fromTo(this.amountHolder.scale, { x: 1.14, y: 1.14 }, { x: 1, y: 1, duration: sUi(TIMING.bigWin.tierPunch), ease: TIMING.bigWin.tierPunchEase }),
+          punchScale(this.titleHolder.scale, 1.18, sUi(punchMs), punchEase),
+          punchScale(rays.scale, 1.25, sUi(punchMs * 2), 'power2.out'),
+          punchScale(this.amountHolder.scale, 1.14, sUi(punchMs), punchEase),
         );
         rays.color = tint;
         this.plate.accentColor = tint;
@@ -294,11 +301,9 @@ export class BigWin implements GameModule {
         ctx.game.broadcast('fx:burst', { kind: 'coins', x: c.x, y: c.y + 60, count: 22, power: 1.2 });
         ctx.game.broadcast('sfx', { id: 'bigwin_tier' });
         ctx.game.broadcast('mascot:cue', { cue: 'celebrate', intensity: 0.6 + 0.1 * tier });
-        const scr = ctx.app.screen;
-        pulseChromatic({ stage: ctx.layers.stage, root: ctx.layers.root, width: scr.width, height: scr.height }, c.x, c.y, {
-          duration: sUi(T.chroma.duration),
-          amount: T.chroma.amount,
-        });
+        const { width, height } = ctx.app.screen;
+        const view = { stage: ctx.layers.stage, root: ctx.layers.root, width, height };
+        pulseChromatic(view, c.x, c.y, { duration: sUi(T.chroma.duration), amount: T.chroma.amount });
       };
 
       // --- count-up ----------------------------------------------------------
@@ -342,7 +347,7 @@ export class BigWin implements GameModule {
         ctx.game.broadcast('fx:burst', { kind: 'confetti', x: c.x, y: c.y, count: 60, power: 1.25 });
         ctx.game.broadcast('fx:shake', { trauma: 0.3 });
         timelines.push(
-          gsap.fromTo(this.amountHolder.scale, { x: 1.22, y: 1.22 }, { x: 1, y: 1, duration: sUi(420), ease: 'elastic.out(1, 0.5)' }),
+          punchScale(this.amountHolder.scale, 1.22, sUi(T.finalPunch), 'elastic.out(1, 0.5)'),
         );
         holdCall = gsap.delayedCall(sUi(this.autoplay ? TIMING.bigWin.autoCloseDelay : T.hold), () => close());
       };
@@ -358,11 +363,12 @@ export class BigWin implements GameModule {
           holdCall?.kill();
         }
         ctx.game.broadcast('sfx', { id: 'bigwin_end' });
+        ctx.game.broadcast('mascot:cue', { cue: 'idle' });
         const outro = sUi(T.outro);
         const cur = this.title;
         if (cur) timelines.push(cur.dropOut({ duration: outro * 0.8, stagger: sUi(18), height: 260 }));
         timelines.push(
-          gsap.to(this.amountHolder.scale, { x: 0, y: 0, duration: outro * 0.7, ease: 'back.in(2)', delay: outro * 0.15 }),
+          scaleTo(this.amountHolder.scale, 0, { duration: outro * 0.7, ease: 'back.in(2)', delay: outro * 0.15 }),
           gsap.to(rays.scale, { x: 0, y: 0, duration: outro, ease: 'power2.in' }),
         );
         void this.stage.close(outro).then(() => {
@@ -398,10 +404,18 @@ export class BigWin implements GameModule {
       ctx.game.broadcast('fx:burst', { kind: 'scatter', x: c.x, y: c.y, color: TIER_TINT.big, power: 1.2 });
       timelines.push(
         gsap.to(rays.scale, { x: 1, y: 1, duration: sUi(T.raysIn), ease: 'back.out(1.6)' }),
-        title.popIn({ duration: sUi(T.letterDrop), stagger: sUi(T.letterStagger), lineDelay: sUi(T.letterStagger * 3) }),
+        title.popIn({
+          duration: sUi(T.letterDrop),
+          stagger: sUi(T.letterStagger),
+          lineDelay: sUi(T.letterStagger * 3),
+        }),
         gsap.to(title, { waveAmp: 7, duration: sUi(900), delay: sUi(T.letterDrop) }),
         gsap.delayedCall(sUi(T.letterDrop + T.letterStagger * 6), () => void title.sweep(sUi(T.glintDuration))),
-        gsap.to(this.amountHolder.scale, { x: 1, y: 1, duration: sUi(T.amountIn), delay: sUi(T.countDelay * 0.6), ease: 'back.out(2.2)' }),
+        scaleTo(this.amountHolder.scale, 1, {
+          duration: sUi(T.amountIn),
+          delay: sUi(T.countDelay * 0.6),
+          ease: 'back.out(2.2)',
+        }),
       );
     });
   }

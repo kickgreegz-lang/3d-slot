@@ -31,6 +31,8 @@ export interface LandOptions {
   weight?: LandWeight;
   /** true when landing as part of a tumble refill (softer) */
   tumble?: boolean;
+  /** caller (the Board) plays its own per-column land sound — suppress the per-symbol one */
+  silent?: boolean;
 }
 
 export interface SymbolView {

@@ -365,6 +365,10 @@ def main(argv):
         raise cli.ToolError(f"more than one armature: {[a.name for a in arms]}")
     arm = arms[0] if arms else None
     report = {"input": cli.rel(src), "inputSha256": prov.sha256_file(src), "before": stats(meshes, arm)}
+    if arm is not None:
+        report["rigPrep"] = S.prepare_rig_for_export(arm, src, log)
+        for o in [o for o in bpy.data.objects if o.type == "EMPTY" and not o.children and o.parent == arm]:
+            bpy.data.objects.remove(o)
     log(f"input: {report['before']['tris']} tris, {len(meshes)} meshes, {report['before']['bones']} bones")
 
     # ---- 2) orientation / scale / origin at the feet

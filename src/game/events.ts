@@ -121,6 +121,7 @@ export type UiEvents = {
   'ui:betDown': void;
   'ui:betSet': { index: number };
   'ui:turbo': void;
+  /** rounds may be Infinity; limits are RGS API money units */
   'ui:autoplay': { rounds: number; lossLimit?: number; singleWinLimit?: number } | null;
   'ui:buy': { mode: string };
   'ui:menu': { open: boolean; page?: 'paytable' | 'rules' | 'settings' | 'guide' };
@@ -149,6 +150,33 @@ export interface HudState {
   freeSpins: { current: number; total: number } | null;
   replay: boolean;
   social: boolean;
+
+  // --- optional extras sent by the flow (flow/hudState.ts FlowHudState) ---
+  /** flow FSM state */
+  phase?: string;
+  /** active bet mode key and its cost multiplier */
+  mode?: string;
+  modeCost?: number;
+  /** bet as an index into ALL RGS bet levels, with preformatted level texts */
+  betIndex?: number;
+  betLevelCount?: number;
+  betLevelTexts?: string[];
+  /** balance covers the next base spin */
+  canAfford?: boolean;
+  /** jurisdiction permissions */
+  slamStopAllowed?: boolean;
+  spacebarAllowed?: boolean;
+  fullscreenAllowed?: boolean;
+  soundEnabled?: boolean;
+  /** jurisdiction displays (null = hidden) */
+  netPositionText?: string | null;
+  rtpText?: string | null;
+  sessionTimeText?: string | null;
+  /** replay mode: start/play-again button + bet info (null outside replay) */
+  replayPhase?: 'loading' | 'ready' | 'playing' | 'done' | 'error' | null;
+  replayButtonText?: string | null;
+  replayInfoText?: string | null;
+  replayResultText?: string | null;
 }
 
 export type HudEvents = {

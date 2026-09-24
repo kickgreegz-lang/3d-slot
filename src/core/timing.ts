@@ -150,6 +150,19 @@ export const TIMING = {
 
 export type Timing = typeof TIMING;
 
+/**
+ * Module-local timing tables (board, symbols, HUD, presentation, FX, audio, scene)
+ * register here so the animation lab (?dev=lab) can tune EVERY constant live, not
+ * just the core TIMING bible. Modules keep ownership of their tables:
+ *   export const BOARD_TIMING = registerTiming('board', { ... });
+ */
+export type TimingTable = Record<string, unknown>;
+export const TIMING_SECTIONS: Record<string, TimingTable> = { core: TIMING };
+export const registerTiming = <T extends object>(section: string, table: T): T => {
+  TIMING_SECTIONS[section] = table as TimingTable;
+  return table;
+};
+
 let currentProfile: SpeedProfile = 'normal';
 
 /**

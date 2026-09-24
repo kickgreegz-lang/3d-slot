@@ -47,6 +47,7 @@ def build_parser():
     ap.add_argument("--image-format", default="AUTO", choices=("AUTO", "WEBP", "JPEG", "NONE"),
                     help="texture format in the GLB (optimize.sh re-encodes to WebP anyway)")
     ap.add_argument("--fps", type=int, default=30, help="scene fps used to sample actions (contract: 30)")
+    ap.add_argument("--keep-rigid", action="store_true", help="--glb: skip the round-trip prep")
     ap.add_argument("--manifest", help="also append the row to this manifest")
     return ap
 
@@ -156,6 +157,10 @@ def main(argv):
     import bpy
     from slotbl import provenance as prov
     from slotbl import scene as S
+    for opt in ("glb", "blend"):
+        val = getattr(args, opt)
+        if val and not cli.repo_path(val).exists():
+            raise cli.ToolError(f"--{opt} not found: {val}")
     if args.glb:
         S.reset_scene()
         src = cli.repo_path(args.glb)
@@ -172,6 +177,8 @@ def main(argv):
     arms = [o for o in bpy.data.objects if o.type == "ARMATURE"]
     arm = bpy.data.objects.get(args.armature) if args.armature else (arms[0] if len(arms) == 1 else None)
     keep = [a.strip() for a in args.actions.split(",")] if args.actions else None
+    if args.glb and arm is not None and not args.keep_rigid:
+        S.prepare_rig_for_export(arm, src, log)
     out = cli.out_path(args.out)
     info = export(out, arm=arm, keep_actions=keep, rename_map=load_rename_map(args.rename_map),
                   rigify=args.rigify_names, log=log, def_bones=not args.all_bones, image_format=args.image_format)

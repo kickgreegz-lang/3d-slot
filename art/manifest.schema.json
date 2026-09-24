@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "art/manifest.schema.json",
+  "title": "SWAMP FUNK asset provenance manifest",
+  "description": "art/manifest.json holds one row per produced asset (raw vendor output, derived file or shipped file). The licence-audit CI check validates the file against this schema. It also checks that every licenseId exists in licenses/allowlist.json, is absent from licenses/denylist.json and, for shipped rows, has clearance 'cleared'. Rows are append-only: a re-generation adds a new row with a new id and points 'parents' at the inputs it used. See docs/PIPELINE.md and docs/STACK.md.",
+  "type": "object",
+  "required": ["schemaVersion", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedBy": { "type": "string", "description": "Tool that last wrote the file, e.g. 'tools/validate-asset.ts'." },
+    "rows": { "type": "array", "items": { "$ref": "#/$defs/row" } }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "stage", "vendor", "model", "version", "seed", "promptHash", "refHashes", "planTier", "tosVersion", "licenseId", "humanEditor", "cost", "date", "sha256"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_.-]*$",
+          "description": "Stable asset id, e.g. 'sym_H1.master.v03' or 'mascot_gumbo.turnaround.front.v02'."
+        },
+        "path": {
+          "type": "string",
+          "description": "Repo-relative path of the file this row describes (art/_raw/..., art/source/..., build/..., public/assets/...)."
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "art-direction", "style-lock", "2d-image", "vector-ui", "backgrounds", "mascot-sheets",
+            "matting", "layer-split", "hidden-area-fill", "spine-authoring", "spine-export",
+            "3d-mesh", "3d-cleanup", "3d-rig", "3d-anim", "3d-export", "3d-render",
+            "vfx-live", "vfx-bake", "video", "audio-sfx", "audio-music", "audio-post",
+            "packaging", "qa", "human-paintover", "human-polish"
+          ]
+        },
+        "shipped": { "type": "boolean", "default": false, "description": "True when the file (or a direct derivative) goes into public/assets." },
+        "route": {
+          "type": "string",
+          "enum": ["vertex", "scenario", "higgsfield-mcp", "higgsfield-cli", "recraft", "bfl", "fal", "comfyui-local", "tripo", "meshy", "rodin", "blender", "spine-cli", "elevenlabs", "stability", "ffmpeg", "human", "code"],
+          "description": "How the asset was produced. Higgsfield rows keep the MCP/CLI distinction because their model ids differ."
+        },
+        "vendor": { "type": "string", "description": "Company or project, e.g. 'Google Cloud', 'Higgsfield', 'Esoteric Software', 'self' for owned code, 'human' for manual work." },
+        "model": {
+          "type": "string",
+          "description": "Exact wire id as sent, e.g. 'gemini-3-pro-image', 'nano_banana_2' (Higgsfield CLI id for Nano Banana Pro), 'eleven_text_to_sound_v2', 'blender-5.2.2', 'spine-4.3.23'."
+        },
+        "version": { "type": "string", "description": "Model or tool version/date pin, e.g. CLI version, LoRA id, checkpoint hash, or 'n/a' for humans." },
+        "seed": {
+          "type": ["integer", "string", "null"],
+          "description": "Seed when the API exposes one; null when it does not (Higgsfield and Nano Banana image/video jobs have no seed)."
+        },
+        "jobId": { "type": ["string", "null"], "description": "Vendor job/request id (e.g. Higgsfield job_id from --json output)." },
+        "promptPath": { "type": ["string", "null"], "description": "Rendered prompt file, e.g. art/_raw/<asset>/<vNN>/prompt.txt." },
+        "promptHash": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "sha256 of the exact rendered prompt text (UTF-8, no trailing newline). null for non-prompted steps."
+        },
+        "template": { "type": ["string", "null"], "description": "Template used, e.g. 'art/bible/prompts/symbol.txt'." },
+        "refHashes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sha256" },
+          "description": "sha256 of every reference/input image, in the order sent. Empty array when none."
+        },
+        "parents": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Row ids this asset was derived from (e.g. a matte's parent is the raw generation)."
+        },
+        "planTier": { "type": ["string", "null"], "description": "Account plan when generated, e.g. 'Scenario Pro', 'Higgsfield Ultra', 'Vertex pay-as-you-go', 'ElevenLabs Enterprise'." },
+        "tosVersion": {
+          "type": ["string", "null"],
+          "description": "Archived ToS in force, as a repo path: licenses/tos/<vendor>/<yyyy-mm-dd>.pdf."
+        },
+        "licenseId": {
+          "type": "string",
+          "description": "Must equal an 'id' in licenses/allowlist.json (e.g. 'vertex-nano-banana-pro', 'higgsfield', 'blender-5.2'). Enforced by licence-audit, not by this schema."
+        },
+        "humanEditor": {
+          "type": ["string", "null"],
+          "description": "Name/handle of the human who painted over, edited, rigged or approved this asset; null for purely machine rows. This record supports copyright authorship."
+        },
+        "humanEditSummary": { "type": ["string", "null"], "description": "What the human changed (e.g. 'paintover: redrew claws, fixed outline weight, recoloured belly')." },
+        "approvedBy": { "type": ["string", "null"], "description": "Who signed off (batch sign-off, clip sign-off)." },
+        "cost": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["amount", "currency"],
+          "properties": {
+            "amount": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "enum": ["USD", "EUR", "GBP", "credits"] },
+            "unit": { "type": "string", "description": "e.g. 'Higgsfield credits', 'Scenario CU', 'Meshy credits', 'GPU-seconds'." },
+            "estimated": { "type": "boolean", "default": false }
+          }
+        },
+        "date": { "type": "string", "format": "date-time" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "qa": {
+          "type": "object",
+          "description": "Automated gate results that let this row through (see docs/ART_BIBLE.md#qa-gates).",
+          "additionalProperties": true,
+          "properties": {
+            "passed": { "type": "boolean" },
+            "report": { "type": "string", "description": "Path to the gate report, e.g. qa/<asset>/gates.json." }
+          }
+        },
+        "notes": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

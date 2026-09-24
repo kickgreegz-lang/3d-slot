@@ -13,7 +13,7 @@ import type { ClipKey } from './MascotController';
 import { createThree } from './threeBridge';
 import { makeRampTexture } from './toon';
 
-/** Local reaction tuning (presentation feel, not gameplay pacing). */
+/** Local reaction / staging tuning (presentation feel, not gameplay pacing). */
 const REACT = {
   /** showWins at or above this many x bet (book units x100) => win_big instead of react_small */
   bigWinX: 10,
@@ -21,6 +21,8 @@ const REACT = {
   anticipationTail: 900,
   /** chance of a sulk expression after a dead spin */
   sulkChance: 0.4,
+  /** feet line inside the beam when standing on it (fraction of beam height from its top) */
+  beamFooting: 0.3,
 };
 
 /**
@@ -128,10 +130,17 @@ export class Mascots implements GameModule {
     const pixelScale = this.ctx.scale * this.ctx.app.renderer.resolution;
     const centre = cellCenter(L, 3, 2);
     const feet = (r: { x: number; y: number; w: number; h: number }): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h * 0.35 });
+    // a slot whose floor line falls inside the frame beam (portrait) stands ON the beam's top
+    const beamTop = L.frame.y;
+    const beamBottom = L.frame.y + L.frameParts.beam;
+    const ground = (r: { y: number; h: number }): number | undefined => {
+      const bottom = r.y + r.h;
+      return bottom > beamTop && bottom <= beamBottom + 4 ? beamTop + L.frameParts.beam * REACT.beamFooting : undefined;
+    };
     for (const m of this.mascots) {
       const rect = slots ? slots[m.def.side] : null;
       const other = slots ? slots[m.def.side === 'left' ? 'right' : 'left'] : null;
-      m.layout(rect, pixelScale, centre, other ? feet(other) : null);
+      m.layout(rect, pixelScale, centre, other ? feet(other) : null, rect ? ground(rect) : undefined);
       m.show(this.enabled);
     }
     this.dirty = true;

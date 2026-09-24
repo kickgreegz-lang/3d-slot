@@ -32,13 +32,13 @@ export const FRAME = {
   /** vertical field of view (deg): narrow = flatter, closer to the 2D art */
   fov: 20,
   /** standing height as a fraction of the RT height (the rest is jump/arm headroom) */
-  fill: 0.72,
+  fill: 0.68,
   /** feet line above the RT bottom (fraction of RT height) */
-  feet: 0.06,
+  feet: 0.05,
   /** standing height as a fraction of the layout slot height */
   slotFill: 0.98,
   /** idle silhouette width as a fraction of the slot width (keeps snouts/tails off the reels) */
-  slotWidth: 0.92,
+  slotWidth: 0.85,
   /** ink width in DESIGN px (2D symbols use ~4 px at 150 px cells) */
   outlinePx: 3.4,
   /** look targets sit this many body heights in front of the reel plane */
@@ -94,6 +94,7 @@ export class Mascot {
   private rect: Rect | null = null;
   private displayH = 0;
   private feetX = 0;
+  private groundY = 0;
   private wantSize: { w: number; h: number } | null = null;
   private pending: PendingCue[] = [];
   private focus: Focus = { kind: 'board', x: 0, y: 0 };
@@ -175,11 +176,12 @@ export class Mascot {
   }
 
   /**
-   * Place in a layout slot (feet at the rect's bottom-centre, standing height ~ rect height).
-   * `pixelScale` = design px -> physical px (root scale * renderer resolution).
+   * Place in a layout slot (feet at the rect's bottom-centre unless `groundY` overrides the
+   * floor line, standing height ~ rect height). `pixelScale` = design px -> physical px.
    */
-  layout(rect: Rect | null, pixelScale: number, boardCentre: Pt, friend: Pt | null): void {
+  layout(rect: Rect | null, pixelScale: number, boardCentre: Pt, friend: Pt | null, groundY?: number): void {
     this.rect = rect;
+    this.groundY = rect ? (groundY ?? rect.y + rect.h) : 0;
     this.boardCentre = boardCentre;
     this.friend = friend;
     if (!rect) {
@@ -195,7 +197,7 @@ export class Mascot {
     const h = Math.max(128, Math.min(this.maxH, Math.ceil((this.displayH * pixelScale) / 32) * 32));
     const w = this.widthFor(h);
     this.wantSize = { w, h };
-    this.view.position.set(this.feetX, rect.y + rect.h);
+    this.view.position.set(this.feetX, this.groundY);
     this.applySpriteScale(this.target.width, this.target.height); // re-applied after the RT resize
     const sw = this.displayH * FRAME.fill * FRAME.shadow;
     this.shadow.scale.set(sw, sw);
@@ -340,7 +342,7 @@ export class Mascot {
     const rect = this.rect;
     if (!rect || !this.displayH) return out.set(0, this.height * 0.8, this.height * 4);
     const feetX = this.feetX;
-    const feetY = rect.y + rect.h;
+    const feetY = this.groundY;
     const ndcX = (2 * (x - feetX)) / (this.displayH * this.aspect);
     const ndcY = 2 * (FRAME.feet + (feetY - y) / this.displayH) - 1;
     const z = this.height * FRAME.lookDepth;

@@ -1,3 +1,5 @@
+// side-effect import: registers the Spine skeleton/atlas loaders with Assets
+import '@esotericsoftware/spine-pixi-v8';
 import { type Application, Assets, type Texture } from 'pixi.js';
 import { SYMBOLS } from '../config/game';
 import type { ArtProvider, EnvArtKey, ParticleKey, SpineRef, SymbolVariant } from './art';
@@ -65,8 +67,6 @@ const loadManifest = async (m: ArtManifest): Promise<LoadedManifest> => {
     );
   }
   if (m.spine.length > 0) {
-    // registers the skeleton/atlas loaders with Assets
-    await import('@esotericsoftware/spine-pixi-v8');
     for (const e of m.spine) {
       if (!isRelative(e.skeleton) || !isRelative(e.atlas)) continue;
       const skeleton = `spine:${e.id}:skeleton`;

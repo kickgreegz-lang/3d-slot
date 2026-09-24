@@ -85,7 +85,7 @@ export const buildLogo = (renderer: Renderer, text = 'SWAMP FUNK'): LogoBake => 
   const b = root.getLocalBounds();
   const pad = 6;
   const frame = new Rectangle(b.minX - pad, b.minY - pad, b.maxX - b.minX + pad * 2, b.maxY - b.minY + pad * 2);
-  const texture = renderer.generateTexture({ target: root, frame, resolution: 2, antialias: true });
+  const texture = renderer.generateTexture({ target: root, frame, resolution: 1.5, antialias: true });
   root.destroy({ children: true });
   for (const t of temp) t.destroy(true);
   return { texture };

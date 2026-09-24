@@ -81,6 +81,7 @@ export class Frame implements GameModule {
   private shineMask = new Sprite();
   private tubeGlow: Sprite[] = [];
   private shineTween: gsap.core.Timeline | null = null;
+  private shineHolder: Container | null = null;
   private offTick: (() => void) | null = null;
   private t = 0;
   private key = '';
@@ -329,7 +330,9 @@ export class Frame implements GameModule {
     shine.blendMode = 'add';
     shine.alpha = 0.85;
     shine.y = s.y;
+    this.shineHolder?.destroy();
     const holder = new Container();
+    this.shineHolder = holder;
     holder.addChild(shine);
     holder.setMask({ mask: m, channel: 'alpha' });
     holder.visible = false;

@@ -82,7 +82,14 @@ export class WinDisplay extends Container {
 
   /** Static readout from HudState (ignored while a count-up is rolling). */
   setStatic(text: string, show: boolean): void {
-    if (this.tween) return;
+    if (this.tween) {
+      if (show) return;
+      // a new round cleared the win while a count was still rolling
+      this.tween.kill();
+      this.tween = null;
+      gsap.killTweensOf(this.body.scale);
+      this.body.scale.set(1);
+    }
     if (show) {
       this.value.text = text;
       this.arrange(text);

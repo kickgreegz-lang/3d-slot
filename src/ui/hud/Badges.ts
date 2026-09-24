@@ -20,15 +20,18 @@ const fade = (c: Container, on: boolean): void => {
   }
 };
 
+export type FsBadgeMode = 'hex' | 'stack';
+
 /**
- * FREE SPINS counter hex (takes the bonus-buy slot — buying is never possible
- * during the feature). Neutral glass with a yellow rim; punches on every change.
+ * FREE SPINS counter. 'hex': glass hex with a yellow rim in the bonus-buy slot
+ * (buying is never possible during the feature). 'stack': plain label-over-value
+ * (compact column, shown in the bet slot). Punches on every change.
  */
 export class FsBadge extends Container {
   private readonly plate = new Sprite(Texture.EMPTY);
   private readonly caption: Text;
   private readonly value: Text;
-  private r = 80;
+  private fit = 116;
   private shown = false;
 
   constructor(
@@ -44,26 +47,51 @@ export class FsBadge extends Container {
     this.visible = false;
   }
 
-  configure(radius: number, tilt: number, labelSize: number, valueSize: number, resolution: number): void {
-    this.r = radius;
-    const g = new Graphics();
-    hexPath(g, radius, tilt, 0.22).fill({ color: 0x07050c, alpha: 0.62 });
-    hexPath(g, radius, tilt, 0.22).stroke({ width: 2.5, color: HUD_COLORS.label, alpha: 0.75 });
-    const old = this.plate.texture;
-    this.plate.texture = bakeCentered(this.ctx.app.renderer, g, (radius + 6) * 2, resolution);
-    if (old !== Texture.EMPTY) old.destroy(true);
-    g.destroy();
+  configure(opts: {
+    mode: FsBadgeMode;
+    radius: number;
+    tilt: number;
+    labelSize: number;
+    valueSize: number;
+    maxWidth?: number;
+    resolution: number;
+  }): void {
+    const { mode, radius, tilt, labelSize, valueSize, resolution } = opts;
     this.caption.style = labelStyle(labelSize);
     this.value.style = valueStyle(valueSize);
-    this.caption.position.set(0, -radius * 0.3);
-    this.value.position.set(0, radius * 0.16);
-    fitWidth(this.caption, radius * 1.45);
-    fitWidth(this.value, radius * 1.45);
+    this.plate.visible = mode === 'hex';
+    if (mode === 'hex') {
+      const g = new Graphics();
+      hexPath(g, radius, tilt, 0.22).fill({ color: 0x07050c, alpha: 0.62 });
+      hexPath(g, radius, tilt, 0.22).stroke({ width: 2.5, color: HUD_COLORS.label, alpha: 0.75 });
+      const old = this.plate.texture;
+      this.plate.texture = bakeCentered(this.ctx.app.renderer, g, (radius + 6) * 2, resolution);
+      if (old !== Texture.EMPTY) old.destroy(true);
+      g.destroy();
+      this.fit = radius * 1.45;
+      this.caption.anchor.set(0.5);
+      this.value.anchor.set(0.5);
+      this.caption.position.set(0, -radius * 0.3);
+      this.value.position.set(0, radius * 0.16);
+    } else {
+      // origin = label baseline, like LabeledValue
+      this.fit = opts.maxWidth ?? 240;
+      this.caption.anchor.set(0.5, 1);
+      this.value.anchor.set(0.5, 0);
+      this.caption.position.set(0, 0);
+      this.value.position.set(0, Math.round(labelSize * 0.12));
+    }
+    fitWidth(this.caption, this.fit);
+    fitWidth(this.value, this.fit);
+  }
+
+  get isShown(): boolean {
+    return this.shown;
   }
 
   setLabel(text: string): void {
     this.caption.text = text;
-    fitWidth(this.caption, this.r * 1.45);
+    fitWidth(this.caption, this.fit);
   }
 
   /** null hides the badge. */
@@ -72,7 +100,7 @@ export class FsBadge extends Container {
     if (on && text !== this.value.text) {
       const changed = this.value.text !== '' && this.shown;
       this.value.text = text;
-      fitWidth(this.value, this.r * 1.45);
+      fitWidth(this.value, this.fit);
       if (changed) {
         const k = this.value.scale.x;
         gsap.fromTo(

@@ -155,7 +155,7 @@ export interface Personality {
 
 /** Local tuning (animation feel, not gameplay pacing). */
 const P = {
-  lookYaw: 0.8,
+  lookYaw: 0.5,
   lookPitchUp: 0.4,
   lookPitchDown: 0.35,
   neckShare: 0.35,

@@ -29,6 +29,8 @@ export interface ScenarioOptions {
   tiers?: WinTierKey[];
   /** mascot cues to play (default: all) */
   cues?: MascotCue[];
+  /** particle burst kinds to fire (default: all) */
+  kinds?: Array<GameEvents['fx:burst']['kind']>;
 }
 
 export interface ScenarioEnv {
@@ -74,7 +76,7 @@ const FX_DEMO = {
 /** Big-win showcase amounts (book units: bet multiple x100). */
 const BIGWIN_DEMO_X: Record<WinTierKey, number> = { big: 20, super: 40, mega: 75, epic: 150, max: 5000 };
 
-const MASCOT_CUES: MascotCue[] = [
+export const MASCOT_CUES: MascotCue[] = [
   'idle',
   'spinStart',
   'anticipation',
@@ -87,7 +89,7 @@ const MASCOT_CUES: MascotCue[] = [
   'fsEnd',
 ];
 
-const BURST_KINDS: Array<GameEvents['fx:burst']['kind']> = [
+export const BURST_KINDS: Array<GameEvents['fx:burst']['kind']> = [
   'explode',
   'dust',
   'sparkle',
@@ -251,9 +253,9 @@ export const SCENARIOS: ScenarioDef[] = [
     label: 'Particles',
     group: 'fx',
     probe: () => null,
-    run: async (env) => {
+    run: async (env, opts) => {
       const colors = Object.values(SYMBOLS).map((d) => d.color);
-      for (const [i, kind] of BURST_KINDS.entries()) {
+      for (const [i, kind] of (opts.kinds ?? BURST_KINDS).entries()) {
         const p = cellCenter(env.ctx.layout, i % 7, 1 + (i % 3));
         await env.emit('fx:burst', { kind, x: p.x, y: p.y, color: colors[i % colors.length], power: 1 });
         await wait(PACE.burstGap);

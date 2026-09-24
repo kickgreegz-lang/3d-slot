@@ -28,7 +28,11 @@ export interface HudPlacement {
   bet: Pt & { align: Align; maxWidth: number };
   balance: Pt & { align: Align; maxWidth: number };
   win: Pt & { mode: WinMode; maxWidth: number };
-  replay: Pt & { align: Align };
+  replay: Pt & { align: Align; maxWidth: number };
+  /** free-spin counter: hex in the bonus-buy slot, or stacked text in the bet slot */
+  fs: Pt & { mode: 'hex' | 'stack'; r: number; tilt: number };
+  /** replay start caption under (or over) the spin hex */
+  caption: Pt & { size: number; anchorY: number };
   labelFont: number;
   valueFont: number;
   /** x that splits "left" (tilt -20°) from "right" (+20°) small hexes */
@@ -53,13 +57,13 @@ const PORTRAIT_FIX = {
 } as const;
 
 const COMPACT_FIX = {
-  balance: { x: 828, y: 32 },
-  win: { x: 828, y: 96 },
-  autoplay: { x: 770, y: 170 },
-  turbo: { x: 886, y: 170 },
-  spin: { x: 828, y: 290 },
-  menu: { x: 770, y: 410 },
-  bonusBuy: { x: 886, y: 410 },
+  balance: { x: 828, y: 26 },
+  win: { x: 828, y: 74 },
+  autoplay: { x: 770, y: 144 },
+  turbo: { x: 886, y: 144 },
+  spin: { x: 828, y: 270 },
+  menu: { x: 770, y: 408 },
+  bonusBuy: { x: 886, y: 408 },
   betValue: { x: 828, y: 488 },
   betMinus: { x: 728, y: 502 },
   betPlus: { x: 928, y: 502 },
@@ -79,11 +83,13 @@ export const resolveHudLayout = (L: LayoutSpec): HudPlacement => {
         betMinus: f.betMinus,
         betPlus: f.betPlus,
         small: { r, hit: Math.max(r, h.smallButton / 2) },
-        bonusBuy: { ...f.bonusBuy, r: 80, tilt: -20, label: 'edge', hit: 85 },
+        bonusBuy: { ...f.bonusBuy, r: 76, tilt: -20, label: 'below', hit: 85 },
         bet: { ...f.betValue, align: 'center', maxWidth: f.betPlus.x - f.betMinus.x - 2 * r - 24 },
         balance: { ...f.balance, align: 'left', maxWidth: f.betMinus.x - r - f.balance.x - 24 },
         win: { ...f.win, mode: 'row', maxWidth: 560 },
-        replay: { x: f.balance.x, y: f.balance.y + 20, align: 'left' },
+        replay: { x: f.balance.x, y: f.balance.y + 20, align: 'left', maxWidth: 560 },
+        fs: { ...f.bonusBuy, mode: 'hex', r: 80, tilt: -20 },
+        caption: { x: f.spin.x, y: f.spin.y + h.spin.size * 0.56 + 6, size: 28, anchorY: 0 },
         labelFont: h.labelFont,
         valueFont: h.valueFont,
         mirrorX: f.spin.x,
@@ -100,11 +106,13 @@ export const resolveHudLayout = (L: LayoutSpec): HudPlacement => {
         betMinus: f.betMinus,
         betPlus: f.betPlus,
         small: { r, hit: Math.max(r + 6, h.smallButton / 2) },
-        bonusBuy: { ...f.bonusBuy, r: 32, tilt: 20, label: 'below', hit: 42 },
+        bonusBuy: { ...f.bonusBuy, r: 33, tilt: 20, label: 'below', hit: 42 },
         bet: { ...f.betValue, align: 'center', maxWidth: f.betPlus.x - f.betMinus.x - 2 * r - 12 },
-        balance: { ...f.balance, align: 'center', maxWidth: 250 },
-        win: { ...f.win, mode: 'stack', maxWidth: 250 },
-        replay: { x: f.balance.x, y: f.balance.y + 10, align: 'center' },
+        balance: { ...f.balance, align: 'row', maxWidth: 252 },
+        win: { ...f.win, mode: 'row', maxWidth: 252 },
+        replay: { x: f.balance.x, y: f.balance.y, align: 'center', maxWidth: 252 },
+        fs: { ...f.betValue, mode: 'stack', r: 0, tilt: 0 },
+        caption: { x: f.spin.x, y: f.spin.y + 82, size: 20, anchorY: 0 },
         labelFont: 26,
         valueFont: 34,
         mirrorX: f.spin.x,
@@ -125,7 +133,9 @@ export const resolveHudLayout = (L: LayoutSpec): HudPlacement => {
         bet: { ...h.betValue, align: 'center', maxWidth: h.betPlus.x - h.betMinus.x - 2 * r - 24 },
         balance: { ...h.balance, align: 'left', maxWidth: 420 },
         win: { ...h.win, mode: 'row', maxWidth: 640 },
-        replay: { x: h.balance.x, y: h.balance.y + 12, align: 'left' },
+        replay: { x: h.balance.x, y: h.balance.y + 12, align: 'left', maxWidth: 520 },
+        fs: { ...h.bonusBuy, mode: 'hex', r: 88, tilt: -20 },
+        caption: { x: h.spin.x, y: h.spin.y + h.spin.size * 0.56 * 0.98, size: Math.round(h.labelFont * 0.9), anchorY: 0 },
         labelFont: h.labelFont,
         valueFont: h.valueFont,
         mirrorX: L.width / 2,

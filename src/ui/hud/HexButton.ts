@@ -47,6 +47,8 @@ export class HexButton extends Container {
   protected visualState: VisualState = 'idle';
   protected resolution = 2;
   protected iconDraw: IconDraw;
+  /** extra plate opacity (spin button darkens while a round runs) */
+  plateBoost = 0;
 
   constructor(
     protected readonly ctx: GameContext,
@@ -217,7 +219,7 @@ export class HexButton extends Container {
   protected applyStatic(): void {
     const { fill, rim, rimHover } = this.opts;
     const s = this.enabled ? this.visualState : 'idle';
-    this.plate.alpha = Math.min(1, fill.alpha + (s === 'pressed' ? 0.08 : s === 'hover' ? 0.04 : 0));
+    this.plate.alpha = Math.min(1, fill.alpha + this.plateBoost + (s === 'pressed' ? 0.08 : s === 'hover' ? 0.04 : 0));
     const hot = s !== 'idle' && rimHover;
     this.rim.tint = hot ? rimHover.color : rim.color;
     this.rim.alpha = hot ? rimHover.alpha : rim.alpha;

@@ -11,8 +11,9 @@
  *        [--viewports 1200x675,375x667] [--strict-gpu] [--allow-url "<regex>"] [--no-mock-rgs]
  *
  * Checks (report: <out>/approval.json, exit 1 on any failure):
- *   1. dist/ grep: no absolute http(s):// URLs in shipped text assets (XML namespace URIs such as
- *      http://www.w3.org/2000/svg are allowed — identifiers, never fetched), no root-absolute
+ *   1. dist/ grep: no absolute http(s):// URLs in shipped code/data (XML namespace URIs such as
+ *      http://www.w3.org/2000/svg and template-built `https://${rgs}` URLs are allowed; URLs inside
+ *      .txt licence files are listed under `docUrls` without failing), no root-absolute
  *      src/href in index.html (Stake serves from a CDN sub-path).
  *   2. The 7 required viewports (1200x675, 1024x576, 800x450, 400x225, 425x812, 375x667, 320x568):
  *      boots to window.__slot.ready, screenshot per viewport (+ after a spacebar spin).
@@ -43,7 +44,14 @@ const strictGpu = args['strict-gpu'] === 'true';
 const mockRgs = args['no-mock-rgs'] !== 'true';
 const VIEWPORTS = (args.viewports ?? '1200x675,1024x576,800x450,400x225,425x812,375x667,320x568').split(',');
 
-const ALLOWED_URLS = [/^http:\/\/www\.w3\.org\//, ...(args['allow-url'] ? [new RegExp(args['allow-url'])] : [])];
+/** Never fetched: XML namespace identifiers, and template-built RGS URLs (`https://${rgs_url}`). */
+const ALLOWED_URLS = [
+  /^http:\/\/www\.w3\.org\//,
+  /^https:\/\/\$\{/,
+  ...(args['allow-url'] ? [new RegExp(args['allow-url'])] : []),
+];
+/** Plain-text documents shipped for licensing (OFL/Apache font licences): reported, never fail. */
+const DOC_EXT = new Set(['.txt']);
 const GPU_NOISE = /GL Driver Message|GPU stall due to|\[\.WebGL-[0-9a-fx]+\]|Automatic fallback to software WebGL/i;
 const TEXT_EXT = new Set(['.js', '.mjs', '.css', '.html', '.json', '.atlas', '.txt', '.svg', '.xml', '.webmanifest']);
 
@@ -62,7 +70,7 @@ const walk = (dir) =>
       })
     : [];
 
-const distReport = { dir: distDir, filesScanned: 0, violations: [], allowed: {}, rootAbsoluteRefs: [] };
+const distReport = { dir: distDir, filesScanned: 0, violations: [], docUrls: [], allowed: {}, rootAbsoluteRefs: [] };
 if (!fs.existsSync(distDir)) {
   failures.push(`dist: ${distDir} not found (run npx vite build first)`);
 } else {
@@ -85,7 +93,7 @@ if (!fs.existsSync(distDir)) {
         seen.set(u, { file: rel, url: u, count: 1, context: ctx });
       }
     }
-    distReport.violations.push(...seen.values());
+    (DOC_EXT.has(path.extname(file)) ? distReport.docUrls : distReport.violations).push(...seen.values());
     if (rel === 'index.html') {
       for (const m of text.matchAll(/\b(?:src|href)=["'](\/[^"']*)["']/g)) distReport.rootAbsoluteRefs.push(m[1]);
     }

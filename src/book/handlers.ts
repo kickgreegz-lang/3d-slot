@@ -23,8 +23,10 @@ import type { BookEvent, GameType, Position, RevealEvent } from './types';
  *   updateGlobalMult-> (state only — no scene event in the contract yet)
  *   freeSpinEnd     -> [bigwin:show] fs:end + mode:change basegame
  *   finalWin        -> win:final
- *   wincap          -> celebrate + HUD count-up to the cap; later tiers become 'max'
+ *   wincap          -> mascot 'celebrate' + HUD count-up to the cap; later tiers become 'max'
  *
+ * Mascot reactions / SFX are derived by the scene modules from these events (only the
+ * wincap cue is emitted here: no scene event conveys a mid-bonus cap).
  * GameEvents amounts are BOOK units (x100 bet multiple); HUD values are API units.
  */
 
@@ -147,13 +149,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
     await setGameType(c, e.gameType);
     const board = boardIds(e.board);
     state.board = board;
-    if (e.anticipation.some((a) => a > 0)) ctx.game.broadcast('mascot:cue', { cue: 'anticipation' });
     await ctx.game.broadcastAsync('board:reveal', { board, anticipation: e.anticipation, gameType: e.gameType });
   },
 
   winInfo: async (e, c) => {
-    const intensity = Math.min(1, e.totalWin / (BOOK_AMOUNT_SCALE * 10));
-    c.ctx.game.broadcast('mascot:cue', { cue: 'reactSmall', intensity });
     await c.ctx.game.broadcastAsync('board:showWins', { wins: e.wins, totalWin: e.totalWin });
   },
 
@@ -172,15 +171,12 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
       return;
     }
     if (sameGrid(previous, grid)) return;
-    const upgraded = grid.some((col, r) => col.some((v, i) => v > 1 && v > previous[r][i]));
-    if (upgraded) ctx.game.broadcast('mascot:cue', { cue: 'spotUpgrade' });
     await ctx.game.broadcastAsync('spots:update', { grid, previous });
   },
 
   tumbleBoard: async (e, c) => {
     const { ctx, state } = c;
     const newSymbols = boardIds(e.newSymbols);
-    ctx.game.broadcast('mascot:cue', { cue: 'reactTumble' });
     await ctx.game.broadcastAsync('board:tumble', { exploding: e.explodingSymbols, newSymbols });
     if (state.board) state.board = applyTumble(state.board, e.explodingSymbols, newSymbols);
   },
@@ -191,7 +187,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
     const target = ctx.money.fromBook(state.spinStartTotal + e.amount);
     const tasks: Promise<unknown>[] = [ctx.game.broadcastAsync('win:set', { amount: e.amount, level: e.winLevel })];
     if (tier) {
-      ctx.game.broadcast('mascot:cue', { cue: 'winBig', intensity: 1 });
       tasks.push(ctx.game.broadcastAsync('bigwin:show', { amount: e.amount, tier }));
     } else {
       tasks.push(countHud(c, target, smallCountMs(e.winLevel)));
@@ -210,7 +205,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
     const { ctx, state } = c;
     state.freeSpins = { current: 0, total: e.totalFs };
     c.hooks.onHudChange?.(state);
-    ctx.game.broadcast('mascot:cue', { cue: 'fsTrigger', intensity: 1 });
     await ctx.game.broadcastAsync('fs:trigger', { total: e.totalFs, positions: e.positions, retrigger: false });
     await setGameType(c, 'freegame');
   },
@@ -219,7 +213,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
     const { ctx, state } = c;
     state.freeSpins = { current: state.freeSpins?.current ?? 0, total: e.totalFs };
     c.hooks.onHudChange?.(state);
-    ctx.game.broadcast('mascot:cue', { cue: 'fsTrigger', intensity: 0.6 });
     await ctx.game.broadcastAsync('fs:trigger', { total: e.totalFs, positions: e.positions, retrigger: true });
   },
 
@@ -239,10 +232,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
     const { ctx, state } = c;
     const tier = winTierFor(e.amount / BOOK_AMOUNT_SCALE, state.wincap);
     if (tier) {
-      ctx.game.broadcast('mascot:cue', { cue: 'winBig', intensity: 1 });
       await ctx.game.broadcastAsync('bigwin:show', { amount: e.amount, tier });
     }
-    ctx.game.broadcast('mascot:cue', { cue: 'fsEnd' });
     await ctx.game.broadcastAsync('fs:end', { amount: e.amount, level: e.winLevel });
     state.freeSpins = null;
     c.hooks.onHudChange?.(state);
@@ -262,7 +253,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
     const { ctx, state } = c;
     state.wincap = true;
     ctx.game.broadcast('mascot:cue', { cue: 'celebrate', intensity: 1 });
-    ctx.game.broadcast('fx:shake', { trauma: 0.8 });
     const cap = e.amount ?? state.spinStartTotal + state.spinWin;
     await countHud(c, ctx.money.fromBook(cap), smallCountMs(5));
   },

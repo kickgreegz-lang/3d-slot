@@ -5,14 +5,14 @@ import type { GameContext, GameModule } from '../game/context';
 import type { GameEvents, SfxId } from '../game/events';
 import { AudioEngine, type PlayOpts } from './engine';
 
-/** localStorage key of the player's sound on/off choice. */
+/** localStorage key + encoding of the player's sound choice — shared with ui/dom/DomUi ('on' | 'off'). */
 const PREF_KEY = 'swampfunk.sound';
 /** Music dips under scene-level fanfares even if the presenter emits no sfx (same values as the sfx rules). */
 const SCENE_DUCK = { bigwin: { db: -6, hold: 1.8 }, fsTrigger: { db: -6, hold: 2.4 } } as const;
 
 const readPref = (): boolean => {
   try {
-    return localStorage.getItem(PREF_KEY) !== '0';
+    return localStorage.getItem(PREF_KEY) !== 'off';
   } catch {
     return true;
   }
@@ -20,7 +20,7 @@ const readPref = (): boolean => {
 
 const writePref = (on: boolean): void => {
   try {
-    localStorage.setItem(PREF_KEY, on ? '1' : '0');
+    localStorage.setItem(PREF_KEY, on ? 'on' : 'off');
   } catch {
     /* storage blocked (private mode / sandbox): the toggle still works this session */
   }

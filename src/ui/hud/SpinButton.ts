@@ -73,8 +73,8 @@ export class SpinButton extends HexButton {
     const iconBox = r * 2 * ICON_SCALE;
     this.iconShadow.texture = this.iconSprite.texture;
     this.iconShadow.position.set(r * 0.025, r * 0.04);
-    this.swap(this.stop, stopIcon(iconBox * HOLE * 1.05), iconBox * HOLE * 1.6);
-    const font = Math.round(iconBox * 0.24);
+    this.swap(this.stop, stopIcon(iconBox * HOLE * 0.86), iconBox * HOLE * 1.4);
+    const font = Math.round(iconBox * 0.3);
     this.count.style.fontSize = font;
     this.fitCount();
   }
@@ -105,6 +105,16 @@ export class SpinButton extends HexButton {
       ease: showCount ? 'back.out(2.5)' : 'power2.in',
       overwrite: true,
     });
+    // the plate darkens so the stop / count affordance pops over busy mascot art
+    gsap.to(this, {
+      plateBoost: mode === 'spinning' || mode === 'autoplay' ? 0.28 : 0,
+      duration: swap,
+      overwrite: 'auto',
+      onUpdate: () => this.applyStatic(),
+    });
+    // the ring steps back while the hole shows the stop / count affordance
+    const ringAlpha = mode === 'idle' || mode === 'disabled' ? 1 : 0.5;
+    gsap.to([this.iconSprite, this.iconShadow], { alpha: (i: number) => (i === 0 ? ringAlpha : ringAlpha * 0.38), duration: swap, overwrite: 'auto' });
     if (mode === 'spinning') this.spinUp(TAU / (HUD_TIMING.spinRevolution / 1000));
     else if (mode === 'autoplay') this.spinUp(TAU / (HUD_TIMING.autoRevolution / 1000));
     else this.settle();
@@ -120,7 +130,7 @@ export class SpinButton extends HexButton {
   private countScale = 1;
   private fitCount(): void {
     const iconBox = this.opts.radius * 2 * ICON_SCALE;
-    const max = iconBox * HOLE * 1.75;
+    const max = iconBox * HOLE * 1.9;
     const shown = this.count.scale.x > 0.01;
     fitWidth(this.count, max);
     this.countScale = this.count.scale.x;
@@ -128,13 +138,13 @@ export class SpinButton extends HexButton {
   }
 
   private spinUp(target: number): void {
-    gsap.killTweensOf(this.iconSprite);
-    gsap.to(this, { omega: target, duration: sUi(HUD_TIMING.spinRampUp), ease: 'power2.in', overwrite: true });
+    gsap.killTweensOf(this.iconSprite, 'rotation');
+    gsap.to(this, { omega: target, duration: sUi(HUD_TIMING.spinRampUp), ease: 'power2.in', overwrite: 'auto' });
   }
 
   /** Coast to the next upright position with the current angular velocity (power3.out slope match). */
   private settle(): void {
-    gsap.killTweensOf(this);
+    gsap.killTweensOf(this, 'omega');
     const w = this.omega;
     this.omega = 0;
     const rot = this.iconSprite.rotation;
@@ -186,7 +196,7 @@ export class SpinButton extends HexButton {
       rotation: nudge,
       duration: sUi(HUD_TIMING.releaseDuration),
       ease: 'back.out(2.2)',
-      overwrite: true,
+      overwrite: 'auto',
       onComplete: () => {
         if (s === 'idle') this.attract?.restart(true);
       },

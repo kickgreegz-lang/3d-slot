@@ -1,7 +1,7 @@
 import type { AudioGraph } from './graph';
 import { bass, clav, crash, hat, kick, rhodes, shaker, snare } from './instruments';
 import type { MusicStem } from './manifest';
-import { AUDIO_TIMING } from './mix';
+import { AUDIO_TIMING, BUS_LEVELS } from './mix';
 import { Voice, mtof } from './voice';
 
 /**
@@ -191,7 +191,7 @@ export class Groove {
     this.pattern = PATTERNS[stem];
     this.table = COMPILED[stem];
     this.trim = ac.createGain();
-    this.trim.gain.value = this.pattern.gain;
+    this.trim.gain.value = this.pattern.gain * BUS_LEVELS.groove;
     this.trim.connect(g.musicIn);
     this.out = ac.createGain();
     this.out.gain.value = 0;
@@ -275,7 +275,7 @@ export class Groove {
       this.pattern = PATTERNS[stem];
       this.table = COMPILED[stem];
       this.pending = null;
-      this.trim.gain.value = this.pattern.gain;
+      this.trim.gain.value = this.pattern.gain * BUS_LEVELS.groove;
       return;
     }
     if (stem === this.stem && !this.pending) return;
@@ -315,7 +315,7 @@ export class Groove {
     this.pos = 0;
     this.bar = 0;
     this.crashNext = true;
-    this.trim.gain.setTargetAtTime(this.pattern.gain, this.next, 0.05);
+    this.trim.gain.setTargetAtTime(this.pattern.gain * BUS_LEVELS.groove, this.next, 0.05);
   }
 
   private playStep(t0: number): void {

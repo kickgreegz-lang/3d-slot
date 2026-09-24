@@ -108,29 +108,40 @@ const paintRoom = (root: Container, c: Composition, p: ScenePalette, r: () => nu
 // moon window with cypress silhouettes
 
 const cypress = (g: Graphics, x: number, base: number, h: number, color: number, r: () => number): void => {
-  const w = h * 0.16;
-  // flared trunk
-  g.moveTo(x - w * 0.9, base)
-    .quadraticCurveTo(x - w * 0.25, base - h * 0.12, x - w * 0.18, base - h * 0.5)
-    .lineTo(x - w * 0.1, base - h * 0.95)
-    .lineTo(x + w * 0.1, base - h * 0.95)
-    .lineTo(x + w * 0.18, base - h * 0.5)
-    .quadraticCurveTo(x + w * 0.25, base - h * 0.12, x + w * 0.9, base)
+  const w = h * 0.07;
+  const top = base - h;
+  // buttressed trunk, tapering up into the crown
+  g.moveTo(x - w * 2.4, base)
+    .quadraticCurveTo(x - w * 0.9, base - h * 0.1, x - w * 0.7, base - h * 0.35)
+    .lineTo(x - w * 0.35, top + h * 0.2)
+    .lineTo(x + w * 0.35, top + h * 0.2)
+    .lineTo(x + w * 0.7, base - h * 0.35)
+    .quadraticCurveTo(x + w * 0.9, base - h * 0.1, x + w * 2.4, base)
     .closePath()
     .fill(color);
-  // flat-topped canopy tufts
-  for (let i = 0; i < 7; i++) {
-    const ty = base - h * (0.45 + i * 0.075);
-    const tw = w * (1.6 - i * 0.12) * (0.8 + r() * 0.5);
-    const tx = x + (r() - 0.5) * w * 0.8;
-    g.ellipse(tx, ty, tw, h * 0.05).fill(color);
+  // limbs
+  for (let i = 0; i < 4; i++) {
+    const side = i % 2 === 0 ? -1 : 1;
+    const y0 = top + h * (0.22 + i * 0.07);
+    g.moveTo(x, y0).quadraticCurveTo(x + side * w * 3, y0 - h * 0.02, x + side * w * (4 + r() * 3), y0 - h * 0.06).stroke({ width: w * 0.5, color, cap: 'round' });
   }
-  // hanging moss
-  for (let i = 0; i < 9; i++) {
-    const mx = x + (r() - 0.5) * w * 2.4;
-    const my = base - h * (0.5 + r() * 0.4);
-    const len = h * (0.06 + r() * 0.1);
-    g.moveTo(mx - 2, my).quadraticCurveTo(mx + 3, my + len * 0.6, mx, my + len).lineTo(mx + 2, my).closePath().fill(color);
+  // flat-topped clumped crown
+  for (let i = 0; i < 11; i++) {
+    const cx = x + (r() - 0.5) * w * 10;
+    const cy = top + h * (0.04 + r() * 0.2);
+    g.ellipse(cx, cy, w * (1.6 + r() * 1.4), w * (0.9 + r() * 0.7)).fill(color);
+  }
+  // spanish moss
+  for (let i = 0; i < 12; i++) {
+    const mx = x + (r() - 0.5) * w * 9;
+    const my = top + h * (0.14 + r() * 0.16);
+    const len = h * (0.08 + r() * 0.16);
+    g.moveTo(mx - w * 0.35, my).quadraticCurveTo(mx + w * 0.5, my + len * 0.55, mx + w * 0.1, my + len).lineTo(mx + w * 0.35, my).closePath().fill(color);
+  }
+  // cypress knees
+  for (let i = 0; i < 3; i++) {
+    const kx = x + (r() - 0.5) * w * 12;
+    g.moveTo(kx - w * 0.5, base).lineTo(kx, base - h * (0.03 + r() * 0.04)).lineTo(kx + w * 0.5, base).closePath().fill(color);
   }
 };
 
@@ -156,7 +167,7 @@ const paintWindow = (root: Container, win: Rect, p: ScenePalette, glow: Texture,
   const iy = y + t;
   const iw = w - t * 2;
   const ih = h - t * 2;
-  const horizon = iy + ih * 0.78;
+  const horizon = iy + ih * 0.74;
   sky.rect(ix, iy, iw, horizon - iy).fill(vGrad([[0, p.skyTop], [1, p.skyBottom]]));
   sky.rect(ix, horizon, iw, iy + ih - horizon).fill(p.water);
   inner.addChild(sky);
@@ -168,10 +179,10 @@ const paintWindow = (root: Container, win: Rect, p: ScenePalette, glow: Texture,
   moon.circle(mx - iw * 0.05, my + iw * 0.04, iw * 0.02).fill({ color: p.moonGlow, alpha: 0.3 });
   inner.addChild(moon);
   const trees = new Graphics();
-  cypress(trees, ix + iw * 0.2, horizon + 4, ih * 0.62, p.treeFar, r);
-  cypress(trees, ix + iw * 0.9, horizon + 4, ih * 0.55, p.treeFar, r);
-  cypress(trees, ix + iw * 0.45, horizon + 6, ih * 0.9, p.treeNear, r);
-  cypress(trees, ix + iw * 0.05, horizon + 6, ih * 0.75, p.treeNear, r);
+  cypress(trees, ix + iw * 0.36, horizon + 3, ih * 0.34, p.treeFar, r);
+  cypress(trees, ix + iw * 0.86, horizon + 3, ih * 0.3, p.treeFar, r);
+  cypress(trees, ix + iw * 0.62, horizon + 3, ih * 0.24, p.treeFar, r);
+  cypress(trees, ix + iw * 0.12, horizon + 6, ih * 0.52, p.treeNear, r);
   trees.rect(ix, horizon + 2, iw, 6).fill(p.treeNear);
   inner.addChild(trees);
   // moon reflection streaks on the water
@@ -404,6 +415,31 @@ const paintSpeakers = (root: Container, c: Composition, p: ScenePalette): void =
 };
 
 // ---------------------------------------------------------------------------
+// ceiling spot lamps (cone sources when on screen) + light pools on the floor
+
+const paintLamps = (root: Container, c: Composition, p: ScenePalette, glow: Texture): void => {
+  const g = new Graphics();
+  const pools = new Container();
+  for (const cone of c.cones) {
+    const a = (cone.angle * Math.PI) / 180;
+    // where the cone axis meets the floor
+    const fx = cone.x + Math.tan(a) * (c.floor + 40 - cone.y);
+    if (fx > -200 && fx < c.W + 200) {
+      pools.addChild(glowSprite(glow, fx, c.floor + 60, cone.spread * 0.55, 46, p.cone, 0.22));
+    }
+    if (cone.y < 0) continue;
+    const x = cone.x;
+    const y = cone.y;
+    g.rect(x - 2, 0, 4, y).fill(p.line);
+    g.poly([x - 14, y, x + 14, y, x + 20, y + 26, x - 20, y + 26], true).fill(p.speaker).stroke({ width: 2, color: p.line });
+    g.rect(x - 12, y + 2, 5, 20).fill({ color: p.railLight, alpha: 0.5 });
+    g.ellipse(x, y + 27, 17, 5).fill(0xfff4d6);
+    root.addChild(glowSprite(glow, x, y + 30, 60, 40, p.cone, 0.6));
+  }
+  root.addChild(pools, g);
+};
+
+// ---------------------------------------------------------------------------
 
 /** Full static scene (scene units). */
 export const paintScene = (c: Composition, p: ScenePalette, glow: Texture): Container => {
@@ -420,6 +456,7 @@ export const paintScene = (c: Composition, p: ScenePalette, glow: Texture): Cont
   // sign spill on the wall (static base; BgFx flickers the bright part)
   root.addChild(glowSprite(glow, c.sign.x, c.sign.y, 260 * c.sign.scale, 200 * c.sign.scale, p.neon, 0.12));
   paintStrings(root, c, p, glow);
+  paintLamps(root, c, p, glow);
   // calm centre: darken behind the reels so symbols carry the contrast
   const calm = c.calm;
   root.addChild(
@@ -439,8 +476,15 @@ export const paintCone = (len: number, spread: number): Container => {
     .lineTo(spread / 2, len)
     .lineTo(-spread / 2, len)
     .closePath()
-    .fill(alphaGrad(0xffffff, [[0, 0.55], [0.45, 0.2], [1, 0]]));
-  return soften(g, 18);
+    .fill(alphaGrad(0xffffff, [[0, 0.7], [0.3, 0.32], [0.7, 0.08], [1, 0]]));
+  // brighter core
+  g.moveTo(-8, 0)
+    .lineTo(8, 0)
+    .lineTo(spread * 0.22, len * 0.8)
+    .lineTo(-spread * 0.22, len * 0.8)
+    .closePath()
+    .fill(alphaGrad(0xffffff, [[0, 0.5], [0.4, 0.12], [1, 0]]));
+  return soften(g, 10);
 };
 
 /** Lit neon tubes (sign-local coords) for additive flicker in BgFx. */

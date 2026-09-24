@@ -156,6 +156,18 @@ export const EN_SOCIAL: Record<string, string> = {
   'autoplay.lossLimit': 'STOP LIMIT',
   'autoplay.lossLimitHint': 'Stop when the balance drops by',
 
+  'paytable.intro':
+    'Clusters of 5 or more identical symbols connected horizontally or vertically win. Values are multiples of the play amount for each cluster size.',
+  'paytable.symbols': 'SYMBOL WINS',
+  'paytable.pending': 'Win values are supplied by the certified math model of this game version.',
+  'rules.overview.body':
+    '{title} is played on a grid of 7 reels and 5 rows. Wins are awarded for clusters of identical symbols. All wins are multiplied by the play amount.',
+  'rules.cluster.title': 'CLUSTER WINS',
+  'rules.fs.retrigger':
+    'During the feature, {min} or more Scatters award additional Free Spins. Free Spins use the play amount of the triggering round.',
+  'rules.maxWin.body':
+    'The maximum win is {maxWin}× the play amount per round in every game mode. When it is reached, the round ends immediately and the maximum win is awarded.',
+  'guide.menu.desc': 'Opens the win table, the game rules, this guide and the settings.',
   'rules.buy.title': 'GET BONUS',
   'rules.buy.body':
     'The Free Spins feature can be instantly triggered from the base game for {cost}× the current play amount. It starts with {spins} Free Spins and plays exactly like a naturally triggered feature.',

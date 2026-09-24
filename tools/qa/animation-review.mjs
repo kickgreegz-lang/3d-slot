@@ -4,7 +4,7 @@
  *
  * USAGE (dev server must be running, e.g. `npx vite --port 5173`):
  *   node tools/qa/animation-review.mjs --url http://localhost:5173/ \
- *        [--out screenshots/review] [--viewport 1280x720] [--every 2] [--profile normal] \
+ *        [--out screenshots/review] [--viewport 960x540] [--every 3] [--profile normal] \
  *        [--scenarios spin,tumbleChain,symbolLand:H1] [--max-seconds 16] [--tail 40] \
  *        [--settle 20] [--png] [--no-video] [--hmr]
  *
@@ -35,8 +35,8 @@ import {
 const args = parseArgs();
 const baseUrl = args.url ?? 'http://localhost:5173/';
 const outDir = path.resolve(args.out ?? 'screenshots/review');
-const viewport = parseViewport(args.viewport ?? '1280x720');
-const every = Math.max(1, Number(args.every ?? 2));
+const viewport = parseViewport(args.viewport ?? '960x540');
+const every = Math.max(1, Number(args.every ?? 3));
 const profile = args.profile ?? 'normal';
 const maxFrames = Math.round(Number(args['max-seconds'] ?? 16) * 60);
 const tail = Number(args.tail ?? 40);
@@ -80,6 +80,24 @@ const labUrl = (() => {
 
 const ffmpeg = args['no-video'] ? null : findFfmpeg();
 fs.mkdirSync(outDir, { recursive: true });
+
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/** Scene milestones worth a marker on the motion graph (sfx/fx/mascot stay in the table). */
+const MARKER_RE = /^(round:|board:|spots:update|win:tumble|bigwin:|fs:trigger|mode:change)/;
+
+const COLORS = {
+  surface: '#1a1a19',
+  grid: '#2c2c2a',
+  axis: '#5d5c57',
+  textSecondary: '#c3c2b7',
+  textMuted: '#8d8c85',
+  seriesY: '#3987e5',
+  seriesSx: '#3987e5',
+  seriesSy: '#d95926',
+  marker: '#6f6e68',
+  rest: '#8d8c85',
+};
 
 // ---------------------------------------------------------------------------
 // capture
@@ -260,24 +278,6 @@ async function encodeVideo(dir, count) {
     return null;
   }
 }
-
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-/** Scene milestones worth a marker on the motion graph (sfx/fx/mascot stay in the table). */
-const MARKER_RE = /^(round:|board:|spots:update|win:tumble|bigwin:|fs:trigger|mode:change)/;
-
-const COLORS = {
-  surface: '#1a1a19',
-  grid: '#2c2c2a',
-  axis: '#5d5c57',
-  textSecondary: '#c3c2b7',
-  textMuted: '#8d8c85',
-  seriesY: '#3987e5',
-  seriesSx: '#3987e5',
-  seriesSy: '#d95926',
-  marker: '#6f6e68',
-  rest: '#8d8c85',
-};
 
 function niceStep(range, target) {
   const raw = range / Math.max(1, target);

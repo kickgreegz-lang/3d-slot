@@ -8,6 +8,7 @@ import {
   Sprite,
   type Texture,
 } from 'pixi.js';
+import { mix } from '../assets/placeholder/palette';
 import type { LayoutSpec, Rect } from '../config/layout';
 import { clock } from '../core/clock';
 import type { GameContext, GameModule } from '../game/context';
@@ -31,8 +32,11 @@ const LOCAL_TIMING = {
   shineGap: 6,
   /** neon tube breathing period (s) */
   tubePeriod: 3.2,
+  /** base <-> free-spins neon recolour (s), matches the background crossfade */
+  modeCrossfade: 1.4,
 };
 const NEON = 0x35f2e0;
+const NEON_HOT = 0xff3fa8;
 
 interface FrameGeom {
   u: number;
@@ -80,6 +84,9 @@ export class Frame implements GameModule {
   private shine = new Sprite();
   private shineMask = new Sprite();
   private tubeGlow: Sprite[] = [];
+  /** neon-coloured sprites (tube body, halo, panel spill), re-tinted per game mode */
+  private tinted: Sprite[] = [];
+  private heat = { v: 0 };
   private shineTween: gsap.core.Timeline | null = null;
   private shineHolder: Container | null = null;
   private offTick: (() => void) | null = null;
@@ -88,6 +95,20 @@ export class Frame implements GameModule {
 
   constructor(private ctx: GameContext) {
     ctx.game.on('layout:change', ({ layout }) => this.layout(layout));
+    ctx.game.on('mode:change', ({ gameType }) => {
+      gsap.killTweensOf(this.heat);
+      gsap.to(this.heat, {
+        v: gameType === 'freegame' ? 1 : 0,
+        duration: LOCAL_TIMING.modeCrossfade,
+        ease: 'sine.inOut',
+        onUpdate: () => this.applyHeat(),
+      });
+    });
+  }
+
+  private applyHeat(): void {
+    const c = mix(NEON, NEON_HOT, this.heat.v);
+    for (const s of this.tinted) s.tint = c;
   }
 
   init(): void {
@@ -116,6 +137,7 @@ export class Frame implements GameModule {
     this.panel.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.frame.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.tubeGlow.length = 0;
+    this.tinted.length = 0;
     const g = geometry(L);
     this.buildPanel(L, g);
     this.buildFrame(g, res);
@@ -185,6 +207,7 @@ export class Frame implements GameModule {
     spill.blendMode = 'add';
     this.panel.addChild(spill);
     this.tubeGlow.push(spill);
+    this.tinted.push(spill);
   }
 
   private bake(target: Container, frame: Rectangle, res: number): Sprite {
@@ -244,17 +267,22 @@ export class Frame implements GameModule {
       this.frame.addChild(this.bake(c, around(g.sill), res));
     }
 
-    // neon tube under the beam (baked tube; glow pulses live)
+    // neon tube under the beam: white body (tinted per mode) + hot core + clips
     const tw = g.tube.x1 - g.tube.x0;
-    const tube = new Container();
+    const tubeFrame = new Rectangle(g.tube.x0 - 4, g.tube.y - 16 * u, tw + 8, 32 * u);
+    const body = this.bake(
+      new Graphics().roundRect(g.tube.x0, g.tube.y - g.tube.w / 2, tw, g.tube.w, g.tube.w / 2).fill(0xffffff),
+      tubeFrame,
+      res,
+    );
+    this.frame.addChild(body);
+    this.tinted.push(body);
     const tg = new Graphics();
-    tg.roundRect(g.tube.x0, g.tube.y - g.tube.w / 2, tw, g.tube.w, g.tube.w / 2).fill(NEON);
-    tg.roundRect(g.tube.x0 + 2, g.tube.y - g.tube.w * 0.2, tw - 4, g.tube.w * 0.4, g.tube.w * 0.2).fill(0xeafffb);
+    tg.roundRect(g.tube.x0 + 2, g.tube.y - g.tube.w * 0.2, tw - 4, g.tube.w * 0.4, g.tube.w * 0.2).fill({ color: 0xffffff, alpha: 0.85 });
     for (let x = g.tube.x0 + 40 * u; x < g.tube.x1 - 20 * u; x += 180 * u) {
       tg.roundRect(x - 3 * u, g.tube.y - g.tube.w - 4 * u, 6 * u, g.tube.w * 2 + 6 * u, 2 * u).fill(0x221433).stroke({ width: 1.2 * u, color: 0x000000 });
     }
-    tube.addChild(tg);
-    this.frame.addChild(this.bake(tube, new Rectangle(g.tube.x0 - 4, g.tube.y - 16 * u, tw + 8, 32 * u), res));
+    this.frame.addChild(this.bake(tg, tubeFrame, res));
     const halo = new Sprite(art.particle('glow'));
     halo.anchor.set(0.5);
     halo.position.set(g.tube.x0 + tw / 2, g.tube.y);
@@ -265,6 +293,8 @@ export class Frame implements GameModule {
     halo.blendMode = 'add';
     this.frame.addChild(halo);
     this.tubeGlow.push(halo);
+    this.tinted.push(halo);
+    this.applyHeat();
 
     // beam + rope wraps (baked together)
     const beamTex = art.env('frame_beam');
@@ -370,6 +400,7 @@ export class Frame implements GameModule {
   destroy(): void {
     this.offTick?.();
     this.shineTween?.kill();
+    gsap.killTweensOf(this.heat);
     for (const t of this.owned) t.destroy(true);
     this.logoTex?.destroy(true);
     this.band?.destroy(true);

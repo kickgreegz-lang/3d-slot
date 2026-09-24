@@ -28,13 +28,13 @@ export const ensureValueFont = (renderer: Renderer, money: MoneyApi): string => 
       name: VALUE_FONT,
       chars: charsFor(money, ''),
       resolution: resolutionFor(renderer),
-      padding: 6,
+      padding: 8,
       style: {
         fontFamily: FONTS.value,
-        fontSize: 64,
+        fontSize: 96,
         fill: 0xffffff,
-        stroke: { color: 0x000000, width: 9, join: 'round' },
-        dropShadow: { color: 0x4b283d, alpha: 1, blur: 0, distance: 5, angle: Math.atan2(0.83, 0.56) },
+        stroke: { color: 0x000000, width: 13, join: 'round' },
+        dropShadow: { color: 0x4b283d, alpha: 1, blur: 0, distance: 7, angle: Math.atan2(0.83, 0.56) },
       },
     });
     installed.add(VALUE_FONT);

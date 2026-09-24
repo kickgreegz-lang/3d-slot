@@ -79,6 +79,10 @@ export class Hud implements GameModule {
   private spinCaption!: Text;
   private status!: StatusLine;
   private shownTurbo: SpeedProfile | null = null;
+  private captionMax = 520;
+  private replayMax = 520;
+  /** compact: the free-spin counter replaces the bet readout */
+  private fsInBetSlot = false;
   private autoIconStop = false;
   private readonly offs: Array<() => void> = [];
 
@@ -236,8 +240,18 @@ export class Hud implements GameModule {
     this.buy.setText(bb.label === 'edge' ? t('bonusBuy') : t('hud.buyShort'));
     this.buy.position.set(bb.x, bb.y);
 
-    this.fs.configure(bb.r, bb.tilt, Math.round(P.labelFont * 0.85), Math.round(P.valueFont * 1.05), bakeRes);
-    this.fs.position.set(bb.x, bb.y);
+    const fsHex = P.fs.mode === 'hex';
+    this.fsInBetSlot = !fsHex;
+    this.fs.configure({
+      mode: P.fs.mode,
+      radius: P.fs.r,
+      tilt: P.fs.tilt,
+      labelSize: fsHex ? Math.round(P.labelFont * 0.85) : P.labelFont,
+      valueSize: fsHex ? Math.round(P.valueFont * 1.05) : P.valueFont,
+      maxWidth: P.bet.maxWidth + P.small.r * 2,
+      resolution: bakeRes,
+    });
+    this.fs.position.set(P.fs.x, P.fs.y);
 
     this.balance.configure({ align: P.balance.align, labelSize: P.labelFont, valueSize: P.valueFont, maxWidth: P.balance.maxWidth });
     this.balance.position.set(P.balance.x, P.balance.y);
@@ -258,18 +272,24 @@ export class Hud implements GameModule {
     this.replayInfo.style = labelStyle(Math.round(P.labelFont * 0.8), HUD_COLORS.value);
     if (P.replay.align === 'center') {
       this.replayInfo.anchor.set(0.5, 0);
-      this.replayInfo.position.set(P.replay.x, P.replay.y + P.labelFont * 0.9);
+      this.replayInfo.position.set(P.replay.x, P.replay.y + P.labelFont * 0.82);
     } else {
       this.replayInfo.anchor.set(0, 0.5);
       this.replayInfo.position.set(P.replay.x + this.replay.width + P.labelFont * 0.5, P.replay.y);
     }
-    this.spinCaption.style = labelStyle(Math.round(P.labelFont * 0.9));
-    this.spinCaption.position.set(P.spin.x, P.spin.y + P.spin.r * 0.98);
-    fitWidth(this.spinCaption, P.spin.r * 2.4);
+    this.spinCaption.style = labelStyle(P.caption.size);
+    this.spinCaption.anchor.set(0.5, P.caption.anchorY);
+    this.spinCaption.position.set(P.caption.x, P.caption.y);
+    this.captionMax = Math.max(P.spin.r * 2.4, 200);
+    fitWidth(this.spinCaption, this.captionMax);
+    this.replayMax = P.replay.maxWidth;
+    fitWidth(this.replayInfo, this.replayMax);
 
     this.status.visible = L.kind !== 'compact';
     this.status.configure(Math.round(L.kind === 'portrait' ? 28 : 26), true);
     this.status.position.set(L.kind === 'portrait' ? 24 : 18, L.kind === 'portrait' ? 6 : 8);
+    // layout-dependent visibility (e.g. compact free spins in the bet slot)
+    this.apply(this.state, false);
   }
 
   // ── state ──────────────────────────────────────────────────────────────
@@ -287,22 +307,26 @@ export class Hud implements GameModule {
 
     this.balance.visible = !replay;
     this.balance.setValue(s.balanceText, animate && prev.balanceText !== s.balanceText && s.balance > prev.balance);
-    this.bet.visible = !replay;
+    const betSlotFree = this.fsInBetSlot && fs;
+    this.bet.visible = !replay && !betSlotFree;
     this.bet.setValue(s.betText, animate && prev.betText !== s.betText);
     this.replay.setShown(replay);
     const info = replay ? (s.replayInfoText ?? '') : '';
     this.replayInfo.visible = info !== '';
-    if (info !== this.replayInfo.text) this.replayInfo.text = info;
+    if (info !== this.replayInfo.text) {
+      this.replayInfo.text = info;
+      fitWidth(this.replayInfo, this.replayMax);
+    }
     const caption = replay ? (s.replayButtonText ?? '') : '';
-    this.spinCaption.visible = caption !== '' && s.spinEnabled;
+    this.spinCaption.visible = caption !== '' && s.spinEnabled && !s.isSpinning;
     if (caption !== this.spinCaption.text) {
       this.spinCaption.text = caption;
-      fitWidth(this.spinCaption, 520);
+      fitWidth(this.spinCaption, this.captionMax);
     }
     this.status.setExtras([s.rtpText, s.netPositionText, s.sessionTimeText]);
 
-    this.betDown.setShown(!replay, animate);
-    this.betUp.setShown(!replay, animate);
+    this.betDown.setShown(!replay && !betSlotFree, animate);
+    this.betUp.setShown(!replay && !betSlotFree, animate);
     this.betDown.setEnabled(s.betDownEnabled);
     this.betUp.setEnabled(s.betUpEnabled);
 

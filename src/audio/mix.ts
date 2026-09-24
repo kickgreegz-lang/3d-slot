@@ -15,7 +15,10 @@ export type BusId = 'sfx' | 'ui';
 export const BUS_LEVELS = {
   sfx: 0.9,
   ui: 0.9,
-  music: 0.18,
+  /** sized for production stems mastered at -16 LUFS (pipeline loudnorm) -> ~-20 LUFS out */
+  music: 0.42,
+  /** procedural groove trim inside the music bus (lands it at ~-20 LUFS too) */
+  groove: 0.43,
   /** convolution reverb return (shared room) */
   reverb: 0.42,
 } as const;
@@ -66,7 +69,7 @@ export const SFX_RULES: Record<SfxId, SfxRule> = {
   scatter_land_1: tonal(0.95, 'scatter', 3, 0),
   scatter_land_2: tonal(1, 'scatter', 3, 0),
   scatter_land_3: { ...tonal(0.9, 'scatter', 3, 0), duck: { db: -4, holdMs: 1200 } },
-  anticipation_loop: tonal(0.9, 'antic', 1, 0),
+  anticipation_loop: tonal(0.65, 'antic', 1, 0),
   anticipation_end: perc(0.8, 'anticEnd', 1, 100),
   win_small: tonal(0.8, 'winSmall', 1, 80),
   win_cluster: { ...tonal(0.8, 'win', 2, 60), pitch: 'degrees' },
@@ -99,8 +102,13 @@ export const AUDIO_TIMING = {
   musicFadeIn: 1.6,
   /** crossfade between production stems */
   stemCrossfade: 1.2,
-  /** music scheduler look-ahead (driven by the frame clock) */
-  lookAhead: 0.3,
+  /**
+   * Music scheduler: notes are queued `lookAhead` s ahead of the audio clock. The
+   * scheduler is pumped by an audio-clock timer every `pumpInterval` s (immune to
+   * frame drops / rAF throttling) and additionally on every rendered frame.
+   */
+  lookAhead: 0.5,
+  pumpInterval: 0.12,
   /** anticipation: music low-pass target, sweep time and extra duck */
   anticipationCutoff: 850,
   anticipationSweep: 0.5,

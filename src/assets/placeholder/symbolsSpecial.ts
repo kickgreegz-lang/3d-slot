@@ -168,12 +168,12 @@ export const buildMic = (renderer: Renderer, size: number): Texture => {
     [45, 58, 0],
   ]);
   const knobs = new GraphicsPath().circle(39.5, 62, 9).circle(140.5, 62, 9);
-  const neck = new GraphicsPath().roundRect(82, 132, 16, 20, 3);
-  const collar = new GraphicsPath().roundRect(72, 148, 36, 11, 5);
-  const pole = new GraphicsPath().roundRect(84, 157, 12, 20, 3);
+  const neck = new GraphicsPath().roundRect(81, 132, 18, 16, 4);
+  const collar = new GraphicsPath().roundRect(77, 145, 26, 12, 5);
+  const pole = new GraphicsPath().roundRect(85, 154, 10, 24, 2);
 
   c.body([pole, collar, neck, yoke, knobs, head], 8, OUTLINE, EXT);
-  c.part({ shape: pole, fill: GOLD.base, shade: GOLD.shade, shadeOff: 4, paint: (g) => g.rect(86.5, 159, 2.4, 16).fill(WHITE) });
+  c.part({ shape: pole, fill: GOLD.base, shade: GOLD.shade, shadeOff: 3.5, paint: (g) => g.rect(86.8, 157, 2.2, 18).fill(WHITE) });
   c.part({ shape: collar, fill: GOLD.base, shade: GOLD.shade, shadeOff: 4, rim: GOLD.light, rimOff: 2.5 });
   c.part({ shape: neck, fill: GOLD.base, shade: GOLD.shade, shadeOff: 4 });
   c.part({

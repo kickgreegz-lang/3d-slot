@@ -211,9 +211,10 @@ export class SymbolRig implements SymbolView {
     this.interrupt();
     this.stopBreath();
     this._state = 'land';
-    if (this.blurred) {
+    if (this.blurred || this.sprite.texture !== this.staticTex) {
       this.blurred = false;
       this.sprite.texture = this.staticTex;
+      this.jelly?.bind(this.staticTex, this.frame);
     }
     const weight: LandWeight = opts.weight ?? this.def.landWeight;
     const wm = TIMING.land.weight[weight] ?? 1;

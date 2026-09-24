@@ -1,4 +1,4 @@
-import { BlurFilter, ColorMatrixFilter, Container, Graphics, Rectangle, type Renderer, Sprite, type Texture } from 'pixi.js';
+import { BlurFilter, ColorMatrixFilter, Container, FillGradient, Graphics, Rectangle, type Renderer, Sprite, type Texture } from 'pixi.js';
 
 /**
  * Derived symbol variants — work on ANY static symbol texture (procedural or a
@@ -47,20 +47,29 @@ export const makeBlur = (renderer: Renderer, tex: Texture, canvas: number, restA
   return out;
 };
 
-/** Soft frame used to erase glow alpha near the canvas edge (no hard square clip). */
+/** Radial eraser: removes glow alpha toward the canvas edge (no square clip). */
 const edgeFades = new Map<string, Texture>();
 const edgeFade = (renderer: Renderer, canvas: number, resolution: number): Texture => {
   const key = `${canvas}@${resolution}`;
   let t = edgeFades.get(key);
   if (t) return t;
-  const inset = canvas * 0.06;
-  const g = new Graphics().rect(-canvas * 0.3, -canvas * 0.3, canvas * 1.6, canvas * 1.6).fill(0xffffff);
-  g.roundRect(inset, inset, canvas - inset * 2, canvas - inset * 2, canvas * 0.2).cut();
-  const c = new Container();
-  c.addChild(g);
-  c.filters = [new BlurFilter({ strength: canvas * 0.05, quality: 4 })];
-  t = renderer.generateTexture({ target: c, frame: new Rectangle(0, 0, canvas, canvas), resolution });
-  c.destroy({ children: true });
+  const g = new Graphics().rect(0, 0, canvas, canvas).fill(
+    new FillGradient({
+      type: 'radial',
+      center: { x: 0.5, y: 0.5 },
+      innerRadius: 0,
+      outerCenter: { x: 0.5, y: 0.5 },
+      outerRadius: 0.5,
+      colorStops: [
+        { offset: 0, color: 'rgba(255,255,255,0)' },
+        { offset: 0.78, color: 'rgba(255,255,255,0)' },
+        { offset: 1, color: 'rgba(255,255,255,1)' },
+      ],
+      textureSpace: 'local',
+    }),
+  );
+  t = renderer.generateTexture({ target: g, frame: new Rectangle(0, 0, canvas, canvas), resolution });
+  g.destroy();
   edgeFades.set(key, t);
   return t;
 };

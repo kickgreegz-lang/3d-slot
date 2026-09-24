@@ -1,6 +1,6 @@
 import type { SfxId } from '../game/events';
 import { type AudioGraph, audioTimer, createGraph, dbToGain, rampFreqTo, rampTo } from './graph';
-import { AUDIO_MANIFEST, type AudioManifest, type MusicStem, sfxUrls } from './manifest';
+import { AUDIO_MANIFEST, type AudioManifest, type MusicStem, musicUrls, sfxUrls } from './manifest';
 import { AUDIO_TIMING, SFX_RULES, VOLUME_JITTER_DB } from './mix';
 import { Groove } from './music';
 import { StemPlayer } from './stems';
@@ -64,6 +64,7 @@ export class AudioEngine {
   private duckDb = 0;
   private duckUntil = 0;
   private listening = false;
+  private pumping = false;
 
   constructor(
     private readonly opts: { lowTier: boolean; enabled: boolean; manifest?: AudioManifest },
@@ -162,7 +163,8 @@ export class AudioEngine {
     this.ac = ac;
     this.g = createGraph(ac, { lowTier: this.opts.lowTier });
     this.groove = new Groove(this.g, this.mode, this.random);
-    if (Object.keys(this.manifest.music).length) this.stems = new StemPlayer(ac, this.g.musicIn, this.manifest.music);
+    const stems = musicUrls(this.manifest);
+    if (Object.keys(stems).length) this.stems = new StemPlayer(ac, this.g.musicIn, stems);
     ac.addEventListener('statechange', this.onState);
     // iOS: a (silent) buffer started inside the gesture fully unlocks output
     const src = ac.createBufferSource();
@@ -179,6 +181,7 @@ export class AudioEngine {
     this.started = true;
     void this.decodeAll();
     this.startMusic();
+    this.pump();
     if (!this.enabled || this.hidden) this.sync();
   };
 
@@ -230,10 +233,26 @@ export class AudioEngine {
 
   // ---------------------------------------------------------------- music
 
-  /** Frame hook: keep the groove scheduled `lookAhead` seconds ahead of the audio clock. */
+  /** Keep the groove scheduled `lookAhead` seconds ahead of the audio clock (also called per frame). */
   tick(): void {
     if (!this.live || !this.groove || !this.ac) return;
     this.groove.schedule(this.ac.currentTime + AUDIO_TIMING.lookAhead);
+  }
+
+  /** Audio-clock pump: re-arms itself every pumpInterval; freezes with the context while suspended. */
+  private pump(): void {
+    if (this.pumping) return;
+    this.pumping = true;
+    const loop = (): void => {
+      const ac = this.ac;
+      if (!ac) {
+        this.pumping = false;
+        return;
+      }
+      this.tick();
+      audioTimer(ac, ac.destination, AUDIO_TIMING.pumpInterval, loop);
+    };
+    loop();
   }
 
   setMode(stem: MusicStem): void {

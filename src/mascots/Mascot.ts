@@ -38,7 +38,7 @@ export const FRAME = {
   /** standing height as a fraction of the layout slot height */
   slotFill: 0.98,
   /** idle silhouette width as a fraction of the slot width (keeps snouts/tails off the reels) */
-  slotWidth: 1,
+  slotWidth: 0.92,
   /** ink width in DESIGN px (2D symbols use ~4 px at 150 px cells) */
   outlinePx: 3.4,
   /** look targets sit this many body heights in front of the reel plane */

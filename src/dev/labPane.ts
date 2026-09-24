@@ -7,6 +7,7 @@ import type { GameContext } from '../game/context';
 import type { SymbolGallery } from './gallery';
 import type { DevSlotHooks } from './hooks';
 import type { InspectorPlacement } from './inspector';
+import { BURST_KINDS, MASCOT_CUES } from './scenarios';
 import {
   changedLeaves,
   exportTimingSource,
@@ -148,6 +149,16 @@ export class LabPane {
           for (const tier of WIN_TIERS) {
             tiers.addButton({ title: tier.label }).on('click', () => this.run('bigWin', { tiers: [tier.key] }));
           }
+          const cues = f.addFolder({ title: 'Mascot cue', expanded: false });
+          for (const cue of MASCOT_CUES) {
+            cues.addButton({ title: cue }).on('click', () => this.run('mascots', { cues: [cue] }));
+          }
+        }
+        if (group === 'fx') {
+          const kinds = f.addFolder({ title: 'Burst kind', expanded: false });
+          for (const kind of BURST_KINDS) {
+            kinds.addButton({ title: kind }).on('click', () => this.run('particles', { kinds: [kind] }));
+          }
         }
       }
       page.addButton({ title: 'Reset scene' }).on('click', () => {
@@ -161,7 +172,7 @@ export class LabPane {
       this.status.time = `${clock.time.toFixed(3)} s`;
       this.status.fps = this.o.ctx.app.ticker.FPS;
       this.status.running = this.o.hooks.running() ?? 'idle';
-      if (this.insp.state !== this.o.hooks.inspector().state) this.insp.state = this.o.hooks.inspector().state;
+      if (this.o.mode === 'lab') this.insp.state = this.o.hooks.inspector().state;
     });
   }
 

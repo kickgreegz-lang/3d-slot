@@ -162,13 +162,13 @@ export class FlowController {
       return;
     }
     this.applyAuth(auth);
-    await this.setScene(attractBoard());
     this.sessionWatch.restart();
     const round = auth.round;
     if (round?.active && Array.isArray(round.state)) {
       void this.guard(() => this.resume(round));
       return;
     }
+    await this.setScene(attractBoard());
     this.to('idle');
   }
 
@@ -378,7 +378,6 @@ export class FlowController {
     this.balance = balanceBefore - cost;
     this.to('spinning');
 
-    this.ctx.game.broadcast('mascot:cue', { cue: 'spinStart' });
     const fallOut = this.ctx.game.broadcastAsync('round:start', { profile: getSpeedProfile() });
     const [played, fell] = await Promise.allSettled([
       client.play({ amount: bet, mode, currency: this.ctx.money.currency }),
@@ -459,6 +458,7 @@ export class FlowController {
       this.broadcastState();
       await clock.waitUi(RESUME_NOTICE_MS);
     } else {
+      await this.setScene(this.sceneBoard ?? attractBoard());
       await clock.waitUi(RESUME_NOTICE_MS);
       await this.ctx.game.broadcastAsync('round:start', { profile: getSpeedProfile() });
     }

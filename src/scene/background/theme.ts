@@ -172,8 +172,6 @@ const LANDSCAPE_COMP = (panel: Rect): Composition => ({
     { x0: 330, y0: 30, x1: 960, y1: 22, sag: 70 },
     { x0: 960, y0: 22, x1: 1590, y1: 30, sag: 70 },
     { x0: 1590, y0: 30, x1: 1950, y1: 18, sag: 64 },
-    { x0: -20, y0: 150, x1: 322, y1: 120, sag: 46 },
-    { x0: 1598, y0: 118, x1: 1940, y1: 150, sag: 46 },
   ],
   cones: [
     { x: 150, y: -20, len: 1000, spread: 430, angle: 22 },
@@ -209,8 +207,8 @@ const PORTRAIT_COMP = (panel: Rect): Composition => ({
     { x0: -20, y0: 40, x1: 1100, y1: 40, sag: 60 },
   ],
   cones: [
-    { x: 120, y: -20, len: 1500, spread: 520, angle: 12 },
-    { x: 960, y: -20, len: 1500, spread: 520, angle: -12 },
+    { x: 150, y: 28, len: 1480, spread: 520, angle: 12 },
+    { x: 930, y: 28, len: 1480, spread: 520, angle: -12 },
   ],
   speakers: null,
   calm: panel,
@@ -235,12 +233,8 @@ const TABLET_COMP = (panel: Rect, frameY: number): Composition => {
     window: sh(base.window),
     shelves: base.shelves.map((s) => ({ ...s, y: s.y + dy })),
     sign: { ...base.sign, y: base.sign.y + dy },
-    swags: [
-      ...base.swags.map((s) => ({ ...s, y0: s.y0 + dy * 0.55, y1: s.y1 + dy * 0.55 })),
-      { x0: -30, y0: 40, x1: 960, y1: 40, sag: 120 },
-      { x0: 960, y0: 40, x1: 1950, y1: 40, sag: 120 },
-    ],
-    cones: base.cones.map((c) => ({ ...c, len: c.len + dy })),
+    swags: base.swags.map((s) => ({ ...s, y0: s.y0 + dy * 0.45, y1: s.y1 + dy * 0.45 })),
+    cones: base.cones.map((c) => ({ ...c, y: 30, len: c.len + dy * 0.8 })),
     speakers: base.speakers ? { ...base.speakers, y: base.speakers.y + dy } : null,
     fireflies: base.fireflies.map(sh),
   };

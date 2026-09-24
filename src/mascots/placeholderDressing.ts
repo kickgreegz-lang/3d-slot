@@ -25,8 +25,9 @@ import {
  * Production GLBs never go through this file (MascotDef.dress is unset for them).
  *
  * Coordinates are authored in the robot's HEAD frame (x = character's left, y = up,
- * z = forward, world units, origin at the head mesh pivot; head ~2.6 wide, front face
- * at z ~1.4, eye discs at x = ±0.7, y = -0.1, r = 0.4) or in MODEL space at the rest pose.
+ * z = forward, world units, origin at the head mesh pivot; head x ±1.32, y ±0.83,
+ * face at z 1.23, eye discs at x ±0.7, y -0.08, r 0.38, brows y 0.4..0.55) or in MODEL
+ * space at the rest pose.
  */
 export type DressKind = 'gator' | 'frog';
 
@@ -93,19 +94,19 @@ export const dressPlaceholder = (model: Object3D, kind: DressKind, colors: Dress
   // eye glints (key light is top-left): the cheapest "alive" read there is
   for (const side of [1, -1]) {
     const big = mesh(new SphereGeometry(0.1, 12, 8), WHITE, head);
-    big.position.set(side * 0.7 - 0.14, 0.06, 1.37);
+    big.position.set(side * 0.7 - 0.15, -0.1, 1.36);
     const small = mesh(new SphereGeometry(0.05, 10, 6), WHITE, head);
-    small.position.set(side * 0.7 + 0.12, -0.2, 1.36);
+    small.position.set(side * 0.7 + 0.13, -0.3, 1.35);
     out.glints.push(big, small);
   }
 
-  // heavy lids over the top of each eye (half discs facing forward)
-  const lid = (side: number, tilt: number, drop: number, color: number): void => {
-    const geo = new CylinderGeometry(0.46, 0.46, 0.12, 20, 1, false, -Math.PI / 2, Math.PI);
+  // lids: half discs over the top of each eye; `edge` = lid line height, `tilt` > 0 = stern
+  const lid = (side: number, tilt: number, edge: number, color: number): void => {
+    const geo = new CylinderGeometry(0.44, 0.44, 0.12, 20, 1, false, -Math.PI / 2, Math.PI);
     const m = mesh(geo, color, head);
     m.rotation.order = 'ZYX'; // face forward first, then tilt about the forward axis
     m.rotation.set(-Math.PI / 2, 0, tilt * side);
-    m.position.set(side * 0.7, -0.1 + drop, 1.34);
+    m.position.set(side * 0.7, edge, 1.32);
   };
 
   // props authored in model space at the rest pose, then re-parented to a bone
@@ -121,23 +122,23 @@ export const dressPlaceholder = (model: Object3D, kind: DressKind, colors: Dress
   if (kind === 'gator') {
     // snout: long flattened ellipsoid from the lower face, nostril bumps, a row of teeth
     const snout = mesh(new SphereGeometry(1, 28, 16), colors.skin, head);
-    snout.scale.set(1.0, 0.36, 1.05);
-    snout.position.set(0, -0.68, 1.5);
+    snout.scale.set(0.95, 0.33, 0.82);
+    snout.position.set(0, -0.66, 1.42);
     const jaw = mesh(new SphereGeometry(1, 24, 12), colors.belly, head);
-    jaw.scale.set(0.86, 0.2, 0.9);
-    jaw.position.set(0, -0.95, 1.4);
+    jaw.scale.set(0.82, 0.19, 0.72);
+    jaw.position.set(0, -0.92, 1.34);
     for (const side of [1, -1]) {
-      const nostril = mesh(new SphereGeometry(0.13, 12, 8), colors.shade, head);
-      nostril.position.set(side * 0.3, -0.42, 2.25);
+      const nostril = mesh(new SphereGeometry(0.12, 12, 8), colors.shade, head);
+      nostril.position.set(side * 0.28, -0.42, 2.02);
     }
     for (let i = 0; i < 7; i++) {
       const a = 0.35 + (i / 6) * (Math.PI - 0.7);
-      const tooth = mesh(new ConeGeometry(0.075, 0.26, 8), TOOTH, head);
+      const tooth = mesh(new ConeGeometry(0.07, 0.24, 8), TOOTH, head);
       tooth.rotation.x = Math.PI;
-      tooth.position.set(Math.cos(a) * 0.93, -0.84, 1.5 + Math.sin(a) * 0.98);
+      tooth.position.set(Math.cos(a) * 0.88, -0.8, 1.42 + Math.sin(a) * 0.76);
     }
-    lid(1, 0.35, 0.22, colors.shade);
-    lid(-1, 0.35, 0.22, colors.shade);
+    lid(1, 0.3, 0.06, colors.shade);
+    lid(-1, 0.3, 0.06, colors.shade);
 
     // bouncer bling: gold chain + medallion on the chest
     onBone(chest, (g) => {
@@ -172,15 +173,15 @@ export const dressPlaceholder = (model: Object3D, kind: DressKind, colors: Dress
     });
   } else {
     // DJ headphones: band over the crown, big cups over the ears
-    const band = mesh(new TorusGeometry(1.38, 0.11, 10, 40, Math.PI), INK, head);
-    band.position.set(0, 0.12, -0.05);
+    const band = mesh(new TorusGeometry(1.42, 0.1, 10, 40, Math.PI), INK, head);
+    band.position.set(0, -0.48, -0.1);
     for (const side of [1, -1]) {
-      const cup = mesh(new CylinderGeometry(0.52, 0.52, 0.34, 24), colors.accent, head);
+      const cup = mesh(new CylinderGeometry(0.5, 0.5, 0.32, 24), colors.accent, head);
       cup.rotation.z = Math.PI / 2;
-      cup.position.set(side * 1.42, 0.15, -0.05);
-      const pad = mesh(new CylinderGeometry(0.34, 0.34, 0.1, 20), INK, head);
+      cup.position.set(side * 1.44, -0.22, -0.1);
+      const pad = mesh(new CylinderGeometry(0.32, 0.32, 0.1, 20), INK, head);
       pad.rotation.z = Math.PI / 2;
-      pad.position.set(side * 1.62, 0.15, -0.05);
+      pad.position.set(side * 1.64, -0.22, -0.1);
     }
     // wide grin + throat pouch
     const smile = new CatmullRomCurve3([
@@ -194,8 +195,8 @@ export const dressPlaceholder = (model: Object3D, kind: DressKind, colors: Dress
     const pouch = mesh(new SphereGeometry(1, 24, 14), colors.belly, head);
     pouch.scale.set(0.8, 0.4, 0.6);
     pouch.position.set(0, -1.05, 0.85);
-    lid(1, 0, 0.1, colors.skin);
-    lid(-1, 0, 0.1, colors.skin);
+    lid(1, -0.08, -0.02, colors.skin);
+    lid(-1, -0.08, -0.02, colors.skin);
   }
 
   for (const g of out.glints) g.userData.unlit = true;

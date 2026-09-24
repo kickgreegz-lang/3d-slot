@@ -114,6 +114,7 @@ for (const spec of specs) {
   const t0 = Date.now();
   const r = { key: spec.key, name: spec.name, opts: spec.opts, status: 'error', frames: [], errors: [], consoleErrors };
   let page;
+  let clip = null;
   try {
     const opened = await openGame(browser, labUrl, {
       viewport,
@@ -133,12 +134,28 @@ for (const spec of specs) {
         s.speed(profile);
         for (let i = 0; i < settle; i++) s.step(1000 / 60);
         const def = s.scenarios().find((d) => d.name === name);
-        return { label: def?.label ?? null };
+        return { label: def?.label ?? null, group: def?.group ?? null };
       },
       { profile, settle, name: spec.name },
     );
     r.label = meta.label ?? spec.name;
     r.probe = await page.evaluate((sp) => window.__slot.motion.start({ scenario: sp.name, opts: sp.opts }), spec);
+    // inspector scenarios: crop every frame to the inspector card so the symbol fills the tile
+    if (meta.group === 'symbol') {
+      const rect = await page.evaluate(() => {
+        window.__slot.step(1000 / 60);
+        return window.__slot.inspector().screenRect();
+      });
+      const x = Math.max(0, Math.floor(rect.x) - 8);
+      const y = Math.max(0, Math.floor(rect.y) - 8);
+      clip = {
+        x,
+        y,
+        width: Math.min(viewport.width - x, Math.ceil(rect.width) + 16),
+        height: Math.min(viewport.height - y, Math.ceil(rect.height) + 16),
+      };
+      r.clip = clip;
+    }
     await page.evaluate((sp) => {
       window.__rv = { done: false, start: window.__slot.now() };
       window.__slot
@@ -157,7 +174,12 @@ for (const spec of specs) {
       }, FRAME_MS);
       if (i % every === 0) {
         const file = path.join(dir, `f${String(r.frames.length).padStart(4, '0')}.${ext}`);
-        await page.screenshot({ path: file, type: ext === 'png' ? 'png' : 'jpeg', ...(ext === 'jpg' ? { quality: 88 } : {}) });
+        await page.screenshot({
+          path: file,
+          type: ext === 'png' ? 'png' : 'jpeg',
+          ...(ext === 'jpg' ? { quality: 88 } : {}),
+          ...(clip ? { clip } : {}),
+        });
         r.frames.push({ file: path.relative(outDir, file), frame: i, ms: Math.round(i * FRAME_MS) });
       }
       if (done && doneAt < 0) doneAt = i;
@@ -192,7 +214,13 @@ for (const spec of specs) {
       browser,
       pick.map((f) => ({ file: path.join(outDir, f.file), i: f.frame, ms: f.ms })),
       path.join(dir, 'sheet.png'),
-      { cols: 6, tileW: 320, vw: viewport.width, vh: viewport.height, title: `${r.label ?? r.name} (${r.key})` },
+      {
+        cols: clip ? 8 : 6,
+        tileW: clip ? 240 : 320,
+        vw: clip?.width ?? viewport.width,
+        vh: clip?.height ?? viewport.height,
+        title: `${r.label ?? r.name} (${r.key})`,
+      },
     );
     r.sheet = path.relative(outDir, path.join(dir, 'sheet.png'));
     if (ffmpeg) r.video = await encodeVideo(dir, r.frames.length);
@@ -324,7 +352,8 @@ function motionSvg(motion, events, title) {
   const y2 = (v) => top2 + PH - ((v - sMin) / (sMax - sMin)) * PH;
 
   const path = (fx, fy) =>
-    S.map((s, k) => `${k ? 'L' : 'M'}${fx(s.t).toFixed(1)},${fy(s).toFixed(1)}`).join('');
+    // a re-pick means a different symbol view: start a new sub-path instead of a fake jump
+    S.map((s, k) => `${k && !s.repick ? 'L' : 'M'}${fx(s.t).toFixed(1)},${fy(s).toFixed(1)}`).join('');
 
   const out = [];
   out.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" class="motion-svg"

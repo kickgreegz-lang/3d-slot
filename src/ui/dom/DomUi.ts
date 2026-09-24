@@ -167,7 +167,7 @@ export class DomUi implements GameModule {
       tabsEl.append(b);
     }
     tabsEl.append(ink);
-    const close = h('button.ui-iconbtn', { type: 'button', 'aria-label': t('close'), 'data-autofocus': true }, svg(SVG_ICONS.close));
+    const close = h('button.ui-iconbtn', { type: 'button', 'aria-label': t('close') }, svg(SVG_ICONS.close));
     const body = h('div.ui-body', { role: 'tabpanel' });
     const panel = h('div.ui-panel', null, h('div.ui-head', null, tabsEl, close), body);
     const handle = this.modals.open({

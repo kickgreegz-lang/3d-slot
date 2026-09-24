@@ -53,6 +53,8 @@ export class SymbolInspector {
   private busy: Promise<void> = Promise.resolve();
 
   constructor(private readonly ctx: GameContext) {
+    // QA captures crop to the card, so centre it (bigger, veiled board) by default there
+    if (ctx.params.capture) this.placement = 'center';
     this.title = new Text({
       text: '',
       style: { fontFamily: FONTS.label, fontSize: 30, fill: COLORS.title, letterSpacing: 1.5 },
@@ -92,6 +94,13 @@ export class SymbolInspector {
   hide(): void {
     this.sv?.reset();
     this.root.visible = false;
+  }
+
+  /** Card bounds in canvas CSS px (QA crops screenshots to this). */
+  screenRect(): { x: number; y: number; width: number; height: number } {
+    this.show();
+    const b = this.card.getBounds();
+    return { x: b.x, y: b.y, width: b.width, height: b.height };
   }
 
   probeTarget(): ProbeTarget {

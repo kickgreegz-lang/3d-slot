@@ -60,7 +60,8 @@ export const autoplayDialog = (opts: {
   const { state, format } = opts;
   const moneyChip = (x: number | null): HTMLElement | string =>
     x === null ? t('off') : h('span', null, format(state.bet * x), h('small', null, `${x}×`));
-  const start = h('button.ui-btn.primary', { type: 'button', 'data-autofocus': true });
+  // no autofocus on confirm buttons: a reflexive SPACE must never start autoplay / a buy
+  const start = h('button.ui-btn.primary', { type: 'button' });
   const rounds = chipGroup(
     AUTOPLAY_ROUNDS,
     opts.initial.rounds,
@@ -127,7 +128,7 @@ export const buyDialog = (opts: {
       'div.dl-foot',
       null,
       h('button.ui-btn.ghost', { type: 'button', onclick: opts.onCancel }, t('cancel')),
-      h('button.ui-btn.accent', { type: 'button', onclick: opts.onConfirm, 'data-autofocus': true }, t('buy.confirm')),
+      h('button.ui-btn.accent', { type: 'button', onclick: opts.onConfirm }, t('buy.confirm')),
     ),
   );
 

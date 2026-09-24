@@ -36,7 +36,8 @@
 .ui *::after {
   box-sizing: border-box;
 }
-.ui button {
+/* zero-specificity reset so component classes (.ui-tab, .ui-btn...) win */
+:where(.ui) button {
   font: inherit;
   color: inherit;
   -webkit-appearance: none;
@@ -45,6 +46,9 @@
 .ui :focus-visible {
   outline: 2px solid var(--ui-yellow);
   outline-offset: 2px;
+}
+.ui .ui-panel:focus {
+  outline: none;
 }
 
 /* ── modal layer ─────────────────────────────────────────────────────── */

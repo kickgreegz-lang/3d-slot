@@ -10,12 +10,13 @@ import { placementFor } from './placement';
  *   overlay layer
  *     stage
  *       dimmer      oversized black sprite (covers letterbox too) — also the tap catcher
+ *       under       full-screen design-space layer under the content (transition curtains)
  *       backdrop    behind-the-lift content (god rays, glows)
  *       lift        RenderLayer: the MASCOTS and FX layers are re-attached here while the
  *                   stage is open, so the characters and coin fountains read ABOVE the
  *                   dimmer (they keep their own transforms; nothing is re-parented)
  *       content     titles / counters, centred on layout.center and scaled per layout
- *       front       full-screen design-space layer above everything (transition wipes)
+ *       front       full-screen design-space layer above everything
  *
  * The stage is (re)appended to the overlay layer on every open(), so the most recently
  * opened stage is always on top (e.g. a big win straight after the free-spin outro).
@@ -23,6 +24,7 @@ import { placementFor } from './placement';
  */
 export class OverlayStage {
   readonly root = new Container({ label: 'overlayStage' });
+  readonly under = new Container({ label: 'under' });
   readonly backdrop = new Container({ label: 'backdrop' });
   readonly content = new Container({ label: 'content' });
   readonly front = new Container({ label: 'front' });
@@ -42,7 +44,7 @@ export class OverlayStage {
     this.dimmer.eventMode = 'static';
     this.dimmer.cursor = 'pointer';
     this.dimmer.on('pointertap', () => this.tapHandler?.());
-    this.root.addChild(this.dimmer, this.backdrop, this.lift, this.content, this.front);
+    this.root.addChild(this.dimmer, this.under, this.backdrop, this.lift, this.content, this.front);
   }
 
   get isOpen(): boolean {

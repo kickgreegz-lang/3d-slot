@@ -154,17 +154,23 @@ export class AudioEngine {
       this.destroy();
       return;
     }
-    let ac: AudioContext;
+    let ac: AudioContext | null = null;
     try {
       ac = new Ctor({ latencyHint: 'interactive' });
+      // pre-2021 WebKit lacks these; degrade to silence rather than throw in a gesture handler
+      if (typeof ac.createConstantSource !== 'function' || typeof ac.createStereoPanner !== 'function') {
+        throw new Error('unsupported Web Audio');
+      }
+      this.g = createGraph(ac, { lowTier: this.opts.lowTier });
+      this.groove = new Groove(this.g, this.mode, this.random);
+      const stems = musicUrls(this.manifest);
+      if (Object.keys(stems).length) this.stems = new StemPlayer(ac, this.g.musicIn, stems);
     } catch {
+      void ac?.close().catch(() => undefined);
+      this.destroy();
       return;
     }
     this.ac = ac;
-    this.g = createGraph(ac, { lowTier: this.opts.lowTier });
-    this.groove = new Groove(this.g, this.mode, this.random);
-    const stems = musicUrls(this.manifest);
-    if (Object.keys(stems).length) this.stems = new StemPlayer(ac, this.g.musicIn, stems);
     ac.addEventListener('statechange', this.onState);
     // iOS: a (silent) buffer started inside the gesture fully unlocks output
     const src = ac.createBufferSource();

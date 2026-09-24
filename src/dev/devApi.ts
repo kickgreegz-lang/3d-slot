@@ -105,9 +105,11 @@ export const createDevApi = (ctx: GameContext, clock: typeof Clock): DevApi => {
 
   // Log every scene event (from any module) with a timestamp — the review timeline.
   const game = ctx.game;
+  /** log timestamps are rounded to 0.1 ms; comparisons use the same rounding */
+  const stamp = (): number => Math.round(nowMs * 10) / 10;
   const record = (type: string, payload: unknown): void => {
     if (type === 'mode:change') mode = (payload as GameEvents['mode:change']).gameType;
-    log.push({ t: Math.round(nowMs * 10) / 10, type, detail: describe(type, payload) });
+    log.push({ t: stamp(), type, detail: describe(type, payload) });
     if (log.length > LOG_CAP) log = log.slice(-LOG_CAP / 2);
   };
   const rawBroadcast = game.broadcast.bind(game);
@@ -138,7 +140,7 @@ export const createDevApi = (ctx: GameContext, clock: typeof Clock): DevApi => {
       const run = async (): Promise<ScenarioResult> => {
         const e = await getEnv();
         running = def.name;
-        const startMs = nowMs;
+        const startMs = stamp();
         try {
           await def.run(e, opts);
         } finally {
@@ -148,7 +150,7 @@ export const createDevApi = (ctx: GameContext, clock: typeof Clock): DevApi => {
           name: def.name,
           label: def.label,
           startMs,
-          durationMs: Math.round(nowMs - startMs),
+          durationMs: Math.round(stamp() - startMs),
           events: log.filter((l) => l.t >= startMs),
         };
       };
@@ -192,7 +194,7 @@ export const createDevApi = (ctx: GameContext, clock: typeof Clock): DevApi => {
       if (clear) log = [];
       return out;
     },
-    now: () => nowMs,
+    now: stamp,
     inspector: getInspector,
     emitLogged: emit,
   };

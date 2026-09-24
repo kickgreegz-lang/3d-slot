@@ -37,7 +37,7 @@ const get = (node: Node, key: string): unknown => (node as Record<string, unknow
 export const snapshotTiming = (): Timing => JSON.parse(JSON.stringify(TIMING)) as Timing;
 
 /** Pristine values as compiled (taken before any override is applied). */
-const DEFAULTS = snapshotTiming();
+const DEFAULTS = /* @__PURE__ */ snapshotTiming();
 
 export const timingLeaves = (root: Node = TIMING as unknown as Node, prefix = ''): TimingLeaf[] => {
   const out: TimingLeaf[] = [];

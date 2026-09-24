@@ -37,6 +37,8 @@ export const FRAME = {
   feet: 0.06,
   /** standing height as a fraction of the layout slot height */
   slotFill: 0.98,
+  /** idle silhouette width as a fraction of the slot width (keeps snouts/tails off the reels) */
+  slotWidth: 1,
   /** ink width in DESIGN px (2D symbols use ~4 px at 150 px cells) */
   outlinePx: 3.4,
   /** look targets sit this many body heights in front of the reel plane */
@@ -82,12 +84,16 @@ export class Mascot {
   private readonly sprite: Sprite;
   private readonly shadow: Graphics;
   private readonly rand: () => number;
+  /** idle silhouette in world units (camera-aligned): standing height, width, x centre */
   private readonly height: number;
+  private readonly width: number;
+  private readonly centerX: number;
   private readonly aspect: number;
   private readonly maxH: number;
 
   private rect: Rect | null = null;
   private displayH = 0;
+  private feetX = 0;
   private wantSize: { w: number; h: number } | null = null;
   private pending: PendingCue[] = [];
   private focus: Focus = { kind: 'board', x: 0, y: 0 };
@@ -115,18 +121,21 @@ export class Mascot {
       if ((o as Mesh).isMesh) bakeOutlineNormals((o as Mesh).geometry);
     });
     this.placement.rotation.y = def.facing;
+    this.build.scale.set(def.build.width, def.build.height, def.build.width);
     this.placement.add(this.build);
     this.build.add(this.model);
     this.scene.add(this.placement);
 
-    // settle into the first idle frame, then measure the standing height and ground the feet
+    // settle into the first idle frame, then measure the silhouette (world = camera axes) and ground the feet
     this.mixer = new AnimationMixer(this.model);
     this.controller = new MascotController(this.mixer, source.animations, def.tempo, this.rand, def.idlePhase);
     this.mixer.update(0);
     this.placement.updateMatrixWorld(true);
     const box = new Box3().setFromObject(this.model, true);
     this.height = Math.max(1e-3, box.max.y - box.min.y);
-    this.model.position.y = -box.min.y;
+    this.width = Math.max(1e-3, box.max.x - box.min.x);
+    this.centerX = (box.max.x + box.min.x) / 2;
+    this.model.position.y = -box.min.y / def.build.height;
     this.placement.updateMatrixWorld(true);
 
     const lightTarget = new Group();
@@ -177,12 +186,16 @@ export class Mascot {
       this.view.visible = false;
       return;
     }
-    this.displayH = (rect.h * FRAME.slotFill) / FRAME.fill;
+    // fit the idle silhouette into the slot (height AND width), then centre it horizontally
+    const charPx = Math.min(rect.h * FRAME.slotFill, (rect.w * FRAME.slotWidth * this.height) / this.width);
+    const pxPerUnit = charPx / this.height;
+    this.displayH = charPx / FRAME.fill;
+    this.feetX = rect.x + rect.w / 2 - this.centerX * pxPerUnit;
     // RT no bigger than it is on screen (and never above the tier budget)
     const h = Math.max(128, Math.min(this.maxH, Math.ceil((this.displayH * pixelScale) / 32) * 32));
     const w = this.widthFor(h);
     this.wantSize = { w, h };
-    this.view.position.set(rect.x + rect.w / 2, rect.y + rect.h);
+    this.view.position.set(this.feetX, rect.y + rect.h);
     this.applySpriteScale(w, h);
     const sw = this.displayH * FRAME.fill * FRAME.shadow;
     this.shadow.scale.set(sw, sw);
@@ -325,7 +338,7 @@ export class Mascot {
   private designToWorld(x: number, y: number, out: Vector3): Vector3 {
     const rect = this.rect;
     if (!rect || !this.displayH) return out.set(0, this.height * 0.8, this.height * 4);
-    const feetX = rect.x + rect.w / 2;
+    const feetX = this.feetX;
     const feetY = rect.y + rect.h;
     const ndcX = (2 * (x - feetX)) / (this.displayH * this.aspect);
     const ndcY = 2 * (FRAME.feet + (feetY - y) / this.displayH) - 1;

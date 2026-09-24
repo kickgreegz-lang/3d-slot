@@ -198,7 +198,7 @@ export class MascotController {
     next.play();
     this.stepEnd = loop ? Number.POSITIVE_INFINITY : clip.duration - (step.trim ?? 0);
     if (prev && prev !== next) prev.crossFadeTo(next, fade, false);
-    else if (!prev) next.fadeIn(fade);
+    else if (!prev && fade > 0) next.fadeIn(fade);
     this.current = next;
   }
 

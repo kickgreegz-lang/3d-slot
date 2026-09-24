@@ -1,5 +1,8 @@
 import {
   Bone,
+  CatmullRomCurve3,
+  TubeGeometry,
+  Vector3,
   CylinderGeometry,
   type BufferGeometry,
   ConeGeometry,
@@ -149,6 +152,7 @@ export const dressPlaceholder = (model: Object3D, kind: DressKind, colors: Dress
     // tail: three tapered segments on spring bones (procedural.ts picks up "tail" bones)
     onBone(hips, (g) => {
       g.position.set(0, 1.2, -0.7);
+      g.rotation.y = 0.6; // sweep toward the character's right so it reads in the 3/4 view
       let parent: Object3D = g;
       const radii = [0.46, 0.32, 0.2, 0.05];
       const lens = [0.8, 0.72, 0.62];
@@ -168,8 +172,8 @@ export const dressPlaceholder = (model: Object3D, kind: DressKind, colors: Dress
     });
   } else {
     // DJ headphones: band over the crown, big cups over the ears
-    const band = mesh(new TorusGeometry(1.42, 0.11, 10, 40, Math.PI), INK, head);
-    band.position.set(0, 0.35, -0.05);
+    const band = mesh(new TorusGeometry(1.38, 0.11, 10, 40, Math.PI), INK, head);
+    band.position.set(0, 0.12, -0.05);
     for (const side of [1, -1]) {
       const cup = mesh(new CylinderGeometry(0.52, 0.52, 0.34, 24), colors.accent, head);
       cup.rotation.z = Math.PI / 2;
@@ -179,14 +183,19 @@ export const dressPlaceholder = (model: Object3D, kind: DressKind, colors: Dress
       pad.position.set(side * 1.62, 0.15, -0.05);
     }
     // wide grin + throat pouch
-    const grin = mesh(new TorusGeometry(0.9, 0.055, 8, 32, Math.PI * 0.72), INK, head);
-    grin.rotation.z = Math.PI + Math.PI * 0.14;
-    grin.position.set(0, -0.08, 1.33);
+    const smile = new CatmullRomCurve3([
+      new Vector3(-0.95, -0.46, 1.34),
+      new Vector3(-0.5, -0.66, 1.4),
+      new Vector3(0, -0.72, 1.42),
+      new Vector3(0.5, -0.66, 1.4),
+      new Vector3(0.95, -0.46, 1.34),
+    ]);
+    mesh(new TubeGeometry(smile, 32, 0.06, 8), INK, head);
     const pouch = mesh(new SphereGeometry(1, 24, 14), colors.belly, head);
-    pouch.scale.set(0.82, 0.42, 0.6);
-    pouch.position.set(0, -0.9, 0.9);
-    lid(1, 0, 0.26, colors.skin);
-    lid(-1, 0, 0.26, colors.skin);
+    pouch.scale.set(0.8, 0.4, 0.6);
+    pouch.position.set(0, -1.05, 0.85);
+    lid(1, 0, 0.1, colors.skin);
+    lid(-1, 0, 0.1, colors.skin);
   }
 
   for (const g of out.glints) g.userData.unlit = true;

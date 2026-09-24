@@ -15,13 +15,17 @@ import { placementFor } from './placement';
  *                   stage is open, so the characters and coin fountains read ABOVE the
  *                   dimmer (they keep their own transforms; nothing is re-parented)
  *       content     titles / counters, centred on layout.center and scaled per layout
+ *       front       full-screen design-space layer above everything (transition wipes)
  *
+ * The stage is (re)appended to the overlay layer on every open(), so the most recently
+ * opened stage is always on top (e.g. a big win straight after the free-spin outro).
  * Taps on the dimmer and 'ui:skip' (spacebar / skip button) are forwarded to `onTap`.
  */
 export class OverlayStage {
   readonly root = new Container({ label: 'overlayStage' });
   readonly backdrop = new Container({ label: 'backdrop' });
   readonly content = new Container({ label: 'content' });
+  readonly front = new Container({ label: 'front' });
   private dimmer = new Sprite({ texture: Texture.WHITE, tint: 0x000000, alpha: 0 });
   private lift = new RenderLayer();
   private lifted = false;
@@ -38,8 +42,7 @@ export class OverlayStage {
     this.dimmer.eventMode = 'static';
     this.dimmer.cursor = 'pointer';
     this.dimmer.on('pointertap', () => this.tapHandler?.());
-    this.root.addChild(this.dimmer, this.backdrop, this.lift, this.content);
-    ctx.layers.overlay.addChild(this.root);
+    this.root.addChild(this.dimmer, this.backdrop, this.lift, this.content, this.front);
   }
 
   get isOpen(): boolean {
@@ -68,6 +71,7 @@ export class OverlayStage {
    * those layers above the dimmer for the lifetime of the stage.
    */
   open(opts: { dim: number; fadeIn: number; liftMascots?: boolean; liftFx?: boolean }): void {
+    this.ctx.layers.overlay.addChild(this.root);
     this.layout();
     this.root.visible = true;
     this.dimTween?.kill();

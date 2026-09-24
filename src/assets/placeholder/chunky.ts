@@ -66,7 +66,7 @@ const layoutBox = (style: TextStyleOptions, text: string): Rectangle => {
 };
 
 /** Alpha bounding box of a texture rendered with `frame`, in the frame's space. */
-const alphaBox = (renderer: Renderer, tex: Texture, frame: Rectangle): Rectangle => {
+export const alphaBox = (renderer: Renderer, tex: Texture, frame: Rectangle): Rectangle => {
   const { pixels, width, height } = renderer.extract.pixels(tex);
   let x0 = width;
   let y0 = height;

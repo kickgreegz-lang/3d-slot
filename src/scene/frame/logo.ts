@@ -1,7 +1,7 @@
 import { Container, Rectangle, type Renderer, type Texture } from 'pixi.js';
 import { FONTS } from '../../assets/fonts';
 import { streak } from '../../assets/placeholder/cel';
-import { chunkyText } from '../../assets/placeholder/chunky';
+import { alphaBox, chunkyText } from '../../assets/placeholder/chunky';
 import { INK, Light } from '../../assets/placeholder/palette';
 
 /**
@@ -82,9 +82,14 @@ export const buildLogo = (renderer: Renderer, text = 'SWAMP FUNK'): LogoBake => 
       li++;
     }
   });
+  // text layout boxes are much taller than the ink: trim to the visible pixels
   const b = root.getLocalBounds();
-  const pad = 6;
-  const frame = new Rectangle(b.minX - pad, b.minY - pad, b.maxX - b.minX + pad * 2, b.maxY - b.minY + pad * 2);
+  const loose = new Rectangle(b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
+  const probe = renderer.generateTexture({ target: root, frame: loose, resolution: 0.5 });
+  const ink = alphaBox(renderer, probe, loose);
+  probe.destroy(true);
+  const pad = 4;
+  const frame = new Rectangle(ink.x - pad, ink.y - pad, ink.width + pad * 2, ink.height + pad * 2);
   const texture = renderer.generateTexture({ target: root, frame, resolution: 1.5, antialias: true });
   root.destroy({ children: true });
   for (const t of temp) t.destroy(true);

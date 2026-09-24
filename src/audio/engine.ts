@@ -351,7 +351,16 @@ export class AudioEngine {
     st.lastStart = now;
     st.lastPriority = prio;
 
-    const rate = clamp(o.rate ?? 1, 0.25, 4) * (1 + (this.random() * 2 - 1) * rule.pitchJitter);
+    const req = clamp(o.rate ?? 1, 0.25, 4);
+    let step = o.step ?? 0;
+    let rate = req;
+    if (rule.pitch === 'degrees') {
+      step += Math.round((12 * Math.log2(req)) / 2.4);
+      rate = 1;
+    } else if (rule.pitch === 'octave') {
+      rate = 2 ** Math.round(Math.log2(req));
+    }
+    rate *= 1 + (this.random() * 2 - 1) * rule.pitchJitter;
     const volume = clamp(o.volume ?? 1, 0, 2) * rule.gain * dbToGain((this.random() * 2 - 1) * VOLUME_JITTER_DB);
     const t = now + AHEAD;
     const v = new Voice(ac, rule.bus === 'ui' ? g.ui : g.sfx, g.reverbIn, g.noise, t, this.random);
@@ -363,7 +372,7 @@ export class AudioEngine {
       const isLoop = id === 'anticipation_loop';
       v.buffer(v.out, buf, t, rate, isLoop, isLoop ? AUDIO_TIMING.anticipationMax : Infinity);
     } else {
-      SYNTH_VOICES[id](v, { t, r: rate, step: o.step ?? 0, period: o.period ?? 0.52 });
+      SYNTH_VOICES[id](v, { t, r: rate, step: Math.max(0, step), period: o.period ?? 0.52 });
     }
     st.voices.push(v);
     v.finish(() => {

@@ -206,7 +206,7 @@ const winSmall: VoiceFn = (v, a) => {
 /** Cluster win: 4-note pluck arpeggio that climbs one scale degree per cascade step. */
 const winCluster: VoiceFn = (v, a) => {
   const { t, r } = a;
-  const base = Math.min(6, a.step);
+  const base = Math.min(7, a.step);
   [0, 2, 4, 5].forEach((d, i) => {
     const ti = t + i * 0.052;
     const last = i === 3;

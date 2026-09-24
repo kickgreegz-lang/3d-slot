@@ -62,19 +62,21 @@ def build_parser() -> argparse.ArgumentParser:
                    help="font for --glyph (woff2 is converted via fontTools if Blender cannot read it)")
     g.add_argument("--color", help="base/face colour #RRGGBB (default: art bible)")
     g.add_argument("--shade", help="explicit deep-shadow colour #RRGGBB")
-    g.add_argument("--depth", type=float, default=0.28, help="royal extrusion depth / glyph height")
+    g.add_argument("--depth", type=float, default=0.24, help="royal extrusion depth / glyph height")
     g.add_argument("--bevel", type=float, default=0.025, help="royal bevel / glyph height (inked)")
     f = ap.add_argument_group("framing and look")
     f.add_argument("--size", type=int, default=256, help="final frame size in px (square canvas)")
     f.add_argument("--ss", type=int, default=2, help="supersampling factor (render size*ss, Lanczos down)")
     f.add_argument("--fill", type=float, help="rest content height / canvas (default cellScale*150/180)")
-    f.add_argument("--azim", type=float, help="camera azimuth deg (+ = from the right). default royal 14, props 22")
-    f.add_argument("--elev", type=float, help="camera elevation deg (- = slight low angle). default -10 / -8")
+    f.add_argument("--azim", type=float, help="camera azimuth deg (+ = from the right). default royal 12, props 22")
+    f.add_argument("--elev", type=float, help="camera elevation deg (- = slight low angle). default -9 / -8")
     f.add_argument("--outline-px", type=float, help="outline width at final size (default 2.56%% of size "
                                                     "= 4.6 design px on the 180 px symbol canvas)")
+    f.add_argument("--counter-outline", type=float, default=0.4,
+                   help="glyphs: outline width inside counters (A, Q, 0) as a fraction of --outline-px")
     f.add_argument("--bands", default="0.02,0.35", help="N.L thresholds where the mid and lit bands start")
-    f.add_argument("--spec", type=float, help="N.H threshold for the white specular streak "
-                                              "(default 0.985 for coin/gem/mesh, off for royals; 0 = off)")
+    f.add_argument("--spec", type=float, help="threshold on N.(key bent toward viewer) for the white specular "
+                                              "streak (default 0.94 for coin/gem/mesh, off for royals; 0 = off)")
     r = ap.add_argument_group("render")
     r.add_argument("--engine", default="CYCLES", choices=("CYCLES", "BLENDER_EEVEE", "EEVEE"),
                    help="CYCLES = CPU emission-toon (deterministic CI reference); BLENDER_EEVEE = workstation")
@@ -90,6 +92,7 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--chunks", type=int, default=10, help="shatter: number of Voronoi chunks")
     c.add_argument("--seed", type=int, default=7, help="shatter: chunk/velocity seed")
     c.add_argument("--canvas-scale", type=float, default=1.6, help="shatter: canvas size vs the static canvas")
+    c.add_argument("--spread", type=float, default=1.0, help="shatter: chunk velocity multiplier")
     c.add_argument("--spring-hz", type=float, default=3.2, help="land: squash spring frequency")
     c.add_argument("--zeta", type=float, default=0.33, help="land: damping ratio")
     c.add_argument("--squash", type=float, default=0.85, help="land: peak sy (sx = 1/sqrt(sy))")
@@ -145,7 +148,7 @@ def resolve(args, log) -> dict:
         raise cli.ToolError("--frames must be >= 1")
     size = args.size
     outline_px = args.outline_px if args.outline_px is not None else round(size * 4.6 / 180, 2)
-    spec = args.spec if args.spec is not None else (0.0 if royal_like else 0.985)
+    spec = args.spec if args.spec is not None else (0.0 if royal_like else 0.94)
     prefix = f"{sym}_{args.clip}"
     canvas_scale = args.canvas_scale if args.clip == "shatter" else 1.0
     return {
@@ -154,8 +157,8 @@ def resolve(args, log) -> dict:
         "frames": frames, "loop": args.clip in LOOPING, "size": size, "ss": args.ss,
         "size_final": int(round(size * canvas_scale)), "canvas_scale": canvas_scale,
         "outline_px": outline_px, "spec": spec, "prefix": prefix,
-        "azim": args.azim if args.azim is not None else (14.0 if royal_like else 22.0),
-        "elev": args.elev if args.elev is not None else (-10.0 if royal_like else -8.0),
+        "azim": args.azim if args.azim is not None else (12.0 if royal_like else 22.0),
+        "elev": args.elev if args.elev is not None else (-9.0 if royal_like else -8.0),
         "bands": tuple(float(x) for x in args.bands.split(",")),
         "revs": args.revs or (2 if args.clip == "spin" else 1),
         "out": cli.out_path(args.out or f"build/frames/{prefix}"),
@@ -181,12 +184,20 @@ def build_glyph(args, plan, log):
     bpy.data.meshes.remove(probe)
     me = S.text_mesh(plan["glyph"], font, extrude=args.depth * h0 / 2, bevel=args.bevel * h0)
     obj = S.link_new_object(f"sym_{plan['sym']}", me)
+    holes = S.glyph_holes(plan["glyph"], font)
+    if holes and args.counter_outline < 1.0:
+        n = S.weight_counter_vertices(obj, holes, margin=args.bevel * h0 * 1.5)
+        obj["counter_outline"] = args.counter_outline
+        log(f"{len(holes)} counter(s): hull thinned to {args.counter_outline:.0%} on {n} vertices")
     S.normalize_mesh(obj, 1.0)
     S.weld_and_clean(obj, 1e-5, sharp_angle_deg=30.0)
-    # material zones by object-space normal: 0 enamel face, 1 ink (front bevel), 2 extrusion
+    # material zones by object-space normal: 0 enamel face (front and back caps, so the turn
+    # shows enamel on both sides), 1 ink (bevel = interior line between face and extrusion),
+    # 2 extrusion (plum side walls, ART_BIBLE §3 "Extrusion")
+    placeholder_slots(obj, 4)
     for p in me.polygons:
-        ny = p.normal.y
-        p.material_index = 0 if ny < -0.93 else (1 if ny < -0.30 else 2)
+        ay = abs(p.normal.y)
+        p.material_index = 0 if ay > 0.93 else (1 if ay > 0.30 else 2)
     ext = {"deep": "#2E1426", "mid": pal.EXTRUSION, "lit": pal.EXTRUSION_LIT}
     roles = [
         {"name": "face", "bands": pal.derive_bands(plan["face"], plan["shade"]), "spec": False},
@@ -195,6 +206,24 @@ def build_glyph(args, plan, log):
         {"name": "inner", "bands": ext, "spec": False},
     ]
     return obj, roles, [pal_ref(font_path)]
+
+
+def placeholder_slots(obj, n: int) -> None:
+    """Material slots must exist before polygon material_index is set (clearing slots resets
+    the indices to 0); main() later swaps the real toon materials into these slots."""
+    import bpy
+    while len(obj.data.materials) < n:
+        obj.data.materials.append(bpy.data.materials.new(f"slot{len(obj.data.materials)}"))
+
+
+def assign_slots(obj, mats) -> None:
+    for i, m in enumerate(mats):
+        if i < len(obj.data.materials):
+            obj.data.materials[i] = m
+        else:
+            obj.data.materials.append(m)
+    while len(obj.data.materials) > len(mats):
+        obj.data.materials.pop()
 
 
 def pal_ref(path):
@@ -215,7 +244,7 @@ def build_coin(args, plan, log):
     rim = [e for e in bm.edges if all(abs(v.co.xy.length - 0.5) < 1e-4 for v in e.verts)
            and all(abs(abs(v.co.z) - 0.06) < 1e-4 for v in e.verts)]
     bmesh.ops.bevel(bm, geom=rim, offset=0.018, segments=2, profile=0.5, affect="EDGES")
-    # five-point star emblem on both faces (no text on symbols)
+    # five-point star emblem on both faces (no text on symbols); material 1 = emblem
     for sgn in (1, -1):
         z = sgn * (0.06 - 0.014)
         pts = []
@@ -224,6 +253,7 @@ def build_coin(args, plan, log):
             rr = 0.25 if i % 2 == 0 else 0.105
             pts.append(bm.verts.new((rr * math.cos(a), rr * math.sin(a), z)))
         face = bm.faces.new(pts if sgn > 0 else list(reversed(pts)))
+        face.material_index = 1              # extruded walls/top inherit it
         ext = bmesh.ops.extrude_face_region(bm, geom=[face])
         moved = [v for v in ext["geom"] if isinstance(v, bmesh.types.BMVert)]
         bmesh.ops.translate(bm, verts=moved, vec=Vector((0, 0, sgn * 0.022)))
@@ -233,10 +263,13 @@ def build_coin(args, plan, log):
     bm.free()
     me.transform(Matrix.Rotation(math.radians(90), 4, "X"))
     obj = S.link_new_object(f"sym_{plan['sym']}", me)
+    placeholder_slots(obj, 3)
     S.normalize_mesh(obj, 1.0)
     S.weld_and_clean(obj, 1e-6, sharp_angle_deg=40.0)
     gold = {"deep": pal.GOLD["deep"], "mid": pal.GOLD["mid"], "lit": plan["face"]}
+    emblem = {"deep": pal.GOLD["mid"], "mid": plan["face"], "lit": pal.GOLD["light"]}
     roles = [{"name": "gold", "bands": gold, "spec": True},
+             {"name": "emblem", "bands": emblem, "spec": True},
              {"name": "inner", "bands": {"deep": pal.GOLD["deep"], "mid": pal.GOLD["deep"], "lit": pal.GOLD["mid"]}}]
     return obj, roles, []
 
@@ -262,9 +295,11 @@ def build_gem(args, plan, log):
     bm.to_mesh(me)
     bm.free()
     obj = S.link_new_object(f"sym_{plan['sym']}", me)
+    placeholder_slots(obj, 2)
     S.normalize_mesh(obj, 1.0)
     S.weld_and_clean(obj, 1e-6, sharp_angle_deg=5.0)   # faceted
     bands = pal.derive_bands(plan["face"], plan["shade"])
+    obj["convex"] = True
     roles = [{"name": "gem", "bands": bands, "spec": True},
              {"name": "inner", "bands": {"deep": bands["deep"], "mid": bands["deep"], "lit": bands["mid"]}}]
     return obj, roles, []
@@ -313,8 +348,8 @@ def build_mesh(args, plan, log):
             roles.append({"name": f"mat{i}", "bands": pal.derive_bands(args.color or base), "spec": plan["spec"] > 0})
     if not roles:
         roles.append({"name": "base", "bands": pal.derive_bands(plan["face"], plan["shade"]), "spec": True})
-    obj.data.materials.clear()
     roles.append({"name": "inner", "bands": pal.derive_bands(pal.EXTRUSION)})
+    placeholder_slots(obj, len(roles))
     return obj, roles, [pal_ref(path)]
 
 
@@ -396,7 +431,7 @@ def smoothstep(a, b, x):
     return t * t * (3 - 2 * t)
 
 
-def make_motion(args, plan, root, chunks):
+def make_motion(args, plan, root, chunks, intact=None):
     from mathutils import Matrix, Vector
     F, fps, clip = plan["frames"], args.fps, args.clip
     if clip in ("turn", "spin"):
@@ -420,33 +455,38 @@ def make_motion(args, plan, root, chunks):
         return state
     if clip == "shatter":
         rng = random.Random(args.seed + 1)
-        fb = 3 if F >= 6 else 2
+        fb = 3 if F >= 6 else 2          # explode_burst lands on frame 2-3 (ANIMATION_CONTRACT §3)
         centre = sum((c["c0"] for c in chunks), Vector()) / max(1, len(chunks))
         for c in chunks:
             d = c["c0"] - centre
             d.y *= 0.3
             d = d.normalized() if d.length > 1e-6 else Vector((0, 0, 1))
-            c["v"] = d * rng.uniform(2.0, 3.4) + Vector((0, -0.6, 1.3))
+            c["v"] = (d * rng.uniform(1.1, 1.9) + Vector((0, -0.4, 0.9))) * args.spread
             ax = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1)))
             c["axis"] = ax.normalized() if ax.length > 1e-6 else Vector((0, 0, 1))
             c["w"] = rng.uniform(5.0, 11.0) * rng.choice((-1, 1))
-        g = Vector((0, 0, -7.0))
+        g = Vector((0, 0, -5.0))
 
         def state(f):
             swell = 1.04 if (fb == 3 and f == 2) else 1.0
             root.scale = (swell, swell, swell)
+            # before the burst the INTACT mesh is shown, so frame 1 == the static render exactly
+            # (per-chunk hulls would draw crack lines); the cracks appear on the burst frame.
+            if intact is not None:
+                intact.hide_render = f >= fb
+            for c in chunks:
+                c["obj"].hide_render = f < fb
             t = max(0.0, (f - fb) / fps)
             u = 0.0 if f <= fb else (f - fb) / max(1, F - fb)
             s = 1 - smoothstep(0.35, 1.0, u)
             for c in chunks:
                 if f <= fb:
                     c["obj"].matrix_basis = Matrix.Translation(c["c0"])
-                    c["obj"].hide_render = False
                     continue
                 pos = c["c0"] + c["v"] * t + g * (0.5 * t * t)
                 m = Matrix.Translation(pos) @ Matrix.Rotation(c["w"] * t, 4, c["axis"]) @ Matrix.Scale(max(s, 1e-4), 4)
                 c["obj"].matrix_basis = m
-                c["obj"].hide_render = s < 1e-3
+                c["obj"].hide_render = s < 1e-3 or f < fb
         return state
 
     def state(f):  # static
@@ -529,9 +569,7 @@ def main(argv):
             lin = tuple(pal.hex_to_linear(b[k]) for k in ("deep", "mid", "lit"))
             mats.append(S.toon_material(role["name"], bands_lin=lin, thresholds=plan["bands"],
                                         key_world=key_w, view_world=view_w, mode=shading, spec=spec))
-    obj.data.materials.clear()
-    for m in mats:
-        obj.data.materials.append(m)
+    assign_slots(obj, mats)
     inner_index = len(mats) - 1
     ink = S.outline_material()
 
@@ -544,7 +582,8 @@ def main(argv):
     work.mkdir(parents=True)
     rest_path = None
     chunks = []
-    S.add_hull(obj, thickness, ink)
+    convex = bool(obj.get("convex", False))
+    S.add_hull(obj, thickness, ink, even=convex)
     targets = [obj]
     if args.clip == "shatter":
         rest_path = S.render_still(scene, work / "qa_rest.png")     # intact subject = static ref
@@ -554,9 +593,9 @@ def main(argv):
         chunks = fracture(obj, args.chunks, args.seed, inner_index, log)
         for c in chunks:
             S.add_hull(c["obj"], thickness, ink)
-        obj.hide_render = True
-        targets = [c["obj"] for c in chunks]
-    state = make_motion(args, plan, root, chunks)
+        S.add_hull(obj, thickness, ink, even=convex)
+        targets = [obj] + [c["obj"] for c in chunks]
+    state = make_motion(args, plan, root, chunks, intact=obj if chunks else None)
 
     F = plan["frames"]
     for f in range(1, F + 1):

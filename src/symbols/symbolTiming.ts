@@ -93,11 +93,15 @@ export const SYMBOL_TIMING = {
     postWinScale: 1.06,
     postWinPulseScale: 1.085,
     postWinPulsePeriod: 1100,
+    /** Any leftover wiggle rotation eases out when postWin starts. */
+    straightenDuration: 200,
     glowScale: 1.12,
     glowAlpha: 1,
     glowPostAlpha: 0.55,
     shineWidth: 0.16,
     shineIntensity: 0.9,
+    /** Near-constant band speed so the sweep reads across the whole symbol. */
+    shineEase: 'sine.inOut',
     wiggleDeg: 3.5,
     wiggles: 3,
     sparkleCount: 14,
@@ -120,12 +124,15 @@ export const SYMBOL_TIMING = {
     swayDeg: 2.6,
     swayPeriod: 1500,
     glowAlpha: 0.95,
+    /** Halo flare on the intro (> 1 = over-bright for a moment, clamped to 1 on the sprite). */
+    glowFlare: 1.2,
+    /** Heartbeat rest scale = 1 + (pulseScale - 1) * restFraction. */
+    restFraction: 0.35,
     /** Heartbeat lub-dub (CustomEase) — scale follows it between rest and pulseScale. */
     heartbeat: 'M0,0 C0.06,0 0.1,1 0.18,1 0.26,1 0.3,0.35 0.38,0.35 0.45,0.35 0.48,0.7 0.54,0.7 0.62,0.7 0.7,0 1,0',
     /** Jelly breathing per unit of heartbeat. */
     bulge: 0.07,
     lag: -0.05,
-    introFlash: 0.45,
   },
   feedback: {
     /** Identical land SFX closer than this (ms of game time) are dropped. */

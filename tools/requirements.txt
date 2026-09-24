@@ -1,0 +1,19 @@
+# Production-pipeline Python deps (tools/gen, tools/matte, tools/video, tools/audio helpers).
+# Python >= 3.11. Pinned; bump deliberately and re-run the self-tests (see tools/*/README.md).
+#   uv venv tools/.venv && uv pip install -r tools/requirements.txt
+#   (or: python3 -m venv tools/.venv && tools/.venv/bin/pip install -r tools/requirements.txt)
+# Licences (licenses/allowlist.json): python-geometry (shapely, opencv, scipy), psd-tools, plus
+# numpy/pillow/PyYAML/requests/jsonschema/imageio-ffmpeg (BSD / MIT-CMU / MIT / Apache-2.0 / BSD-2).
+# google-genai is Apache-2.0 (route: vertex-nano-banana-pro).
+# NEVER add: PyPI "triangle" (denylist: pypi-triangle); rembg without an explicit -m (denylist: bria-rmbg-2.0).
+numpy==2.4.6
+pillow==12.3.0
+scipy==1.17.1
+opencv-python-headless==5.0.0.93
+shapely==2.1.2
+psd-tools==1.19.0
+PyYAML==6.0.3
+requests==2.34.2
+jsonschema==4.26.0
+imageio-ffmpeg==0.6.0
+google-genai==2.25.0

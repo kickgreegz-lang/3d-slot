@@ -2,7 +2,18 @@ import { gsap } from 'gsap';
 import { Container, RenderLayer, Sprite, Texture } from 'pixi.js';
 import type { LayoutSpec } from '../../config/layout';
 import type { GameContext } from '../../game/context';
+import { releaseGlyphCache } from './glyphs';
 import { placementFor } from './placement';
+
+let openStages = 0;
+
+/**
+ * Low tier only: drop the baked title glyph textures once no overlay is showing
+ * (they are re-baked on demand; high tier keeps them for instant re-use).
+ */
+export const releaseTitlesIfIdle = (ctx: GameContext): void => {
+  if (ctx.tier === 'low' && openStages === 0) releaseGlyphCache();
+};
 
 /**
  * Full-screen presentation stage used by the big win and the free-spin intro/outro:
@@ -75,6 +86,7 @@ export class OverlayStage {
   open(opts: { dim: number; fadeIn: number; liftMascots?: boolean; liftFx?: boolean }): void {
     this.ctx.layers.overlay.addChild(this.root);
     this.layout();
+    if (!this.root.visible) openStages++;
     this.root.visible = true;
     this.dimTween?.kill();
     this.dimTween = gsap.to(this.dimmer, { alpha: opts.dim, duration: opts.fadeIn, ease: 'power2.out' });
@@ -109,6 +121,7 @@ export class OverlayStage {
         ease: 'power2.in',
         onComplete: () => {
           this.release();
+          if (this.root.visible) openStages = Math.max(0, openStages - 1);
           this.root.visible = false;
           resolve();
         },

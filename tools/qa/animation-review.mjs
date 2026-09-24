@@ -5,7 +5,7 @@
  * USAGE (dev server must be running, e.g. `npx vite --port 5173`):
  *   node tools/qa/animation-review.mjs --url http://localhost:5173/ \
  *        [--out screenshots/review] [--viewport 960x540] [--every 3] [--profile normal] \
- *        [--scenarios spin,tumbleChain,symbolLand:H1] [--max-seconds 16] [--tail 40] \
+ *        [--scenarios spin,tumbleChain,symbolLand:H1] [--max-seconds N] [--tail 40] \
  *        [--settle 20] [--png] [--no-video] [--hmr]
  *
  * For every scenario (fresh page each, `?dev=lab&capture=1`, manual clock at exactly 60 fps):
@@ -38,7 +38,9 @@ const outDir = path.resolve(args.out ?? 'screenshots/review');
 const viewport = parseViewport(args.viewport ?? '960x540');
 const every = Math.max(1, Number(args.every ?? 3));
 const profile = args.profile ?? 'normal';
-const maxFrames = Math.round(Number(args['max-seconds'] ?? 16) * 60);
+/** Per-scenario capture budget (s): long presentations auto-close only after their count-ups. */
+const MAX_SECONDS = { mascots: 20, bigWin: 24, fsTrigger: 20, tumbleChain: 22, spots: 18 };
+const maxFramesFor = (name) => Math.round(Number(args['max-seconds'] ?? MAX_SECONDS[name] ?? 14) * 60);
 const tail = Number(args.tail ?? 40);
 const settle = Number(args.settle ?? 20);
 const ext = args.png ? 'png' : 'jpg';
@@ -167,6 +169,7 @@ for (const spec of specs) {
 
     let doneAt = -1;
     let i = 0;
+    const maxFrames = maxFramesFor(spec.name);
     for (; i < maxFrames; i++) {
       const done = await page.evaluate((ms) => {
         window.__slot.step(ms);
@@ -231,48 +234,52 @@ for (const spec of specs) {
   }
   r.wallMs = Date.now() - t0;
   results.push(r);
+  writeReport(); // incremental: a killed/partial run still leaves a usable review
   console.log(
     `${r.status.padEnd(9)} ${r.key.padEnd(18)} ${String(r.durationMs ?? '—').padStart(6)} ms  ${r.frames.length} frames  ${(r.wallMs / 1000).toFixed(1)} s${r.errors.length ? `  ERR ${r.errors[0].slice(0, 160)}` : ''}`,
   );
 }
 await browser.close();
 
-const report = {
-  generatedAt: new Date().toISOString(),
-  url: labUrl,
-  viewport,
-  fps: 60 / every,
-  stepMs: FRAME_MS,
-  every,
-  profile,
-  ffmpeg: ffmpeg ? { path: ffmpeg.path, format: ffmpeg.mp4 ? 'mp4' : 'webm' } : null,
-  scenarios: results.map((r) => ({
-    key: r.key,
-    name: r.name,
-    label: r.label,
-    opts: r.opts,
-    status: r.status,
-    durationMs: r.durationMs,
-    framesStepped: r.framesStepped,
-    frames: r.frames,
-    sheet: r.sheet ?? null,
-    video: r.video ?? null,
-    motionSvg: r.motionSvg ?? null,
-    probe: r.probe ?? null,
-    motion: r.motion ?? null,
-    events: r.events ?? [],
-    errors: r.errors,
-    consoleErrors: r.consoleErrors,
-  })),
-};
-fs.writeFileSync(path.join(outDir, 'review.json'), JSON.stringify(report, null, 1));
-fs.writeFileSync(path.join(outDir, 'index.html'), indexHtml(report));
 console.log(`\nreview: ${path.join(outDir, 'index.html')}`);
 process.exit(results.every((r) => r.status === 'ok') ? 0 : 1);
 
 // ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
+
+function writeReport() {
+  const report = {
+    generatedAt: new Date().toISOString(),
+    url: labUrl,
+    viewport,
+    fps: 60 / every,
+    stepMs: FRAME_MS,
+    every,
+    profile,
+    ffmpeg: ffmpeg ? { path: ffmpeg.path, format: ffmpeg.mp4 ? 'mp4' : 'webm' } : null,
+    scenarios: results.map((r) => ({
+      key: r.key,
+      name: r.name,
+      label: r.label,
+      opts: r.opts,
+      status: r.status,
+      durationMs: r.durationMs,
+      framesStepped: r.framesStepped,
+      frames: r.frames,
+      sheet: r.sheet ?? null,
+      video: r.video ?? null,
+      motionSvg: r.motionSvg ?? null,
+      probe: r.probe ?? null,
+      motion: r.motion ?? null,
+      events: r.events ?? [],
+      errors: r.errors,
+      consoleErrors: r.consoleErrors,
+    })),
+  };
+  fs.writeFileSync(path.join(outDir, 'review.json'), JSON.stringify(report, null, 1));
+  fs.writeFileSync(path.join(outDir, 'index.html'), indexHtml(report));
+}
 
 function sampleEvenly(list, n) {
   if (list.length <= n) return list;
@@ -414,7 +421,7 @@ function motionSvg(motion, events, title) {
   for (const e of events.filter((ev) => MARKER_RE.test(ev.type) && ev.t >= 0 && ev.t <= tMax)) {
     const xx = x(e.t).toFixed(1);
     out.push(`<line x1="${xx}" x2="${xx}" y1="${M.t}" y2="${top2 + PH}" stroke="${COLORS.marker}" stroke-dasharray="2 3"><title>${esc(e.type)} @ ${e.t} ms</title></line>`);
-    out.push(`<text x="${xx}" y="${M.t + 11 + (row % 3) * 11}" dx="3" fill="${COLORS.textMuted}" font-size="10">${esc(e.type.replace(/^(board|win|round|spots|fs|bigwin):/, ''))}</text>`);
+    out.push(`<text x="${xx}" y="${M.t + 11 + (row % 3) * 11}" dx="3" fill="${COLORS.textMuted}" font-size="10">${esc(e.type.replace(/^(board|round):/, ''))}</text>`);
     row++;
   }
 

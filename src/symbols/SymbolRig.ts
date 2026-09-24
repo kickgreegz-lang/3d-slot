@@ -326,13 +326,17 @@ export class SymbolRig implements SymbolView {
     const tSettle = tBeat + W.beatDuration;
     const settle = Math.max(120, tw.winAnimDuration - tSettle);
     const tl = this.track(gsap.timeline());
+    // a Spine `win` carries its own pop/dip/settle: only the halo + sparkle stay procedural
+    const procedural = !rig;
     const sc = this.pose.scale;
-    tl.to(sc, { x: tw.popScale, y: tw.popScale, duration: s(tPop), ease: tw.popEase }, 0);
-    tl.to(sc, { x: W.dipScale, y: W.dipScale, duration: s(W.dipDuration), ease: 'power2.inOut' }, s(tDip));
-    tl.to(sc, { x: W.beatScale, y: W.beatScale, duration: s(W.beatDuration), ease: W.beatEase }, s(tBeat));
-    tl.to(sc, { x: W.postWinScale, y: W.postWinScale, duration: s(settle), ease: W.settleEase }, s(tSettle));
+    if (procedural) {
+      tl.to(sc, { x: tw.popScale, y: tw.popScale, duration: s(tPop), ease: tw.popEase }, 0);
+      tl.to(sc, { x: W.dipScale, y: W.dipScale, duration: s(W.dipDuration), ease: 'power2.inOut' }, s(tDip));
+      tl.to(sc, { x: W.beatScale, y: W.beatScale, duration: s(W.beatDuration), ease: W.beatEase }, s(tBeat));
+      tl.to(sc, { x: W.postWinScale, y: W.postWinScale, duration: s(settle), ease: W.settleEase }, s(tSettle));
+    } else tl.to(sc, { x: 1, y: 1, duration: s(tPop), ease: 'power2.out' }, 0);
     // white hit flash on the pop
-    this.fx.flash = W.flash;
+    this.fx.flash = procedural ? W.flash : 0;
     tl.to(this.fx, { flash: 0, duration: s(W.flashDuration), ease: 'power3.out' }, 0);
     // jelly: belly bulge on the pop, a smaller one on the second beat
     tl.call(
@@ -355,9 +359,9 @@ export class SymbolRig implements SymbolView {
     this.fx.shine = -0.35;
     this.fx.shineWidth = W.shineWidth;
     this.fx.shineIntensity = W.shineIntensity;
-    tl.to(this.fx, { shine: 1.35, duration: s(tw.shineDuration), ease: 'power2.inOut' }, s(tPop * 0.5));
-    // follow-through: specials/highs wiggle through the hold, royals stay upright
-    if (this.def.kind === 'royal') tl.to(this.pose, { rotation: 0, duration: s(tPop), ease: 'power2.out' }, 0);
+    tl.to(this.fx, { shine: 1.35, duration: s(tw.shineDuration), ease: W.shineEase }, s(tPop * 0.5));
+    // follow-through: specials/highs wiggle through the hold, royals (and Spine rigs) stay upright
+    if (this.def.kind === 'royal' || !procedural) tl.to(this.pose, { rotation: 0, duration: s(tPop), ease: 'power2.out' }, 0);
     else {
       tl.to(
         this.pose,
@@ -462,28 +466,47 @@ export class SymbolRig implements SymbolView {
       this.stopBreath();
       this.antOn = true;
       this._state = 'anticipation';
-      this.hold('anticipation');
-      this.beat.base = 1 + (A.pulseScale - 1) * 0.35;
-      this.beat.peak = A.pulseScale;
+      const LA = T.anticipation;
       const ref = this.spineRef();
       const loopName = ref ? SpineRig.pick(ref, SPINE_ANIM.anticipationLoop) : null;
       const rig = ref && loopName ? this.useSpine(ref) : null;
+      this.glowState.s = 0.9;
+      this.track(
+        gsap.to(this.glowState, {
+          a: LA.glowFlare,
+          s: 1.1,
+          duration: s(A.introDuration * 0.5),
+          ease: 'power2.out',
+          onUpdate: this.onGlow,
+        }),
+      );
       if (rig && loopName) {
+        // the skeleton carries the pulse; the halo just breathes on the same period
         if (rig.has('anticipation_intro')) {
           void rig.play('anticipation_intro');
           rig.queueLoop(loopName);
         } else void rig.play(loopName, true);
-      } else {
-        this.releaseSpine();
-        this.ensureJelly();
+        this.track(
+          gsap.to(this.glowState, {
+            a: LA.glowAlpha * 0.6,
+            duration: s(A.pulsePeriod / 2),
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1,
+            delay: s(A.introDuration),
+            onUpdate: this.onGlow,
+          }),
+        );
+        return;
       }
-      // intro: scale up (overshoot), glow flare, sway fades in
+      this.releaseSpine();
+      this.ensureJelly();
+      this.hold('anticipation');
+      this.beat.base = 1 + (A.pulseScale - 1) * LA.restFraction;
+      this.beat.peak = A.pulseScale;
+      // intro: scale up (overshoot) and sway fades in
       this.track(
         gsap.to(this.pose.scale, { x: this.beat.base, y: this.beat.base, duration: s(A.introDuration), ease: 'back.out(3)' }),
-      );
-      this.glowState.s = 0.9;
-      this.track(
-        gsap.to(this.glowState, { a: 1.2, s: 1.1, duration: s(A.introDuration * 0.5), ease: 'power2.out', onUpdate: this.onGlow }),
       );
       this.track(gsap.to(this.sway, { env: 1, duration: s(A.introDuration * 2), ease: 'sine.inOut' }));
       // heartbeat loop (lub-dub) on the pose scale; glow + jelly follow it in tick()
@@ -573,7 +596,7 @@ export class SymbolRig implements SymbolView {
         gsap.to(this.fx, {
           shine: 1.35,
           duration: s(I.glintDuration),
-          ease: 'power2.inOut',
+          ease: T.win.shineEase,
           onComplete: () => this.release('glint'),
         }),
       );
@@ -708,27 +731,13 @@ export class SymbolRig implements SymbolView {
     this._state = 'postWin';
     const W = T.win;
     const half = s(W.postWinPulsePeriod / 2);
-    this.track(
-      gsap.to(this.pose.scale, {
-        x: W.postWinPulseScale,
-        y: W.postWinPulseScale,
-        duration: half,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: -1,
-      }),
-    );
-    this.track(
-      gsap.to(this.glowState, {
-        a: W.glowPostAlpha + 0.3,
-        duration: half,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: -1,
-        onUpdate: this.onGlow,
-      }),
-    );
-    this.track(gsap.to(this.pose, { rotation: 0, duration: s(200), ease: 'power2.out' }));
+    const loop = { duration: half, ease: 'sine.inOut', yoyo: true, repeat: -1 };
+    // a Spine `win_loop` pulses itself; the procedural rig breathes the pose instead
+    if (!this.rig?.has('win_loop')) {
+      this.track(gsap.to(this.pose.scale, { x: W.postWinPulseScale, y: W.postWinPulseScale, ...loop }));
+    }
+    this.track(gsap.to(this.glowState, { a: W.glowPostAlpha + 0.3, onUpdate: this.onGlow, ...loop }));
+    this.track(gsap.to(this.pose, { rotation: 0, duration: s(W.straightenDuration), ease: 'power2.out' }));
   }
 
   private finishExplode(): void {

@@ -190,7 +190,9 @@ def toon_material(name: str, *, bands_lin, thresholds=(0.02, 0.35), key_world: V
     bands_lin: (deep, mid, lit) linear RGB. With `albedo` (an image or linear RGB) the bands
     are grey multipliers applied to it (textured props / mascots).
     thresholds: N.L values where the mid and lit bands start.
-    spec: N.H threshold of the white specular streak (None/0 = off).
+    spec: threshold on N.S for the white specular streak (None/0 = off), where S is the key
+          direction bent 25% toward the viewer: the streak sits on the parts that face the
+          top-left key (rim bevels, facets), like the painted streak of the 2D art.
     """
     m, N, L = new_node_material(name)
     out = N.new("ShaderNodeOutputMaterial")
@@ -239,7 +241,7 @@ def toon_material(name: str, *, bands_lin, thresholds=(0.02, 0.35), key_world: V
         col = _mix_rgb(N, L, "MULTIPLY", alb, col)
     if spec:
         geo2 = N.new("ShaderNodeNewGeometry")
-        h = (key_world.normalized() + (view_world or Vector((0, -1, 0))).normalized()).normalized()
+        h = (key_world.normalized() + 0.25 * (view_world or Vector((0, -1, 0))).normalized()).normalized()
         dh = N.new("ShaderNodeVectorMath")
         dh.operation = "DOT_PRODUCT"
         dh.inputs[1].default_value = tuple(h)
@@ -291,7 +293,7 @@ def outline_material(name: str = "ink_outline"):
     return m
 
 
-def add_hull(obj, thickness_world: float, outline_mat, name: str = "outline_hull"):
+def add_hull(obj, thickness_world: float, outline_mat, name: str = "outline_hull", even: bool = False):
     """Inverted-hull outline. Appends the outline material once per existing slot so the
     shell of every source material maps to it (material_offset = slot count)."""
     n = max(1, len(obj.data.materials))
@@ -306,9 +308,14 @@ def add_hull(obj, thickness_world: float, outline_mat, name: str = "outline_hull
     mod.offset = 1.0
     mod.use_flip_normals = True
     mod.use_rim = False
-    mod.use_even_offset = False
+    # even offset keeps the width at sharp convex corners (gem facets) but spikes at concave
+    # ones (letters, star emblems): only enable it for convex subjects.
+    mod.use_even_offset = even
     mod.use_quality_normals = True
     mod.material_offset = n
+    if obj.vertex_groups.get("hull_weight") is not None:
+        mod.vertex_group = "hull_weight"
+        mod.thickness_vertex_group = obj.get("counter_outline", 0.4)
     return mod
 
 
@@ -563,6 +570,82 @@ def text_mesh(text: str, font, extrude: float, bevel: float, bevel_res: int = 2,
     me.transform(Matrix.Rotation(math.radians(90), 4, "X"))   # +Z face -> -Y (toward camera)
     me.update()
     return me
+
+
+def glyph_holes(text: str, font, resolution: int = 12):
+    """Inner contours (counters) of a text string as 2D polygons in text-plane units, found from
+    the font's bezier splines by nesting depth (odd = hole). Text plane (x, y) == mesh (X, Z)
+    after text_mesh()'s stand-up rotation."""
+    from mathutils.geometry import interpolate_bezier
+    cu = bpy.data.curves.new("_holes", "FONT")
+    cu.body = text
+    cu.font = font
+    cu.size = 1.0
+    cu.align_x = "CENTER"
+    cu.align_y = "BOTTOM_BASELINE"
+    ob = bpy.data.objects.new("_holes", cu)
+    bpy.context.scene.collection.objects.link(ob)
+    polys = []
+    try:
+        dg = bpy.context.evaluated_depsgraph_get()
+        c = ob.evaluated_get(dg).to_curve(dg, apply_modifiers=False)
+        for sp in c.splines:
+            bps = sp.bezier_points
+            pts = []
+            for i in range(len(bps)):
+                a, b = bps[i], bps[(i + 1) % len(bps)]
+                seg = interpolate_bezier(a.co, a.handle_right, b.handle_left, b.co, resolution + 1)
+                pts += [(p.x, p.y) for p in seg[:-1]]
+            if len(pts) >= 3:
+                polys.append(pts)
+    finally:
+        bpy.data.objects.remove(ob)
+        bpy.data.curves.remove(cu)
+    return [p for i, p in enumerate(polys)
+            if sum(point_in_poly(p[0], q) for j, q in enumerate(polys) if j != i) % 2 == 1]
+
+
+def point_in_poly(pt, poly) -> bool:
+    x, y = pt
+    inside = False
+    j = len(poly) - 1
+    for i in range(len(poly)):
+        xi, yi = poly[i]
+        xj, yj = poly[j]
+        if (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / ((yj - yi) or 1e-12) + xi:
+            inside = not inside
+        j = i
+    return inside
+
+
+def dist_to_poly(pt, poly) -> float:
+    px, py = pt
+    best = float("inf")
+    for i in range(len(poly)):
+        ax, ay = poly[i]
+        bx, by = poly[(i + 1) % len(poly)]
+        dx, dy = bx - ax, by - ay
+        L2 = dx * dx + dy * dy or 1e-12
+        t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / L2))
+        cx, cy = ax + t * dx, ay + t * dy
+        best = min(best, math.hypot(px - cx, py - cy))
+    return best
+
+
+def weight_counter_vertices(obj, holes, margin: float, group: str = "hull_weight") -> int:
+    """Vertex group for the outline hull: 1 everywhere, 0 on counter walls/rims, so Solidify's
+    thickness_vertex_group can thin the hull inside counters (no 'dark sliver' in A/Q/0)."""
+    vg = obj.vertex_groups.get(group) or obj.vertex_groups.new(name=group)
+    ones, zeros = [], []
+    for v in obj.data.vertices:
+        p = (v.co.x, v.co.z)
+        inner = any(point_in_poly(p, h) or dist_to_poly(p, h) <= margin for h in holes)
+        (zeros if inner else ones).append(v.index)
+    if ones:
+        vg.add(ones, 1.0, "REPLACE")
+    if zeros:
+        vg.add(zeros, 0.0, "REPLACE")
+    return len(zeros)
 
 
 def link_new_object(name: str, data, scene=None):

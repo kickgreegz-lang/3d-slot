@@ -23,9 +23,9 @@ from .timeline import Anim
 DEFAULTS: dict[str, dict] = {
     "idle": {
         "enabled": True, "frames": 90,
-        "breath": 0.012,          # sy amplitude of the breath (sx volume-preserving)
+        "breath": 0.015,          # sy amplitude of the breath (= SYMBOL_TIMING.idle.breathScale 1.015)
         "breaths": 1,             # whole breaths per loop (keeps the seam exact)
-        "sway": 1.2,              # body rotate amplitude (deg); drives physics parts
+        "sway": 1.5,              # body rotate amplitude (deg); drives physics parts
         "blink_frame": 62,        # null = no blink in idle
     },
     "land": {
@@ -49,6 +49,7 @@ DEFAULTS: dict[str, dict] = {
         "settle": 1.10,                  # = win_loop base scale (shared, see win_loop.scale)
         "wiggle": 4.0,                   # body rotate (deg) around the pop
         "glow_peak": 1.0,
+        "glow_scale": 1.12,              # fx_* bone scale relative to the body pop (halo stays visible)
         "vfx": None, "sfx": None,
     },
     "win_loop": {
@@ -71,11 +72,12 @@ DEFAULTS: dict[str, dict] = {
         "enabled": True, "frames": 12,
         "burst_frame": 2,                # explode_burst ~ TIMING.explode.anticipateDuration 80 ms
         "squeeze": 0.9,                  # TIMING.explode.anticipateScale
-        "burst_scale": 1.35, "burst_peak_frame": 5,
-        "end_scale": 1.5,
-        "scatter": 70.0,                 # px (skeleton units) parts fly apart
-        "spin": 35.0,                    # deg
-        "fade_from": 3,
+        "burst_scale": 1.3, "burst_peak_frame": 4,   # ~ TIMING.explode.burstScale 1.35
+        "end_scale": 1.38,
+        "scatter": 150.0,                # px (skeleton units) parts fly apart
+        "spin": 70.0,                    # deg
+        "body_fade": [3, 9],             # body slots fade (frames), faster than the flying parts
+        "fade_from": 5,                  # other parts fade from here to the last frame
         "vfx": None, "sfx": None, "shake": None,
     },
     "appear": {"enabled": True, "frames": 9, "from": 0.55, "over": 1.08, "fade_frames": 3},
@@ -112,6 +114,8 @@ def vol(sy: float, volume: float = 1.0) -> float:
 class MotionCtx:
     fps: int
     glow_slots: list[str]
+    glow_bones: list[str]                      # fx_* bones carrying glow slots (scaled with pops)
+    body_slots: list[str]                      # slots on squash/body (fade first in explode)
     part_slots: list[str]                      # non-fx slots (faded by explode/appear)
     slot_alpha: dict[str, float]               # setup alpha per slot
     eyes: list[str]                            # face_eye* bones (blink)
@@ -138,6 +142,15 @@ def _glow(anim: Anim, ctx: MotionCtx, keys: list[tuple[int, float, str]]) -> Non
         tr = anim.slot(s, "alpha")
         for f, a, e in keys:
             tr.key(f, a, e)
+
+
+def _glow_scale(anim: Anim, ctx: MotionCtx, keys: list[tuple[int, float, str]]) -> None:
+    """fx_* bones are children of root (contract), so pops that scale `body` must scale the
+    glow bones too or the halo disappears behind the grown body."""
+    for b in ctx.glow_bones:
+        tr = anim.bone(b, "scale")
+        for f, v, e in keys:
+            tr.key(f, (v, v), e)
 
 
 # ------------------------------------------------------------------------------------------
@@ -226,6 +239,9 @@ def win(ctx: MotionCtx) -> Anim:
         r.key(of, -0.3 * w, "sine_in_out").key(F, 0.0)
     g0 = lp["glow"][0]
     _glow(a, ctx, [(0, 0.0, "quad_out"), (pf, p["glow_peak"], "sine_in_out"), (F, g0, "linear")])
+    gs = p["glow_scale"]
+    _glow_scale(a, ctx, [(0, 1.0, "sine_out"), (df, 0.97, "snap"), (pf, p["pop"] * gs, "sine_in_out"),
+                         (F, p["settle"] * gs, "linear")])
     a.event(pf, "win_peak")
     if p.get("vfx"):
         a.event(pf, "vfx", string=str(p["vfx"]))
@@ -262,6 +278,8 @@ def win_loop(ctx: MotionCtx) -> Anim:
         sq.key(F, (1.0, 1.0))
     gkeys.append((F, g0, "linear"))
     _glow(a, ctx, gkeys)
+    gs = ctx.params["win"]["glow_scale"]
+    _glow_scale(a, ctx, [(k.frame, k.value[0] * gs, k.ease) for k in b.keys])
     if p["sway"]:
         n = max(1, int(p["sways"]))
         r = a.bone(ctx.body, "rotate")
@@ -291,6 +309,7 @@ def anticipation(ctx: MotionCtx) -> Anim:
     g0, g1 = p["glow"]
     _glow(a, ctx, [(0, g0, "quad_out"), (k[0], g1, "sine_in_out"), (k[1], 0.6 * g1 + 0.4 * g0, "quad_out"),
                    (k[2], 0.85 * g1, "sine_in_out"), (F, g0, "linear")])
+    _glow_scale(a, ctx, [(kk.frame, kk.value[0], kk.ease) for kk in b.keys])
     if p.get("sfx"):
         a.event(0, "sfx", string=str(p["sfx"]))
     a.markers = {"start": 0, "lub": k[0], "dub": k[2], "end": F}
@@ -338,10 +357,20 @@ def explode(ctx: MotionCtx) -> Anim:
         if p["spin"]:
             rr = a.bone(bone, "rotate")
             rr.key(0, 0.0).key(bf, 0.0, "cubic_out").key(F, sign * p["spin"])
+    b0, b1 = (int(v) for v in p["body_fade"])
+    if not (0 < b0 < b1 <= F):
+        raise ValueError("explode.body_fade: need 0 < start < end <= frames")
     for slot in ctx.part_slots:
         a0 = ctx.slot_alpha.get(slot, 1.0)
-        a.slot(slot, "alpha").key(0, a0).key(ff, a0, "quad_in").key(F, 0.0)
+        t = a.slot(slot, "alpha").key(0, a0)
+        if slot in ctx.body_slots:
+            t.key(b0, a0, "quad_in").key(b1, 0.0)
+            if b1 < F:
+                t.key(F, 0.0)
+        else:
+            t.key(ff, a0, "quad_in").key(F, 0.0)
     _glow(a, ctx, [(0, 0.0, "quad_in"), (bf, 1.0, "quad_out"), (F, 0.0, "linear")])
+    _glow_scale(a, ctx, [(0, 1.0, "hold_out"), (bf, p["squeeze"], "expo_out"), (F, p["end_scale"] * 1.1, "linear")])
     a.event(bf, "explode_burst")
     a.event(F, "explode_done")
     for k in ("vfx", "sfx"):

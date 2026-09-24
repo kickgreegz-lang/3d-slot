@@ -9,7 +9,8 @@
 Production packs with the Spine CLI (`tools/spine/export.sh pack`, config/spine/pack-symbols.json);
 this packer exists so a generated rig can be loaded by spine-pixi-v8 / spine-core in CI and
 previews. It mirrors the contract pack settings: premultiplied alpha (`pma: true` and the page
-pixels premultiplied), padding 2 px incl. page edges, whitespace stripped (with `offsets`),
+pixels premultiplied), padding 2 px incl. page edges, whitespace stripped (with `offsets`;
+never for mesh regions, whose UVs span the whole image),
 region names = image path relative to --images without extension, linear filtering, page
 sizes multiples of 4 (or powers of two with --pot), no rotation. MaxRects (best short side
 fit) with a fixed input order and tie-breaks => byte-identical output for identical inputs.
@@ -21,6 +22,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+
+sys.dont_write_bytecode = True  # never leave __pycache__ in tools/
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -46,7 +49,9 @@ class Item:
     page: int = 0
 
 
-def load_items(images: Path, names: list[str], strip: bool, scale: float) -> list[Item]:
+def load_items(images: Path, names: list[str], strip: bool, scale: float, keep: set[str] = frozenset()) -> list[Item]:
+    """`keep`: regions never stripped (mesh attachments: their UVs span the whole image, so a
+    stripped region would sample neighbouring atlas pixels at the mesh edge)."""
     items = []
     for n in names:
         p = images / f"{n}.png"
@@ -59,7 +64,7 @@ def load_items(images: Path, names: list[str], strip: bool, scale: float) -> lis
             im = im.resize((w, h), Image.LANCZOS)
         ow, oh = im.size
         x0, y0, x1, y1 = 0, 0, ow, oh
-        if strip:
+        if strip and n not in keep:
             a = np.asarray(im)[:, :, 3]
             ys, xs = np.nonzero(a)
             if len(xs):
@@ -209,15 +214,20 @@ def write(out_dir: Path, name: str, pages, pma: bool, check: bool) -> tuple[list
     return [atlas] + files, changed
 
 
-def skeleton_regions(path: Path) -> list[str]:
+def skeleton_regions(path: Path) -> tuple[list[str], set[str]]:
+    """(all region paths, paths used by mesh / linkedmesh attachments)."""
     doc = json.loads(path.read_text(encoding="utf-8"))
-    names = set()
+    names, meshes = set(), set()
     for skin in doc.get("skins", []):
         for entries in skin.get("attachments", {}).values():
             for key, a in entries.items():
-                if a.get("type", "region") in ("region", "mesh", "linkedmesh"):
-                    names.add(a.get("path", a.get("name", key)))
-    return sorted(names)
+                t = a.get("type", "region")
+                if t in ("region", "mesh", "linkedmesh"):
+                    p = a.get("path", a.get("name", key))
+                    names.add(p)
+                    if t != "region":
+                        meshes.add(p)
+    return sorted(names), meshes
 
 
 def main(argv=None) -> int:
@@ -243,8 +253,14 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
 
     images = Path(a.images)
+    mesh_regions: set[str] = set()
     if a.skeleton:
-        names = sorted({n for s in a.skeleton for n in skeleton_regions(Path(s))})
+        names_set: set[str] = set()
+        for s in a.skeleton:
+            ns, ms = skeleton_regions(Path(s))
+            names_set |= set(ns)
+            mesh_regions |= ms
+        names = sorted(names_set)
     else:
         base = images / a.prefix if a.prefix else images
         names = sorted(p.relative_to(images).with_suffix("").as_posix() for p in base.rglob("*.png"))
@@ -260,7 +276,7 @@ def main(argv=None) -> int:
     for sc in scales:
         suffix = "" if sc == 1 else f"@{sc:g}x"
         try:
-            items = load_items(images, names, strip=not a.no_strip, scale=sc)
+            items = load_items(images, names, strip=not a.no_strip, scale=sc, keep=mesh_regions)
             pages = pack_pages(items, a.max, a.padding, a.pot)
         except (FileNotFoundError, ValueError) as e:
             print(f"pack.py: ERROR: {e}", file=sys.stderr)

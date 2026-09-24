@@ -26,8 +26,9 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../../..');
 const args = parseArgs();
 if (args.help || args.h || !args.skel) {
-  console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('*/')[0].replace(/^\/\*\*?\n?|^ \* ?/gm, '').trim());
-  process.exit(args.skel ? 0 : 2);
+  const src = fs.readFileSync(fileURLToPath(import.meta.url), 'utf8');
+  console.log(src.slice(src.indexOf('/**') + 3, src.indexOf('*/')).replace(/^ \* ?/gm, '').trim());
+  process.exit(args.help || args.h ? 0 : 2);
 }
 const skel = path.resolve(args.skel);
 const atlas = path.resolve(args.atlas ?? skel.replace(/\.(json|skel)$/, '.atlas'));
@@ -65,7 +66,17 @@ const SCEN = {
 };
 
 let failed = false;
-const browser = await launchBrowser();
+// Chromium keeps a unix socket in its profile dir under TMPDIR; long TMPDIRs (> ~100 chars of
+// socket path) make it die with SIGTRAP at launch, so fall back to /tmp for the browser profile.
+if ((process.env.TMPDIR ?? '').length > 60) process.env.TMPDIR = '/tmp';
+let browser;
+try {
+  browser = await launchBrowser();
+} catch (e) {
+  console.error(`capture: cannot launch Chromium: ${String(e.message).split('\n')[0]}`);
+  await server.close();
+  process.exit(1);
+}
 const trace = { skeleton: path.relative(REPO, skel), atlas: path.relative(REPO, atlas), kick, scenarios: {} };
 try {
   const page = await browser.newPage({ viewport: { width: size + 40, height: size + 40 }, deviceScaleFactor: 1 });
@@ -107,12 +118,12 @@ try {
         const b = window.__spinePreview.step(1 / 60);
         return { ...b, events: [...a.events, ...b.events] };
       });
-      p.frame = f;
+      p.frame = f + 1; // frames elapsed (30 fps) when this image was taken
       probes.push(p);
       if (f % sc.every === 0 || p.events.length) {
-        const file = path.join(dir, `f_${String(f).padStart(3, '0')}.png`);
+        const file = path.join(dir, `f_${String(p.frame).padStart(3, '0')}.png`);
         await canvas.screenshot({ path: file });
-        shots.push({ file, frame: f, ms: p.t, events: p.events.map((e) => e.name + (e.string ? `:${e.string}` : '')) });
+        shots.push({ file, frame: p.frame, ms: p.t, events: p.events.map((e) => e.name + (e.string ? `:${e.string}` : '')) });
       }
     }
     trace.scenarios[name] = probes;
@@ -163,14 +174,14 @@ async function contactSheet(browser, shots, probes, file, { title, tile }) {
   const physNames = Object.keys(probes[0]?.phys ?? {});
   const colors = ['#ff5a9e', '#9a7bff', '#7dff8a', '#ff8a3a'];
   physNames.forEach((nm, i) => {
-    const rot = probes.some((p) => Math.abs(p.phys[nm].rot) > 0.05);
+    const rot = probes[0].phys[nm].mode === 'rotate';
     if (rot) add(`${nm} rot (-40..40°)`, colors[i % 4], (p) => p.phys[nm].rot, -40, 40);
     else add(`${nm} dy (-20..20)`, colors[i % 4], (p) => p.phys[nm].dy, -20, 20);
   });
   const evMarks = probes
     .map((p, i) => (p.events.length ? `<line x1="${xs(i)}" x2="${xs(i)}" y1="4" y2="${PH - 16}" stroke="#fff" stroke-dasharray="3 3" opacity=".6"/><text x="${xs(i) + 3}" y="${PH - 4}" fill="#fff">${p.events.map((e) => e.name).join(',')}</text>` : ''))
     .join('');
-  const ticks = probes.map((p, i) => (i % 5 === 0 ? `<text x="${xs(i) - 4}" y="${PH - 18}" fill="#888" font-size="9">${i}</text>` : '')).join('');
+  const ticks = probes.map((p, i) => (p.frame % 5 === 0 ? `<text x="${xs(i) - 4}" y="${PH - 18}" fill="#888" font-size="9">${p.frame}</text>` : '')).join('');
   const plot = `<svg width="${PW}" height="${PH}" style="background:#1a0b33;display:block;margin:6px 0">${ticks}${evMarks}${series.join('')}</svg>`;
   const page = await browser.newPage({ viewport: { width: W, height: 300 } });
   await page.setContent(`<style>body{margin:0;background:#111;padding:6px;font:11px monospace;color:#ddd}h1{font:600 13px monospace;margin:0 0 4px}

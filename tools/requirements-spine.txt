@@ -1,0 +1,8 @@
+# tools/spine (gen.py, pack.py, make_blur.py, tests). Python >= 3.11.
+#   python -m venv .venv-spine && .venv-spine/bin/pip install -r tools/requirements-spine.txt
+# Licences: allowlist entry "python-geometry" (shapely) + PIL/numpy/PyYAML (MIT-CMU / BSD / MIT).
+# Never add PyPI "triangle" (licenses/denylist.json: pypi-triangle).
+PyYAML==6.0.2
+numpy==2.2.6
+pillow==11.3.0
+shapely==2.1.2

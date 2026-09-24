@@ -73,7 +73,8 @@ export const startServer = ({ port = 5231, root = REPO, extraRoots = {} } = {}) 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   if (args.includes('--help') || args.includes('-h')) {
-    console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('*/')[0].replace(/^\/\*\*?\n?|^ \* ?/gm, '').trim());
+    const src = fs.readFileSync(fileURLToPath(import.meta.url), 'utf8');
+    console.log(src.slice(src.indexOf('/**') + 3, src.indexOf('*/')).replace(/^ \* ?/gm, '').trim());
     process.exit(0);
   }
   const port = Number(args.includes('--port') ? args[args.indexOf('--port') + 1] : 5231);

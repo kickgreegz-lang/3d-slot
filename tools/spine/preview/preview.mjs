@@ -88,7 +88,9 @@ spine.state.addListener({
 });
 
 // setup-pose reference for the probe
-const physBones = sd.constraints.filter((c) => c.constructor.name.includes('Physics')).map((c) => c.bone.name);
+const physCons = sd.constraints.filter((c) => 'inertiaGlobal' in c);
+const physBones = physCons.map((c) => c.bone.name);
+const physMode = Object.fromEntries(physCons.map((c) => [c.bone.name, c.rotate > 0 || c.shearX > 0 ? 'rotate' : 'translate']));
 const setupWorld = new Map();
 const resetPose = () => {
   spine.state.clearTracks();
@@ -129,6 +131,7 @@ const probe = () => {
     const p = b.appliedPose;
     const tip = tipOf(b);
     out.phys[n] = {
+      mode: physMode[n],
       dx: +(p.worldX - s.x).toFixed(2),
       dy: +(p.worldY - s.y).toFixed(2),
       rot: +(p.getWorldRotationX() - s.r).toFixed(2),

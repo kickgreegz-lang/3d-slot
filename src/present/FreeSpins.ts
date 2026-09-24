@@ -11,7 +11,7 @@ import type { GameContext, GameModule } from '../game/context';
 import type { GameEvents } from '../game/events';
 import { ensureAmountFont, ensureLabelFont, ensureValueFont } from './common/fonts';
 import { CYAN, GOLD, type GlyphStyle, PINK } from './common/glyphs';
-import { OverlayStage } from './common/OverlayStage';
+import { OverlayStage, releaseTitlesIfIdle } from './common/OverlayStage';
 import { placementFor, visibleDesignRect } from './common/placement';
 import { Plate } from './common/Plate';
 import { label } from './common/text';
@@ -353,6 +353,7 @@ export class FreeSpins implements GameModule {
     words.destroy();
     hint.destroy();
     rays.destroy();
+    releaseTitlesIfIdle(ctx);
   }
 
   private async retrigger(added: number): Promise<void> {
@@ -407,6 +408,7 @@ export class FreeSpins implements GameModule {
     for (const t of tweens) t.kill();
     plus.destroy();
     words.destroy();
+    releaseTitlesIfIdle(ctx);
   }
 
   // ── outro summary ─────────────────────────────────────────────────────────
@@ -551,6 +553,7 @@ export class FreeSpins implements GameModule {
     title.destroy();
     panel.destroy({ children: true });
     rays.destroy();
+    releaseTitlesIfIdle(ctx);
   }
 
   destroy(): void {

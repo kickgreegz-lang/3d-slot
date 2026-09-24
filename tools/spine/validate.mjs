@@ -43,7 +43,7 @@ const opt = (name, def) => {
 const flag = (name) => argv.includes(`--${name}`);
 if (flag('help') || flag('h') || argv.length === 0) {
   const src = fs.readFileSync(fileURLToPath(import.meta.url), 'utf8');
-  console.log(src.split('*/')[0].replace(/^\/\*\*?\n?|^ \* ?/gm, '').trim());
+  console.log(src.slice(src.indexOf('/**') + 3, src.indexOf('*/')).replace(/^ \* ?/gm, '').trim());
   process.exit(argv.length === 0 ? 2 : 0);
 }
 const optNames = new Set(['atlas', 'kind', 'cell', 'kick', 'report']);
@@ -128,6 +128,10 @@ for (const c of phys) {
   const zeta = (-Math.log(damping) * 60) / (2 * w);
   info.push(`physics ${c.name}: ${(w / (2 * Math.PI)).toFixed(2)} Hz, zeta ${zeta.toFixed(2)}, inertia ${c.inertia ?? 0.5}, limit ${limit}`);
   if ((c.fps ?? 60) !== 60) warn(`physics "${c.name}": fps ${c.fps} (contract 60)`);
+  const inertia = c.inertia ?? 0.5;
+  if (inertia < 0.5 || inertia > 0.8) warn(`physics "${c.name}": inertia ${inertia} outside the contract range 0.5-0.8`);
+  const hz = w / (2 * Math.PI);
+  if (hz < 2 || hz > 8) warn(`physics "${c.name}": ${hz.toFixed(2)} Hz is outside 2-8 Hz (floaty or buzzing)`);
   if (c.rotate && !(boneByName.get(c.bone)?.length > 0)) err(`physics "${c.name}": rotate physics on a zero-length bone does nothing`);
 }
 const physBones = bones.filter((b) => b.name.startsWith('phys_')).map((b) => b.name);
@@ -459,7 +463,7 @@ if (reportPath) {
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 }
 if (!quiet || !ok) {
-  const lines = [`validate ${jsonPath}  (kind ${kind}, spine ${sk.spine}, cell ${cell}, kick ${kick})`];
+  const lines = [`validate ${jsonPath}  (kind ${kind}, spine ${sk.spine}, cell ${cell}, land kick ±${kick})`];
   for (const i of info) lines.push(`  info  ${i}`);
   for (const [n, r] of Object.entries(report.animations)) {
     const ev = r.events.map((e) => `${e.name}@${e.frame}${e.string ? `(${e.string})` : ''}`).join(' ');

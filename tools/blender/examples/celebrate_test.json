@@ -1,0 +1,87 @@
+{
+  "$schema": "../anim.schema.json",
+  "version": 1,
+  "fps": 30,
+  "rig": "public/assets/characters/placeholder/RobotExpressive.glb (CC0 placeholder; faces -Y, ~4 m tall)",
+  "notes": "Pipeline test clip for build_actions.py: several bones, chains with follow-through, holds, BACK/ELASTIC/BOUNCE eases, a morph target and loop closure. Not a canonical runtime clip name on purpose.",
+  "defaults": { "space": "world", "ease": "SINE_IN_OUT" },
+  "clips": [
+    {
+      "name": "celebrate_test",
+      "loop": true,
+      "length": 40,
+      "base": { "action": "Idle", "frame": 0 },
+      "notes": "Anticipation dip -> pop up with overshoot, arms thrown up and held, bounce down, smaller second pump, settle back to the idle pose.",
+      "tracks": [
+        {
+          "bone": "Hips", "channel": "loc",
+          "keys": [
+            { "f": 0, "v": [0, 0, 0] },
+            { "f": 6, "v": [0, 0, -0.22], "ease": "QUAD_OUT" },
+            { "f": 13, "v": [0, 0, 0.3], "ease": "BACK_OUT", "hold": 3 },
+            { "f": 24, "v": [0, 0, 0], "ease": "BOUNCE_OUT" },
+            { "f": 29, "v": [0, 0, -0.1], "ease": "QUAD_OUT" },
+            { "f": 34, "v": [0, 0, 0.12], "ease": "BACK_OUT" }
+          ]
+        },
+        {
+          "bone": "Torso", "channel": "rot", "offset": 1,
+          "keys": [
+            { "f": 0, "v": [0, 0, 0] },
+            { "f": 6, "v": [14, 0, 0], "ease": "QUAD_OUT" },
+            { "f": 13, "v": [-6, 6, 8], "ease": "BACK_OUT", "hold": 2 },
+            { "f": 24, "v": [0, -4, -6], "ease": "SMOOTH" },
+            { "f": 32, "v": [-5, 3, 4], "ease": "OVERSHOOT" }
+          ]
+        },
+        {
+          "bone": "Head", "channel": "rot", "offset": 3,
+          "keys": [
+            { "f": 0, "v": [0, 0, 0] },
+            { "f": 6, "v": [16, 0, 0], "ease": "QUAD_OUT" },
+            { "f": 14, "v": [-12, -6, 10], "ease": { "type": "ELASTIC", "dir": "OUT", "amplitude": 0.7, "period": 4 } },
+            { "f": 26, "v": [4, 0, -6], "ease": "SMOOTH" }
+          ]
+        },
+        {
+          "chain": ["UpperArm.L", "LowerArm.L"], "channel": "rot", "offsetStep": 2, "falloff": 0.45,
+          "keys": [
+            { "f": 0, "v": [0, 0, 0] },
+            { "f": 6, "v": [0, 18, 0], "ease": "ANTICIPATE" },
+            { "f": 13, "v": [-10, -125, 0], "ease": "BACK_OUT", "hold": 4 },
+            { "f": 26, "v": [0, -45, 0], "ease": "SMOOTH" },
+            { "f": 33, "v": [-6, -90, 0], "ease": "OVERSHOOT" }
+          ]
+        },
+        {
+          "chain": ["UpperArm.R", "LowerArm.R"], "channel": "rot", "offsetStep": 2, "falloff": 0.45,
+          "keys": [
+            { "f": 0, "v": [0, 0, 0] },
+            { "f": 6, "v": [0, -18, 0], "ease": "ANTICIPATE" },
+            { "f": 13, "v": [-10, 125, 0], "ease": "BACK_OUT", "hold": 4 },
+            { "f": 26, "v": [0, 45, 0], "ease": "SMOOTH" },
+            { "f": 33, "v": [-6, 90, 0], "ease": "OVERSHOOT" }
+          ]
+        },
+        {
+          "bone": "Hips", "channel": "squash",
+          "keys": [
+            { "f": 0, "v": 1 },
+            { "f": 6, "v": 0.9, "ease": "QUAD_OUT" },
+            { "f": 12, "v": 1.08, "ease": "EXPO_OUT" },
+            { "f": 18, "v": 1, "ease": "ELASTIC_OUT" }
+          ]
+        },
+        {
+          "morph": "Surprised", "channel": "morph",
+          "keys": [
+            { "f": 0, "v": 0 },
+            { "f": 9, "v": 0, "hold": 0 },
+            { "f": 13, "v": 1, "ease": "BACK_OUT", "hold": 5 },
+            { "f": 26, "v": 0, "ease": "SMOOTH" }
+          ]
+        }
+      ]
+    }
+  ]
+}

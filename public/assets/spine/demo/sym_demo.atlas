@@ -1,0 +1,41 @@
+sym_demo.png
+size: 568,512
+filter: Linear,Linear
+pma: true
+sym_demo/antenna
+bounds: 47,298,51,135
+sym_demo/antenna_blur
+bounds: 2,298,43,155
+offsets: 4,4,51,163
+sym_demo/body
+bounds: 322,2,243,216
+sym_demo/body_blur
+bounds: 322,220,235,236
+offsets: 4,4,243,244
+sym_demo/eye_L
+bounds: 174,458,36,44
+offsets: 4,4,44,52
+sym_demo/eye_L_blur
+bounds: 47,435,36,72
+offsets: 4,4,44,80
+sym_demo/eye_R
+bounds: 212,458,36,44
+offsets: 4,4,44,52
+sym_demo/eye_R_blur
+bounds: 174,372,36,72
+offsets: 4,4,44,80
+sym_demo/fx_glow
+bounds: 2,2,318,294
+offsets: 9,9,336,312
+sym_demo/speaker_L
+bounds: 174,298,72,72
+offsets: 4,4,80,80
+sym_demo/speaker_L_blur
+bounds: 100,298,72,100
+offsets: 4,4,80,108
+sym_demo/speaker_R
+bounds: 248,298,72,72
+offsets: 4,4,80,80
+sym_demo/speaker_R_blur
+bounds: 100,400,72,100
+offsets: 4,4,80,108

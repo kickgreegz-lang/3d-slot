@@ -39,15 +39,15 @@ export const placementFor = (L: LayoutSpec): Placement => {
         tumblePlate: { x: gridCx, y: sillY, scale: k * 1.05 },
         // top beam (the logo lives above the frame in portrait)
         fsCounter: { x: L.width / 2, y: L.frame.y + L.frameParts.beam / 2 - 2, scale: 1.05, stacked: false },
-        overlayScale: 0.78,
-        overlayMaxWidth: L.width * 0.9 / 0.78,
+        overlayScale: 0.9,
+        overlayMaxWidth: (L.width * 0.92) / 0.9,
       };
     case 'compact':
       return {
-        tumblePlate: { x: gridCx + 90, y: sillY, scale: 0.72 },
-        fsCounter: { x: gridCx - 190, y: sillY, scale: 0.72, stacked: false },
+        tumblePlate: { x: gridCx + 90, y: sillY - 6, scale: 0.72 },
+        fsCounter: { x: gridCx - 190, y: sillY - 6, scale: 0.72, stacked: false },
         overlayScale: 0.5,
-        overlayMaxWidth: L.width * 0.66 / 0.5,
+        overlayMaxWidth: (L.width * 0.66) / 0.5,
       };
     default: {
       // landscape + tablet: left column above the menu, clear of the frame and mascot

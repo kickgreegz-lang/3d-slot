@@ -92,6 +92,12 @@ interface BakedGlyph {
 }
 
 const glyphCache = new Map<string, BakedGlyph>();
+
+const glyphKey = (char: string, st: GlyphStyle, res: number): string => {
+  const outline = Math.max(2, Math.round(st.size * (st.outline ?? 0.07)));
+  const depth = Math.max(2, Math.round(st.size * (st.extrude ?? 0.085)));
+  return `${st.family}|${st.size}|${st.palette.id}|${outline}|${depth}|${res}|${char}`;
+};
 const capCache = new Map<string, number>();
 
 const fontCss = (family: string, size: number): string => `${size}px "${family}"`;
@@ -125,7 +131,7 @@ const EX = { x: 0.56, y: 0.83 };
 const bakeGlyph = (char: string, st: GlyphStyle, res: number): BakedGlyph => {
   const outline = Math.max(2, Math.round(st.size * (st.outline ?? 0.07)));
   const depth = Math.max(2, Math.round(st.size * (st.extrude ?? 0.085)));
-  const key = `${st.family}|${st.size}|${st.palette.id}|${outline}|${depth}|${res}|${char}`;
+  const key = glyphKey(char, st, res);
   const hit = glyphCache.get(key);
   if (hit) return hit;
 
@@ -160,9 +166,12 @@ const bakeGlyph = (char: string, st: GlyphStyle, res: number): BakedGlyph => {
   // 1) outline of the whole extruded solid
   g.strokeStyle = pal.outline;
   g.lineWidth = outline * 2;
-  for (let i = depth; i >= 0; i--) g.strokeText(char, ox + EX.x * i, oy + EX.y * i);
+  // (steps of ~1/12 depth: the wide strokes/fills overlap, so no gaps, far fewer draws)
+  const step = Math.max(1, Math.floor(depth / 12));
+  for (let i = depth; i >= 0; i -= step) g.strokeText(char, ox + EX.x * i, oy + EX.y * i);
+  g.strokeText(char, ox, oy);
   // 2) extrusion body: far half darker for a two-tone depth read
-  for (let i = depth; i >= 1; i--) {
+  for (let i = depth; i >= 1; i -= step) {
     g.fillStyle = i > depth * 0.5 ? pal.extrudeFar : pal.extrude;
     g.fillText(char, ox + EX.x * i, oy + EX.y * i);
   }
@@ -219,6 +228,23 @@ const bakeGlyph = (char: string, st: GlyphStyle, res: number): BakedGlyph => {
   return baked;
 };
 
+const clampRes = (resolution: number): number => Math.max(1, Math.min(2, resolution));
+
+/**
+ * Bake jobs for the not-yet-cached glyphs of `text`, to be run one per frame
+ * (e.g. pre-warming upcoming big-win tier titles while the count-up runs, so a
+ * tier punch never hitches on Canvas2D text rasterisation).
+ */
+export const glyphBakeJobs = (text: string, style: GlyphStyle, resolution: number): Array<() => void> => {
+  const res = clampRes(resolution);
+  const jobs: Array<() => void> = [];
+  for (const c of new Set(text)) {
+    if (c === ' ' || glyphCache.has(glyphKey(c, style, res))) continue;
+    jobs.push(() => void bakeGlyph(c, style, res));
+  }
+  return jobs;
+};
+
 export interface WordGlyph {
   sprite: Sprite;
   homeX: number;
@@ -242,7 +268,7 @@ export class BakedWord extends Container {
 
   constructor(text: string, style: GlyphStyle, resolution: number) {
     super({ label: `word:${text}` });
-    const res = Math.max(1, Math.min(2, resolution));
+    const res = clampRes(resolution);
     const chars = [...text];
     const baked = chars.map((c) => (c === ' ' ? null : bakeGlyph(c, style, res)));
     const spaceW = style.size * 0.32;

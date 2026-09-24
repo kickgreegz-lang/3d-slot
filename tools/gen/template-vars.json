@@ -1,0 +1,72 @@
+{
+  "$comment": "Per-template default values for placeholders that do not come from art/bible/artbible.json. Copied verbatim from each template's comment block (test_gen.py checks every string still appears in the template file, so the two cannot drift). 'choices' pick a value from another placeholder's value. Read by tools/gen/genlib.py and tools/gen/lib/genlib.mjs. Order of precedence when rendering: bible context < these defaults < --var K=V.",
+  "symbol.txt": {
+    "defaults": {
+      "LIGHT_NOTE": "",
+      "RIG_READY_LINE": ""
+    },
+    "rigReadyLine": "Rig-ready pose: every part clearly separated from the body, mouth closed and neutral, eyes open, no motion blur.",
+    "negativeTiltLightNote": "Key light from the upper left, slightly more from above."
+  },
+  "background.txt": {
+    "defaults": {
+      "SETTING": "a neon bayou juke joint at night, weathered cypress walls, string lights, cypress silhouettes behind the windows",
+      "LEFT_MASS": "a shelf of glowing firefly jars and a cyan light bar",
+      "RIGHT_MASS": "a neon gator-silhouette sign (icon only, no letters) above a magenta booth",
+      "TOP_DETAIL": "sagging string lights and violet spotlight cones",
+      "VARIANT_NOTE": ""
+    }
+  },
+  "frame_piece.txt": {
+    "defaults": {
+      "KEY_HEX": "#FF00FF"
+    },
+    "choices": {
+      "PIECE_SHAPE": {
+        "by": "PIECE",
+        "map": {
+          "beam": "long horizontal plank assembly, 6:1",
+          "post": "tall vertical plank, 1:6",
+          "sill": "thick horizontal ledge with a top face",
+          "corner cap": "square joint block"
+        }
+      }
+    }
+  },
+  "video_loop.txt": {
+    "defaults": {
+      "PROP_FREEZE": "",
+      "RETURN_CLAUSE": "Seamless loop."
+    }
+  },
+  "sfx.txt": {
+    "defaults": {
+      "PITCH_NOTE": "",
+      "TAIL": "dry, very short tail"
+    }
+  },
+  "music.txt": {
+    "defaults": {
+      "GENRE": "swampy bayou funk, juke-joint groove",
+      "INSTRUMENTS": "clavinet, slap bass, tight drum kit, brass stabs, washboard, wah guitar"
+    }
+  },
+  "royal_material_pass.txt": {
+    "defaults": {}
+  },
+  "symbol_parts_sheet.txt": {
+    "defaults": {
+      "STATE_CHANGE": "",
+      "PART": ""
+    }
+  },
+  "mascot_turnaround.txt": {
+    "defaults": {}
+  },
+  "mascot_expressions.txt": {
+    "defaults": {}
+  },
+  "vfx_keyframe.txt": {
+    "defaults": {}
+  }
+}

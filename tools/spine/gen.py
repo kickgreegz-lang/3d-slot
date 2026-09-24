@@ -20,6 +20,8 @@ from __future__ import annotations
 
 import argparse
 import sys
+
+sys.dont_write_bytecode = True  # never leave __pycache__ in tools/
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -65,7 +67,7 @@ def main(argv: list[str] | None = None) -> int:
         out.write_text(text, encoding="utf-8")
     st = rb.report.stats
     if not a.quiet:
-        print(f"gen.py: wrote {out}  ({rb.skel_name}, spine {doc['skeleton']['spine']})")
+        print(f"gen.py: wrote {out}  ({rb.skel_name}, kind {rb.kind}, spine {doc['skeleton']['spine']})")
         print(f"  bones {st['bones']}  slots {st['slots']}  mesh vertices {st['meshVertices']}  "
               f"feet_y {st['feet_y']}  body_y {st['body_y']}")
         print(f"  constraints: {', '.join(st['constraints']) or '-'}")
@@ -75,6 +77,7 @@ def main(argv: list[str] | None = None) -> int:
                   f"{'weighted' if info['weighted'] else 'unweighted'}")
         for w in rb.report.warnings:
             print(f"  warning: {w}")
+        print(f"  next: node tools/spine/validate.mjs {out} --kind {rb.kind}")
     if a.provenance or a.manifest:
         inputs = [p for p in dict.fromkeys(rb.report.inputs)]
         row = prov.make_row(asset_id=f"{rb.skel_name}.skeleton-json", path=out, stage="spine-authoring",

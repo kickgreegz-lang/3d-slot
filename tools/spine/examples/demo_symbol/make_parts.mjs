@@ -18,7 +18,8 @@ import { Resvg } from '@resvg/resvg-js';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
 if (argv.includes('--help') || argv.includes('-h')) {
-  console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('*/')[0].replace(/^\/\*\*?|^ \* ?/gm, ''));
+  const src = fs.readFileSync(fileURLToPath(import.meta.url), 'utf8');
+  console.log(src.slice(src.indexOf('/**') + 3, src.indexOf('*/')).replace(/^ \* ?/gm, '').trim());
   process.exit(0);
 }
 const outDir = path.resolve(argv.includes('--out') ? argv[argv.indexOf('--out') + 1] : HERE);
@@ -62,8 +63,8 @@ const rrect = (b, extra = '') =>
 
 const partsSvg = {
   fx_glow: () => `
-    <defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter></defs>
-    <ellipse cx="${glowC[0]}" cy="${glowC[1]}" rx="104" ry="92" fill="${C.glow}" filter="url(#g)"/>`,
+    <defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter></defs>
+    <ellipse cx="${glowC[0]}" cy="${glowC[1]}" rx="116" ry="104" fill="${C.glow}" filter="url(#g)"/>`,
 
   antenna: () => {
     const [bx, by] = antenna.base;
@@ -159,7 +160,7 @@ const partsSvg = {
 
 // z order (back -> front), bones, joints/tips (canvas image space)
 const PLAN = [
-  { name: 'fx_glow', z: 0, bone: 'fx_glow', parent: 'root', joint: glowC, blend: 'additive', color: 'ffffff00', fixedBox: [28, 84, 304, 284] },
+  { name: 'fx_glow', z: 0, bone: 'fx_glow', parent: 'root', joint: glowC, blend: 'additive', color: 'ffffff00', fixedBox: [12, 70, 336, 312] },
   { name: 'antenna', z: 1, bone: 'phys_antenna_1', parent: 'phys_jelly', joint: antenna.joint, tip: antenna.mid },
   { name: 'body', z: 2, bone: 'body' },
   { name: 'speaker_R', z: 3, bone: 'face_speaker_R', parent: 'body', joint: speakers.speaker_R },

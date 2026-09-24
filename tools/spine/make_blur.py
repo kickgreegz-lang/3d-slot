@@ -14,6 +14,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+
+sys.dont_write_bytecode = True  # never leave __pycache__ in tools/
 from pathlib import Path
 
 import numpy as np

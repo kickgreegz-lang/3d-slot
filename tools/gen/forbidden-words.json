@@ -1,0 +1,11 @@
+{
+  "$comment": "Words that must never appear in a rendered prompt (art/bible/prompts/README.md rule 4). The child-coded list is read from art/bible/artbible.json -> mascots.rules.forbiddenPromptWords; this file adds brand / studio / artist / existing-game names (IP hygiene; also avoids vendor 'ip_detected' failures). Matched case-insensitively on word boundaries. Extend it; never shrink it without the art director.",
+  "brands": [
+    "stake", "stake.us", "kick.com", "donut gaming", "ganja snail", "megaways", "xways",
+    "pragmatic play", "nolimit city", "hacksaw gaming", "push gaming", "relax gaming", "play'n go", "netent",
+    "big time gaming", "sweet bonanza", "gates of olympus", "sugar rush",
+    "disney", "pixar", "dreamworks", "nintendo", "pokemon", "pokémon", "studio ghibli", "ghibli",
+    "marvel", "looney tunes", "cuphead", "blizzard", "supercell", "king.com", "candy crush",
+    "midjourney", "greg rutkowski", "artstation"
+  ]
+}

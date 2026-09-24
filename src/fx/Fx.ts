@@ -6,7 +6,7 @@ import { s } from '../core/timing';
 import type { GameContext, GameModule } from '../game/context';
 import type { GameEvents } from '../game/events';
 import { configureFilterBudget } from './filters/budget';
-import { pulseShockwave } from './filters/effects';
+import { configureFilterQuality, pulseShockwave } from './filters/effects';
 import { ParticleSystem } from './particles';
 import { type BurstContext, spawnBurst } from './presets';
 import { ScreenShake } from './shake';
@@ -15,7 +15,7 @@ import { ScreenShake } from './shake';
 export const FX_TIMING = {
   flash: { defaultDuration: 150, defaultAlpha: 0.35 },
   /** scatter hit: displacement ring on the whole design space */
-  scatterShock: { duration: 620, radius: 560, amplitude: 22, width: 150 },
+  scatterShock: { duration: 560, radius: 540, amplitude: 22, width: 150 },
 } as const;
 
 /**
@@ -43,6 +43,7 @@ export class Fx implements GameModule {
   init(): void {
     const { ctx } = this;
     configureFilterBudget(ctx.budget.maxFilters);
+    configureFilterQuality(ctx.tier);
 
     const holder = new Container({ label: 'fx:particles' });
     ctx.layers.fx.addChild(holder);

@@ -10,12 +10,12 @@ import { rand } from '../fx/util';
 import type { GameContext, GameModule } from '../game/context';
 import type { GameEvents } from '../game/events';
 import { ensureAmountFont } from './common/fonts';
-import { GOLD } from './common/glyphs';
-import { OverlayStage } from './common/OverlayStage';
+import { GOLD, glyphBakeJobs } from './common/glyphs';
+import { OverlayStage, releaseTitlesIfIdle } from './common/OverlayStage';
 import { placementFor } from './common/placement';
 import { Plate } from './common/Plate';
 import { label, titleLines } from './common/text';
-import { Title } from './common/Title';
+import { Title, type TitleLine } from './common/Title';
 
 /**
  * Local choreography for the big-win sequence (ms, unscaled: the player controls
@@ -123,17 +123,18 @@ export class BigWin implements GameModule {
     return { x: L.center.x + x * k, y: L.center.y + y * k };
   }
 
-  private makeTitle(tier: number): Title {
+  private titleSpec(tier: number): { lines: TitleLine[]; res: number } {
     const text = label(`bigwin.${TIER_KEYS[tier]}`, WIN_TIERS[tier].label);
-    const lines = titleLines(text);
-    const { renderer } = this.ctx.app;
-    const res = Math.min(2, renderer.resolution * this.ctx.scale * this.stage.scale * 1.1);
+    const words = titleLines(text);
+    const res = Math.min(2, this.ctx.app.renderer.resolution * this.ctx.scale * this.stage.scale * 1.1);
     const style = { family: FONTS.title, size: 250, palette: GOLD, outline: 0.065, extrude: 0.1, tracking: 0.03 };
-    return new Title(
-      lines.map((t, i) => ({ text: t, style: i === lines.length - 1 && lines.length > 1 ? { ...style, size: 210 } : style })),
-      res,
-      { maxWidth: placementFor(this.ctx.layout).overlayMaxWidth, lineGap: 1.08 },
-    );
+    const lines = words.map((t, i) => ({ text: t, style: i === words.length - 1 && words.length > 1 ? { ...style, size: 210 } : style }));
+    return { lines, res };
+  }
+
+  private makeTitle(tier: number): Title {
+    const { lines, res } = this.titleSpec(tier);
+    return new Title(lines, res, { maxWidth: placementFor(this.ctx.layout).overlayMaxWidth, lineGap: 1.08 });
   }
 
   private play(p: GameEvents['bigwin:show']): Promise<void> {
@@ -177,6 +178,12 @@ export class BigWin implements GameModule {
       let lastText = '';
       let holdCall: gsap.core.Tween | null = null;
       const timelines: Array<gsap.core.Timeline | gsap.core.Tween> = [];
+      // pre-bake the upcoming tier titles one glyph per frame during the count-up
+      const bakeQueue: Array<() => void> = [];
+      for (const st of stages.slice(1)) {
+        const spec = this.titleSpec(st.tier);
+        for (const line of spec.lines) bakeQueue.push(...glyphBakeJobs(line.text, line.style, spec.res));
+      }
 
       // --- build ---------------------------------------------------------
       this.stage.open({ dim: T.dim, fadeIn: sUi(T.dimIn), liftMascots: true, liftFx: true });
@@ -212,6 +219,7 @@ export class BigWin implements GameModule {
       const offTick = clock.onUpdate((dt) => {
         for (const ch of this.titleHolder.children) if (ch instanceof Title) ch.tick(dt);
         if (closing) return;
+        bakeQueue.shift()?.();
         const Lc = ctx.layout;
         // continuous coin fountain from below the stage (rate climbs with the tier)
         coinAcc += dt * TIMING.bigWin.coinRate * (1 + 0.35 * tierIdx) * (done ? 0.45 : 1);
@@ -286,7 +294,8 @@ export class BigWin implements GameModule {
         ctx.game.broadcast('fx:burst', { kind: 'coins', x: c.x, y: c.y + 60, count: 22, power: 1.2 });
         ctx.game.broadcast('sfx', { id: 'bigwin_tier' });
         ctx.game.broadcast('mascot:cue', { cue: 'celebrate', intensity: 0.6 + 0.1 * tier });
-        pulseChromatic({ target: ctx.layers.root, layout: ctx.layout }, c.x, c.y, {
+        const scr = ctx.app.screen;
+        pulseChromatic({ stage: ctx.layers.stage, root: ctx.layers.root, width: scr.width, height: scr.height }, c.x, c.y, {
           duration: sUi(T.chroma.duration),
           amount: T.chroma.amount,
         });
@@ -364,6 +373,7 @@ export class BigWin implements GameModule {
           for (const child of [...this.titleHolder.children]) child.destroy({ children: true });
           amount.destroy();
           rays.destroy();
+          releaseTitlesIfIdle(ctx);
           resolve();
         });
       };

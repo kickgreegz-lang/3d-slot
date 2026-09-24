@@ -128,6 +128,9 @@ class RigBuilder:
             raise RigError("rig.yaml: `symbol` (e.g. H1, W, demo) is required")
         self.symbol = str(sym)
         self.skel_name = str(self.rig.get("skeleton") or f"sym_{self.symbol}")
+        self.kind = str(self.rig.get("kind") or self.contract["symbolKinds"].get(self.symbol, "special"))
+        if self.kind not in ("high", "special", "royal", "any"):
+            raise RigError(f"rig.yaml kind '{self.kind}': use high | special | royal | any")
         self.prefix = str(self.rig.get("attachment_prefix") or self.skel_name)
 
     # ---------------------------------------------------------------- parts
@@ -482,7 +485,10 @@ class RigBuilder:
         eyes_cfg = (self.rig.get("roles") or {}).get("eyes")
         eyes = eyes_cfg if eyes_cfg is not None else [b for b in self.bone_order if re.match(r"^face_eye", b)]
         scatter = self._scatter_list()
-        ctx = motionlib.MotionCtx(fps=self.fps, glow_slots=fx_slots, part_slots=part_slots, slot_alpha=slot_alpha,
+        glow_bones = sorted({s["bone"] for s in slots if s["bone"].startswith("fx_")}, key=self.bone_index)
+        body_slots = [s["name"] for s in slots if s["bone"] in ("body", "squash")]
+        ctx = motionlib.MotionCtx(fps=self.fps, glow_slots=fx_slots, glow_bones=glow_bones, body_slots=body_slots,
+                                  part_slots=part_slots, slot_alpha=slot_alpha,
                                   eyes=eyes, scatter=scatter, blur=blur_map,
                                   main_attachment={s["name"]: s.get("attachment") for s in slots}, params=params)
         anims: dict[str, dict] = {}

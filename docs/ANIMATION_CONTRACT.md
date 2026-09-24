@@ -167,7 +167,7 @@ All times are at 30 fps (`f` = frames). "Required" means the validator fails the
 - events are checked by stepping **2 frames past the end** (last-frame events fire on the next update); `explode_burst` must land on frame 2–3;
 - duration windows as above, and `win` ≤ 900 ms;
 - **`land` squash depth:** sy 0.83–0.87 on the `squash` bone (outside it: warning), inside the 0.80–0.88 feel gate (outside it: error), and sx = 1/√sy (warning beyond ±0.03);
-- **`land` stays within the cell** with the physics kick applied in both directions. The default kick is **±36** skeleton units (`contract.json` `timing.runtimeKickMax`): the runtime's 26 × the largest land multiplier 1.378, a `special` landing at maximum velocity. See [§3.1](#31-land-contact-frame-and-cell-gate-open-decision);
+- **`land` stays within the cell** with the physics kick applied in both directions. The default kick is **±36** skeleton units (`contract.json` `timing.runtimeKickMax`). That is the runtime's 26 × the largest land multiplier 1.378 (a `special` landing at maximum velocity), and also the runtime's hard cap, `SYMBOL_TIMING.spine.maxImpulse` 36. See [§3.1](#31-land-contact-frame-and-cell-gate-open-decision);
 - budgets from §2.6;
 - the 4.3 constraint format and order (IK → transform → path → physics → slider); physics pairing and warnings from §2.5;
 - no sequence attachments; region names without extensions; additive blend only on `fx_*` slots;
@@ -178,7 +178,7 @@ Exit codes: 0 pass, 1 fail (with `--strict`, warnings also fail), 2 usage.
 ### 3.1 Land: contact frame and cell gate (OPEN DECISION)
 
 **Resolved: frame 0 is the contact frame.** `land` starts at the moment the symbol touches down, and `land_impact` is keyed on frame 0 (the generator's `impact_frame` is 0). The runtime does both things at contact (`SymbolRig`):
-- it kicks the physics (`SpineRig.impact`) and starts `land` in the same step;
+- it kicks the physics (`SpineRig.impact`) and starts `land` in the same step. Position inheritance follows once the instance has rendered in its cell (§5);
 - it plays the land feedback (SFX, dust, shake) on `land_impact`, or immediately when the skeleton has no such event.
 
 Do not author a pre-contact fall inside `land`: the drop itself is code-driven.
@@ -225,14 +225,13 @@ Validators step 2 frames past the end, because events keyed on the last frame fi
 const spine = new Spine({ skeleton, atlas, autoUpdate: false });   // [ok] SpinePool; also sets defaultMix 0.08 + the §3 per-pair mixes
 spine.update(gameDt * speedScale());                               // [ok] stepped from core/clock (hit-stop aware)
 
-// spinning
+// every action (blur, land, win, …) starts with inheritance off
+spine.skeletonPhysics.setPositionInheritance(0, 0);                // [ok] SymbolRig.useSpine → SpineRig.detachPhysics: parts do not fly off during the spin
 spine.state.setAnimation(0, 'blur', true);                         // [ok]
-spine.skeletonPhysics.setPositionInheritance(0, 0);                // [ok] SpineRig.detachPhysics: parts do not fly off during the spin
 
-// reel stop (contact frame = land frame 0)
-spine.skeletonPhysics.resetTransform();                            // [ok] SpineRig.impact
-spine.skeletonPhysics.setPositionInheritance(0, 0.6);              // [ok] SYMBOL_TIMING.spine.landInheritance: container motion drives the jiggle
-spine.skeleton.physicsTranslate(0, -26 * m);                       // [ok] physicsImpulse 26 × land multiplier m (≤ 1.378); up in y-down, see §10.4
+// reel stop (contact frame = land frame 0), SpineRig.impact
+spinePool.inherit(spine, 0.6);                                     // [ok] SYMBOL_TIMING.spine.landInheritance, ARMED BY THE POOL (see below)
+spine.skeleton.physicsTranslate(0, -Math.min(26 * m, 36));         // [ok] physicsImpulse 26 × land multiplier m, capped at maxImpulse 36; up in y-down, see §10.4
 const e = spine.state.setAnimation(0, 'land', false);
 e.mixInterpolation = Interpolation.smooth;                         // [ok]
 spine.state.addAnimation(0, 'idle', true, 0);                      // runtime differs: it releases the rig back to the static sprite after land
@@ -249,6 +248,7 @@ spine.skeletonPhysics.resetTransform();                            // [ok]
 spine.skeleton.updateWorldTransform(Physics.reset);                // [ok]
 ```
 
+- **Position inheritance is armed by the pool, never set directly at impact.** Pixi v8 refreshes `spine.worldTransform` only while rendering. A pooled instance that was just moved into another cell therefore reports its previous cell's position for one frame, and physics would read that jump as motion and fling the parts. `SpinePool.inherit(spine, 0.6)` switches inheritance off at once, then waits until the instance has rendered in its new place (2 ticks). It then calls `resetTransform()` and sets `setPositionInheritance(0, 0.6)`. After that, any per-frame move larger than `SYMBOL_TIMING.spine.maxInheritStep` (40 skeleton units) is treated as a teleport and dropped with `resetTransform()`.
 - **Global physics tuning** edits `constraint.data.setupPose.*`, because the live pose is reset each time.
 - **Baked 3D turns and shatters** (§8.1) are Pixi `AnimatedSprite`s attached with `spine.addSlotObject('fx_slot', sprite)`. The `squash` bone and physics therefore still move them.
 - **The symbol view** (`SymbolRig`) owns container-level drop, land squash and overshoot. Spine owns the inner parts. When a Spine `land` also squashes, the runtime halves its own body squash (`SYMBOL_TIMING.spine.squashScale = 0.5`).
@@ -483,7 +483,7 @@ Most `timing.ts` values come from research round 1's timing profile. Where the t
 | RGB split k = 7·(1 − t/0.26)² px | none | Optional. |
 | Anticipation: +1.2–2.0 s per column; zoom 1.00→1.04; vignette 0.35; saturation 0.65; heartbeat 72→120 bpm (830→500 ms); pulse ×1.04; **only when the book qualifies** | `anticipation.holdPerColumn` 1200 ✓, `pulsePeriod` 520 (≈ 115 bpm ✓), `pulseScale` 1.08, `dimTint` 0x7f7f7f | Keep. `pulseScale` 1.04–1.08 is the art director's call. Never fabricate a near-miss. |
 | Coins: vx ±600, vy −900…−1800, g 2800, restitution 0.35, friction 0.8, spin 4–12 rad/s, life 2.5 s; 150–400 desktop / 80–150 mobile; seeded from the round id | `bigWin.coinRate` 60 | **Add** a `coins` block. Seeding makes replays identical. |
-| Spine physics 3.5 Hz ζ 0.25 → 484 / 0.833 | `SYMBOL_TIMING.spine.physicsImpulse` 26, applied as `physicsTranslate(0, −26·m)` | Authored in the skeleton (§2.5). The kick sign now matches the contract (§10.4). The validator's ±36 default covers m ≤ 1.378. |
+| Spine physics 3.5 Hz ζ 0.25 → 484 / 0.833 | `SYMBOL_TIMING.spine.physicsImpulse` 26, applied as `physicsTranslate(0, −min(26·m, maxImpulse 36))`; `landInheritance` 0.6, `maxInheritStep` 40 | Authored in the skeleton (§2.5). The kick sign matches the contract (§10.4), and the runtime cap equals the validator's ±36 default. |
 | Win pop ~125% → settle 110% (Spine) | `win.popScale` 1.2, `popDuration` 130 | Keep for procedural; the Spine `win` follows §3. |
 | Turbo: gravity ×2, staggers ×0.35, no bounce, squash ×0.6; super turbo places instantly with a 60 ms squash | `SPEED_SCALE` turbo 2 / superTurbo 3, `stagger()` → 0 | Keep the current model (simpler, r1). `disabledTurbo` / `disabledSuperTurbo` / `disabledSlamstop` / `minimumRoundDuration` are honoured in `src/flow/jurisdiction.ts`. |
 | Mascot crossfade 0.25 / 0.15 s | `mascot.crossFade` 0.25, `crossFadeTurbo` 0.15 | Same. |
@@ -507,12 +507,12 @@ Small changes that let the art pipeline's output be used as intended. None of th
 1. **Event aliases. Done.** `SPINE_EVENT` in `SpinePool.ts` accepts `land_impact`/`impact` and `explode_burst`/`burst`. The runtime also reacts to `win_peak` (sparkle burst at the pop apex), `explode_done` (early release) and `sfx` / `vfx` / `shake` payloads.
 2. **Anticipation name. Done.** `SPINE_ANIM.anticipationLoop` accepts `anticipation` as well as `anticipation_loop`.
 3. **Physics binding. Done**, except the idle start phase:
-   - `setPositionInheritance(0,0)` while spinning (`SpineRig.detachPhysics`), and `resetTransform()` + `(0, 0.6)` at stop (`SpineRig.impact`, `SYMBOL_TIMING.spine.landInheritance`);
+   - inheritance is off at the start of every action, including the spin (`SymbolRig.useSpine` → `SpineRig.detachPhysics`). At stop, `SpineRig.impact` asks the pool for `(0, 0.6)` (`SYMBOL_TIMING.spine.landInheritance`). The pool arms it with `resetTransform()` once the instance has rendered in its new cell, and drops teleports above `maxInheritStep` (§5);
    - `resetTransform()` + `updateWorldTransform(Physics.reset)` on release;
    - `mixInterpolation = smooth` on land;
    - the idle `trackTime` is **not** randomised. The runtime plays `idle` once per idle accent on 1–2 randomly picked symbols instead, so the grid does not breathe in unison (§3).
 4. **Kick sign. Done in code; eye check open.**
-   - `SpineRig.impact` calls `physicsTranslate(0, −26·m)`, where m is the land multiplier (≤ 1.378). That is up in the y-down runtime, the same sign as the research's `−impact·0.006` (≈ −27): the body jumps up relative to the parts, so the parts keep falling.
+   - `SpineRig.impact` calls `physicsTranslate(0, −min(26·m, 36))`, where m is the land multiplier and 36 is `SYMBOL_TIMING.spine.maxImpulse`. That is up in the y-down runtime, the same sign as the research's `−impact·0.006` (≈ −27): the body jumps up relative to the parts, so the parts keep falling.
    - `tools/spine/preview/capture.mjs` uses the same sign.
    - Still to do: sign it off by eye in `?dev=lab&spineDemo=H1` → `symbolLand`. Appendages must overshoot **downward** past the contact frame, then spring back. Until then the validator checks the land pose with the kick in both directions (±36).
 5. **Mixes. Done.** Default 0.08 plus the §3 per-pair mixes (`SYMBOL_TIMING.spine.mix` / `.mixes`).

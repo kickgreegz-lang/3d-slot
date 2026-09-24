@@ -52,7 +52,7 @@ Snapshot 2026-09-24. **exists** means the tool is committed and its own test sui
 - **Blender.** The scripts ran with bpy 5.2.2 as a Python module. The real `blender -b -P` binary path is only simulated (`tools/blender/tests/sim_blender.py`), and EEVEE ran only on a CPU software renderer, never on a GPU.
 - **Vendors.** No live call was made to Higgsfield, Vertex (including the Batch file format), Scenario or ElevenLabs. Tests used a fake CLI and mock REST servers; cost and result field names come from docs and SDK source.
 - **Media.** Tests used ffmpeg 7.0.2, not 8.x. Gapless Opus/AAC loops were checked with ffmpeg, not on real devices. The video and audio shell tools need bash ≥ 4.4 (macOS ships 3.2).
-- **CI.** `qa.yml` has never run on GitHub. The licence audit's last recorded run ([tools/licence](../tools/licence/README.md)) failed only on the dev-only Spine demo files, which have no manifest rows.
+- **CI.** `qa.yml` has never run on GitHub. The licence audit ([tools/licence](../tools/licence/README.md), `pnpm licence:audit`) passes on the current repo: 0 errors, with warnings only for placeholder exemptions (the CC0 robot, the dev-only Spine demo rig) that `--release` turns into errors until production art replaces them.
 
 ### Tool setup
 

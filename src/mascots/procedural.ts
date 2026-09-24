@@ -36,6 +36,10 @@ export interface RigBones {
   springs: Object3D[];
 }
 
+const EXPRS: readonly Expr[] = ['blink', 'happy', 'surprised', 'sad', 'angry'];
+
+const clampAbs = (x: number, limit: number): number => Math.max(-limit, Math.min(limit, x));
+
 const clean = (name: string): string =>
   name
     .toLowerCase()
@@ -126,9 +130,8 @@ class Secondary {
     const s = 1 - Math.exp(-dt * 25);
     this.acc.lerp(_v2.subVectors(_v, this.vel).divideScalar(dt), s);
     this.vel.lerp(_v, s);
-    const clamp = (x: number) => Math.max(-limit, Math.min(limit, x));
-    this.a.step(clamp(-this.acc.dot(this.driveA) * this.gain), dt);
-    this.b.step(clamp(-this.acc.dot(this.driveB) * this.gain) + biasB, dt);
+    this.a.step(clampAbs(-this.acc.dot(this.driveA) * this.gain, limit), dt);
+    this.b.step(clampAbs(-this.acc.dot(this.driveB) * this.gain, limit) + biasB, dt);
   }
 }
 
@@ -255,7 +258,7 @@ export class ProceduralLayers {
       const dict = mesh.morphTargetDictionary;
       if (!mesh.isMesh || !dict || !mesh.morphTargetInfluences) return;
       for (const [name, index] of Object.entries(dict)) {
-        for (const key of Object.keys(EXPR_NAMES) as Expr[]) {
+        for (const key of EXPRS) {
           if (!EXPR_NAMES[key].test(name)) continue;
           const slot = { mesh, index };
           this.morphSlots.push(slot);
@@ -406,7 +409,7 @@ export class ProceduralLayers {
     const targets = EXPRESSIONS[state] ?? {};
     const hasHappy = this.morphs.has('happy');
     const k = 1 - Math.exp(-dt * P.exprRate);
-    for (const e of Object.keys(this.expr) as Expr[]) {
+    for (const e of EXPRS) {
       let t = targets[e] ?? 0;
       const f = this.flash[e];
       if (f.left > 0) {

@@ -1,4 +1,4 @@
-import { Container, Graphics, GraphicsPath, Matrix, Rectangle, type Renderer, Sprite, type Texture } from 'pixi.js';
+import { Container, Graphics, GraphicsPath, Matrix, Rectangle, type Renderer, type Texture } from 'pixi.js';
 import { INK, LINE, type Light, OUTLINE, PLUM, WHITE } from './palette';
 
 /**
@@ -206,13 +206,4 @@ export const sparkle = (g: Graphics, x: number, y: number, r: number, thin = 0.2
     .closePath()
     .fill(color);
   return g;
-};
-
-/** Sprite helper for composing baked textures. */
-export const spriteOf = (tex: Texture, x = 0, y = 0, tint = WHITE, alpha = 1): Sprite => {
-  const s = new Sprite(tex);
-  s.position.set(x, y);
-  s.tint = tint;
-  s.alpha = alpha;
-  return s;
 };

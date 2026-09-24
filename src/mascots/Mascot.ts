@@ -213,8 +213,9 @@ export class Mascot {
     return this.rect !== null;
   }
 
-  /** Queue a clip after `delayMs` (game time). */
+  /** Queue a clip after `delayMs` (game time). A release supersedes everything still queued. */
   cue(key: ClipKey | 'release', delayMs = 0): void {
+    if (key === 'release') this.pending.length = 0;
     this.pending.push({ key, left: delayMs / 1000 });
   }
 
@@ -231,10 +232,14 @@ export class Mascot {
   update(dt: number): void {
     // un-offset first: actions started below bind (and snapshot) clean bone values
     this.procedural.restore();
-    for (let i = this.pending.length - 1; i >= 0; i--) {
+    // due cues fire in the order they were queued (release-then-anticipation must stay in order)
+    for (const p of this.pending) p.left -= dt;
+    for (let i = 0; i < this.pending.length; ) {
       const p = this.pending[i];
-      p.left -= dt;
-      if (p.left > 0) continue;
+      if (p.left > 0) {
+        i++;
+        continue;
+      }
       this.pending.splice(i, 1);
       this.fire(p.key);
     }

@@ -98,10 +98,9 @@ export const buildWild = (renderer: Renderer, size: number): Texture => {
   });
 
   // WILD word-mark
-  const style = { fontFamily: FONTS.title, fontSize: 100, padding: 4 };
-  const probe = inkBox(renderer, style, 'WILD');
+  const probe = inkBox({ text: 'WILD', fontFamily: FONTS.title, fontSize: 100 });
   const fontSize = 100 * Math.min(118 / probe.width, 40 / probe.height);
-  const word = chunkyText(renderer, {
+  const word = chunkyText({
     text: 'WILD',
     fontFamily: FONTS.title,
     fontSize,

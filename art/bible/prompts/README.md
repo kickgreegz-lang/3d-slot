@@ -194,7 +194,7 @@ npx skills add scenario-labs/skills
 
 ## Gates every rendered output passes
 
-The full list is in [docs/ART_BIBLE.md § QA gates](../../../docs/ART_BIBLE.md#qa-gates). The main ones:
+The full list is in [docs/ART_BIBLE.md § QA gates](../../../docs/ART_BIBLE.md#10-qa-gates). The main ones:
 
 - Readability at 64 px.
 - Silhouette confusion.

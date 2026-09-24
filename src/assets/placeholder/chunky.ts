@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle, type Renderer, Sprite, Text, type TextStyleOptions, type Texture } from 'pixi.js';
+import { CanvasSource, Container, Graphics, Rectangle, type Renderer, Sprite, Texture } from 'pixi.js';
 import { INK, type Light, PLUM, PLUM_LIGHT, WHITE } from './palette';
 
 /**
@@ -12,13 +12,11 @@ import { INK, type Light, PLUM, PLUM_LIGHT, WHITE } from './palette';
  *                 shifted toward the light), optional custom paint (colour bands),
  *                 white specular streaks
  *
- * All textures are generated with the same centred frame, so sprites at the same
- * position register pixel-perfectly.
+ * The glyph masks are drawn with Canvas2D (native AA, exact ink metrics, no GPU
+ * readback) on one shared centred frame, so sprites at the same position register
+ * pixel-perfectly.
  */
-export interface ChunkyOptions {
-  text: string;
-  fontFamily: string;
-  fontSize: number;
+export interface ChunkyOptions extends GlyphRun {
   light: Light;
   /** face base tone */
   base: number;
@@ -33,7 +31,6 @@ export interface ChunkyOptions {
   depth: number;
   extrusion?: number;
   extrusionLip?: number | null;
-  letterSpacing?: number;
   /** custom face paint (bands, stripes), in the text's centred local space */
   paint?: (g: Graphics, box: Rectangle) => void;
   /** specular streaks, in the text's centred local space */
@@ -42,60 +39,81 @@ export interface ChunkyOptions {
   resolution?: number;
 }
 
-const glyphTexture = (
-  renderer: Renderer,
-  style: TextStyleOptions,
-  text: string,
-  frame: Rectangle,
-  resolution: number,
-): Texture => {
-  const t = new Text({ text, style });
-  t.anchor.set(0.5);
-  const tex = renderer.generateTexture({ target: t, frame, resolution, antialias: true });
-  t.destroy();
-  return tex;
-};
+/** Font run description shared by the measuring and drawing helpers. */
+export interface GlyphRun {
+  text: string;
+  fontFamily: string;
+  fontSize: number;
+  /** letter spacing in px (Canvas2D letterSpacing; ignored where unsupported) */
+  letterSpacing?: number;
+}
 
-/** Layout box (centred) of a text run. */
-const layoutBox = (style: TextStyleOptions, text: string): Rectangle => {
-  const t = new Text({ text, style });
-  t.anchor.set(0.5);
-  const b = t.getLocalBounds().rectangle.clone();
-  t.destroy();
-  return b;
-};
-
-/** Alpha bounding box of a texture rendered with `frame`, in the frame's space. */
-export const alphaBox = (renderer: Renderer, tex: Texture, frame: Rectangle): Rectangle => {
-  const { pixels, width, height } = renderer.extract.pixels(tex);
-  let x0 = width;
-  let y0 = height;
-  let x1 = -1;
-  let y1 = -1;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      if (pixels[(y * width + x) * 4 + 3] > 96) {
-        if (x < x0) x0 = x;
-        if (x > x1) x1 = x;
-        if (y < y0) y0 = y;
-        if (y > y1) y1 = y;
-      }
-    }
+let scratch: CanvasRenderingContext2D | null = null;
+const ctx2d = (): CanvasRenderingContext2D => {
+  if (!scratch) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 4;
+    const g = c.getContext('2d');
+    if (!g) throw new Error('2D canvas unavailable');
+    scratch = g;
   }
-  if (x1 < 0) return frame.clone();
-  const sx = frame.width / width;
-  const sy = frame.height / height;
-  return new Rectangle(frame.x + x0 * sx, frame.y + y0 * sy, (x1 - x0 + 1) * sx, (y1 - y0 + 1) * sy);
+  return scratch;
+};
+
+const setFont = (g: CanvasRenderingContext2D, run: GlyphRun): void => {
+  g.font = `${run.fontSize}px "${run.fontFamily}"`;
+  g.textAlign = 'left';
+  g.textBaseline = 'alphabetic';
+  (g as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = `${run.letterSpacing ?? 0}px`;
+};
+
+interface InkMetrics {
+  /** ink box centred on (0,0) */
+  box: Rectangle;
+  /** where the run's origin (left, baseline) sits in that centred space */
+  ox: number;
+  oy: number;
+}
+
+/**
+ * Exact ink metrics from Canvas2D (actualBoundingBox*) — no GPU readback. The run
+ * is positioned so its ink box is centred on the local origin.
+ */
+const inkMetrics = (run: GlyphRun): InkMetrics => {
+  const g = ctx2d();
+  setFont(g, run);
+  const m = g.measureText(run.text);
+  const L = m.actualBoundingBoxLeft;
+  const R = m.actualBoundingBoxRight;
+  const A = m.actualBoundingBoxAscent;
+  const D = m.actualBoundingBoxDescent;
+  const w = L + R;
+  const h = A + D;
+  return { box: new Rectangle(-w / 2, -h / 2, w, h), ox: (L - R) / 2, oy: (A - D) / 2 };
 };
 
 /** Ink (visible glyph) box of a text run, centred local space — for fitting type to a box. */
-export const inkBox = (renderer: Renderer, style: TextStyleOptions, text: string): Rectangle => {
-  const lb = layoutBox(style, text);
-  const frame = new Rectangle(lb.x - 8, lb.y - 8, lb.width + 16, lb.height + 16);
-  const tex = glyphTexture(renderer, style, text, frame, 1);
-  const box = alphaBox(renderer, tex, frame);
-  tex.destroy(true);
-  return box;
+export const inkBox = (run: GlyphRun): Rectangle => inkMetrics(run).box;
+
+/** White glyph mask on a Canvas2D texture: fill, optionally dilated by a round stroke. */
+const glyphTexture = (run: GlyphRun, ink: InkMetrics, frame: Rectangle, resolution: number, stroke = 0): Texture => {
+  const c = document.createElement('canvas');
+  c.width = Math.ceil(frame.width * resolution);
+  c.height = Math.ceil(frame.height * resolution);
+  const g = c.getContext('2d');
+  if (!g) throw new Error('2D canvas unavailable');
+  g.scale(resolution, resolution);
+  g.translate(-frame.x, -frame.y);
+  setFont(g, run);
+  g.fillStyle = '#ffffff';
+  if (stroke > 0) {
+    g.strokeStyle = '#ffffff';
+    g.lineWidth = stroke;
+    g.lineJoin = 'round';
+    g.strokeText(run.text, ink.ox, ink.oy);
+  }
+  g.fillText(run.text, ink.ox, ink.oy);
+  return new Texture({ source: new CanvasSource({ resource: c, resolution }) });
 };
 
 export interface ChunkyResult {
@@ -106,36 +124,15 @@ export interface ChunkyResult {
   box: Rectangle;
 }
 
-export const chunkyText = (renderer: Renderer, o: ChunkyOptions): ChunkyResult => {
+export const chunkyText = (o: ChunkyOptions): ChunkyResult => {
   const res = o.resolution ?? 2;
-  const common: TextStyleOptions = {
-    fontFamily: o.fontFamily,
-    fontSize: o.fontSize,
-    fill: WHITE,
-    letterSpacing: o.letterSpacing ?? 0,
-    padding: 4,
-  };
-  const lb = layoutBox(common, o.text);
-  const pad = o.outline * 2 + o.depth + 8;
-  const frame = new Rectangle(lb.x - pad, lb.y - pad, lb.width + pad * 2, lb.height + pad * 2);
-
-  const glyph = glyphTexture(renderer, common, o.text, frame, res);
-  const box = alphaBox(renderer, glyph, frame);
-  const dilated = glyphTexture(
-    renderer,
-    { ...common, stroke: { color: WHITE, width: o.outline * 2, join: 'round' } },
-    o.text,
-    frame,
-    res,
-  );
-  const faceLineW = o.faceLine ?? o.outline * 0.55;
-  const thin = glyphTexture(
-    renderer,
-    { ...common, stroke: { color: WHITE, width: faceLineW * 2, join: 'round' } },
-    o.text,
-    frame,
-    res,
-  );
+  const ink = inkMetrics(o);
+  const box = ink.box;
+  const pad = o.outline * 2 + o.depth + 6;
+  const frame = new Rectangle(box.x - pad, box.y - pad, box.width + pad * 2, box.height + pad * 2);
+  const glyph = glyphTexture(o, ink, frame, res);
+  const dilated = glyphTexture(o, ink, frame, res, o.outline * 2);
+  const thin = glyphTexture(o, ink, frame, res, (o.faceLine ?? o.outline * 0.55) * 2);
 
   const view = new Container();
   const sp = (tex: Texture, x: number, y: number, tint: number): Sprite => {

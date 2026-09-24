@@ -39,9 +39,9 @@ export const buildRoyal = (
   const two = glyph.length > 1;
   const probe = 100;
   const spacing = two ? -0.06 : 0;
-  const box = inkBox(renderer, { fontFamily: FONTS.royal, fontSize: probe, letterSpacing: spacing * probe, padding: 4 }, glyph);
+  const box = inkBox({ text: glyph, fontFamily: FONTS.royal, fontSize: probe, letterSpacing: spacing * probe });
   const fontSize = probe * Math.min(target / box.height, (target * (two ? 1.04 : 0.98)) / box.width);
-  const r = chunkyText(renderer, {
+  const r = chunkyText({
     text: glyph,
     fontFamily: FONTS.royal,
     fontSize,

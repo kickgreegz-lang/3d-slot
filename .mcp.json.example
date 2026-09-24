@@ -1,0 +1,69 @@
+{
+  "mcpServers": {
+    "scenario": {
+      "type": "http",
+      "url": "https://mcp.scenario.com/mcp?toolsets=full"
+    },
+    "meshy": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@meshy-ai/meshy-mcp-server"],
+      "env": {
+        "MESHY_API_KEY": "${MESHY_API_KEY}"
+      }
+    },
+    "tripo": {
+      "type": "stdio",
+      "command": "tripo",
+      "args": ["mcp"],
+      "env": {
+        "TRIPO_API_KEY": "${TRIPO_API_KEY}"
+      }
+    },
+    "comfy": {
+      "type": "stdio",
+      "command": "comfy-mcp",
+      "args": [],
+      "env": {
+        "COMFY_BIN": "${COMFY_BIN:-/opt/comfy/.venv/bin/comfy}",
+        "COMFYUI_URL": "${COMFYUI_URL:-http://127.0.0.1:8188}"
+      }
+    },
+    "stake-docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${STAKE_DOCS_DIR}/mcp-server/dist/index.js"]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--headless", "--caps", "vision,devtools", "--output-dir", "qa/mcp"]
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["chrome-devtools-mcp@latest"]
+    },
+    "higgsfield": {
+      "type": "http",
+      "url": "https://mcp.higgsfield.ai/mcp"
+    },
+    "recraft": {
+      "type": "http",
+      "url": "https://mcp.recraft.ai/mcp"
+    },
+    "runpod": {
+      "type": "http",
+      "url": "https://mcp.getrunpod.io/"
+    },
+    "browserstack": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@browserstack/mcp-server"],
+      "env": {
+        "BROWSERSTACK_USERNAME": "${BROWSERSTACK_USERNAME}",
+        "BROWSERSTACK_ACCESS_KEY": "${BROWSERSTACK_ACCESS_KEY}"
+      }
+    }
+  }
+}

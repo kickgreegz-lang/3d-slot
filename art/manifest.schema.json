@@ -101,7 +101,7 @@
         "sha256": { "$ref": "#/$defs/sha256" },
         "qa": {
           "type": "object",
-          "description": "Automated gate results that let this row through (see docs/ART_BIBLE.md#qa-gates).",
+          "description": "Automated gate results that let this row through (see docs/ART_BIBLE.md#10-qa-gates).",
           "additionalProperties": true,
           "properties": {
             "passed": { "type": "boolean" },

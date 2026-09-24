@@ -389,6 +389,7 @@ export class FlowController {
       this.balance = balanceBefore;
       if (!isRgsError(e) || e.code === 'ERR_NETWORK' || e.status >= 500) this.needsResync = true;
       await this.setScene(this.sceneBoard ?? attractBoard());
+      await this.ctx.game.broadcastAsync('round:end', { totalWin: 0 });
       this.endRoundCleanup();
       this.fail(e);
       return null;
@@ -493,14 +494,21 @@ export class FlowController {
   private async resync(): Promise<boolean> {
     const client = this.client;
     if (!client) return false;
-    const auth = await client.authenticate();
+    this.to('resume');
+    let auth: AuthenticateResponse;
+    try {
+      auth = await client.authenticate();
+    } catch (e) {
+      this.fail(e);
+      return true;
+    }
     this.needsResync = false;
     this.balance = auth.balance.amount;
-    this.broadcastState();
     if (auth.round?.active && Array.isArray(auth.round.state)) {
       await this.resume(auth.round);
       return true;
     }
+    this.to('idle');
     return false;
   }
 
@@ -521,7 +529,7 @@ export class FlowController {
     this.roundWatch.stop();
     this.slammed = false;
     setSpeedProfile(this.playerSpeed);
-    this.activeMode = BASE_MODE;
+    if (!this.replay) this.activeMode = BASE_MODE;
   }
 
   /** Credit display -> round:end -> jurisdiction minimum round duration -> `after`. */

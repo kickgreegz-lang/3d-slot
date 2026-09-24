@@ -1,7 +1,7 @@
 import { Container, Rectangle, type Renderer, type Texture } from 'pixi.js';
 import { FONTS } from '../../assets/fonts';
 import { streak } from '../../assets/placeholder/cel';
-import { alphaBox, chunkyText } from '../../assets/placeholder/chunky';
+import { chunkyText } from '../../assets/placeholder/chunky';
 import { INK, Light } from '../../assets/placeholder/palette';
 
 /**
@@ -18,6 +18,8 @@ interface LetterStyle {
 
 const LIME = { light: 0xd4ff5c, base: 0x9be22d, shade: 0x5caa1e };
 const BANDS = [0xff3fa8, 0xff7a1a, 0xffd21f];
+const OUT = 3;
+const DEPTH = 13;
 const TILT = [-5, 3, -3, 4, -2, 0, 4, -4, 3, -5];
 const BOB = [2, -4, 3, -3, 1, 0, -2, 3, -3, 2];
 
@@ -31,12 +33,16 @@ export const buildLogo = (renderer: Renderer, text = 'SWAMP FUNK'): LogoBake => 
   const root = new Container();
   const temp: Texture[] = [];
   let x = 0;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
   const words = text.split(' ');
   let li = 0;
   words.forEach((word, wi) => {
     const style: LetterStyle = wi === 0 ? { base: LIME.base, paint: 'lime' } : { base: BANDS[1], paint: 'bands' };
     for (const ch of word) {
-      const r = chunkyText(renderer, {
+      const r = chunkyText({
         text: ch,
         fontFamily: FONTS.title,
         fontSize,
@@ -44,9 +50,9 @@ export const buildLogo = (renderer: Renderer, text = 'SWAMP FUNK'): LogoBake => 
         base: style.base,
         shade: style.paint === 'lime' ? LIME.shade : undefined,
         shadeOff: 6,
-        outline: 3,
+        outline: OUT,
         faceLine: 1.5,
-        depth: 13,
+        depth: DEPTH,
         extrusion: INK,
         extrusionLip: 0x2a1030,
         paint: (g, b) => {
@@ -74,6 +80,25 @@ export const buildLogo = (renderer: Renderer, text = 'SWAMP FUNK'): LogoBake => 
       holder.angle = TILT[li % TILT.length];
       holder.position.set(x + r.box.width / 2, BOB[li % BOB.length]);
       root.addChild(holder);
+      // visible extent: ink box + outline + extrusion, through the letter's tilt
+      const ext = light.off(DEPTH);
+      const hw = r.box.width / 2;
+      const hh = r.box.height / 2;
+      const cos = Math.cos(holder.rotation);
+      const sin = Math.sin(holder.rotation);
+      for (const [px, py] of [
+        [-hw - OUT, -hh - OUT],
+        [hw + OUT + ext.x, -hh - OUT],
+        [-hw - OUT, hh + OUT + ext.y],
+        [hw + OUT + ext.x, hh + OUT + ext.y],
+      ]) {
+        const gx = holder.x + px * cos - py * sin;
+        const gy = holder.y + px * sin + py * cos;
+        minX = Math.min(minX, gx);
+        minY = Math.min(minY, gy);
+        maxX = Math.max(maxX, gx);
+        maxY = Math.max(maxY, gy);
+      }
       x += r.box.width - 4;
       li++;
     }
@@ -82,14 +107,7 @@ export const buildLogo = (renderer: Renderer, text = 'SWAMP FUNK'): LogoBake => 
       li++;
     }
   });
-  // text layout boxes are much taller than the ink: trim to the visible pixels
-  const b = root.getLocalBounds();
-  const loose = new Rectangle(b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
-  const probe = renderer.generateTexture({ target: root, frame: loose, resolution: 0.5 });
-  const ink = alphaBox(renderer, probe, loose);
-  probe.destroy(true);
-  const pad = 4;
-  const frame = new Rectangle(ink.x - pad, ink.y - pad, ink.width + pad * 2, ink.height + pad * 2);
+  const frame = new Rectangle(minX - 2, minY - 2, maxX - minX + 4, maxY - minY + 4);
   const texture = renderer.generateTexture({ target: root, frame, resolution: 1.5, antialias: true });
   root.destroy({ children: true });
   for (const t of temp) t.destroy(true);

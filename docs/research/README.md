@@ -29,4 +29,4 @@ This folder holds **reference copies** of the research behind the stack and the 
 Only one kind of edit was made. Absolute paths into the temporary research workspace were replaced with `[research sandbox]/…`, and the reference screenshot path with `[reference screenshot]`. The text is otherwise verbatim, including statements that later docs supersede. For example:
 
 - Round 1 made Higgsfield the production image source; round 2 demoted it (see [STACK § Image route](../STACK.md#image-route-higgsfield-or-vertex--scenario-you-decide)).
-- Round 1 said "no KTX2 in v1"; round 2 uses KTX2 with self-hosted transcoders (see [ANIMATION_CONTRACT § 3D mascots](../ANIMATION_CONTRACT.md#6-3d-mascots-gltf)).
+- Round 1 said "no KTX2 in v1"; round 2 uses KTX2 with self-hosted transcoders (see [ANIMATION_CONTRACT § 3D mascots](../ANIMATION_CONTRACT.md#7-3d-mascots-gltf)).

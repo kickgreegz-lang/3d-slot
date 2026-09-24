@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.vite/
+*.log
+.DS_Store
+# raw generation outputs & intermediates (keep curated sources in art/source)
+art/_raw/
+art/_work/
+# dev-only third-party test assets
+public/dev-only/
+tools/.venv/
+screenshots/

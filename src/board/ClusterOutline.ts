@@ -74,7 +74,7 @@ export class ClusterOutlines {
       loops,
       color,
       core: mix(color, 0xffffff, 0.65),
-      width: Math.max(2.5, L.cell * 0.027),
+      width: Math.max(2.5, L.cell * 0.03),
       progress: { p: 0 },
       tweens: [],
     };
@@ -221,8 +221,9 @@ export class ClusterOutlines {
     g.clear();
     const p = it.progress.p;
     const passes: [number, number, number][] = [
-      [it.width * 6.5, it.color, 0.16],
-      [it.width * 2.6, it.color, 0.55],
+      [it.width * 7, it.color, 0.14],
+      [it.width * 4, it.color, 0.24],
+      [it.width * 2.2, it.color, 0.7],
       [it.width, it.core, 1],
     ];
     const tmp = [0, 0];

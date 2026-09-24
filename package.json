@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@assetpack/core": "1.7.0",
+    "@esotericsoftware/spine-core": "4.3.13",
     "@gltf-transform/cli": "4.5.0",
     "@gltf-transform/core": "4.5.0",
     "@resvg/resvg-js": "2.6.2",

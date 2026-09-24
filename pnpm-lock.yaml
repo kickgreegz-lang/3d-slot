@@ -30,6 +30,9 @@ importers:
       '@assetpack/core':
         specifier: 1.7.0
         version: 1.7.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
+      '@esotericsoftware/spine-core':
+        specifier: 4.3.13
+        version: 4.3.13
       '@gltf-transform/cli':
         specifier: 4.5.0
         version: 4.5.0(@types/node@22.20.4)

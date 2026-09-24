@@ -8,7 +8,7 @@ This page summarises what the front-end must do to integrate with Stake Engine's
 
 stake-engine.com itself was unreachable from the research sandbox. **Re-check the live docs before submission.** The easiest way is the official docs MCP (see [MCP_SETUP](MCP_SETUP.md)).
 
-Related: [STACK](STACK.md) · [PIPELINE § phase 8](PIPELINE.md#phase-8--qa-packaging-release) · [ART_BIBLE](ART_BIBLE.md).
+Related: [STACK](STACK.md) · [PIPELINE § phase 8](PIPELINE.md#phase-8-qa-packaging-release) · [ART_BIBLE](ART_BIBLE.md).
 
 ---
 
@@ -68,7 +68,7 @@ All calls are `POST`, JSON, with no auth headers. `sessionID` goes in the body.
 
 | Endpoint | Body | 200 response |
 |---|---|---|
-| `/wallet/authenticate` (call first; otherwise everything returns `ERR_IS`) | `{sessionID, language?}` | `{balance:{amount,currency}, config:{gameID, minBet, maxBet, stepBet, defaultBetLevel, betLevels[], betModes, jurisdiction{…}}, round: Round\|null}` |
+| `/wallet/authenticate` (call first; otherwise everything returns `ERR_IS`) | `{sessionID, language?}` | `{balance:{amount,currency}, config:{gameID, minBet, maxBet, stepBet, defaultBetLevel, betLevels[], betModes, jurisdiction{…}}, round: Round or null}` |
 | `/wallet/play` | `{sessionID, amount /* BASE bet, API units */, mode, currency}` (debit = amount × mode cost) | `{balance, round}` |
 | `/wallet/end-round` | `{sessionID}` | `{balance}` |
 | `/wallet/balance` | `{sessionID}` (the ts-client polls every 60 s while idle) | `{balance}` |
@@ -226,4 +226,4 @@ See [ART_BIBLE § 8](ART_BIBLE.md#game-tile-acp-tile-editor).
 - Before submitting:
   1. Run `tools/qa/approval.mjs` against `vite preview`.
   2. Test on real phones.
-  3. Run the IRIS photosensitivity report on the big-win, feature and anticipation captures (see [PIPELINE phase 8](PIPELINE.md#phase-8--qa-packaging-release)).
+  3. Run the IRIS photosensitivity report on the big-win, feature and anticipation captures (see [PIPELINE phase 8](PIPELINE.md#phase-8-qa-packaging-release)).

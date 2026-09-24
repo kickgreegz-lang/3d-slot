@@ -431,7 +431,7 @@ export class FreeSpins implements GameModule {
     this.stage.backdrop.addChild(rays);
 
     const panel = new Container({ label: 'fsOutro' });
-    const plate = new Plate(0xffd54a, 0.78, 'round');
+    const plate = new Plate(0xffd54a, 0.86, 'round');
     plate.resize(920, 430);
     const title = new Title(
       [{ text: label('totalWin', 'TOTAL WIN'), style: { family: FONTS.title, size: 140, palette: GOLD, outline: 0.065, extrude: 0.1, tracking: 0.03 } }],
@@ -447,7 +447,7 @@ export class FreeSpins implements GameModule {
     amount.y = 10;
     const sub = new BitmapText({
       text: spins > 0 ? label('fs.summary', '{n} FREE SPINS', { n: spins }) : '',
-      style: { fontFamily: ensureLabelFont(ctx.app.renderer), fontSize: 40 },
+      style: { fontFamily: ensureLabelFont(ctx.app.renderer), fontSize: 50 },
       anchor: 0.5,
     });
     sub.y = 140;

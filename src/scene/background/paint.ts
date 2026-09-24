@@ -439,6 +439,16 @@ const paintLamps = (root: Container, c: Composition, p: ScenePalette, glow: Text
   root.addChild(pools, g);
 };
 
+/** Neon / jar reflections pooling on the plank floor (tall layouts show a lot of floor). */
+const paintFloorLight = (root: Container, c: Composition, p: ScenePalette, glow: Texture): void => {
+  const depth = c.H - c.floor;
+  const y = c.floor + depth * 0.4;
+  const shelf = c.shelves[0];
+  root.addChild(glowSprite(glow, c.sign.x, y, 320, Math.min(90, depth * 0.3), p.neon, 0.16));
+  if (shelf) root.addChild(glowSprite(glow, shelf.x + shelf.w / 2, y, 260, Math.min(80, depth * 0.3), p.jarGlow, 0.12));
+  root.addChild(glowSprite(glow, c.W / 2, c.floor + depth * 0.55, c.W * 0.34, depth * 0.3, p.neonAccent, 0.1));
+};
+
 // ---------------------------------------------------------------------------
 
 /** Full static scene (scene units). */
@@ -457,6 +467,7 @@ export const paintScene = (c: Composition, p: ScenePalette, glow: Texture): Cont
   root.addChild(glowSprite(glow, c.sign.x, c.sign.y, 260 * c.sign.scale, 200 * c.sign.scale, p.neon, 0.12));
   paintStrings(root, c, p, glow);
   paintLamps(root, c, p, glow);
+  paintFloorLight(root, c, p, glow);
   // calm centre: darken behind the reels so symbols carry the contrast
   const calm = c.calm;
   root.addChild(

@@ -44,8 +44,6 @@ interface FrameGeom {
   left: Rect;
   right: Rect;
   sill: Rect;
-  /** glass opening between posts, beam and sill */
-  opening: Rect;
   rope: number;
   tube: { x0: number; x1: number; y: number; w: number };
 }
@@ -61,14 +59,12 @@ const geometry = (L: LayoutSpec): FrameGeom => {
   const sill = { x: lx - over, y: sillY, w: rx + fp.post - lx + over * 2, h: fp.sill };
   const postTop = F.y + fp.beam - 6 * u;
   const postBottom = sillY + 6 * u;
-  const opening = { x: lx + fp.post / 2, y: F.y + fp.beam / 2, w: rx - lx, h: sillY - F.y - fp.beam / 2 + 4 };
   return {
     u,
     beam,
     left: { x: lx, y: postTop, w: fp.post, h: postBottom - postTop },
     right: { x: rx, y: postTop, w: fp.post, h: postBottom - postTop },
     sill,
-    opening,
     rope: fp.post * 0.95,
     tube: { x0: lx + fp.post + 14 * u, x1: rx - 14 * u, y: F.y + fp.beam + 5 * u, w: Math.max(2, 4 * u) },
   };

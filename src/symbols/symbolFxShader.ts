@@ -1,4 +1,4 @@
-import { GlProgram, Shader, Texture, UniformGroup } from 'pixi.js';
+import { GlProgram, Matrix, Shader, Texture, UniformGroup } from 'pixi.js';
 
 /**
  * One custom Mesh shader for every per-symbol effect, so a winning / exploding
@@ -7,7 +7,11 @@ import { GlProgram, Shader, Texture, UniformGroup } from 'pixi.js';
  *   - FLASH   mix toward white (hit flash / charge-up)
  *   - DISSOLVE noise-threshold burn from the centre out with a hot edge (explode)
  * The band/noise live in the mesh's plane UV (0..1), so they ride the jelly deformation.
- * Atlas frames are handled through uTextureMatrix (texture.textureMatrix.mapCoord).
+ * Atlas frames are handled through uSymbolUvMatrix (texture.textureMatrix.mapCoord).
+ *
+ * NOTE: Pixi caches uniform-sync functions by uniform NAME+TYPE across all shaders, and
+ * its mesh adaptor uploads `uTextureMatrix` as a Matrix object. Our UV matrix therefore
+ * uses a unique name AND a Matrix value, so neither shader can poison the other's sync.
  */
 const vertex = /* glsl */ `
 in vec2 aPosition;
@@ -26,12 +30,12 @@ uniform mat3 uTransformMatrix;
 uniform vec4 uColor;
 uniform float uRound;
 
-uniform mat3 uTextureMatrix;
+uniform mat3 uSymbolUvMatrix;
 
 void main(void) {
   mat3 mvp = uProjectionMatrix * uWorldTransformMatrix * uTransformMatrix;
   gl_Position = vec4((mvp * vec3(aPosition, 1.0)).xy, 0.0, 1.0);
-  vUV = (uTextureMatrix * vec3(aUV, 1.0)).xy;
+  vUV = (uSymbolUvMatrix * vec3(aUV, 1.0)).xy;
   vLocal = aUV;
   vColor = uColor * uWorldColorAlpha;
 }
@@ -133,7 +137,7 @@ export class SymbolFxShader {
       uSeed: { value: (seedCounter++ * 17.31) % 97, type: 'f32' },
     });
     this.texUniforms = new UniformGroup({
-      uTextureMatrix: { value: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]), type: 'mat3x3<f32>' },
+      uSymbolUvMatrix: { value: new Matrix(), type: 'mat3x3<f32>' },
     });
     const shader = new Shader({
       glProgram: program,
@@ -146,17 +150,7 @@ export class SymbolFxShader {
   setTexture(tex: Texture): void {
     this.shader.resources.uTexture = tex.source;
     tex.textureMatrix.update();
-    const m = tex.textureMatrix.mapCoord;
-    const u = this.texUniforms.uniforms.uTextureMatrix as Float32Array;
-    u[0] = m.a;
-    u[1] = m.b;
-    u[2] = 0;
-    u[3] = m.c;
-    u[4] = m.d;
-    u[5] = 0;
-    u[6] = m.tx;
-    u[7] = m.ty;
-    u[8] = 1;
+    (this.texUniforms.uniforms.uSymbolUvMatrix as Matrix).copyFrom(tex.textureMatrix.mapCoord);
     this.texUniforms.update();
   }
 

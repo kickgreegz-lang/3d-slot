@@ -1,0 +1,132 @@
+# Documentation
+
+This is a premium, animation-first video slot for **Stake Engine**, produced with an AI-driven pipeline that Claude controls end to end. Humans step in at the points where they add something AI cannot.
+
+- **Working theme:** "SWAMP FUNK", a neon bayou juke joint with Gumbo the gator bouncer and Baron Croak the bullfrog DJ. It is a placeholder you can swap.
+- **Game:** a 7×5 cluster-pays tumble game with multiplier spots.
+- **Front end:** Vite + TypeScript + PixiJS 8.21 + three 0.186 + spine-pixi-v8 4.3.13 + GSAP 3.15.
+
+## Start here
+
+| If you want to… | Read |
+|---|---|
+| Know what to buy, install and pay for, and what AI can't do | **[STACK.md](STACK.md)** (start with the TL;DR and "Image route") |
+| Run production step by step | **[PIPELINE.md](PIPELINE.md)** |
+| Know the exact names, frames, events and feel constants the art must hit | **[ANIMATION_CONTRACT.md](ANIMATION_CONTRACT.md)** |
+| Keep the look consistent and non-sloppy | **[ART_BIBLE.md](ART_BIBLE.md)** + [`art/bible/artbible.json`](../art/bible/artbible.json) + [`art/bible/prompts/`](../art/bible/prompts/README.md) |
+| Pass Stake Engine approval | **[STAKE_ENGINE.md](STAKE_ENGINE.md)** |
+| Wire up the MCP servers | **[MCP_SETUP.md](MCP_SETUP.md)** + [`.mcp.json.example`](../.mcp.json.example) |
+| Check licences and provenance | [`licenses/allowlist.json`](../licenses/allowlist.json), [`licenses/denylist.json`](../licenses/denylist.json), [`art/manifest.schema.json`](../art/manifest.schema.json) |
+| See the raw research and its sources | [research/](research/README.md) |
+
+## The system on one screen
+
+### 1. AI production pipeline
+
+```mermaid
+flowchart LR
+  AB["art bible + prompt templates"] --> EX["explore 4 directions<br/>(NBP / Higgsfield A-B)"]
+  EX --> H1{{"HUMAN: pick direction<br/>+ paint over 10-20 heroes"}}
+  H1 --> LOCK["style lock<br/>Scenario LoRA · Recraft style_id"]
+  LOCK --> IMG["2D generation<br/>Nano Banana Pro (Vertex or Higgsfield)<br/>Scenario LoRA · Recraft SVG"]
+  IMG --> SPLIT["matte · SAM parts · hidden-area fill"]
+  SPLIT --> SPN["Spine 4.3 JSON written by Claude<br/>validate · Spine CLI import/pack"]
+  IMG --> SHEET["mascot turnarounds"]
+  SHEET --> MESH["Tripo / Meshy / Rodin bake-off"]
+  MESH --> BL["Blender headless<br/>cleanup · rig · actions from JSON"]
+  BL --> GLB["GLB (toon, meshopt)"]
+  BL --> BAKE["EEVEE toon inserts · flipbooks · cinematics"]
+  AUD["ElevenLabs · Stable Audio"] --> H2{{"HUMAN: listen + pick"}}
+  H2 --> MAST["ffmpeg mastering"]
+  SPN --> PACK["AssetPack + Vite static build"]
+  GLB --> PACK
+  BAKE --> PACK
+  MAST --> PACK
+  IMG --> PACK
+  PACK --> QA["deterministic capture<br/>Claude + Gemini critique<br/>feel/perf/IRIS/licence gates"]
+  QA -. "auto-fix PRs" .-> SPN
+  QA --> H3{{"HUMAN: sign-off · Stake submit"}}
+```
+
+**Conductor:**
+- **Claude Code (Opus 5.5)** on a Linux GPU workstation via Remote Control, in Anthropic cloud sessions, and in GitHub Actions.
+- MCP servers are used for exploring; **committed scripts do production**.
+- Every file gets a provenance row (`art/manifest.json`), and a `licence-audit` check blocks anything off the allowlist.
+- **Gemini 3.1 Pro** is the blind second judge. OpenAI models are excluded unless OpenAI clears real-money gambling in writing ([why](STACK.md#openai-gpt-6-astra-and-chatgpt-atlas)).
+
+### 2. Front-end runtime
+
+```
+ URL params ─► env/ ─► rgs/client (authenticate · play · end-round · replay) ─► book/player (for-await book events)
+                                                                                   │ broadcastAsync (Promise.all)
+             flow/ FSM: idle · spinning · presenting · autoplay · resume · replay  ▼
+             core/clock (ONE clock: Pixi ticker → GSAP → Spine → three; hit-stop; manual stepping for QA)
+             core/timing (every feel constant; live-tuned in ?dev=lab)
+     ┌──────────────┬───────────────┬───────────────────┬─────────────┬──────────┬─────────┐
+   board/        symbols/        present/            mascots/        fx/       audio/ ui/
+   drop·tumble   SymbolRig +     big win · free      three.js toon   particles  SFX/music
+   spots·heat    pooled Spine    spins · win labels  → RenderTarget  filters    HUD + DOM
+                 (spine-pixi-v8)                     → Pixi sprite   shake      menus
+```
+
+**Layer stack, back to front:**
+1. background (cover-scaled);
+2. background FX;
+3. glass panel;
+4. heat tiles;
+5. spot numbers;
+6. **symbols** (scissor-masked);
+7. **frame**;
+8. logo;
+9. `winLayer` (win pops spill over the frame);
+10. **mascots** (three.js drawn into a render target inside Pixi's WebGL2 context, after `renderer.resetState()`);
+11. HUD;
+12. big-win / free-spins overlays;
+13. DOM modals.
+
+**Layout spaces:**
+- landscape 1920×1080;
+- portrait 1080×1920;
+- tablet 1920×1920;
+- compact 960×540 for popouts, with the 3D mascots off.
+
+**Speed:** one gameplay timeline scaled 1× / 2× / 3× for normal, turbo and super turbo, all within the jurisdiction flags.
+
+**Dev and QA hooks:**
+- `?dev=lab` (Tweakpane, scenarios, timing export);
+- `?dev=gallery`;
+- `window.__slot.scenario(name)`;
+- `tools/capture/shot.mjs`;
+- `tools/qa/animation-review.mjs`;
+- `tools/qa/approval.mjs`;
+- the mock RGS with 7x5 fixture books (`mock/`).
+
+Architecture decisions and their evidence: [research/frontend-decisions.md](research/frontend-decisions.md).
+
+## Decisions waiting on you
+
+1. **Production image route.** Vertex + Scenario (recommended) or Higgsfield (after written clearance: training opt-out, gambling, EU/UK). See [STACK § Image route](STACK.md#image-route-higgsfield-or-vertex--scenario-you-decide).
+2. **Theme, working title and art direction.** Keep SWAMP FUNK or swap it; choose a unique title; pick 1 of 4 explored directions; hire the paintover artist.
+3. **Budget tier and hardware.** Start with Phase 1 lean (no workstation) or go straight to Full AAA (RTX PRO 6000 or RTX 5090). Spine Professional vs **Enterprise** depends on whether company revenue plus financing reaches $500k/yr.
+4. **People and contracts.** A character animator for the mascots (recommended), an optional Spine animator, gaming/IP counsel, and **ElevenLabs Enterprise** or a human sound designer.
+5. **OpenAI.** Ask for written clearance (to use GPT-6 Astra / GPT Image 2.5), or accept the exclusion.
+
+Also pending, from the math side:
+- whether spot multipliers grow additively or by doubling;
+- the bet modes and their costs (they cannot be added after approval);
+- the wincap;
+- languages beyond English;
+- whether to launch on Stake.us (social mode).
+
+## Conventions
+
+- **Status tags:**
+  - **(U)** / **UNVERIFIED**: from a secondary source or a blocked vendor page; check before paying.
+  - **[planned]**: not in the repo yet.
+  - **[delta]**: the runtime needs a small change.
+- **Where things live:**
+  - `art/_raw/`, `art/_work/`: generated and gitignored.
+  - `art/source/`: approved sources, git-LFS.
+  - `public/assets/`: written only by scripts.
+  - `build/`: generated.
+- **Ownership:** docs, the art bible, licences and the MCP example live here. `src/**` and `tools/capture|qa/**` are owned by the runtime and QA engineers.

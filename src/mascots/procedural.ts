@@ -77,6 +77,11 @@ class Spring {
       this.x += this.v * h;
       left -= h;
     }
+    if (!Number.isFinite(this.x) || !Number.isFinite(this.v)) {
+      // never let a bad frame (NaN pose, zero dt) poison the rig
+      this.x = 0;
+      this.v = 0;
+    }
     return this.x;
   }
 }
@@ -115,8 +120,9 @@ class Secondary {
       this.last.copy(pos);
       this.primed = true;
     }
-    _v.subVectors(pos, this.last).divideScalar(dt);
-    this.last.copy(pos);
+    _p.copy(pos); // `pos` may alias the shared temps below
+    _v.subVectors(_p, this.last).divideScalar(dt);
+    this.last.copy(_p);
     const s = 1 - Math.exp(-dt * 25);
     this.acc.lerp(_v2.subVectors(_v, this.vel).divideScalar(dt), s);
     this.vel.lerp(_v, s);
@@ -190,6 +196,7 @@ const _q2 = new Quaternion();
 const _pq = new Quaternion();
 const _v = new Vector3();
 const _v2 = new Vector3();
+const _p = new Vector3();
 const _head = new Vector3();
 const X = new Vector3(1, 0, 0);
 const Y = new Vector3(0, 1, 0);

@@ -51,9 +51,12 @@ export const TIMING = {
     hopHeight: 6,
     /** Per-weight multipliers applied to squash amount & hop. */
     weight: { light: 0.7, medium: 1, heavy: 1.35, special: 1.6 } as Record<string, number>,
-    /** Spring physics used for jelly wobble (critically-underdamped). */
-    springStiffness: 520,
-    springDamping: 14,
+    /**
+     * Squash recovery spring (unit mass): ~6 Hz, ζ≈0.32 — measured in the lab probe:
+     * squash 0.854, one rebound to 1.059, settles within ±2% in 150 ms.
+     */
+    springStiffness: 1400,
+    springDamping: 24,
     /** Dust puff particles on heavy/special lands. */
     dustParticles: 10,
   },
@@ -110,8 +113,8 @@ export const TIMING = {
     markDuration: 240,
   },
   shake: {
-    /** Trauma-based shake: offset = maxOffset * trauma² * noise. */
-    maxOffset: 12,
+    /** Trauma-based shake: offset = maxOffset * trauma² * noise (big-win tier 0.55-0.8 -> 7-14 px). */
+    maxOffset: 22,
     maxAngle: 1.2,
     decayPerSecond: 1.6,
     frequency: 18,

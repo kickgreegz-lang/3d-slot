@@ -708,6 +708,7 @@ export class SymbolRig implements SymbolView {
 
   private releaseSquash(weight: LandWeight, m: number, energy: number): void {
     this.squashHeld = false;
+    this.syncSprings();
     this.squash.v = -this.squash.x * this.squash.omega * T.land.reboundVelocity;
     // secondary hop launched as the spring passes neutral (stretch carries it up)
     const h = TIMING.land.hopHeight * (TIMING.land.weight[weight] ?? 1) * energy;
@@ -910,8 +911,23 @@ export class SymbolRig implements SymbolView {
 
   // ── per-frame ──
 
+  /** Re-read spring constants every frame so the animation lab can tune them live. */
+  private syncSprings(): void {
+    this.squash.stiffness = TIMING.land.springStiffness;
+    this.squash.damping = TIMING.land.springDamping;
+    this.rock.stiffness = T.land.rotStiffness;
+    this.rock.damping = T.land.rotDamping;
+    this.bulge.stiffness = T.jelly.bulgeStiffness;
+    this.bulge.damping = T.jelly.bulgeDamping;
+    this.lag.stiffness = T.jelly.lagStiffness;
+    this.lag.damping = T.jelly.lagDamping;
+    this.shear.stiffness = T.jelly.shearStiffness;
+    this.shear.damping = T.jelly.shearDamping;
+  }
+
   private tick(dtRaw: number): void {
     if (this.destroyed) return;
+    this.syncSprings();
     const dt = dtRaw * speedScale();
     if (!this.squashHeld) this.squash.step(dt);
     this.rock.step(dt);

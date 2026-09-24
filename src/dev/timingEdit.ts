@@ -204,7 +204,7 @@ const RANGE_RULES: Array<[RegExp, SliderRange]> = [
   [/(Scale|squashX|squashY)$/, { min: 0.5, max: 2, step: 0.01 }],
   [/[gG]ravity$/, { min: 500, max: 40000, step: 100 }],
   [/Cells$/, { min: 0, max: 12, step: 0.1 }],
-  [/springStiffness$/, { min: 10, max: 2000, step: 5 }],
+  [/springStiffness$/, { min: 10, max: 4000, step: 5 }],
   [/springDamping$/, { min: 0, max: 60, step: 0.5 }],
   [/([pP]articles|coinRate)$/, { min: 0, max: 200, step: 1 }],
   [/^shake\.maxOffset$/, { min: 0, max: 60, step: 0.5 }],

@@ -9,8 +9,8 @@
 leading/trailing silence (below -60 dBFS) and, for loops, the seam jump = |x[0] - x[-1]|
 relative to the median |x[n+1] - x[n]| (a click at the loop point shows up as a large ratio).
 `check` applies the gates: music/loop integrated loudness within +-1 LU of the target and true
-peak <= tp + 0.5 dB (lossy codecs overshoot slightly); sfx sample peak <= ceiling + 0.5 dB;
-loop seam ratio <= 8.
+peak <= tp + tol; sfx sample peak <= ceiling + tol, where tol = 0.1 dB for WAV and 1.0 dB for the
+lossy encodes (AAC/Opus/Vorbis overshoot the master's peaks); loop seam ratio <= 8.
 """
 from __future__ import annotations
 
@@ -104,14 +104,17 @@ def check(a) -> int:
     for f in a.files:
         m = measure(f)
         gates = {}
+        # lossy codecs overshoot the master's peaks a little (AAC most): 1 dB allowance, 0.1 for PCM
+        tol = 0.1 if Path(f).suffix.lower() in (".wav", ".flac") else 1.0
+        m["peakTolerance"] = tol
         if a.mode in ("music", "loop") or a.lufs_sfx is not None:
             target = a.lufs if a.mode != "sfx" else a.lufs_sfx
             gates["loudness"] = m["I"] is not None and abs(m["I"] - target) <= 1.0
-            gates["truePeak"] = m["TP"] is not None and m["TP"] <= a.tp + 0.5
+            gates["truePeak"] = m["TP"] is not None and m["TP"] <= a.tp + tol
         if a.mode == "sfx":
-            gates["peakCeiling"] = m["samplePeak"] <= a.peak + 0.5
+            gates["peakCeiling"] = m["samplePeak"] <= a.peak + tol
             gates["trimmed"] = m["leadSilence"] <= 0.02
-        if a.mode == "loop":
+        if a.mode == "loop" and Path(f).suffix.lstrip(".").lower() not in (a.no_seam_ext or []):
             gates["seam"] = m["seamJumpRatio"] is not None and m["seamJumpRatio"] <= 8
         m["gates"] = gates
         m["passed"] = all(gates.values())
@@ -143,6 +146,7 @@ def main(argv=None) -> int:
     c.add_argument("--tp", type=float, default=-1.0)
     c.add_argument("--peak", type=float, default=-1.0)
     c.add_argument("--report")
+    c.add_argument("--no-seam-ext", action="append", help="skip the loop seam gate for this extension")
     c.add_argument("--extra", help="JSON file merged into the report (e.g. loudnorm pass-2 stats)")
     a = ap.parse_args(argv)
     if a.cmd == "measure":

@@ -17,6 +17,7 @@ const DEG = Math.PI / 180;
 const ICON_SCALE = 0.62;
 /** inner radius of the ring arrow as a fraction of the icon box (see icons.spinArrowIcon) */
 const HOLE = 0.23;
+const SHADOW_ALPHA = 0.38;
 
 /**
  * The big tilted SPIN hex. Idle: slow breathing halo + an occasional attract turn.
@@ -32,6 +33,8 @@ export class SpinButton extends HexButton {
   private readonly count: Text;
   private mode: SpinMode = 'idle';
   private autoText = '';
+  /** fitted scale of the autoplay count (it animates between 0 and this) */
+  private countScale = 1;
   /** ring angular velocity (rad/s) */
   omega = 0;
   private breathe: gsap.core.Tween | null = null;
@@ -47,7 +50,7 @@ export class SpinButton extends HexButton {
     this.face.addChildAt(this.glow, 0);
     this.iconShadow.anchor.set(0.5);
     this.iconShadow.tint = 0x000000;
-    this.iconShadow.alpha = 0.38;
+    this.iconShadow.alpha = SHADOW_ALPHA;
     this.face.addChildAt(this.iconShadow, this.face.getChildIndex(this.iconSprite));
     this.stop.anchor.set(0.5);
     this.stop.scale.set(0);
@@ -82,7 +85,8 @@ export class SpinButton extends HexButton {
 
   /** Render the round / autoplay state. `autoRemaining`: null = no autoplay, Infinity/-1 = ∞. */
   setMode(mode: SpinMode, autoRemaining: number | null): void {
-    const txt = autoRemaining === null ? '' : !Number.isFinite(autoRemaining) || autoRemaining < 0 ? '∞' : String(autoRemaining);
+    const infinite = autoRemaining !== null && (!Number.isFinite(autoRemaining) || autoRemaining < 0);
+    const txt = autoRemaining === null ? '' : infinite ? '∞' : String(autoRemaining);
     if (txt !== this.autoText) {
       const bump = this.autoText !== '' && txt !== '';
       this.autoText = txt;
@@ -98,7 +102,13 @@ export class SpinButton extends HexButton {
     const swap = sUi(HUD_TIMING.centerSwap);
     const showStop = mode === 'spinning';
     const showCount = mode === 'autoplay';
-    gsap.to(this.stop.scale, { x: showStop ? 1 : 0, y: showStop ? 1 : 0, duration: swap, ease: showStop ? 'back.out(2.5)' : 'power2.in', overwrite: true });
+    gsap.to(this.stop.scale, {
+      x: showStop ? 1 : 0,
+      y: showStop ? 1 : 0,
+      duration: swap,
+      ease: showStop ? 'back.out(2.5)' : 'power2.in',
+      overwrite: true,
+    });
     gsap.to(this.count.scale, {
       x: showCount ? this.countScale : 0,
       y: showCount ? this.countScale : 0,
@@ -115,7 +125,8 @@ export class SpinButton extends HexButton {
     });
     // the ring steps back while the hole shows the stop / count affordance
     const ringAlpha = mode === 'idle' || mode === 'disabled' ? 1 : 0.5;
-    gsap.to([this.iconSprite, this.iconShadow], { alpha: (i: number) => (i === 0 ? ringAlpha : ringAlpha * 0.38), duration: swap, overwrite: 'auto' });
+    gsap.to(this.iconSprite, { alpha: ringAlpha, duration: swap, overwrite: 'auto' });
+    gsap.to(this.iconShadow, { alpha: ringAlpha * SHADOW_ALPHA, duration: swap, overwrite: 'auto' });
     if (mode === 'spinning') this.spinUp(TAU / (HUD_TIMING.spinRevolution / 1000));
     else if (mode === 'autoplay') this.spinUp(TAU / (HUD_TIMING.autoRevolution / 1000));
     else this.settle();
@@ -125,10 +136,13 @@ export class SpinButton extends HexButton {
   /** Autoplay count pops when it decrements. */
   private bumpCount(): void {
     const k = this.countScale;
-    gsap.fromTo(this.count.scale, { x: k * 1.3, y: k * 1.3 }, { x: k, y: k, duration: sUi(HUD_TIMING.fsPunch), ease: 'back.out(3)', overwrite: true });
+    gsap.fromTo(
+      this.count.scale,
+      { x: k * 1.3, y: k * 1.3 },
+      { x: k, y: k, duration: sUi(HUD_TIMING.fsPunch), ease: 'back.out(3)', overwrite: true },
+    );
   }
 
-  private countScale = 1;
   private fitCount(): void {
     const iconBox = this.opts.radius * 2 * ICON_SCALE;
     const max = iconBox * HOLE * 1.9;
@@ -150,7 +164,8 @@ export class SpinButton extends HexButton {
     this.omega = 0;
     const rot = this.iconSprite.rotation;
     if (w <= 0.01) {
-      gsap.to(this.iconSprite, { rotation: Math.round(rot / TAU) * TAU, duration: sUi(HUD_TIMING.spinSettle), ease: 'power3.out' });
+      const upright = Math.round(rot / TAU) * TAU;
+      gsap.to(this.iconSprite, { rotation: upright, duration: sUi(HUD_TIMING.spinSettle), ease: 'power3.out' });
       return;
     }
     let target = Math.ceil(rot / TAU) * TAU;

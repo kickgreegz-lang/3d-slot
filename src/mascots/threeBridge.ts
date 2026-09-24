@@ -41,7 +41,11 @@ export class RenderTargetView {
     samples: number,
   ) {
     this.rt = new WebGLRenderTarget(width, height, { samples, depthBuffer: true, stencilBuffer: false });
+    // allocation binds textures/framebuffers: bracket it like a frame (three's state cache is stale here)
+    three.resetState();
     three.initRenderTarget(this.rt);
+    three.setRenderTarget(null);
+    app.renderer.resetState();
     this.source = new ExternalSource({
       resource: this.glTexture(),
       renderer: app.renderer,
@@ -60,7 +64,10 @@ export class RenderTargetView {
     return this.rt.height;
   }
 
-  /** Reallocate at a new size (three recreates the GL texture, so the Pixi source is re-pointed). */
+  /**
+   * Reallocate at a new size (three recreates the GL texture, so the Pixi source is re-pointed).
+   * Call inside the frame's three.resetState() / app.renderer.resetState() bracket.
+   */
   resize(width: number, height: number): void {
     if (width === this.rt.width && height === this.rt.height) return;
     this.rt.setSize(width, height);

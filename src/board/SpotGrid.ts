@@ -23,9 +23,14 @@ import { type SpotTier, overlayTexture, tileTexture } from './tileArt';
  */
 const FONT = 'BoardSpot';
 const FONT_INSTALL_SIZE = 84;
-/** Number glyph size and spill past the tile edge (fractions of the cell). */
-const NUM_SIZE = 0.47;
-const NUM_SPILL = 0.035;
+/**
+ * Number layout (fractions of the cell): "x" hugs the tile's left edge and the value its
+ * right edge, both INSIDE the tile, so they peek out either side of the symbol (reference
+ * look) and never pair up with a neighbour's glyphs across the seam.
+ */
+const NUM_SIZE = 0.46;
+const X_SIZE = 0.34;
+const NUM_INSET = 0.045;
 
 const TIER_TEXT: Record<SpotTier, [number, number]> = {
   0: [0xffffff, 0xffffff],
@@ -158,7 +163,7 @@ export class SpotGrid {
   layout(L: LayoutSpec): void {
     this.cell = L.cell;
     const fontSize = L.cell * NUM_SIZE;
-    const edge = L.cell / 2 + L.cell * NUM_SPILL;
+    const edge = L.cell / 2 - L.cell * NUM_INSET;
     for (const col of this.cells) {
       for (const c of col) {
         const p = cellCenter(L, c.reel, c.row);
@@ -168,8 +173,9 @@ export class SpotGrid {
         c.wash.position.set(p.x, p.y);
         c.fx.position.set(p.x, p.y);
         c.num.position.set(p.x, p.y + L.cell * 0.01);
-        c.xText.style.fontSize = fontSize;
+        c.xText.style.fontSize = L.cell * X_SIZE;
         c.vText.style.fontSize = fontSize;
+        c.xText.y = L.cell * 0.035;
         c.xText.x = -edge;
         c.vText.x = edge;
         c.wash.texture = overlayTexture('wash', L.cell, this.res);
@@ -362,13 +368,25 @@ export class SpotGrid {
         const prevTier = spotTier(i === 0 ? start : steps[i - 1]);
         const tier = spotTier(v);
         tl.call(() => this.showNumber(c, v), [], tAt);
+        // (immediateRender: false — a timeline fromTo must not apply its start values early)
         if (i === 0 && numWasHidden) {
-          tl.fromTo(c.num, { alpha: 0 }, { alpha: 1, duration: s(80), ease: 'power1.out' }, tAt);
-          tl.fromTo(c.num.scale, { x: 0.55, y: 0.55 }, { x: 1, y: 1, duration: s(120), ease: 'back.out(2)' }, tAt);
+          tl.fromTo(c.num, { alpha: 0 }, { alpha: 1, duration: s(80), ease: 'power1.out', immediateRender: false }, tAt);
+          tl.fromTo(
+            c.num.scale,
+            { x: 0.55, y: 0.55 },
+            { x: 1, y: 1, duration: s(120), ease: 'back.out(2)', immediateRender: false },
+            tAt,
+          );
         } else if (i < steps.length - 1) {
-          tl.fromTo(c.num.scale, { x: 1.12, y: 1.12 }, { x: 1, y: 1, duration: s(BOARD_TIMING.rollStep), ease: 'power1.out' }, tAt);
+          tl.fromTo(
+            c.num.scale,
+            { x: 1.12, y: 1.12 },
+            { x: 1, y: 1, duration: s(BOARD_TIMING.rollStep), ease: 'power1.out', immediateRender: false },
+            tAt,
+          );
         }
-        if (tier !== prevTier) this.tierFlash(tl, c, tier, tAt);
+        // a fresh mark already owns the fx sprite (ignite ring): swap the skin without a flash
+        if (tier !== prevTier) this.tierFlash(tl, c, tier, tAt, !(from === 0 && i === 0));
       });
       const end = at + s((steps.length - 1) * BOARD_TIMING.rollStep);
       const punch = TIMING.spots.punchDuration;
@@ -400,17 +418,20 @@ export class SpotGrid {
     });
   }
 
-  /** Tier-change flash: additive tile flash, texture swap at the peak. */
-  private tierFlash(tl: gsap.core.Timeline, c: SpotCell, tier: SpotTier, at: number): void {
-    const flash = TIMING.spots.tierFlash;
+  /** Tier change: tile skin (+ heat shimmer) swaps at the peak of an additive flash. */
+  private tierFlash(tl: gsap.core.Timeline, c: SpotCell, tier: SpotTier, at: number, flash: boolean): void {
     tl.call(() => {
+      c.tile.texture = tileTexture(tier, this.cell, this.res);
+      this.setHeat(c, tier);
+      if (!flash) return;
       c.fx.texture = overlayTexture('flash', this.cell, this.res);
       c.fx.tint = TIER_FLASH[tier];
       c.fx.scale.set(1);
-      c.tile.texture = tileTexture(tier, this.cell, this.res);
     }, [], at);
-    tl.fromTo(c.fx, { alpha: 0.95 }, { alpha: 0, duration: s(flash), ease: 'power2.in' }, at);
-    tl.fromTo(c.fx.scale, { x: 1, y: 1 }, { x: 1.1, y: 1.1, duration: s(flash), ease: 'power2.out' }, at);
+    if (!flash) return;
+    const d = s(TIMING.spots.tierFlash);
+    tl.fromTo(c.fx, { alpha: 0.95 }, { alpha: 0, duration: d, ease: 'power2.in', immediateRender: false }, at);
+    tl.fromTo(c.fx.scale, { x: 1, y: 1 }, { x: 1.1, y: 1.1, duration: d, ease: 'power2.out', immediateRender: false }, at);
   }
 
   /** Values shown while rolling start -> to (evenly sampled, always ends on `to`). */

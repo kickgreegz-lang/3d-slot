@@ -383,7 +383,7 @@ export class Board implements GameModule {
       }
     }
     this.beam.show(reel, color, L);
-    this.spots.setColumnWash(reel, color, 0.32, TIMING.anticipation.introDuration);
+    this.spots.setColumnWash(reel, color, 0.22, TIMING.anticipation.introDuration);
     if (first) {
       this.sfx('anticipation_loop');
       this.ctx.game.broadcast('mascot:cue', { cue: 'anticipation' });

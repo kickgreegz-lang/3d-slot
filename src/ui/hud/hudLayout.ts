@@ -135,7 +135,12 @@ export const resolveHudLayout = (L: LayoutSpec): HudPlacement => {
         win: { ...h.win, mode: 'row', maxWidth: 640 },
         replay: { x: h.balance.x, y: h.balance.y + 12, align: 'left', maxWidth: 520 },
         fs: { ...h.bonusBuy, mode: 'hex', r: 88, tilt: -20 },
-        caption: { x: h.spin.x, y: h.spin.y + h.spin.size * 0.56 * 0.98, size: Math.round(h.labelFont * 0.9), anchorY: 0 },
+        caption: {
+          x: h.spin.x,
+          y: h.spin.y + h.spin.size * 0.56 * 0.98,
+          size: Math.round(h.labelFont * 0.9),
+          anchorY: 0,
+        },
         labelFont: h.labelFont,
         valueFont: h.valueFont,
         mirrorX: L.width / 2,

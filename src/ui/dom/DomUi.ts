@@ -13,7 +13,11 @@ import { SVG_ICONS } from './svgIcons';
 import './ui.css';
 
 /** Per-viewer conveniences only (never game state) — every access guarded. */
-const STORE_KEYS = { sound: 'swampfunk.sound', skipIntro: 'swampfunk.skipIntro', autoplay: 'swampfunk.autoplay' } as const;
+const STORE_KEYS = {
+  sound: 'swampfunk.sound',
+  skipIntro: 'swampfunk.skipIntro',
+  autoplay: 'swampfunk.autoplay',
+} as const;
 const store = {
   get(k: string): string | null {
     try {
@@ -98,7 +102,9 @@ export class DomUi implements GameModule {
     this.root.appendChild(this.toast);
 
     this.offs.push(
-      this.ctx.ui.on('ui:menu', ({ open, page }) => (open ? this.openMenu(page ?? this.lastPage) : this.closeMenuFromEvent())),
+      this.ctx.ui.on('ui:menu', ({ open, page }) =>
+        open ? this.openMenu(page ?? this.lastPage) : this.closeMenuFromEvent(),
+      ),
       uiBus.on('dialog:autoplay', () => this.openAutoplay()),
       uiBus.on('dialog:buy', ({ mode }) => this.openBuy(mode)),
       this.ctx.hud.on('hud:message', (m) => this.onMessage(m)),
@@ -161,7 +167,8 @@ export class DomUi implements GameModule {
     const ink = h('div.ui-tab-ink', { 'aria-hidden': 'true' });
     const tabs = new Map<MenuPage, HTMLButtonElement>();
     for (const p of MENU_PAGES) {
-      const b = h('button.ui-tab', { type: 'button', role: 'tab', 'aria-selected': 'false', id: `ui-tab-${p}` }, t(`menu.${p}`));
+      const attrs = { type: 'button', role: 'tab', 'aria-selected': 'false', id: `ui-tab-${p}` };
+      const b = h('button.ui-tab', attrs, t(`menu.${p}`));
       b.addEventListener('click', () => this.showPage(p));
       tabs.set(p, b);
       tabsEl.append(b);

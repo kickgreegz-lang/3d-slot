@@ -36,7 +36,16 @@ const REACT = {
  * behind the HUD). Off entirely in the compact layout (popouts): nothing is rendered.
  *
  * Driven by scene events (round/board/win/big-win/free-spin) and explicit `mascot:cue`s;
- * it never holds the round (handlers return nothing).
+ * it never holds the round (handlers return nothing). Big-win celebrations loop until the
+ * next scene event that ends the presentation (win:final, board:reveal, fs:update, round:*).
+ *
+ * Files: threeBridge (shared context + RT->Pixi), toon + ToonOutline (look), Mascot (one
+ * character: scene, camera, RT sprite, blob shadow), MascotController (clip contract +
+ * crossfades), procedural (breath/look-at/springs/expressions), characters (theme data),
+ * placeholderDressing (CC0 robot -> gator/frog props; placeholder only).
+ *
+ * QA: `__slot.emit('mascot:cue', { cue: 'celebrate' })` (any MascotCue); `?tier=low` for the
+ * 30 fps / small-RT path; DEV exposes `window.__mascots` ({ list, cue, module }).
  */
 export class Mascots implements GameModule {
   private three: WebGLRenderer | null = null;

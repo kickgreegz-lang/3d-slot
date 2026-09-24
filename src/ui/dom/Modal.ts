@@ -26,7 +26,8 @@ interface Entry {
   open: boolean;
 }
 
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 /** fallback removal if 'transitionend' never fires (hidden tab, reduced motion) */
 const CLOSE_FALLBACK_S = 0.45;
 
@@ -104,7 +105,8 @@ export class ModalStack {
     };
     entry.opts.panel.addEventListener('transitionend', remove, { once: true });
     gsap.delayedCall(CLOSE_FALLBACK_S, remove);
-    if (entry.restore instanceof HTMLElement && document.contains(entry.restore)) entry.restore.focus({ preventScroll: true });
+    const back = entry.restore;
+    if (back instanceof HTMLElement && document.contains(back)) back.focus({ preventScroll: true });
     entry.opts.onClose?.();
     this.onChange(this.anyOpen);
   }
@@ -119,7 +121,8 @@ export class ModalStack {
       return;
     }
     if (e.key === 'Tab') {
-      const items = [...top.opts.panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.offsetParent !== null);
+      const all = top.opts.panel.querySelectorAll<HTMLElement>(FOCUSABLE);
+      const items = [...all].filter((el) => el.offsetParent !== null);
       if (!items.length) return;
       const first = items[0];
       const last = items[items.length - 1];

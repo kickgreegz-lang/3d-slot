@@ -1,0 +1,76 @@
+{
+  "$comment": "Machine-readable copy of docs/ANIMATION_CONTRACT.md sections 2-4, shared by tools/spine/gen.py (defaults) and tools/spine/validate.mjs (rules). When the doc changes, change this file in the same PR. All frames are at 30 fps; lengths are skeleton units (@2x px).",
+  "fps": 30,
+  "spineVersion": "4.3.23",
+  "referenceScale": 100,
+  "imagesPath": "../../art/source/spine/images/",
+  "canvasPx": 360,
+  "cellPx": 300,
+  "boneNames": {
+    "fixed": ["root", "squash", "body"],
+    "prefixes": ["ctrl_", "ik_", "phys_", "face_", "fx_"],
+    "pattern": "^[a-z][a-z0-9_]*(_[LR])?$"
+  },
+  "budgets": { "bones": 30, "meshVertices": 250, "slots": 8, "clipping": 0 },
+  "constraintOrder": ["ik", "transform", "physics", "slider"],
+  "physics": {
+    "defaults": { "f": 3.5, "zeta": 0.25, "mass": 1, "inertia": 0.6, "fps": 60, "limit": 12000, "rotate": 1 },
+    "presets": {
+      "floppy": { "f": 3.0, "zeta": 0.2 },
+      "default": { "f": 3.5, "zeta": 0.25 },
+      "stiff": { "f": 4.0, "zeta": 0.3 },
+      "jelly": { "f": 5.0, "zeta": 0.3 }
+    },
+    "minLimit": 10500,
+    "editorDefault": { "strength": 100, "damping": 0.85 }
+  },
+  "events": {
+    "land_impact": {},
+    "win_peak": {},
+    "explode_burst": {},
+    "explode_done": {},
+    "sfx": { "string": "" },
+    "vfx": { "string": "" },
+    "shake": { "float": 0 }
+  },
+  "fxIds": [
+    "fx_explode", "fx_dust", "fx_land_puff", "fx_sparkle", "fx_coins", "fx_confetti", "fx_spot_spark", "fx_scatter",
+    "fx_shake", "fx_flash", "fx_coin_shower", "fx_title_shine", "fx_shockwave", "fx_lightning", "fx_neon_flicker",
+    "fx_trail", "fx_smoke_bg", "fx_poof", "fx_smoke", "fx_explosion_big"
+  ],
+  "animations": {
+    "idle":               { "loop": true,  "frames": [60, 120], "required": ["high", "special"], "events": [] },
+    "land":               { "loop": false, "frames": [9, 15],   "required": ["high", "special"], "events": ["land_impact"], "endsAtSetup": true, "inCell": true },
+    "win":                { "loop": false, "frames": [18, 27],  "required": ["high", "special"], "events": ["win_peak"], "endsAt": "win_loop" },
+    "win_loop":           { "loop": true,  "frames": [30, 60],  "required": ["high", "special"], "events": [] },
+    "anticipation":       { "loop": true,  "frames": [12, 24],  "required": ["special"], "events": [] },
+    "anticipation_intro": { "loop": false, "frames": [6, 12],   "required": [], "events": [], "endsAt": "anticipation" },
+    "anticipation_out":   { "loop": false, "frames": [5, 10],   "required": [], "events": [], "endsAtSetup": true },
+    "explode":            { "loop": false, "frames": [9, 18],   "required": ["high", "special"], "events": ["explode_burst", "explode_done"], "endsAlpha0": true,
+                            "eventFrames": { "explode_burst": { "target": [2, 3], "hard": [1, 5] }, "explode_done": { "fromEnd": 2 } } },
+    "appear":             { "loop": false, "frames": [6, 12],   "required": [], "events": [], "endsAtSetup": true },
+    "blur":               { "loop": true,  "frames": [1, 2],    "required": ["high", "special"], "events": [] },
+    "dim":                { "loop": false, "frames": [0, 30],   "required": [], "events": [], "overlay": 1 },
+    "blink":              { "loop": false, "frames": [3, 6],    "required": [], "events": [], "overlay": 2 },
+    "fx_glow":            { "loop": true,  "frames": [1, 120],  "required": [], "events": [], "overlay": 1 }
+  },
+  "runtimeAliases": {
+    "$comment": "Names the CURRENT runtime (src/symbols/SpinePool.ts) listens for until ANIMATION_CONTRACT section 10 items 1-2 land. gen.py emits them only with compat.runtime_aliases: true.",
+    "animations": { "anticipation_loop": "anticipation" },
+    "events": { "impact": "land_impact", "burst": "explode_burst" }
+  },
+  "symbolKinds": {
+    "H1": "high", "H2": "high", "H3": "high", "H4": "high",
+    "W": "special", "S": "special",
+    "L1": "royal", "L2": "royal", "L3": "royal", "L4": "royal", "L5": "royal"
+  },
+  "timing": {
+    "winAnimDurationMs": 900,
+    "explodeAnticipateMs": 80,
+    "anticipationPulsePeriodMs": 520,
+    "anticipationIntroMs": 300,
+    "anticipationOutroMs": 250,
+    "dimTint": "7f7f7f",
+    "runtimeKick": 26
+  }
+}

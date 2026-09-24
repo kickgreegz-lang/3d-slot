@@ -322,11 +322,14 @@ export const beamTexture = (kind: 'beam' | 'rail' | 'streak'): Texture => {
     const [w, h] = kind === 'beam' ? [96, 256] : kind === 'rail' ? [24, 256] : [16, 96];
     const { c, g } = canvas(w, h, 1);
     const across = g.createLinearGradient(0, 0, w, 0);
-    const core = kind === 'beam' ? 0.35 : kind === 'rail' ? 0.12 : 0.22;
+    const core = kind === 'beam' ? 0.3 : kind === 'rail' ? 0.12 : 0.22;
+    const shoulder = kind === 'beam' ? 0.22 : 0.35;
     across.addColorStop(0, 'rgba(255,255,255,0)');
-    across.addColorStop(0.5 - core, 'rgba(255,255,255,0.35)');
+    across.addColorStop(0.5 - core, `rgba(255,255,255,${shoulder})`);
+    across.addColorStop(0.5 - core * 0.3, 'rgba(255,255,255,0.8)');
     across.addColorStop(0.5, 'rgba(255,255,255,1)');
-    across.addColorStop(0.5 + core, 'rgba(255,255,255,0.35)');
+    across.addColorStop(0.5 + core * 0.3, 'rgba(255,255,255,0.8)');
+    across.addColorStop(0.5 + core, `rgba(255,255,255,${shoulder})`);
     across.addColorStop(1, 'rgba(255,255,255,0)');
     g.fillStyle = across;
     g.fillRect(0, 0, w, h);

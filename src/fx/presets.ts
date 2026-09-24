@@ -110,7 +110,7 @@ const stars = (c: BurstContext, x: number, y: number, k: number, n: number, colo
     s.drag = 2.6;
     s.rot = rand(-0.4, 0.4);
     s.vrot = rand(-1.5, 1.5);
-    const sz = opts.size ?? [18, 34];
+    const sz = opts.size ?? [26, 44];
     s.size0 = rand(sz[0], sz[1]) * k;
     s.size1 = s.size0 * 0.4;
     s.sizeMode = SIZE.pop;
@@ -124,10 +124,12 @@ const stars = (c: BurstContext, x: number, y: number, k: number, n: number, colo
 
 const explode = (c: BurstContext, p: BurstPayload, k: number, power: number, color: number): void => {
   const { x, y } = p;
-  const n = p.count ?? randInt(6, 10);
+  // `count` = total debris (shards + sparks); default 6-10 shards + 8-12 sparks
+  const n = p.count !== undefined ? Math.max(3, Math.round(p.count * 0.45)) : randInt(6, 10);
+  const nSparks = p.count !== undefined ? Math.max(3, p.count - n) : randInt(8, 12);
   // light first (additive flash + ring) so the eye lands on the impact
-  glow(c, x, y, k, 200, 110, 0.18, lighten(color, 0.45), 0.9);
-  ring(c, x, y, k, 50, 250 * (0.8 + 0.2 * power), 0.32, lighten(color, 0.5), 0.9);
+  glow(c, x, y, k, 260, 150, 0.2, lighten(color, 0.45), 1);
+  ring(c, x, y, k, 60, 300 * (0.8 + 0.2 * power), 0.34, lighten(color, 0.5), 0.95);
   // smoke puff behind
   const smoke = c.tex('smoke');
   for (let i = 0; i < 3; i++) {
@@ -166,13 +168,13 @@ const explode = (c: BurstContext, p: BurstPayload, k: number, power: number, col
     s.drag = 1.3;
     s.rot = rand(0, TAU);
     s.vrot = rand(-16, 16);
-    s.size0 = rand(24, 40) * k;
-    s.size1 = s.size0 * 0.55;
+    s.size0 = rand(40, 64) * k * (0.8 + 0.2 * power);
+    s.size1 = s.size0 * 0.5;
     s.alphaMode = ALPHA.late;
     s.life = rand(0.55, 0.85);
     s.color = tones[i % 3];
   }
-  sparks(c, x, y, k, randInt(8, 12), color, [700, 1500]);
+  sparks(c, x, y, k, nSparks, color, [700, 1500], { size: [26, 40] });
 };
 
 const dust = (c: BurstContext, p: BurstPayload, k: number, power: number, color: number): void => {
@@ -190,8 +192,8 @@ const dust = (c: BurstContext, p: BurstPayload, k: number, power: number, color:
     s.g = -45 * k;
     s.rot = rand(0, TAU);
     s.vrot = side * rand(0.5, 2.5);
-    s.size0 = rand(24, 42) * k;
-    s.size1 = s.size0 * rand(1.9, 2.5);
+    s.size0 = rand(40, 66) * k;
+    s.size1 = s.size0 * rand(1.8, 2.3);
     s.sizeMode = SIZE.easeOut;
     s.alpha0 = rand(0.4, 0.62);
     s.alphaMode = ALPHA.inOut;

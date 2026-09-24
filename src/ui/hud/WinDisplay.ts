@@ -82,14 +82,9 @@ export class WinDisplay extends Container {
 
   /** Static readout from HudState (ignored while a count-up is rolling). */
   setStatic(text: string, show: boolean): void {
-    if (this.tween) {
-      if (show) return;
-      // a new round cleared the win while a count was still rolling
-      this.tween.kill();
-      this.tween = null;
-      gsap.killTweensOf(this.body.scale);
-      this.body.scale.set(1);
-    }
+    // the flow keeps the pre-count amount until a count finishes: never let a
+    // state snapshot cut a rolling count short (a new round calls reset())
+    if (this.tween) return;
     if (show) {
       this.value.text = text;
       this.arrange(text);
@@ -135,6 +130,16 @@ export class WinDisplay extends Container {
         ease: 'power1.in',
       });
     });
+  }
+
+  /** New round: drop any rolling count and hide until the next win. */
+  reset(): void {
+    this.tween?.kill();
+    this.tween = null;
+    this.punch?.kill();
+    gsap.killTweensOf(this.body.scale);
+    this.body.scale.set(1);
+    this.setShown(false);
   }
 
   private onCount(tl: gsap.core.Tween): void {

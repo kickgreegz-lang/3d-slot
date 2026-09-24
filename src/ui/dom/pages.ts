@@ -104,7 +104,12 @@ export const paytablePage = (deps: PageDeps): HTMLElement => {
     h(
       'div.pt-spots',
       { 'aria-hidden': 'true' },
-      spot('', 'linear-gradient(#26375a,#1c2945)', '#fff', 'inset 0 0 0 2px rgba(255,190,90,.55), 0 0 12px rgba(255,160,60,.35)'),
+      spot(
+        '',
+        'linear-gradient(#26375a,#1c2945)',
+        '#fff',
+        'inset 0 0 0 2px rgba(255,190,90,.55), 0 0 12px rgba(255,160,60,.35)',
+      ),
       spot('x2', 'linear-gradient(#26375a,#1f2e4d)', '#a77a2c'),
       spot('x4', 'linear-gradient(#2a2f4d,#6d190c)', '#e0501e'),
       spot('x8', 'linear-gradient(#ae231f,#dc4812)', '#ffcc00', '0 0 10px rgba(255,90,30,.55)'),
@@ -182,7 +187,12 @@ export const rulesPage = (): HTMLElement => {
     section('tumble', p(t('rules.tumble.body'))),
     section('spots', p(t('rules.spots.body', { maxSpot: GAME_INFO.maxSpot, spotReset: t('rules.spots.reset') }))),
     section('wild', p(t('rules.wild.body'))),
-    section('fs', p(t('rules.fs.body', { min: GAME_INFO.scatterMin })), fsTable, p(t('rules.fs.retrigger', { min: GAME_INFO.scatterMin }))),
+    section(
+      'fs',
+      p(t('rules.fs.body', { min: GAME_INFO.scatterMin })),
+      fsTable,
+      p(t('rules.fs.retrigger', { min: GAME_INFO.scatterMin })),
+    ),
     buy ? section('buy', p(t('rules.buy.body', { cost: buy.cost, spins: buy.spins ?? '' }))) : [],
     section('maxWin', p(t('rules.maxWin.body', { maxWin }))),
     section('rtp', p(t('rules.rtp.body'))),
@@ -250,7 +260,8 @@ export const guidePage = (): HTMLElement => {
 // ── SETTINGS ──────────────────────────────────────────────────────────────
 
 const switchEl = (on: boolean, label: string, onToggle: (v: boolean) => void, disabled = false): HTMLButtonElement => {
-  const b = h('button.ui-switch', { type: 'button', role: 'switch', 'aria-checked': String(on), 'aria-label': label, disabled });
+  const attrs = { type: 'button', role: 'switch', 'aria-checked': String(on), 'aria-label': label, disabled };
+  const b = h('button.ui-switch', attrs);
   b.addEventListener('click', () => {
     const v = b.getAttribute('aria-checked') !== 'true';
     b.setAttribute('aria-checked', String(v));
@@ -278,7 +289,12 @@ export const settingsPage = (deps: PageDeps): { el: HTMLElement; sync(): void } 
   });
   const turboDesc = h('div.st-desc', null, s.turboAllowed ? t('settings.turbo.desc') : t('settings.turbo.locked'));
   const row = (label: string, desc: HTMLElement | string, control: HTMLElement): HTMLElement =>
-    h('div.st-row.ui-card', null, h('div', null, h('div.st-label', null, label), typeof desc === 'string' ? h('div.st-desc', null, desc) : desc), control);
+    h(
+      'div.st-row.ui-card',
+      null,
+      h('div', null, h('div.st-label', null, label), typeof desc === 'string' ? h('div.st-desc', null, desc) : desc),
+      control,
+    );
 
   const el = h(
     'div.ui-page',
@@ -290,7 +306,15 @@ export const settingsPage = (deps: PageDeps): { el: HTMLElement; sync(): void } 
       row(t('settings.turbo'), turboDesc, seg),
       row(t('settings.intro'), t('settings.intro.desc'), intro),
     ),
-    h('p.ui-note', null, h('span.ui-kbd', null, 'SPACE'), ' / ', h('span.ui-kbd', null, 'ENTER'), ' — ', t('settings.keys')),
+    h(
+      'p.ui-note',
+      null,
+      h('span.ui-kbd', null, 'SPACE'),
+      ' / ',
+      h('span.ui-kbd', null, 'ENTER'),
+      ' — ',
+      t('settings.keys'),
+    ),
   );
 
   const sync = (): void => {

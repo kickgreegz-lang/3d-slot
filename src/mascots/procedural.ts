@@ -417,14 +417,17 @@ export class ProceduralLayers {
       if (e === 'surprised' && !hasHappy) t = Math.max(t, (targets.happy ?? 0) * 0.55);
       this.expr[e] += (t - this.expr[e]) * k;
     }
-    // blinks (rigs with a blink shape only)
+    // blinks; rigs without a blink shape get an occasional idle brow-raise instead
+    this.nextBlink -= dt;
     if (this.morphs.has('blink')) {
-      this.nextBlink -= dt;
       if (this.nextBlink <= 0 && stateTime > 0.2) {
         this.flash.blink = { w: 1, left: 0.07 };
         this.nextBlink = this.blinkGap();
       }
       this.expr.blink = this.flash.blink.left > 0 ? 1 : this.expr.blink * (1 - k);
+    } else if (this.nextBlink <= 0) {
+      if (state === 'idle' && this.morphs.has('surprised')) this.flashExpr('surprised', 0.4, 0.3);
+      this.nextBlink = this.blinkGap() * 2.5;
     }
     for (let i = 0; i < this.morphSlots.length; i++) {
       const inf = this.morphSlots[i].mesh.morphTargetInfluences;

@@ -17,7 +17,14 @@ const greyRamp = (): FillInput => verticalRamp(HUD_COLORS.iconTop, HUD_COLORS.ic
  * Ring arrow as ONE closed polygon: butt tail at `a0`, clockwise arc to `a1`, and a
  * tangential arrowhead (clockwise = the direction the spin button turns).
  */
-export const ringArrowPoints = (r: number, th: number, a0: number, a1: number, headW: number, headL: number): PointData[] => {
+export const ringArrowPoints = (
+  r: number,
+  th: number,
+  a0: number,
+  a1: number,
+  headW: number,
+  headL: number,
+): PointData[] => {
   const ro = r + th / 2;
   const ri = r - th / 2;
   const pts: PointData[] = [];

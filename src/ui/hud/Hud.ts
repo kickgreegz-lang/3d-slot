@@ -99,6 +99,7 @@ export class Hud implements GameModule {
         this.win.countTo(from, to, durationMs, (v) => this.ctx.money.format(v)),
       ),
       this.ctx.game.on('layout:change', ({ layout }) => this.layout(layout)),
+      this.ctx.game.on('round:start', () => this.win.reset()),
     );
     window.addEventListener('keydown', this.onKey);
     this.layout(this.ctx.layout);
@@ -113,7 +114,12 @@ export class Hud implements GameModule {
 
   // ── construction ───────────────────────────────────────────────────────
 
-  private small(label: string, icon: IconDraw, onTap: () => void, sfx: HexButtonOptions['sfx'] = 'ui_click'): HexButton {
+  private small(
+    label: string,
+    icon: IconDraw,
+    onTap: () => void,
+    sfx: HexButtonOptions['sfx'] = 'ui_click',
+  ): HexButton {
     const b = new HexButton(this.ctx, {
       label,
       radius: 36,
@@ -142,7 +148,8 @@ export class Hud implements GameModule {
     this.spinCaption = this.texts.make('', labelStyle(28), 0.5, 0);
     this.spinCaption.visible = false;
     this.status = new StatusLine(this.texts, GAME_INFO.title);
-    this.root.addChild(this.status, this.balance, this.bet, this.win, this.replay, this.replayInfo, this.fs, this.spinCaption);
+    this.root.addChild(this.status, this.balance, this.bet, this.win);
+    this.root.addChild(this.replay, this.replayInfo, this.fs, this.spinCaption);
 
     this.menu = this.small('menu', menuIcon, () => ui.broadcast('ui:menu', { open: true }));
     this.autoplay = this.small('autoplay', autoplayIcon, () => {
@@ -155,7 +162,13 @@ export class Hud implements GameModule {
 
     this.buy = new BonusBuyButton(
       this.ctx,
-      { label: 'bonusBuy', radius: 88, tilt: -20, corner: 0.22, onTap: () => uiBus.broadcast('dialog:buy', { mode: 'BONUS' }) },
+      {
+        label: 'bonusBuy',
+        radius: 88,
+        tilt: -20,
+        corner: 0.22,
+        onTap: () => uiBus.broadcast('dialog:buy', { mode: 'BONUS' }),
+      },
       this.texts,
       t('bonusBuy'),
     );
@@ -253,9 +266,10 @@ export class Hud implements GameModule {
     });
     this.fs.position.set(P.fs.x, P.fs.y);
 
-    this.balance.configure({ align: P.balance.align, labelSize: P.labelFont, valueSize: P.valueFont, maxWidth: P.balance.maxWidth });
+    const fonts = { labelSize: P.labelFont, valueSize: P.valueFont };
+    this.balance.configure({ ...fonts, align: P.balance.align, maxWidth: P.balance.maxWidth });
     this.balance.position.set(P.balance.x, P.balance.y);
-    this.bet.configure({ align: P.bet.align, labelSize: P.labelFont, valueSize: P.valueFont, maxWidth: P.bet.maxWidth });
+    this.bet.configure({ ...fonts, align: P.bet.align, maxWidth: P.bet.maxWidth });
     this.bet.position.set(P.bet.x, P.bet.y);
 
     this.win.configure({
@@ -346,7 +360,8 @@ export class Hud implements GameModule {
     this.buy.setShown(s.buyAllowed && !replay && !fs, animate);
     this.buy.setEnabled(idle && !fs);
 
-    this.fs.setCount(fs && s.freeSpins ? t('hud.fsOf', { current: s.freeSpins.current, total: s.freeSpins.total }) : null);
+    const fsText = s.freeSpins ? t('hud.fsOf', { current: s.freeSpins.current, total: s.freeSpins.total }) : null;
+    this.fs.setCount(fsText);
     this.win.setLabel(fs ? t('totalWin') : t('win'));
     this.win.setStatic(s.winText, s.win > 0);
   }

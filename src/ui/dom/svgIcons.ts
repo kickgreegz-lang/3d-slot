@@ -29,7 +29,15 @@ const polyPath = (pts: PointData[]): string => `M${pts.map((p) => `${f(p.x)},${f
 
 const GREY = `<linearGradient id="g" x1="0.3" y1="0" x2="0.7" y2="1"><stop offset="0" stop-color="#eeeeee"/><stop offset="1" stop-color="#8e8e8e"/></linearGradient>`;
 
-const hexSvg = (inner: string, opts: { fill: string; stroke: string; sw: number; tilt: number; defs?: string }): string =>
+interface HexStyle {
+  fill: string;
+  stroke: string;
+  sw: number;
+  tilt: number;
+  defs?: string;
+}
+
+const hexSvg = (inner: string, opts: HexStyle): string =>
   `<svg viewBox="-50 -50 100 100" width="100%" height="100%"><defs>${GREY}${opts.defs ?? ''}</defs>` +
   `<path d="${roundPath(hexPoints(44, opts.tilt), 0.2)}" fill="${opts.fill}" stroke="${opts.stroke}" stroke-width="${opts.sw}"/>${inner}</svg>`;
 

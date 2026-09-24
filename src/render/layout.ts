@@ -12,9 +12,37 @@ import type { GameContext } from '../game/context';
 export class LayoutManager {
   private lastKey = '';
 
-  constructor(private ctx: GameContext) {
+  constructor(
+    private ctx: GameContext,
+    /** max renderer resolution for this device tier (see render/app.ts) */
+    private dprCap = 2,
+  ) {
     const app: Application = ctx.app;
     app.renderer.on('resize', () => this.update());
+    this.watchPixelRatio();
+  }
+
+  /**
+   * devicePixelRatio changes (browser zoom, dragging to a HiDPI monitor) don't pass a
+   * resolution to Pixi's resize, so re-apply it and force a re-layout (HUD/frame/background
+   * bake at ctx.scale * renderer.resolution). The media query is re-armed for each new DPR.
+   */
+  private watchPixelRatio(): void {
+    if (typeof matchMedia !== 'function') return;
+    const dpr = window.devicePixelRatio || 1;
+    matchMedia(`(resolution: ${dpr}dppx)`).addEventListener(
+      'change',
+      () => {
+        const { app } = this.ctx;
+        const res = Math.min(window.devicePixelRatio || 1, this.dprCap);
+        if (res !== app.renderer.resolution) {
+          app.renderer.resize(app.screen.width, app.screen.height, res);
+          this.update(true);
+        }
+        this.watchPixelRatio();
+      },
+      { once: true },
+    );
   }
 
   update(force = false): void {

@@ -56,7 +56,7 @@ const boot = async (): Promise<void> => {
     scale: 1,
   };
 
-  const layout = new LayoutManager(ctx);
+  const layout = new LayoutManager(ctx, tier === 'low' ? 1.5 : 2);
   layout.update(true);
 
   const modules: GameModule[] = [

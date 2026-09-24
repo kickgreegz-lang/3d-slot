@@ -30,6 +30,7 @@ tools/blender/run.sh <x> <args>          # picks $BLENDER if set, else $BPY_PYTH
 | `tests/run_tests.sh` | End-to-end verification (units, every script, gates, determinism, optimize) | `art/_work/test_run/` |
 | `tests/make_fixtures.py` | Deterministic stand-ins for vendor output (dense textured blob, textured jar) | `art/_work/fixtures/` |
 | `tests/sim_blender.py` | Runs a script with Blender's argv layout and Pillow hidden, as inside the Blender binary | — |
+| `tests/compare_frames.py` | Two frame folders: bit-exact, or within tolerance (reported) | — |
 
 Shared code is in `slotbl/`: `cli`, `provenance`, `palette`, `easing`, `imgtools` and `animspec` never import bpy; `scene` does.
 
@@ -91,6 +92,8 @@ python tools/blender/render_symbol.py --glyph K --clip turn --static build/frame
 | `hullBleed` | no counter or hole of the no-hull render loses more than 70 % of its area to the hull |
 | `pivotDrift` | turn/spin: the union bbox is centred on the pivot column (≤ max(1.5 px, 0.6 %)); land: the bottom row moves ≤ 2 px |
 | `endsEmpty` | shatter: last-frame coverage ≤ 0.2 % |
+
+**Determinism.** Cycles CPU frames are bit-exact across runs and thread counts: 6/6 identical coin renders at 1–3 threads, and the K turn is identical between suite runs. The exception is geometry with **exact ray ties** (coincident faces or T-junction edges): Embree builds its BVH multithreaded, so the tie can resolve differently. That showed up as 6 pixels ±4/255 at the coin's star emblem until the star was sunk 4 mm into the field. Keep procedural and prop geometry free of coincident surfaces. EEVEE on a GPU is not a bit-exact reference.
 
 **Manifest row.** There is one row per clip folder: `stage 3d-render`, `route blender`, `licenseId blender-5.2`.
 - `sha256` is the digest of the `'<file>:<sha256>\n'` lines of the folder, sorted.
@@ -215,7 +218,7 @@ Options: `--recolor 'Main=#3F9D3A,…'` for untextured placeholders; `--pose ACT
 - **Symbol renders:** the K turn at 256 px × 24 f, coin spin, A shatter, Q land, gem turn, and the K static with the frame-1 gate.
 - **An expected gate failure (exit 3).**
 - **The Blender-binary argv path**, with Pillow hidden.
-- **Determinism:** a byte-identical re-render.
+- **Determinism and idempotency:** frame-by-frame identical re-renders of the coin and the K, and an unchanged manifest row after an in-place re-run.
 - **Animation:** build_actions, then export, then the clip sheet, then the action-filtered and renamed export.
 - **Cleanup:** fixture and rigged placeholder cleanup, with turntables.
 - **glTF:** optimize on the placeholder, the exported and the cleaned GLBs, two expected budget breaches, and optimize determinism.

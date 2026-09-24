@@ -11,3 +11,4 @@ public/dev-only/
 tools/.venv/
 screenshots/
 __pycache__/
+*.local.ts

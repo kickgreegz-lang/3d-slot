@@ -245,7 +245,9 @@ def build_coin(args, plan, log):
     bmesh.ops.bevel(bm, geom=rim, offset=0.018, segments=2, profile=0.5, affect="EDGES")
     # five-point star emblem on both faces (no text on symbols); material 1 = emblem
     for sgn in (1, -1):
-        z = sgn * (0.06 - 0.014)
+        # base sunk 4 mm below the recessed field: coincident star/field edges are ray-tie
+        # cases whose result depends on the (multithreaded) BVH build order -> non-bit-exact
+        z = sgn * (0.06 - 0.014 - 0.004)
         pts = []
         for i in range(10):
             a = math.pi / 2 + i * math.pi / 5
@@ -255,7 +257,7 @@ def build_coin(args, plan, log):
         face.material_index = 1              # extruded walls/top inherit it
         ext = bmesh.ops.extrude_face_region(bm, geom=[face])
         moved = [v for v in ext["geom"] if isinstance(v, bmesh.types.BMVert)]
-        bmesh.ops.translate(bm, verts=moved, vec=Vector((0, 0, sgn * 0.022)))
+        bmesh.ops.translate(bm, verts=moved, vec=Vector((0, 0, sgn * 0.026)))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     me = bpy.data.meshes.new("coin")
     bm.to_mesh(me)

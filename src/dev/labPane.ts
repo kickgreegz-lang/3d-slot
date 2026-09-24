@@ -2,7 +2,7 @@ import { type FolderApi, Pane, type TabPageApi } from 'tweakpane';
 import timingSource from '../core/timing.ts?raw';
 import { SYMBOLS, SYMBOL_IDS, WIN_TIERS } from '../config/game';
 import { clock } from '../core/clock';
-import { getSpeedProfile, setSpeedProfile, type SpeedProfile, TIMING } from '../core/timing';
+import { getSpeedProfile, setSpeedProfile, type SpeedProfile, TIMING, TIMING_SECTIONS } from '../core/timing';
 import type { GameContext } from '../game/context';
 import type { SymbolGallery } from './gallery';
 import type { DevSlotHooks } from './hooks';
@@ -10,12 +10,14 @@ import type { InspectorPlacement } from './inspector';
 import { BURST_KINDS, MASCOT_CUES } from './scenarios';
 import {
   changedLeaves,
+  CORE_SECTION,
   exportTimingSource,
   isColorLeaf,
   onTimingChange,
   rangeFor,
   resetTiming,
   saveTimingEdit,
+  sectionsJson,
 } from './timingEdit';
 
 /**
@@ -209,26 +211,39 @@ export class LabPane {
       interval: MONITOR_INTERVAL,
       format: (v: number) => v.toFixed(0),
     });
-    page.addButton({ title: 'Export TIMING → timing.ts + JSON' }).on('click', () => this.exportTiming());
+    page.addButton({ title: 'Export → timing.ts + sections JSON' }).on('click', () => this.exportTiming());
     page.addButton({ title: 'Reset to compiled defaults' }).on('click', () => {
       resetTiming();
       this.say('timing reset');
     });
 
+    // core TIMING: one folder per top-level group (strings = eases, editable as text)
+    const core = page.addFolder({ title: `${CORE_SECTION} (TIMING)`, expanded: true });
     const root = TIMING as unknown as Record<string, unknown>;
-    for (const section of Object.keys(root)) {
-      const f = page.addFolder({ title: section, expanded: section === 'land' });
-      this.bindNode(f, root[section] as Record<string, unknown>, section);
+    for (const group of Object.keys(root)) {
+      const f = core.addFolder({ title: group, expanded: group === 'land' });
+      this.bindNode(f, root[group] as Record<string, unknown>, group, true);
+    }
+    // module sections registered via registerTiming(): numeric leaves only
+    for (const [name, table] of Object.entries(TIMING_SECTIONS)) {
+      if (name === CORE_SECTION) continue;
+      const f = page.addFolder({ title: name, expanded: false });
+      this.bindNode(f, table, name, false);
     }
   }
 
-  private bindNode(folder: FolderApi, node: Record<string, unknown> | unknown[], path: string): void {
+  /** Binds leaves under `node`; `path` is the qualified path prefix (bare for core). */
+  private bindNode(folder: FolderApi, node: Record<string, unknown> | readonly unknown[], path: string, strings: boolean): number {
+    let bound = 0;
     for (const key of Object.keys(node)) {
       const value = (node as Record<string, unknown>)[key];
       const leafPath = `${path}.${key}`;
       const label = Array.isArray(node) ? `[${key}]` : key;
       if (typeof value === 'object' && value !== null) {
-        this.bindNode(folder.addFolder({ title: key, expanded: false }), value as Record<string, unknown>, leafPath);
+        const sub = folder.addFolder({ title: key, expanded: false });
+        const n = this.bindNode(sub, value as Record<string, unknown>, leafPath, strings);
+        if (n === 0) folder.remove(sub);
+        bound += n;
         continue;
       }
       const target = node as Record<string, unknown>;
@@ -237,33 +252,45 @@ export class LabPane {
         binding = folder.addBinding(target, key, { label, view: 'color' });
       } else if (typeof value === 'number') {
         binding = folder.addBinding(target, key, { label, ...rangeFor(leafPath, value) });
-      } else if (typeof value === 'string') {
+      } else if (typeof value === 'string' && strings) {
         binding = folder.addBinding(target, key, { label });
       } else continue;
+      bound++;
       binding.on('change', () => {
         saveTimingEdit();
         this.status.changed = changedLeaves().length;
       });
     }
+    return bound;
   }
 
-  private exportTiming(): void {
-    const { text, patched } = exportTimingSource(timingSource);
-    const blob = new Blob([text], { type: 'text/typescript' });
+  private download(name: string, text: string, type: string): void {
+    const blob = new Blob([text], { type });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'timing.ts';
+    a.download = name;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
-    const json = JSON.stringify(TIMING, null, 2);
+  }
+
+  /**
+   * timing.ts = the patched core TIMING source; timing-sections.json = every
+   * registered section ({core, board, symbol, ...}) to paste back into its owner
+   * file. The sections JSON is also copied to the clipboard.
+   */
+  private exportTiming(): void {
+    const { text, patched } = exportTimingSource(timingSource);
+    const json = sectionsJson();
+    this.download('timing.ts', text, 'text/typescript');
+    this.download('timing-sections.json', json, 'application/json');
     const n = changedLeaves().length;
     const what = patched ? 'timing.ts (patched source)' : 'TIMING literal';
     navigator.clipboard
       .writeText(json)
-      .then(() => this.say(`exported ${what}, ${n} changed · JSON copied`))
-      .catch(() => this.say(`exported ${what}, ${n} changed · clipboard blocked`));
+      .then(() => this.say(`exported ${what} + sections, ${n} changed · JSON copied`))
+      .catch(() => this.say(`exported ${what} + sections, ${n} changed · clipboard blocked`));
   }
 
   // ------------------------------------------------------------------ SYMBOL

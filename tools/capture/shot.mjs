@@ -50,10 +50,12 @@ const shots = [];
 if (frames > 0) {
   await page.evaluate(() => window.__slot.manual(true));
   if (script) {
+    // The trailing `; 0` matters: evaluate must NOT await the script's promise — in manual-clock
+    // mode it only resolves while we keep stepping, so awaiting it here deadlocks.
     await page.evaluate(
       `window.__captureDone = false; window.__capturePromise = (async () => { ${script} })()` +
         `.catch((e) => { window.__captureError = String(e && e.stack || e); })` +
-        `.finally(() => { window.__captureDone = true; })`,
+        `.finally(() => { window.__captureDone = true; }); 0`,
     );
   }
   let doneAt = -1;

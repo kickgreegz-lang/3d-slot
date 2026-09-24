@@ -14,7 +14,15 @@ import {
   type ScenarioOptions,
   scenarioEnv,
 } from './scenarios';
-import { setTimingValue, snapshotTiming, type TimingValue, timingLeaves } from './timingEdit';
+import {
+  allTimingLeaves,
+  changedLeaves,
+  resetTiming,
+  setTimingValue,
+  snapshotSections,
+  snapshotTiming,
+  type TimingValue,
+} from './timingEdit';
 
 /**
  * DEV-ONLY extension of `window.__slot` (installed by hooks.ts behind
@@ -22,8 +30,12 @@ import { setTimingValue, snapshotTiming, type TimingValue, timingLeaves } from '
  *
  *   await __slot.scenario('tumbleChain')      run a named scenario (see scenarios.ts)
  *   __slot.scenarios()                        [{name,label,group}]
- *   __slot.setTiming('land.squashX', 1.2)     live-edit one TIMING leaf
- *   __slot.getTiming()                        JSON snapshot of TIMING
+ *   __slot.setTiming('land.squashX', 1.2)     live-edit one core TIMING leaf
+ *   __slot.setTiming('board.blurSpeed', 2)    ...or a leaf of a registered section (registerTiming)
+ *   __slot.getTiming()                        JSON snapshot of core TIMING
+ *   __slot.getTimingSections()                JSON snapshot of every section {core, board, symbol, ...}
+ *   __slot.timingPaths()                      every settable (qualified) path
+ *   __slot.timingChanges() / resetTiming()    edits vs compiled defaults / revert all
  *   __slot.slowmo(0.25)                       global time scale (ticker.speed)
  *   __slot.speed('turbo')                     speed profile (normal|turbo|superTurbo)
  *   await __slot.fixtures()                   {base, bonus} fixture books
@@ -60,7 +72,10 @@ export interface DevApi {
   running(): string | null;
   setTiming(path: string, value: TimingValue): void;
   getTiming(): Timing;
+  getTimingSections(): Record<string, unknown>;
   timingPaths(): string[];
+  timingChanges(): Array<{ path: string; from: TimingValue; to: TimingValue }>;
+  resetTiming(): void;
   slowmo(x: number): number;
   speed(p?: SpeedProfile): SpeedProfile;
   fixtures(): Promise<FixtureBooks>;
@@ -162,7 +177,10 @@ export const createDevApi = (ctx: GameContext, clock: typeof Clock): DevApi => {
     running: () => running,
     setTiming: (path, value) => setTimingValue(path, value),
     getTiming: () => snapshotTiming(),
-    timingPaths: () => timingLeaves().map((l) => l.path),
+    getTimingSections: () => snapshotSections(),
+    timingPaths: () => allTimingLeaves().map((l) => l.qualified),
+    timingChanges: () => changedLeaves(),
+    resetTiming: () => resetTiming(),
     slowmo(x) {
       const v = Math.min(SLOWMO_RANGE.max, Math.max(SLOWMO_RANGE.min, x));
       ctx.app.ticker.speed = v;

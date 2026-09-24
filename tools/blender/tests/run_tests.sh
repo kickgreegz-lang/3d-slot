@@ -75,11 +75,18 @@ run 3 "gate failure: Q counter closed by a full-width hull" $R --glyph Q --clip 
   --out $OUT/frames/L3_bleed --qa-dir $OUT/qa/L3_bleed --work $OUT/raw/L3_bleed
 run 0 "blender-binary argv + no Pillow (subprocess post)" "$PY" $TB/tests/sim_blender.py $TB/render_symbol.py -- \
   --glyph J --clip static --size 128 --samples 4 --out $OUT/frames/L4_static --qa-dir $OUT/qa/L4_static --work $OUT/raw/L4_static
-# determinism / idempotency: same inputs -> byte-identical frames and the same manifest row
-cp $OUT/qa/coin_spin/manifest.json $OUT/qa/coin_spin.first.json
+# determinism: an identical re-render into a second folder must match frame by frame
 run 0 "coin spin re-render (determinism)" $R --sym coin --proc coin --clip spin --size $SIZE --frames $FRAMES \
-  --out $OUT/frames/coin_spin --qa-dir $OUT/qa/coin_spin --work $OUT/raw/coin_spin
-run 0 "coin spin manifest row identical" cmp $OUT/qa/coin_spin.first.json $OUT/qa/coin_spin/manifest.json
+  --out $OUT/frames/coin_spin_b --qa-dir $OUT/qa/coin_spin_b --work $OUT/raw/coin_spin_b
+run 0 "coin spin frames identical" "$POST" $TB/tests/compare_frames.py $OUT/frames/coin_spin $OUT/frames/coin_spin_b
+run 0 "K turn re-render (determinism)" $R --glyph K --clip turn --size $SIZE --frames $FRAMES \
+  --out $OUT/frames/L2_turn_b --qa-dir $OUT/qa/L2_turn_b --work $OUT/raw/L2_turn_b
+run 0 "K turn frames identical" "$POST" $TB/tests/compare_frames.py $OUT/frames/L2_turn $OUT/frames/L2_turn_b
+# idempotency: re-running into the same folder keeps the manifest row (id + date) unchanged
+cp $OUT/qa/L2_static/manifest.json $OUT/qa/L2_static.first.json
+run 0 "K static re-run in place" $R --glyph K --clip static --size $SIZE \
+  --out $OUT/frames/L2_static --qa-dir $OUT/qa/L2_static --work $OUT/raw/L2_static
+run 0 "K static manifest row unchanged" cmp $OUT/qa/L2_static.first.json $OUT/qa/L2_static/manifest.json
 
 # 4. mascot animation from JSON on the CC0 placeholder
 ROBOT=public/assets/characters/placeholder/RobotExpressive.glb

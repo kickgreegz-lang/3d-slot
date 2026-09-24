@@ -11,7 +11,12 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lab": "vite --open \"/?dev=lab\"",
+    "gallery": "vite --open \"/?dev=gallery\"",
+    "capture": "node tools/capture/shot.mjs",
+    "qa:review": "node tools/qa/animation-review.mjs --url http://localhost:5173/",
+    "qa:approval": "vite build && node tools/qa/approval.mjs --serve --port 4173"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "4.3.13",

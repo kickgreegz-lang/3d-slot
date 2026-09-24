@@ -10,7 +10,7 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ $# -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
-  sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'
   echo "scripts: $(cd "$HERE" && ls *.py | sed 's/\.py$//' | tr '\n' ' ')"
   exit 0
 fi

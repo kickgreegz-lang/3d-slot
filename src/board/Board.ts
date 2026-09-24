@@ -1,10 +1,806 @@
+import { gsap } from 'gsap';
+import { Container, Graphics } from 'pixi.js';
+import type { ClusterWin, Position } from '../book/types';
+import { GRID, type LandWeight, SYMBOLS, getSymbolDef, isVisibleRow } from '../config/game';
+import type { LayoutSpec } from '../config/layout';
+import { clock } from '../core/clock';
+import { TIMING, fallTime, s, sUi, speedScale, stagger } from '../core/timing';
 import type { GameContext, GameModule } from '../game/context';
+import type { SfxId } from '../game/events';
+import { createSymbolView } from '../symbols/createSymbolView';
+import type { SymbolView } from '../symbols/types';
+import { AnticipationBeam } from './AnticipationBeam';
+import { BOARD_TIMING } from './boardTiming';
+import { ClusterOutlines } from './ClusterOutline';
+import { type Board as BoardIds, cloneBoard, mulberry32, pitchOf, planTumble, slotPos } from './model';
+import { SpotGrid } from './SpotGrid';
 
-/** STUB — replaced by the Board module implementation. */
+/**
+ * BOARD — grid choreography: fall-out, gravity drop-in with anticipation,
+ * cluster win presentation (dim / elevate / neon outline), explode + SDK-exact
+ * tumble refill, multiplier-spot tiles, idle life.
+ *
+ * Owns 7 reels x 7 padded rows of SymbolViews (rows 0 and 6 sit one pitch
+ * outside the visible grid, hidden by the board mask) plus a spare pool, so no
+ * view is ever created or destroyed during play. `boardIds` mirrors the book
+ * exactly; a DEV assertion checks views <-> model after every tumble.
+ *
+ * Every scene handler returns a promise that resolves when its motion is done
+ * (the flow awaits `broadcastAsync`). All motion runs on GSAP via core/clock
+ * (hit-stop + deterministic stepping); durations come from TIMING via s().
+ */
+const WEIGHT_RANK: Record<LandWeight, number> = { light: 0, medium: 1, heavy: 2, special: 3 };
+const LAND_SFX: Record<LandWeight, SfxId> = {
+  light: 'land_light',
+  medium: 'land_medium',
+  heavy: 'land_heavy',
+  special: 'land_special',
+};
+const SCATTER_SFX: SfxId[] = ['scatter_land_1', 'scatter_land_2', 'scatter_land_3'];
+/** Spare views for tumble refills (exploded views are recycled first). */
+const POOL_SPARES = 14;
+/** Symbol z-order: lower/right cells above upper/left (extrusion falls lower-right). */
+const zOf = (reel: number, row: number): number => row * 10 + reel;
+const Z_BEAM = 1000;
+/** Safety gap (ms) between a column's fall-out end and its drop-in start. */
+const PIPELINE_MARGIN = 50;
+const Z_OUTLINE = 1100;
+const isScatter = (id: string): boolean => getSymbolDef(id).kind === 'scatter';
+
 export class Board implements GameModule {
+  private readonly root = new Container({ label: 'boardSymbols', sortableChildren: true });
+  private readonly maskG = new Graphics();
+  private readonly spots: SpotGrid;
+  private readonly outlines: ClusterOutlines;
+  private readonly beam = new AnticipationBeam();
+  private slots: SymbolView[][] = [];
+  private boardIds: BoardIds = [];
+  private readonly pool: SymbolView[] = [];
+  private readonly elevated = new Set<SymbolView>();
+  private readonly dimmed = new Set<SymbolView>();
+  private readonly anticipating = new Set<SymbolView>();
+  private readonly timelines = new Set<gsap.core.Timeline>();
+  private readonly unsubs: (() => void)[] = [];
+  private readonly rng = mulberry32(0x5eed);
+  /** board currently on screen (false between fall-out and drop-in) */
+  private shown = false;
+  private roundActive = false;
+  /** running board operations (layout re-positioning waits for 0) */
+  private busy = 0;
+  /** bumped by board:set so stale async operations stop touching the board */
+  private gen = 0;
+  private tumblesSinceReveal = 0;
+  private fallOutPromise: Promise<void> | null = null;
+  private fallOutTl: gsap.core.Timeline | null = null;
+  /** per column: ms (unscaled) after fall-out start when its old symbols are gone */
+  private fallOutClear: number[] = [];
+  private idleCall: gsap.core.Tween | null = null;
+  private pendingRefresh = false;
+
   constructor(private ctx: GameContext) {
-    void this.ctx;
+    this.spots = new SpotGrid(ctx);
+    this.outlines = new ClusterOutlines(ctx);
   }
 
-  init(): void {}
+  init(): void {
+    const { ctx } = this;
+    ctx.layers.board.addChild(this.root, this.maskG);
+    this.root.mask = this.maskG;
+    this.beam.view.zIndex = Z_BEAM;
+    this.outlines.view.zIndex = Z_OUTLINE;
+    this.root.addChild(this.beam.view, this.outlines.view);
+
+    this.boardIds = this.attractBoard();
+    for (let reel = 0; reel < GRID.reels; reel++) {
+      const col: SymbolView[] = [];
+      for (let row = 0; row < GRID.paddedRows; row++) {
+        const sv = createSymbolView(ctx, this.boardIds[reel][row]);
+        this.root.addChild(sv.view);
+        col.push(sv);
+      }
+      this.slots.push(col);
+    }
+    for (let i = 0; i < POOL_SPARES; i++) {
+      const sv = createSymbolView(ctx, 'L5');
+      sv.view.visible = false;
+      this.root.addChild(sv.view);
+      this.pool.push(sv);
+    }
+    this.hidePadding();
+    this.shown = true;
+    this.layout(ctx.layout);
+
+    const g = ctx.game;
+    this.unsubs.push(
+      g.on('layout:change', ({ layout }) => this.layout(layout)),
+      g.on('round:start', () => this.onRoundStart()),
+      g.on('round:end', () => this.onRoundEnd()),
+      g.on('board:reveal', ({ board, anticipation }) => this.reveal(board, anticipation)),
+      g.on('board:showWins', ({ wins }) => this.showWins(wins)),
+      g.on('board:tumble', ({ exploding, newSymbols }) => this.tumble(exploding, newSymbols)),
+      g.on('board:set', ({ board }) => this.setBoard(board)),
+      g.on('spots:update', ({ grid }) => this.spots.update(grid)),
+      g.on('spots:reset', ({ grid }) => this.spots.reset(grid)),
+      g.on('fs:trigger', ({ positions }) => this.celebrate(positions)),
+      g.on('mode:change', ({ gameType }) => {
+        if (gameType === 'basegame') this.spots.reset(null);
+      }),
+    );
+    this.scheduleIdle();
+    if (import.meta.env.DEV) void import('./demo').then((m) => m.registerBoard(this));
+  }
+
+  layout(L: LayoutSpec): void {
+    const p = L.panel;
+    this.maskG.clear().rect(p.x, p.y, p.w, p.h).fill(0xffffff);
+    this.spots.layout(L);
+    // SymbolViews re-fit themselves on layout:change; the Board only re-positions.
+    if (this.busy) this.pendingRefresh = true;
+    else this.snapAll();
+  }
+
+  destroy(): void {
+    this.gen++;
+    for (const off of this.unsubs) off();
+    this.idleCall?.kill();
+    this.killTimelines();
+    this.beam.stop();
+    this.outlines.clear();
+    this.spots.destroy();
+    for (const col of this.slots) for (const sv of col) sv.destroy();
+    for (const sv of this.pool) sv.destroy();
+    this.root.destroy({ children: true });
+    this.maskG.destroy();
+  }
+
+  // =========================================================================
+  // round start: the old board falls out
+  // =========================================================================
+
+  private async onRoundStart(): Promise<void> {
+    this.roundActive = true;
+    this.idleCall?.kill();
+    await this.fallOut();
+  }
+
+  private onRoundEnd(): void {
+    this.roundActive = false;
+    this.scheduleIdle();
+  }
+
+  /**
+   * Starts the fall-out. Resolves as soon as the FIRST column has left the grid:
+   * the drop-in is pipelined column by column behind the fall-out (each new
+   * column waits for its own old column, see reveal()), so the grid is never
+   * empty for long. The remaining columns keep falling in the background.
+   */
+  private fallOut(): Promise<void> {
+    if (!this.shown) return this.fallOutPromise ?? Promise.resolve();
+    this.shown = false;
+    this.fallOutPromise = new Promise<void>((firstClear) => void this.runFallOut(firstClear));
+    return this.fallOutPromise;
+  }
+
+  private async runFallOut(firstClear: () => void): Promise<void> {
+    const gen = this.gen;
+    this.busy++;
+    try {
+      this.clearPresentation(false);
+      const L = this.ctx.layout;
+      const T = TIMING.spin;
+      const dist = T.fallOutDistanceCells * pitchOf(L);
+      // power1.in over `dist`: v(t) = 2*dist*t/T^2 (px/ms) -> blur once past the threshold
+      const tBlur = (BOARD_TIMING.blurSpeed * T.fallOutDuration ** 2) / (2 * dist);
+      const tl = this.timeline();
+      this.sfx('fall_out');
+      this.fallOutClear = [];
+      for (let reel = 0; reel < GRID.reels; reel++) {
+        let clear = 0;
+        for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) {
+          const sv = this.slots[reel][row];
+          const at = reel * stagger(T.fallOutColumnStagger) + (GRID.lastVisibleRow - row) * stagger(T.fallOutRowStagger);
+          const end = at + T.fallOutDuration;
+          clear = Math.max(clear, end);
+          tl.to(sv.view, { y: sv.view.y + dist, duration: s(T.fallOutDuration), ease: T.fallOutEase }, s(at));
+          tl.call(() => sv.setBlur(true), [], s(at + tBlur));
+          tl.call(() => {
+            sv.setBlur(false);
+            sv.view.visible = false;
+          }, [], s(end));
+        }
+        this.fallOutClear.push(clear);
+      }
+      tl.call(firstClear, [], s(this.fallOutClear[0]));
+      this.fallOutTl = tl;
+      await this.play(tl);
+      if (this.fallOutTl === tl) this.fallOutTl = null;
+      if (gen !== this.gen) return;
+    } finally {
+      firstClear();
+      this.done();
+    }
+  }
+
+  /** ms from now until `reel`'s old symbols are gone (0 when no fall-out is running). */
+  private columnClearIn(reel: number): number {
+    const tl = this.fallOutTl;
+    if (!tl) return 0;
+    const elapsed = tl.time() * 1000 * speedScale();
+    return Math.max(0, this.fallOutClear[reel] - elapsed + PIPELINE_MARGIN);
+  }
+
+  // =========================================================================
+  // reveal: gravity drop-in, scatter lands, anticipation
+  // =========================================================================
+
+  private async reveal(board: string[][], anticipation: number[]): Promise<void> {
+    if (this.shown) await this.fallOut();
+    else if (this.fallOutPromise) await this.fallOutPromise;
+    const gen = this.gen;
+    this.busy++;
+    try {
+      this.roundActive = true;
+      this.idleCall?.kill();
+      this.tumblesSinceReveal = 0;
+      const L = this.ctx.layout;
+      const D = TIMING.drop;
+      const g = D.gravity;
+      const dist = D.startOffsetCells * pitchOf(L);
+      const T = fallTime(dist, g, D.minFall);
+      const vImpact = (g * T) / 1000;
+      const colStagger = stagger(D.columnStagger);
+      const rowStagger = stagger(D.rowStagger);
+      const hold = TIMING.anticipation.holdPerColumn;
+      const visRows = GRID.lastVisibleRow - GRID.firstVisibleRow; // 4 row-steps between row 5 and row 1
+      const lastImpact = (start: number) => start + visRows * rowStagger + T;
+
+      // ---- column schedule (ms, unscaled; anticipation columns wait) -------
+      const colStart: number[] = [];
+      const antStart: (number | null)[] = [];
+      let shift = 0;
+      for (let reel = 0; reel < GRID.reels; reel++) {
+        let start = Math.max(reel * colStagger, this.columnClearIn(reel)) + shift;
+        if ((anticipation[reel] ?? 0) > 0) {
+          const prevDone = reel > 0 ? lastImpact(colStart[reel - 1]) : 0;
+          const a = Math.max(start, prevDone);
+          antStart.push(a);
+          shift += a + hold - start;
+          start = a + hold;
+        } else {
+          antStart.push(null);
+        }
+        colStart.push(start);
+      }
+      const antReels = antStart.map((a, r) => (a === null ? -1 : r)).filter((r) => r >= 0);
+      const lastAnt = antReels.length ? antReels[antReels.length - 1] : -1;
+      const antEnd = lastAnt >= 0 ? lastImpact(colStart[lastAnt]) : -1;
+      /** scatters landing before the final anticipating column drops join the heartbeat */
+      const antTease = lastAnt >= 0 ? colStart[lastAnt] : -1;
+
+      this.boardIds = cloneBoard(board);
+      const tl = this.timeline();
+
+      // ---- place each column's new symbols above their slots when it starts --
+      // (added first so the placement renders before that column's drop tweens)
+      for (let reel = 0; reel < GRID.reels; reel++) {
+        tl.call(() => {
+          for (let row = 0; row < GRID.paddedRows; row++) {
+            const sv = this.slots[reel][row];
+            sv.reset();
+            sv.setSymbol(board[reel][row]);
+            const p = slotPos(L, reel, row);
+            sv.view.x = p.x;
+            // padding rows are never seen at rest: park them hidden in their slot
+            sv.view.y = isVisibleRow(row) ? p.y - dist : p.y;
+            sv.view.zIndex = zOf(reel, row);
+            sv.view.visible = isVisibleRow(row);
+          }
+        }, [], s(colStart[reel]));
+      }
+
+      const lands: Promise<void>[] = [];
+      const tBlur = (BOARD_TIMING.blurSpeed * 1e6) / g; // ms until v > threshold (v = g t)
+      const tBlurOff = T - BOARD_TIMING.blurOffLead;
+      let scatterCount = 0;
+
+      // ---- land SFX: one per column (heaviest non-scatter), merged when columns land together
+      const sfxAt = new Map<number, LandWeight>();
+      for (let reel = 0; reel < GRID.reels; reel++) {
+        let heaviest: LandWeight | null = null;
+        for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) {
+          const def = getSymbolDef(board[reel][row]);
+          if (def.kind === 'scatter') continue;
+          if (!heaviest || WEIGHT_RANK[def.landWeight] > WEIGHT_RANK[heaviest]) heaviest = def.landWeight;
+        }
+        if (!heaviest) continue;
+        const t = Math.round(colStart[reel] + T);
+        const prev = sfxAt.get(t);
+        if (!prev || WEIGHT_RANK[heaviest] > WEIGHT_RANK[prev]) sfxAt.set(t, heaviest);
+      }
+      for (const [t, w] of sfxAt) tl.call(() => this.sfx(LAND_SFX[w]), [], s(t));
+
+      // ---- anticipation phases --------------------------------------------
+      const antColor = SYMBOLS.S?.color ?? 0xffd54a;
+      antReels.forEach((reel, i) => {
+        tl.call(() => this.beginAnticipation(reel, i === 0, antColor), [], s(antStart[reel] ?? 0));
+        tl.call(() => this.spots.setColumnWash(reel, antColor, 0, TIMING.anticipation.outroDuration), [], s(lastImpact(colStart[reel])));
+      });
+      if (lastAnt >= 0) tl.call(() => this.endAnticipation(), [], s(antEnd));
+
+      // ---- drops -------------------------------------------------------------
+      for (let reel = 0; reel < GRID.reels; reel++) {
+        for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) {
+          const sv = this.slots[reel][row];
+          const id = board[reel][row];
+          const at = colStart[reel] + (GRID.lastVisibleRow - row) * rowStagger;
+          const target = slotPos(L, reel, row).y;
+          tl.to(sv.view, { y: target, duration: s(T), ease: 'power1.in' }, s(at));
+          if (tBlurOff - tBlur > 16) {
+            tl.call(() => sv.setBlur(true), [], s(at + tBlur));
+            tl.call(() => sv.setBlur(false), [], s(at + tBlurOff));
+          }
+          const impactAt = at + T;
+          tl.call(() => {
+            sv.setBlur(false);
+            lands.push(sv.land({ velocity: vImpact }));
+            if (isScatter(id)) {
+              scatterCount++;
+              this.scatterLanded(sv, reel, row, scatterCount, impactAt < antTease);
+            }
+          }, [], s(impactAt));
+        }
+      }
+
+      await this.play(tl);
+      await Promise.all(lands);
+      if (gen !== this.gen) return;
+      for (const sv of [...this.elevated]) this.unelevate(sv);
+      this.shown = true;
+      this.fallOutPromise = null;
+    } finally {
+      this.done();
+    }
+  }
+
+  private scatterLanded(sv: SymbolView, reel: number, row: number, n: number, keepAnticipating: boolean): void {
+    const p = slotPos(this.ctx.layout, reel, row);
+    const def = getSymbolDef(sv.id);
+    this.sfx(SCATTER_SFX[Math.min(n, SCATTER_SFX.length) - 1]);
+    this.ctx.game.broadcast('fx:burst', { kind: 'scatter', x: p.x, y: p.y, color: def.color, count: 26, power: 0.9 });
+    this.elevate(sv);
+    if (keepAnticipating) {
+      this.anticipating.add(sv);
+      sv.setAnticipation(true);
+    }
+  }
+
+  private beginAnticipation(reel: number, first: boolean, color: number): void {
+    const L = this.ctx.layout;
+    for (let r = 0; r < reel; r++) {
+      for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) {
+        const sv = this.slots[r][row];
+        if (!isScatter(sv.id)) this.dim(sv, true);
+      }
+    }
+    this.beam.show(reel, color, L);
+    this.spots.setColumnWash(reel, color, 0.32, TIMING.anticipation.introDuration);
+    if (first) {
+      this.sfx('anticipation_loop');
+      this.ctx.game.broadcast('mascot:cue', { cue: 'anticipation' });
+    }
+  }
+
+  private endAnticipation(): void {
+    void this.beam.hide();
+    this.sfx('anticipation_end');
+    for (const sv of this.anticipating) sv.setAnticipation(false);
+    this.anticipating.clear();
+    for (const sv of [...this.dimmed]) this.dim(sv, false);
+  }
+
+  // =========================================================================
+  // wins: dim / elevate + win() / neon cluster outline
+  // =========================================================================
+
+  private async showWins(wins: ClusterWin[]): Promise<void> {
+    const gen = this.gen;
+    this.busy++;
+    try {
+      const L = this.ctx.layout;
+      const winners = new Set<SymbolView>();
+      for (const w of wins) for (const p of w.positions) winners.add(this.slots[p.reel][p.row]);
+      this.forVisible((sv) => {
+        if (!winners.has(sv)) this.dim(sv, true);
+      });
+      this.ctx.game.broadcast('mascot:cue', { cue: this.tumblesSinceReveal > 0 ? 'reactTumble' : 'reactSmall' });
+      const started = new Set<SymbolView>();
+      const jobs = wins.map(async (w, i) => {
+        const delay = i * stagger(BOARD_TIMING.clusterStagger);
+        if (delay > 0) await clock.wait(delay);
+        if (gen !== this.gen) return;
+        const color = getSymbolDef(w.symbol).color;
+        this.sfx('win_cluster', { rate: 1 + Math.min(i, 4) * 0.06 });
+        const anims: Promise<void>[] = [];
+        for (const p of w.positions) {
+          const sv = this.slots[p.reel][p.row];
+          if (started.has(sv)) continue;
+          started.add(sv);
+          this.dim(sv, false, false);
+          this.elevate(sv);
+          anims.push(sv.win());
+        }
+        this.spots.highlight(w.positions, color);
+        anims.push(this.outlines.show(w.positions, color, L));
+        await Promise.all(anims);
+      });
+      await Promise.all(jobs);
+    } finally {
+      this.done();
+    }
+  }
+
+  /** Scatter celebration on free-spin (re)trigger: dim the rest, pop the scatters. */
+  private async celebrate(positions: Position[]): Promise<void> {
+    this.busy++;
+    try {
+      const hits = new Set(positions.map((p) => this.slots[p.reel]?.[p.row]).filter((v): v is SymbolView => !!v));
+      this.forVisible((sv) => {
+        if (!hits.has(sv)) this.dim(sv, true);
+      });
+      const anims: Promise<void>[] = [];
+      for (const sv of hits) {
+        this.elevate(sv);
+        anims.push(sv.win());
+      }
+      await Promise.all(anims);
+    } finally {
+      this.done();
+    }
+  }
+
+  // =========================================================================
+  // tumble: explode -> hit-stop -> SDK-exact gravity refill
+  // =========================================================================
+
+  private async tumble(exploding: Position[], newSymbols: string[][]): Promise<void> {
+    const gen = this.gen;
+    this.busy++;
+    try {
+      this.tumblesSinceReveal++;
+      const L = this.ctx.layout;
+      const seen = new Set<string>();
+      const uniq = exploding.filter((p) => {
+        const k = `${p.reel},${p.row}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+      const doomed = uniq.map((p) => this.slots[p.reel][p.row]);
+
+      // ---- explode together, ONE hit-stop + shake at the burst -------------
+      void this.outlines.fadeOut();
+      this.spots.clearHighlights();
+      const E = TIMING.explode;
+      const bursts = doomed.map((sv) => sv.explode());
+      const n = doomed.length;
+      const impact = gsap.delayedCall(s(E.anticipateDuration), () => {
+        clock.hitStop(E.hitStop);
+        const B = BOARD_TIMING;
+        this.ctx.game.broadcast('fx:shake', {
+          trauma: Math.min(B.explodeTraumaMax, B.explodeTraumaBase + B.explodeTraumaPerSymbol * n),
+        });
+        this.sfx('explode', { volume: Math.min(1, 0.7 + n * 0.03) });
+      });
+      await Promise.all(bursts);
+      if (gen !== this.gen) {
+        impact.kill();
+        return;
+      }
+      for (const sv of doomed) this.release(sv);
+      const doomedSet = new Set(doomed);
+      for (const col of this.slots) {
+        for (const sv of col) {
+          if (doomedSet.has(sv)) continue;
+          this.dim(sv, false);
+          this.unelevate(sv);
+          if (sv.state === 'postWin') sv.reset();
+        }
+      }
+      await clock.wait(TIMING.tumble.preRefillDelay);
+      if (gen !== this.gen) return;
+
+      // ---- refill: combined = [...new, ...survivors]; row i = combined[i] ----
+      const plan = planTumble(this.boardIds, uniq, newSymbols);
+      const Tu = TIMING.tumble;
+      const g = Tu.gravity;
+      const pitch = pitchOf(L);
+      const tBlur = (BOARD_TIMING.blurSpeed * 1e6) / g;
+      const tl = this.timeline();
+      const lands: Promise<void>[] = [];
+      const next: SymbolView[][] = [];
+      const sfxTimes = new Set<number>();
+      let scatters = 0;
+      let colOrder = 0;
+      for (let reel = 0; reel < GRID.reels; reel++) {
+        const col: SymbolView[] = [];
+        const moving: { sv: SymbolView; from: number; to: number; fresh: boolean }[] = [];
+        plan.columns[reel].forEach((src, row) => {
+          let sv: SymbolView;
+          if (src.kind === 'survivor') {
+            sv = this.slots[reel][src.fromRow];
+          } else {
+            sv = this.acquire(src.id);
+            const p = slotPos(L, reel, src.fromRow);
+            sv.view.position.set(p.x, p.y);
+          }
+          sv.view.zIndex = zOf(reel, row);
+          sv.view.visible = true;
+          col.push(sv);
+          // "fresh" = the player has not seen it yet (new, or sliding in from padding row 0)
+          const fresh = !isVisibleRow(src.fromRow);
+          if (src.fromRow !== row) moving.push({ sv, from: src.fromRow, to: row, fresh });
+          if (!fresh && isVisibleRow(row) && isScatter(src.id)) scatters++;
+        });
+        for (const src of plan.overflow[reel]) if (src.kind === 'survivor') this.release(this.slots[reel][src.fromRow]);
+        next.push(col);
+        if (!moving.length) continue;
+
+        const colDelay = colOrder++ * stagger(Tu.columnStagger);
+        moving.sort((a, b) => b.to - a.to); // bottom-most lands first
+        let firstImpact = Number.POSITIVE_INFINITY;
+        moving.forEach((m, k) => {
+          const at = colDelay + k * stagger(Tu.rowStagger);
+          const T = fallTime((m.to - m.from) * pitch, g, TIMING.drop.minFall);
+          const target = slotPos(L, reel, m.to).y;
+          tl.to(m.sv.view, { y: target, duration: s(T), ease: 'power1.in' }, s(at));
+          if (T - BOARD_TIMING.blurOffLead - tBlur > 16) {
+            tl.call(() => m.sv.setBlur(true), [], s(at + tBlur));
+            tl.call(() => m.sv.setBlur(false), [], s(at + T - BOARD_TIMING.blurOffLead));
+          }
+          if (!isVisibleRow(m.to)) return;
+          firstImpact = Math.min(firstImpact, at + T);
+          tl.call(() => {
+            m.sv.setBlur(false);
+            lands.push(m.sv.land({ velocity: (g * T) / 1000, tumble: true }));
+            if (m.fresh && isScatter(m.sv.id)) {
+              scatters++;
+              this.scatterLanded(m.sv, reel, m.to, scatters, false);
+            }
+          }, [], s(at + T));
+        });
+        const t = Math.round(firstImpact);
+        if (Number.isFinite(firstImpact) && !sfxTimes.has(t)) {
+          sfxTimes.add(t);
+          tl.call(() => this.sfx('tumble_drop'), [], s(t));
+        }
+      }
+
+      await this.play(tl);
+      await Promise.all(lands);
+      if (gen !== this.gen) return;
+      for (const sv of [...this.elevated]) this.unelevate(sv);
+      this.slots = next;
+      this.boardIds = plan.next;
+      this.hidePadding();
+      this.assertConsistent('tumble');
+    } finally {
+      this.done();
+    }
+  }
+
+  // =========================================================================
+  // instant set
+  // =========================================================================
+
+  private setBoard(board: string[][]): void {
+    this.gen++;
+    this.killTimelines();
+    this.clearPresentation(false);
+    const L = this.ctx.layout;
+    for (let reel = 0; reel < GRID.reels; reel++) {
+      for (let row = 0; row < GRID.paddedRows; row++) {
+        const sv = this.slots[reel][row];
+        gsap.killTweensOf(sv.view);
+        sv.reset();
+        sv.setSymbol(board[reel][row]);
+        const p = slotPos(L, reel, row);
+        sv.view.position.set(p.x, p.y);
+        sv.view.zIndex = zOf(reel, row);
+        sv.view.visible = isVisibleRow(row);
+      }
+    }
+    this.boardIds = cloneBoard(board);
+    this.shown = true;
+    this.fallOutPromise = null;
+    this.fallOutTl = null;
+    this.busy = 0;
+    this.pendingRefresh = false;
+    this.assertConsistent('set');
+  }
+
+  // =========================================================================
+  // idle life
+  // =========================================================================
+
+  private scheduleIdle(): void {
+    this.idleCall?.kill();
+    const B = BOARD_TIMING;
+    const ms = B.idleMin + this.rng() * (B.idleMax - B.idleMin);
+    this.idleCall = gsap.delayedCall(sUi(ms), () => {
+      this.idleTick();
+      this.scheduleIdle();
+    });
+  }
+
+  private idleTick(): void {
+    if (this.roundActive || this.busy || !this.shown) return;
+    const pick: SymbolView[] = [];
+    this.forVisible((sv) => {
+      if (getSymbolDef(sv.id).kind !== 'royal') pick.push(sv);
+    });
+    const count = Math.min(pick.length, this.rng() < 0.45 ? 2 : 1);
+    for (let i = 0; i < count; i++) {
+      const j = Math.floor(this.rng() * pick.length);
+      pick.splice(j, 1)[0]?.idleAccent();
+    }
+  }
+
+  // =========================================================================
+  // helpers
+  // =========================================================================
+
+  /** Deterministic idle board shown before the first round (no scatters). */
+  private attractBoard(): BoardIds {
+    const ids = Object.keys(SYMBOLS).filter((id) => !isScatter(id) && getSymbolDef(id).kind !== 'wild');
+    const rnd = mulberry32(0xb0a4d);
+    return Array.from({ length: GRID.reels }, () =>
+      Array.from({ length: GRID.paddedRows }, () => ids[Math.floor(rnd() * ids.length)]),
+    );
+  }
+
+  /** Padding rows (0 and 6) exist only to slide into view; hidden at rest. */
+  private hidePadding(): void {
+    for (const col of this.slots) {
+      col[0].view.visible = false;
+      col[GRID.paddedRows - 1].view.visible = false;
+    }
+  }
+
+  private forVisible(fn: (sv: SymbolView, reel: number, row: number) => void): void {
+    for (let reel = 0; reel < GRID.reels; reel++) {
+      for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) fn(this.slots[reel][row], reel, row);
+    }
+  }
+
+  private sfx(id: SfxId, extra: { volume?: number; rate?: number } = {}): void {
+    this.ctx.game.broadcast('sfx', { id, ...extra });
+  }
+
+  private elevate(sv: SymbolView): void {
+    if (this.elevated.has(sv)) return;
+    this.elevated.add(sv);
+    sv.setElevated(true);
+  }
+
+  private unelevate(sv: SymbolView): void {
+    if (this.elevated.delete(sv)) sv.setElevated(false);
+  }
+
+  private dim(sv: SymbolView, on: boolean, animate = true): void {
+    if (on) {
+      if (this.dimmed.has(sv)) return;
+      this.dimmed.add(sv);
+      sv.setDim(true, animate);
+    } else if (this.dimmed.delete(sv)) {
+      sv.setDim(false, animate);
+    }
+  }
+
+  /** Drop every presentation state (dim, elevation, anticipation, outlines, beams). */
+  private clearPresentation(animate: boolean): void {
+    this.beam.stop();
+    this.outlines.clear();
+    this.spots.clearHighlights(animate);
+    for (let r = 0; r < GRID.reels; r++) this.spots.setColumnWash(r, 0xffffff, 0, 0);
+    for (const sv of this.anticipating) sv.setAnticipation(false);
+    this.anticipating.clear();
+    for (const sv of [...this.dimmed]) this.dim(sv, false, animate);
+    for (const sv of [...this.elevated]) this.unelevate(sv);
+    for (const col of this.slots) for (const sv of col) if (sv.state === 'postWin') sv.reset();
+  }
+
+  private acquire(id: string): SymbolView {
+    let sv = this.pool.pop();
+    if (!sv) {
+      // Pool exhausted (malformed book): grow once rather than fail the round.
+      sv = createSymbolView(this.ctx, id);
+      this.root.addChild(sv.view);
+    }
+    sv.reset();
+    sv.setSymbol(id);
+    sv.view.visible = true;
+    return sv;
+  }
+
+  private release(sv: SymbolView): void {
+    this.unelevate(sv);
+    this.dim(sv, false, false);
+    if (this.anticipating.delete(sv)) sv.setAnticipation(false);
+    gsap.killTweensOf(sv.view);
+    sv.reset();
+    sv.view.visible = false;
+    this.pool.push(sv);
+  }
+
+  private timeline(): gsap.core.Timeline {
+    const tl = gsap.timeline();
+    this.timelines.add(tl);
+    return tl;
+  }
+
+  /** Resolves when the timeline completes or is killed (never hangs a round). */
+  private play(tl: gsap.core.Timeline): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const done = () => {
+        this.timelines.delete(tl);
+        resolve();
+      };
+      if (tl.duration() === 0) {
+        tl.kill();
+        done();
+        return;
+      }
+      tl.eventCallback('onComplete', done);
+      tl.eventCallback('onInterrupt', done);
+    });
+  }
+
+  private killTimelines(): void {
+    for (const tl of [...this.timelines]) tl.kill();
+    this.timelines.clear();
+  }
+
+  private done(): void {
+    this.busy = Math.max(0, this.busy - 1);
+    if (!this.busy && this.pendingRefresh) this.snapAll();
+  }
+
+  /** Put every slot view at its cell centre (after a layout change). */
+  private snapAll(): void {
+    const L = this.ctx.layout;
+    this.pendingRefresh = false;
+    for (let reel = 0; reel < GRID.reels; reel++) {
+      for (let row = 0; row < GRID.paddedRows; row++) {
+        const sv = this.slots[reel][row];
+        const p = slotPos(L, reel, row);
+        sv.view.position.set(p.x, this.shown ? p.y : sv.view.y);
+        sv.view.zIndex = zOf(reel, row);
+      }
+    }
+  }
+
+  /** DEV: views <-> boardIds <-> positions must agree after every tumble. */
+  private assertConsistent(where: string): void {
+    if (!import.meta.env.DEV) return;
+    const L = this.ctx.layout;
+    const seen = new Set<SymbolView>();
+    for (let reel = 0; reel < GRID.reels; reel++) {
+      for (let row = 0; row < GRID.paddedRows; row++) {
+        const sv = this.slots[reel][row];
+        const at = `[board] ${where}: slot ${reel},${row}`;
+        if (seen.has(sv)) throw new Error(`${at} reuses a view`);
+        seen.add(sv);
+        if (sv.id !== this.boardIds[reel][row]) throw new Error(`${at} shows ${sv.id}, model has ${this.boardIds[reel][row]}`);
+        if (sv.view.visible !== isVisibleRow(row)) throw new Error(`${at} visibility is wrong`);
+        const p = slotPos(L, reel, row);
+        if (Math.abs(sv.view.x - p.x) > 0.5 || Math.abs(sv.view.y - p.y) > 0.5) throw new Error(`${at} is off its cell`);
+      }
+    }
+    for (const sv of this.pool) if (seen.has(sv)) throw new Error(`[board] ${where}: pooled view is on the board`);
+  }
+
+  /** DEV/QA read-out of the model (used by demo.ts to verify against the book). */
+  get ids(): BoardIds {
+    return cloneBoard(this.boardIds);
+  }
 }

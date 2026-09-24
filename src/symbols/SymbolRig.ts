@@ -1,0 +1,941 @@
+import { gsap } from 'gsap';
+import { CustomEase } from 'gsap/CustomEase';
+import { CustomWiggle } from 'gsap/CustomWiggle';
+import { Container, Point, Sprite, type Texture } from 'pixi.js';
+import type { SpineRef } from '../assets/art';
+import { type LandWeight, type SymbolDef, getSymbolDef } from '../config/game';
+import { clock } from '../core/clock';
+import { TIMING, s, sUi, speedScale } from '../core/timing';
+import type { SfxId } from '../game/events';
+import type { GameContext } from '../game/context';
+import { measureContent } from './contentBounds';
+import { type JellyFrame, type JellyMesh, acquireJelly, releaseJelly } from './JellyMesh';
+import { SpineRig } from './SpinePool';
+import { FrameLoop, Spring } from './spring';
+import type { SymbolFxParams } from './symbolFxShader';
+import { SYMBOL_TIMING as T } from './symbolTiming';
+import type { LandOptions, SymbolState, SymbolView } from './types';
+
+const DEG = Math.PI / 180;
+const clamp = (v: number, a: number, b: number): number => Math.min(b, Math.max(a, v));
+const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
+const lerpGray = (from: number, to: number, t: number): number => {
+  const ch = (shift: number) => Math.round(lerp((from >> shift) & 255, (to >> shift) & 255, t));
+  return (ch(16) << 16) | (ch(8) << 8) | ch(0);
+};
+
+let easesReady = false;
+/** Custom eases are created lazily: main.ts registers the plugins after module evaluation. */
+const ensureEases = (): void => {
+  if (easesReady) return;
+  easesReady = true;
+  CustomEase.create('symbol.heartbeat', T.anticipation.heartbeat);
+  CustomWiggle.create('symbol.wiggle', { wiggles: T.idle.wiggles, type: 'easeOut' });
+  CustomWiggle.create('symbol.winWiggle', { wiggles: T.win.wiggles, type: 'easeOut' });
+};
+
+/** Shared (all symbols) SFX / shake limiter so a full-board landing stays musical. */
+const feedback = {
+  lastSfx: new Map<SfxId, number>(),
+  shakeWindowStart: -1,
+  shakeSum: 0,
+};
+
+let instanceCounter = 0;
+
+type Hold = 'win' | 'explode' | 'anticipation' | 'glint';
+
+/**
+ * Procedural symbol rig (the SymbolView implementation).
+ *
+ *   view  (Board: cell centre, drop tweens)
+ *    └ body  origin at the FEET: squash/stretch spring, hop, rock wobble (weight)
+ *       └ pose  origin at the content centre: pop / pulse / breathe / sway / burst
+ *          └ art  fit scale + restAngle; children: glow (add) · sprite | jelly mesh | spine
+ *
+ * Static = one batched Sprite. While animating, a pooled JellyMesh (and, for win /
+ * explode / glint, the FX shader) or a pooled Spine instance replaces the sprite,
+ * and a clock-driven loop steps the springs; the loop stops once everything settles.
+ */
+export class SymbolRig implements SymbolView {
+  readonly view = new Container({ label: 'symbol' });
+  private readonly body = new Container({ label: 'body' });
+  private readonly pose = new Container({ label: 'pose' });
+  private readonly art = new Container({ label: 'art' });
+  private readonly glow = new Sprite();
+  private readonly sprite = new Sprite();
+
+  private _id = '';
+  private _state: SymbolState = 'static';
+  private def!: SymbolDef;
+  private staticTex!: Texture;
+  private frame: JellyFrame = { cx: 0, cy: 0, k: 1, angle: 0, feetY: 0, topY: 0 };
+  private jelly: JellyMesh | null = null;
+  private rig: SpineRig | null = null;
+  private blurred = false;
+
+  // physics
+  private readonly squash = new Spring(TIMING.land.springStiffness, TIMING.land.springDamping);
+  private readonly rock = new Spring(T.land.rotStiffness, T.land.rotDamping);
+  private readonly bulge = new Spring(T.jelly.bulgeStiffness, T.jelly.bulgeDamping);
+  private readonly lag = new Spring(T.jelly.lagStiffness, T.jelly.lagDamping);
+  private readonly shear = new Spring(T.jelly.shearStiffness, T.jelly.shearDamping);
+  private squashHeld = false;
+  private squashGain = 1;
+  private readonly hop = { active: false, delay: 0, t: 0, h: 0, v0: 0 };
+  private readonly field = { bulge: 0, lag: 0, shear: 0 };
+  private readonly loop = new FrameLoop((dt) => this.tick(dt));
+
+  // effect state (GSAP tweens these plain objects; tick() pushes them to the GPU)
+  private readonly fx: SymbolFxParams = { shine: -1, shineWidth: 0.16, shineIntensity: 0, flash: 0, dissolve: 0 };
+  private readonly glowState = { a: 0, s: 1 };
+  private readonly dim = { t: 0, target: 0 };
+  private readonly sway = { env: 0, t: 0 };
+  private readonly beat = { base: 1, peak: 1 };
+  private readonly holds = new Set<Hold>();
+
+  private anims: gsap.core.Animation[] = [];
+  private dimTween: gsap.core.Tween | null = null;
+  private breath: gsap.core.Tween | null = null;
+  private pending: Array<() => void> = [];
+  private landResolve: (() => void) | null = null;
+  private antOn = false;
+  private elevated = false;
+  private destroyed = false;
+  private readonly seed: number;
+  private readonly offLayout: () => void;
+  private readonly p0 = new Point();
+  private readonly p1 = new Point();
+  private readonly p2 = new Point();
+  private readonly onGlow = (): void => this.applyGlow();
+
+  constructor(
+    private readonly ctx: GameContext,
+    id: string,
+  ) {
+    const n = ++instanceCounter;
+    this.seed = Math.abs(Math.sin(n * 12.9898) * 43758.5453) % 1;
+    this.glow.blendMode = 'add';
+    this.glow.anchor.set(0.5);
+    this.glow.visible = false;
+    this.art.addChild(this.glow, this.sprite);
+    this.pose.addChild(this.art);
+    this.body.addChild(this.pose);
+    this.view.addChild(this.body);
+    this.offLayout = ctx.game.on('layout:change', () => this.fit());
+    this.setSymbol(id);
+  }
+
+  get id(): string {
+    return this._id;
+  }
+
+  get state(): SymbolState {
+    return this._state;
+  }
+
+  // ───────────────────────────── identity / layout ─────────────────────────────
+
+  setSymbol(id: string): void {
+    this.reset();
+    this._id = id;
+    this.def = getSymbolDef(id);
+    this.staticTex = this.ctx.art.symbol(id, 'static');
+    this.sprite.texture = this.staticTex;
+    this.glow.texture = this.ctx.art.symbol(id, 'glow');
+    this.glow.tint = this.def.color;
+    this.fit();
+    this.startBreath();
+  }
+
+  /** Fit the measured content to def.cellScale of the current cell; find the feet. */
+  private fit(): void {
+    if (this.destroyed) return;
+    const tex = this.staticTex;
+    const b = measureContent(this.ctx.app.renderer, tex);
+    const k = (this.def.cellScale * this.ctx.layout.cell) / Math.max(1, b.w, b.h);
+    const cx = b.x + b.w / 2;
+    const cy = b.y + b.h / 2;
+    const angle = this.def.restAngle * DEG;
+    const c = Math.cos(angle);
+    const sn = Math.sin(angle);
+    let feet = -Infinity;
+    let top = Infinity;
+    const hull = b.hull;
+    for (let i = 0; i < hull.length; i += 2) {
+      const px = hull[i] - cx;
+      const py = hull[i + 1] - cy;
+      const y = k * (sn * px + c * py);
+      if (y > feet) feet = y;
+      if (y < top) top = y;
+    }
+    this.frame = { cx, cy, k, angle, feetY: feet, topY: top };
+    this.art.scale.set(k);
+    this.art.rotation = angle;
+    this.sprite.position.set(-cx, -cy);
+    this.glow.position.set(tex.width / 2 - cx, tex.height / 2 - cy);
+    this.pose.position.set(0, -feet);
+    this.jelly?.bind(this.sprite.texture, this.frame);
+    if (this.rig) this.placeSpine(this.rig);
+    this.applyBody();
+  }
+
+  private get height(): number {
+    return Math.max(1, this.frame.feetY - this.frame.topY);
+  }
+
+  // ───────────────────────────── public API ─────────────────────────────
+
+  setBlur(on: boolean): void {
+    if (on === this.blurred) return;
+    if (on && (this._state === 'hidden' || this._state === 'explode')) return;
+    this.blurred = on;
+    this.stopBreath();
+    const tex = on ? this.ctx.art.symbol(this._id, 'blur') : this.staticTex;
+    this.sprite.texture = tex;
+    this.jelly?.bind(tex, this.frame);
+    if (on) {
+      this.fadeGlow(0);
+      const ref = this.spineRef();
+      if (ref && SpineRig.supports(ref, 'blur')) void this.useSpine(ref)?.play('blur', true);
+      if (this._state === 'static' || this._state === 'land') this._state = 'blur';
+    } else if (this._state === 'blur') {
+      this._state = 'static';
+      if (this.rig && !this.holds.size) this.releaseSpine();
+    }
+    this.squash.target = on ? T.blur.stretch : 0;
+    this.loop.start();
+  }
+
+  land(opts: LandOptions): Promise<void> {
+    this.interrupt();
+    this.stopBreath();
+    this._state = 'land';
+    if (this.blurred) {
+      this.blurred = false;
+      this.sprite.texture = this.staticTex;
+    }
+    const weight: LandWeight = opts.weight ?? this.def.landWeight;
+    const wm = TIMING.land.weight[weight] ?? 1;
+    const L = T.land;
+    const vf = clamp(Math.pow(Math.max(0, opts.velocity) / L.refVelocity, L.velocityCurve), L.minVelocityFactor, L.maxVelocityFactor);
+    const soft = opts.tumble ? L.tumbleSoftness : 1;
+    const raw = wm * vf * soft;
+    const m = raw <= 1 ? raw : 1 + (raw - 1) * L.squashKnee;
+
+    this.restorePose();
+    this.fadeGlow(0);
+
+    const ref = this.spineRef();
+    const rig = ref && SpineRig.supports(ref, 'land') ? this.useSpine(ref) : null;
+    if (rig) {
+      this.squashGain = T.spine.squashScale;
+      rig.kick(T.spine.physicsImpulse * m);
+      if (rig.hasEvent('impact')) rig.once('impact', () => this.landFeedback(weight, m, !!opts.tumble));
+      else this.landFeedback(weight, m, !!opts.tumble);
+      void rig.play('land').then(() => {
+        if (this.rig === rig && (this._state === 'land' || this._state === 'static')) this.releaseSpine();
+      });
+    } else {
+      this.releaseSpine();
+      this.squashGain = 1;
+      this.landFeedback(weight, m, !!opts.tumble);
+      this.ensureJelly();
+      this.lag.v += T.jelly.landLagKick * m;
+      this.bulge.v += T.jelly.landBulgeKick * m;
+    }
+
+    // impact: squash in over squashDuration (held), then hand over to the spring
+    this.squash.target = 0;
+    this.squashHeld = true;
+    this.track(
+      gsap.to(this.squash, {
+        x: m,
+        duration: s(TIMING.land.squashDuration),
+        ease: 'power2.out',
+        onComplete: () => this.releaseSquash(weight, m, vf * soft),
+      }),
+    );
+    this.loop.start();
+    return new Promise<void>((resolve) => {
+      this.landResolve = resolve;
+      this.pending.push(resolve);
+    });
+  }
+
+  win(): Promise<void> {
+    ensureEases();
+    this.interrupt();
+    this.stopBreath();
+    this.antOn = false;
+    this._state = 'win';
+    const W = T.win;
+    const tw = TIMING.win;
+    this.hold('win');
+
+    const ref = this.spineRef();
+    const rig = ref && SpineRig.supports(ref, 'win') ? this.useSpine(ref) : null;
+    if (rig) {
+      void rig.play('win');
+      if (rig.has('win_loop')) rig.queueLoop('win_loop');
+    } else {
+      this.releaseSpine();
+      const j = this.ensureJelly();
+      if (j) j.setFx(true);
+      this.bulge.v += T.jelly.winBulgeKick;
+      this.lag.v += T.jelly.winLagKick;
+    }
+
+    // Choreography (ms): pop -> short hold -> dip (anticipation) -> second beat -> settle to postWin.
+    const tPop = tw.popDuration;
+    const tDip = tPop + W.holdAfterPop;
+    const tBeat = tDip + W.dipDuration;
+    const tSettle = tBeat + W.beatDuration;
+    const settle = Math.max(120, tw.winAnimDuration - tSettle);
+    const tl = this.track(gsap.timeline());
+    const sc = this.pose.scale;
+    tl.to(sc, { x: tw.popScale, y: tw.popScale, duration: s(tPop), ease: tw.popEase }, 0);
+    tl.to(sc, { x: W.dipScale, y: W.dipScale, duration: s(W.dipDuration), ease: 'power2.inOut' }, s(tDip));
+    tl.to(sc, { x: W.beatScale, y: W.beatScale, duration: s(W.beatDuration), ease: W.beatEase }, s(tBeat));
+    tl.to(sc, { x: W.postWinScale, y: W.postWinScale, duration: s(settle), ease: W.settleEase }, s(tSettle));
+    // white hit flash on the pop
+    this.fx.flash = W.flash;
+    tl.to(this.fx, { flash: 0, duration: s(W.flashDuration), ease: 'power3.out' }, 0);
+    // jelly: belly bulge on the pop, a smaller one on the second beat
+    tl.call(
+      () => {
+        this.bulge.v += T.jelly.winBulgeKick * W.beatJelly;
+        this.lag.v += T.jelly.winLagKick * W.beatJelly;
+      },
+      undefined,
+      s(tBeat),
+    );
+    // glow halo breathes with the beats, then settles to the postWin level
+    this.glowState.s = 0.9;
+    const glow = (a: number, sc2: number, at: number, dur: number, ease: string) =>
+      tl.to(this.glowState, { a, s: sc2, duration: s(dur), ease, onUpdate: this.onGlow }, s(at));
+    glow(W.glowAlpha, W.glowScale, 0, tPop * 1.5, 'power2.out');
+    glow(W.glowAlpha * 0.7, 1.02, tDip, W.dipDuration, 'power2.inOut');
+    glow(W.glowAlpha, W.glowScale, tBeat, W.beatDuration, 'power2.out');
+    glow(W.glowPostAlpha, 1, tSettle, settle, 'power2.inOut');
+    // shine sweep (top-left -> bottom-right) riding the pop
+    this.fx.shine = -0.35;
+    this.fx.shineWidth = W.shineWidth;
+    this.fx.shineIntensity = W.shineIntensity;
+    tl.to(this.fx, { shine: 1.35, duration: s(tw.shineDuration), ease: 'power2.inOut' }, s(tPop * 0.5));
+    // follow-through: specials/highs wiggle through the hold, royals stay upright
+    if (this.def.kind === 'royal') tl.to(this.pose, { rotation: 0, duration: s(tPop), ease: 'power2.out' }, 0);
+    else {
+      tl.to(
+        this.pose,
+        { rotation: W.wiggleDeg * DEG, duration: s(tSettle - tPop * 0.6), ease: 'symbol.winWiggle' },
+        s(tPop * 0.6),
+      );
+    }
+
+    const c = this.toRoot(this.pose, 0, 0);
+    this.ctx.game.broadcast('fx:burst', { kind: 'sparkle', x: c.x, y: c.y, color: this.def.color, count: W.sparkleCount, power: 1 });
+
+    return new Promise<void>((resolve) => {
+      this.pending.push(resolve);
+      this.track(
+        gsap.delayedCall(s(tw.winAnimDuration), () => {
+          this.enterPostWin();
+          this.resolvePending();
+        }),
+      );
+    });
+  }
+
+  explode(): Promise<void> {
+    this.interrupt();
+    this.stopBreath();
+    this.antOn = false;
+    this._state = 'explode';
+    const E = TIMING.explode;
+    const X = T.explode;
+    const burstAt = s(E.anticipateDuration);
+    const burst = s(E.burstDuration);
+    const emitBurst = () => {
+      const c = this.toRoot(this.pose, 0, 0);
+      this.ctx.game.broadcast('fx:burst', {
+        kind: 'explode',
+        x: c.x,
+        y: c.y,
+        color: this.def.color,
+        count: E.particles,
+        power: this.def.kind === 'royal' ? 0.8 : 1,
+      });
+    };
+
+    const ref = this.spineRef();
+    const rig = ref && SpineRig.supports(ref, 'explode') ? this.useSpine(ref) : null;
+    this.hold('explode');
+    if (rig) {
+      if (rig.hasEvent('burst')) rig.once('burst', emitBurst);
+      return new Promise<void>((resolve) => {
+        this.pending.push(resolve);
+        void rig.play('explode').then(() => {
+          if (this.rig !== rig || this._state !== 'explode') return;
+          rig.flushEvents();
+          if (!rig.hasEvent('burst')) emitBurst();
+          this.finishExplode();
+        });
+      });
+    }
+
+    this.releaseSpine();
+    const j = this.ensureJelly();
+    if (j) {
+      j.setFx(true);
+      j.fxShader.setEdgeColor(this.def.color, X.edgeWhiten);
+      j.fxShader.setNoiseScale(X.noiseScale);
+    }
+    this.fx.dissolve = 0;
+    this.fx.shineIntensity = 0;
+    const tl = this.track(gsap.timeline());
+    // anticipation squeeze + charge-up
+    tl.to(this.pose.scale, { x: E.anticipateScale, y: E.anticipateScale, duration: burstAt, ease: E.anticipateEase }, 0);
+    tl.to(this.fx, { flash: X.chargeFlash, duration: burstAt, ease: 'power1.in' }, 0);
+    tl.to(this.glowState, { a: X.glowCharge, s: 0.95, duration: burstAt, ease: 'power1.in', onUpdate: this.onGlow }, 0);
+    // burst
+    tl.call(emitBurst, undefined, burstAt);
+    tl.to(this.pose.scale, { x: E.burstScale, y: E.burstScale, duration: burst, ease: X.burstEase }, burstAt);
+    tl.to(this.fx, { dissolve: 1, duration: burst, ease: X.dissolveEase }, burstAt);
+    tl.to(this.fx, { flash: 0, duration: burst * 0.7, ease: 'power2.out' }, burstAt);
+    tl.to(this.art, { alpha: 0, duration: burst, ease: X.fadeEase }, burstAt);
+    tl.to(this.glowState, { a: X.glowPeak, s: X.glowScale, duration: burst * 0.25, ease: 'power2.out', onUpdate: this.onGlow }, burstAt);
+    tl.to(this.glowState, { a: 0, duration: burst * 0.6, ease: 'power2.out', onUpdate: this.onGlow }, burstAt + burst * 0.25);
+    return new Promise<void>((resolve) => {
+      this.pending.push(resolve);
+      tl.call(() => this.finishExplode(), undefined, burstAt + burst);
+    });
+  }
+
+  setAnticipation(on: boolean): void {
+    if (on === this.antOn) return;
+    ensureEases();
+    const A = TIMING.anticipation;
+    if (on) {
+      this.interrupt();
+      this.stopBreath();
+      this.antOn = true;
+      this._state = 'anticipation';
+      this.hold('anticipation');
+      this.beat.base = 1 + (A.pulseScale - 1) * 0.35;
+      this.beat.peak = A.pulseScale;
+      const ref = this.spineRef();
+      const rig = ref && SpineRig.supports(ref, 'anticipation_loop') ? this.useSpine(ref) : null;
+      if (rig) {
+        if (rig.has('anticipation_intro')) {
+          void rig.play('anticipation_intro');
+          rig.queueLoop('anticipation_loop');
+        } else void rig.play('anticipation_loop', true);
+      } else {
+        this.releaseSpine();
+        this.ensureJelly();
+      }
+      // intro: scale up (overshoot), glow flare, sway fades in
+      this.track(
+        gsap.to(this.pose.scale, { x: this.beat.base, y: this.beat.base, duration: s(A.introDuration), ease: 'back.out(3)' }),
+      );
+      this.glowState.s = 0.9;
+      this.track(
+        gsap.to(this.glowState, { a: 1.2, s: 1.1, duration: s(A.introDuration * 0.5), ease: 'power2.out', onUpdate: this.onGlow }),
+      );
+      this.track(gsap.to(this.sway, { env: 1, duration: s(A.introDuration * 2), ease: 'sine.inOut' }));
+      // heartbeat loop (lub-dub) on the pose scale; glow + jelly follow it in tick()
+      this.track(
+        gsap.fromTo(
+          this.pose.scale,
+          { x: this.beat.base, y: this.beat.base },
+          {
+            x: this.beat.peak,
+            y: this.beat.peak,
+            duration: s(A.pulsePeriod),
+            ease: 'symbol.heartbeat',
+            repeat: -1,
+            delay: s(A.introDuration),
+            immediateRender: false,
+          },
+        ),
+      );
+      this.loop.start();
+    } else {
+      this.antOn = false;
+      if (this._state !== 'anticipation') return;
+      this.killAnims();
+      this.release('anticipation');
+      if (this.rig?.has('anticipation_out')) void this.rig.play('anticipation_out');
+      const out = s(A.outroDuration);
+      this.track(gsap.to(this.pose.scale, { x: 1, y: 1, duration: out, ease: 'power2.out' }));
+      this.track(gsap.to(this.pose, { rotation: 0, duration: out, ease: 'power2.out' }));
+      this.track(gsap.to(this.glowState, { a: 0, s: 1, duration: out, ease: 'power2.in', onUpdate: this.onGlow }));
+      this.track(
+        gsap.delayedCall(out, () => {
+          if (this.rig) this.releaseSpine();
+          this._state = 'static';
+          if (!this.loop.running) this.startBreath();
+        }),
+      );
+    }
+  }
+
+  setDim(on: boolean, animate = true): void {
+    const target = on ? 1 : 0;
+    if (target === this.dim.target && (animate || this.dim.t === target)) return;
+    this.dim.target = target;
+    this.dimTween?.kill();
+    this.dimTween = null;
+    if (animate) {
+      this.dimTween = gsap.to(this.dim, {
+        t: target,
+        duration: s(TIMING.win.dimDuration),
+        ease: 'power2.out',
+        onUpdate: () => this.applyDim(),
+        onComplete: () => {
+          this.dimTween = null;
+        },
+      });
+    } else {
+      this.dim.t = target;
+      this.applyDim();
+    }
+  }
+
+  idleAccent(): void {
+    if (this._state !== 'static' || this.loop.running || this.destroyed) return;
+    ensureEases();
+    const I = T.idle;
+    const ref = this.spineRef();
+    if (ref && SpineRig.supports(ref, 'idle')) {
+      const rig = this.useSpine(ref);
+      if (rig) {
+        void rig.play('idle').then(() => {
+          if (this.rig === rig && this._state === 'static') this.releaseSpine();
+        });
+        return;
+      }
+    }
+    if (this.ctx.budget.idleShaders && this.def.kind !== 'royal') {
+      // glint: shine sweep + a soft jelly nudge
+      const j = this.ensureJelly();
+      if (!j) return;
+      j.setFx(true);
+      this.hold('glint');
+      this.fx.shine = -0.35;
+      this.fx.shineWidth = T.win.shineWidth;
+      this.fx.shineIntensity = I.glintIntensity;
+      this.fx.flash = 0;
+      this.fx.dissolve = 0;
+      this.bulge.v += I.glintBulge;
+      this.track(
+        gsap.to(this.fx, {
+          shine: 1.35,
+          duration: s(I.glintDuration),
+          ease: 'power2.inOut',
+          onComplete: () => this.release('glint'),
+        }),
+      );
+      this.loop.start();
+    } else {
+      this.track(gsap.to(this.pose, { rotation: I.wiggleDeg * DEG, duration: s(I.wiggleDuration), ease: 'symbol.wiggle' }));
+    }
+  }
+
+  reset(): void {
+    this.interrupt();
+    this.stopBreath();
+    this.dimTween?.kill();
+    this.dimTween = null;
+    this.dim.t = 0;
+    this.dim.target = 0;
+    this.applyDim();
+    for (const sp of [this.squash, this.rock, this.bulge, this.lag, this.shear]) sp.reset(0);
+    this.squashHeld = false;
+    this.squashGain = 1;
+    this.hop.active = false;
+    this.hop.h = 0;
+    this.holds.clear();
+    this.loop.stop();
+    this.dropJelly();
+    this.releaseSpine();
+    this.blurred = false;
+    this.antOn = false;
+    if (this.staticTex) this.sprite.texture = this.staticTex;
+    this.glowState.a = 0;
+    this.glowState.s = 1;
+    this.applyGlow();
+    this.sway.env = 0;
+    this.pose.scale.set(1);
+    this.pose.rotation = 0;
+    this.art.alpha = 1;
+    this.body.visible = true;
+    this.applyBody();
+    this._state = 'static';
+  }
+
+  setElevated(on: boolean): void {
+    if (on === this.elevated) return;
+    this.elevated = on;
+    if (on) this.ctx.layers.winLayer.attach(this.view);
+    else this.ctx.layers.winLayer.detach(this.view);
+  }
+
+  destroy(): void {
+    if (this.destroyed) return;
+    this.reset();
+    this.stopBreath();
+    this.destroyed = true;
+    this.offLayout();
+    this.setElevated(false);
+    this.view.destroy({ children: true });
+  }
+
+  // ───────────────────────────── internals ─────────────────────────────
+
+  /** Resolve in-flight promises and kill action tweens (springs keep settling naturally). */
+  private interrupt(): void {
+    this.killAnims();
+    this.resolvePending();
+    if (this.holds.size) {
+      this.holds.clear();
+      this.jelly?.setFx(false);
+    }
+    this.fx.shine = -1;
+    this.fx.shineIntensity = 0;
+    this.fx.flash = 0;
+    this.fx.dissolve = 0;
+    this.squashHeld = false;
+    this.bulge.target = 0;
+    this.lag.target = 0;
+  }
+
+  private killAnims(): void {
+    for (const a of this.anims) a.kill();
+    this.anims = [];
+  }
+
+  private resolvePending(): void {
+    const list = this.pending;
+    this.pending = [];
+    this.landResolve = null;
+    for (const r of list) r();
+  }
+
+  private track<A extends gsap.core.Animation>(a: A): A {
+    this.anims.push(a);
+    return a;
+  }
+
+  private hold(h: Hold): void {
+    this.holds.add(h);
+    this.loop.start();
+  }
+
+  private release(h: Hold): void {
+    this.holds.delete(h);
+    if (h === 'anticipation') {
+      this.bulge.target = 0;
+      this.lag.target = 0;
+      this.sway.env = 0;
+    }
+    if (!this.holds.has('win') && !this.holds.has('explode') && !this.holds.has('glint')) this.jelly?.setFx(false);
+  }
+
+  private releaseSquash(weight: LandWeight, m: number, energy: number): void {
+    this.squashHeld = false;
+    this.squash.v = -this.squash.x * this.squash.omega * T.land.reboundVelocity;
+    // secondary hop launched as the spring passes neutral (stretch carries it up)
+    const h = TIMING.land.hopHeight * (TIMING.land.weight[weight] ?? 1) * energy;
+    if (h > 0.5) {
+      this.hop.active = true;
+      this.hop.delay = this.squash.quarterPeriod * 0.85;
+      this.hop.t = 0;
+      this.hop.h = 0;
+      this.hop.v0 = Math.sqrt(2 * T.land.hopGravity * h);
+    }
+    // heavy things rock on their base (direction varies per instance)
+    const deg = (T.land.wobbleDeg[weight] ?? 0) * Math.min(1.2, m / (TIMING.land.weight[weight] ?? 1));
+    if (deg > 0) {
+      const dir = this.seed < 0.5 ? -1 : 1;
+      this.rock.v += dir * deg * DEG * this.rock.omega;
+    }
+  }
+
+  private enterPostWin(): void {
+    this.release('win');
+    this._state = 'postWin';
+    const W = T.win;
+    const half = s(W.postWinPulsePeriod / 2);
+    this.track(
+      gsap.to(this.pose.scale, {
+        x: W.postWinPulseScale,
+        y: W.postWinPulseScale,
+        duration: half,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+      }),
+    );
+    this.track(
+      gsap.to(this.glowState, {
+        a: W.glowPostAlpha + 0.3,
+        duration: half,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+        onUpdate: this.onGlow,
+      }),
+    );
+    this.track(gsap.to(this.pose, { rotation: 0, duration: s(200), ease: 'power2.out' }));
+  }
+
+  private finishExplode(): void {
+    this.release('explode');
+    this.body.visible = false;
+    this._state = 'hidden';
+    this.glowState.a = 0;
+    this.applyGlow();
+    this.releaseSpine();
+    this.dropJelly();
+    for (const sp of [this.squash, this.rock, this.bulge, this.lag, this.shear]) sp.reset(0);
+    this.hop.active = false;
+    this.hop.h = 0;
+    this.applyBody();
+    this.loop.stop();
+    this.resolvePending();
+  }
+
+  private restorePose(): void {
+    if (this.pose.scale.x !== 1 || this.pose.scale.y !== 1 || this.pose.rotation !== 0) {
+      this.track(gsap.to(this.pose.scale, { x: 1, y: 1, duration: s(TIMING.land.squashDuration * 2), ease: 'power2.out' }));
+      this.track(gsap.to(this.pose, { rotation: 0, duration: s(TIMING.land.squashDuration * 2), ease: 'power2.out' }));
+    }
+    this.art.alpha = 1;
+    this.body.visible = true;
+  }
+
+  private fadeGlow(a: number): void {
+    if (this.glowState.a === a) return;
+    this.track(gsap.to(this.glowState, { a, duration: s(TIMING.win.dimDuration), ease: 'power2.out', onUpdate: this.onGlow }));
+  }
+
+  private applyDim(): void {
+    this.art.tint = lerpGray(0xffffff, TIMING.win.dimTint, this.dim.t);
+  }
+
+  private applyGlow(): void {
+    const a = this.glowState.a;
+    this.glow.visible = a > 0.004;
+    this.glow.alpha = Math.min(1, a);
+    this.glow.scale.set(this.glowState.s);
+  }
+
+  private applyBody(): void {
+    const { squashX, squashY } = TIMING.land;
+    const p = Math.log(squashX) / -Math.log(squashY);
+    const a = this.squash.x * this.squashGain;
+    const sy = Math.max(0.3, 1 - a * (1 - squashY));
+    this.body.scale.set(Math.pow(sy, -p), sy);
+    this.body.position.set(0, this.frame.feetY - this.hop.h);
+    this.body.rotation = this.rock.x;
+  }
+
+  private startBreath(): void {
+    if (this.breath || this.destroyed || !this.ctx.budget.idleShaders) return;
+    if (this.def.kind === 'royal' || this._state !== 'static') return;
+    const I = T.idle;
+    const period = lerp(I.breathPeriodMin, I.breathPeriodMax, this.seed);
+    this.pose.scale.set(1);
+    this.breath = gsap.to(this.pose.scale, {
+      x: I.breathScale,
+      y: I.breathScale,
+      duration: sUi(period / 2),
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: -1,
+      delay: sUi(this.seed * period),
+    });
+  }
+
+  private stopBreath(): void {
+    if (!this.breath) return;
+    this.breath.kill();
+    this.breath = null;
+  }
+
+  // ── jelly / spine swapping ──
+
+  private ensureJelly(): JellyMesh | null {
+    if (this.rig) return null;
+    if (!this.jelly) {
+      const j = acquireJelly();
+      j.bind(this.sprite.texture, this.frame);
+      this.art.addChildAt(j.mesh, this.art.getChildIndex(this.sprite) + 1);
+      this.sprite.visible = false;
+      this.jelly = j;
+    }
+    return this.jelly;
+  }
+
+  private dropJelly(): void {
+    if (!this.jelly) return;
+    releaseJelly(this.jelly);
+    this.jelly = null;
+    this.sprite.visible = true;
+  }
+
+  private spineRef(): SpineRef | null {
+    return this._id ? this.ctx.art.spine(this._id) : null;
+  }
+
+  private useSpine(ref: SpineRef): SpineRig | null {
+    if (!this.rig) {
+      this.dropJelly();
+      const rig = new SpineRig(ref);
+      this.placeSpine(rig);
+      this.art.addChild(rig.spine);
+      this.sprite.visible = false;
+      this.rig = rig;
+    }
+    return this.rig;
+  }
+
+  private placeSpine(rig: SpineRig): void {
+    const tex = this.staticTex;
+    rig.spine.scale.set(tex.width / T.spine.canvasPx);
+    rig.spine.position.set(tex.width / 2 - this.frame.cx, tex.height / 2 - this.frame.cy);
+  }
+
+  private releaseSpine(): void {
+    if (!this.rig) return;
+    this.rig.release();
+    this.rig = null;
+    this.sprite.visible = !this.jelly;
+    this.squashGain = 1;
+  }
+
+  // ── feedback ──
+
+  private landFeedback(weight: LandWeight, m: number, tumble: boolean): void {
+    const L = T.land;
+    const now = clock.time * 1000;
+    const id = `land_${weight}` as SfxId;
+    const last = feedback.lastSfx.get(id) ?? -Infinity;
+    if (now - last >= T.feedback.sfxMinGap) {
+      feedback.lastSfx.set(id, now);
+      const volume = (L.sfxVolume[weight] ?? 0.7) * (tumble ? L.tumbleVolume : 1);
+      this.ctx.game.broadcast('sfx', { id, volume, rate: 0.96 + this.seed * 0.08 });
+    }
+    if (weight !== 'heavy' && weight !== 'special') return;
+    const f = this.toRoot(this.body, 0, 0);
+    this.ctx.game.broadcast('fx:burst', {
+      kind: 'dust',
+      x: f.x,
+      y: f.y,
+      color: this.def.shade,
+      count: Math.round(TIMING.land.dustParticles * clamp(m / (TIMING.land.weight[weight] ?? 1), 0.5, 1.2)),
+      power: clamp(m / 1.6, 0.3, 1),
+    });
+    // shared shake budget per window
+    if (now - feedback.shakeWindowStart > T.feedback.shakeWindow) {
+      feedback.shakeWindowStart = now;
+      feedback.shakeSum = 0;
+    }
+    const want = (L.shakeTrauma[weight] ?? 0) * (tumble ? 0.6 : 1);
+    const trauma = Math.min(want, T.feedback.shakeWindowMax - feedback.shakeSum);
+    if (trauma > 0.005) {
+      feedback.shakeSum += trauma;
+      this.ctx.game.broadcast('fx:shake', { trauma });
+    }
+  }
+
+  /** A local point of `from` in design (root) coordinates. Returns a shared Point. */
+  private toRoot(from: Container, x: number, y: number): Point {
+    this.p0.set(x, y);
+    from.toGlobal(this.p0, this.p1);
+    return this.ctx.layers.root.toLocal(this.p1, undefined, this.p2);
+  }
+
+  // ── per-frame ──
+
+  private tick(dtRaw: number): void {
+    if (this.destroyed) return;
+    const dt = dtRaw * speedScale();
+    if (!this.squashHeld) this.squash.step(dt);
+    this.rock.step(dt);
+
+    const anticipating = this.holds.has('anticipation');
+    let beat = 0;
+    if (anticipating) {
+      // glow + jelly breathe with the heartbeat; slow sway on a sine
+      const span = this.beat.peak - this.beat.base;
+      beat = span > 0 ? clamp((this.pose.scale.x - this.beat.base) / span, 0, 1.2) : 0;
+      this.bulge.target = T.anticipation.bulge * beat;
+      this.lag.target = T.anticipation.lag * beat;
+      this.sway.t += dt;
+      const w = (2 * Math.PI) / (T.anticipation.swayPeriod / 1000);
+      this.pose.rotation = T.anticipation.swayDeg * DEG * this.sway.env * Math.sin(this.sway.t * w + this.seed * 6.28);
+    }
+    this.shear.target = -this.rock.x * this.height * T.jelly.shearFollow;
+    this.bulge.step(dt);
+    this.lag.step(dt);
+    this.shear.step(dt);
+
+    if (this.hop.active) {
+      // ballistic arc, evaluated analytically (no integration drift on the apex)
+      const hop = this.hop;
+      if (hop.delay > 0) hop.delay -= dt;
+      else {
+        const g = T.land.hopGravity;
+        hop.t += dt;
+        hop.h = hop.v0 * hop.t - 0.5 * g * hop.t * hop.t;
+        if (hop.h <= 0) {
+          this.squash.v += hop.v0 * T.land.hopKick;
+          hop.h = 0;
+          hop.active = false;
+        }
+      }
+    }
+
+    this.applyBody();
+    if (anticipating) {
+      this.applyGlow();
+      this.glow.alpha *= 0.6 + 0.4 * beat;
+    }
+    if (this.jelly) {
+      this.field.bulge = this.bulge.x;
+      this.field.lag = this.lag.x;
+      this.field.shear = this.shear.x;
+      this.jelly.apply(this.field);
+      if (this.jelly.hasFx) this.jelly.fxShader.apply(this.fx);
+    }
+
+    const energy = Math.max(
+      this.squash.energy(),
+      this.rock.energy() * 4,
+      this.bulge.energy(),
+      this.lag.energy(),
+      this.shear.energy() * 0.02,
+    );
+    const moving = this.squashHeld || this.hop.active;
+    if (this.landResolve && !moving && energy < T.land.resolveEpsilon) {
+      const r = this.landResolve;
+      this.landResolve = null;
+      this.pending = this.pending.filter((p) => p !== r);
+      if (this._state === 'land') {
+        this._state = 'static';
+      }
+      r();
+    }
+    if (!moving && this.holds.size === 0 && energy < T.land.settleEpsilon) {
+      for (const sp of [this.squash, this.rock, this.bulge, this.lag, this.shear]) sp.snap();
+      this.applyBody();
+      this.dropJelly();
+      this.loop.stop();
+      if (this._state === 'land') this._state = 'static';
+      if (this._state === 'static' && !this.rig) this.startBreath();
+    }
+  }
+}

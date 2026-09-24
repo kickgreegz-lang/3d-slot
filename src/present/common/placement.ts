@@ -1,4 +1,17 @@
-import { type LayoutSpec, gridSize } from '../../config/layout';
+import { type LayoutSpec, type Rect, gridSize } from '../../config/layout';
+import type { GameContext } from '../../game/context';
+
+/**
+ * The part of the contain-scaled design space that is actually on screen
+ * (the design rect plus any letterbox margins), in design px.
+ */
+export const visibleDesignRect = (ctx: GameContext): Rect => {
+  const L = ctx.layout;
+  const k = ctx.scale || 1;
+  const w = ctx.app.screen.width / k;
+  const h = ctx.app.screen.height / k;
+  return { x: (L.width - w) / 2, y: (L.height - h) / 2, w, h };
+};
 
 /**
  * Where presentation elements sit in each design space. Derived from the layout

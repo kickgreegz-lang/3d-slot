@@ -1,0 +1,10 @@
+# TEMPLATE vfx_keyframe.txt: look-dev key frames for the FX style guide (docs/PIPELINE.md phase 5).
+# Shipped VFX are live code (src/fx) or Blender toon flipbooks; AI key frames are REFERENCE for shape language and colour,
+# and the start frame for an AI/Wan loop only when that route is cleared.
+# Placeholders: {EFFECT} {PHASE} {COLOURS} {STYLE_FORMULA} {KEY_HEX}
+#   {EFFECT}  e.g. cartoon smoke-puff explosion | coin burst | firefly sparkle trail | lightning arc | shockwave ring
+#   {PHASE}   anticipation | peak | dissipate
+#   {COLOURS} from the palette roles, e.g. "molten gold #FFC629 with white-hot core" or "swamp-green #3F9D3A smoke"
+Game visual effect: {EFFECT} at its {PHASE} frame, {COLOURS}, bold graphic cel-shaded shapes in 2-3 hard-edged tones, pure-black outline on solid shapes, chunky readable silhouette, no photoreal smoke, no soft airbrush.
+{STYLE_FORMULA}
+Single effect element, centred, on a solid uniform flat {KEY_HEX} background, no text, no characters.

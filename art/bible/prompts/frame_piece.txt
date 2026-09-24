@@ -1,0 +1,9 @@
+# TEMPLATE frame_piece.txt: reel-frame pieces for 3-slice assembly (EnvArtKey frame_beam / frame_post / frame_sill).
+# Placeholders: {PIECE} {PIECE_SHAPE} {STYLE_FORMULA} {KEY_HEX}
+#   {PIECE}        beam | post | sill | corner cap
+#   {PIECE_SHAPE}  beam: long horizontal plank assembly, 6:1 ; post: tall vertical plank, 1:6 ; sill: thick horizontal ledge with a top face ; corner cap: square joint block
+#   {KEY_HEX}      #FF00FF (wood and rope contain no magenta)
+# The neon tube along the beam is a runtime effect (src/fx), never painted. The logo sits on the beam at runtime.
+Game UI element: the {PIECE} of a chunky cartoon slot reel frame, {PIECE_SHAPE}, made of weathered cypress planks (face #B8742F, underside #5A2A18) with a thick rope wrap and black iron rivets.
+{STYLE_FORMULA}
+Single game UI element, orthographic front view, crisp edges, no drop shadow outside the element, no text, no neon, no glow. Any enclosed opening is solid flat {KEY_HEX}. Solid uniform flat {KEY_HEX} background.

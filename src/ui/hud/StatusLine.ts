@@ -13,6 +13,7 @@ export class StatusLine extends Container {
   private acc = 1;
   private minute = -1;
   private clockOn = true;
+  private readonly offTick: () => void;
 
   constructor(
     texts: TextPool,
@@ -22,7 +23,7 @@ export class StatusLine extends Container {
     this.line = texts.make('', labelStyle(26, HUD_COLORS.value), 0, 0);
     this.line.alpha = 0.92;
     this.addChild(this.line);
-    clock.onUpdate(() => {
+    this.offTick = clock.onUpdate(() => {
       this.acc += clock.realDt;
       if (this.acc < 1) return;
       this.acc = 0;
@@ -52,5 +53,10 @@ export class StatusLine extends Container {
     const parts = [this.title.toUpperCase()];
     if (this.clockOn) parts.push(hhmm);
     this.line.text = [...parts, ...this.extras].join('  |  ');
+  }
+
+  override destroy(options?: Parameters<Container['destroy']>[0]): void {
+    this.offTick();
+    super.destroy(options);
   }
 }

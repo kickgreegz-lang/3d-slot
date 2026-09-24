@@ -111,7 +111,7 @@ export class HexButton extends Container {
   setEnabled(on: boolean): void {
     if (on === this.enabled) return;
     this.enabled = on;
-    this.eventMode = on ? 'static' : 'none';
+    this.eventMode = on && this.shown ? 'static' : 'none';
     this.cursor = on ? 'pointer' : 'default';
     if (!on) this.visualState = 'idle';
     gsap.to(this.face, { alpha: on ? 1 : 0.42, duration: sUi(HUD_TIMING.fadeDuration), overwrite: 'auto' });
@@ -126,6 +126,8 @@ export class HexButton extends Container {
   setShown(on: boolean, animate = true): void {
     if (on === this.shown) return;
     this.shown = on;
+    // never clickable while fading out
+    this.eventMode = on && this.enabled ? 'static' : 'none';
     gsap.killTweensOf(this, 'alpha');
     gsap.killTweensOf(this.scale);
     if (!animate) {

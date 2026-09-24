@@ -1,0 +1,17 @@
+# TEMPLATE mascot_turnaround.txt: two different jobs, two sections.
+# Placeholders: {CHARACTER} {STYLE_FORMULA} {KEY_HEX} {VIEW} {IDENTITY_LOCK}
+#   {CHARACTER}      mascots.<id>.brief + "adult" wording; never use: kid, child, cute, chibi, baby
+#   {IDENTITY_LOCK}  mascots.rules.identityLock
+#   {VIEW}           front | left | back | right  (file names art/source/mascots/<name>/turnaround/<view>.png)
+# Model: Nano Banana Pro (Vertex gemini-3-pro-image / Higgsfield nano_banana_2), <=14 refs (style pack + approved key art).
+
+## SECTION A: design model sheet (for human approval and as identity references). 21:9 at 4K.
+Character model sheet of {CHARACTER}, adult body proportions with the head about one quarter of total height, four full-body views in one row: front, three-quarter left, side profile left, back. Identical design, outfit and colours in every view, relaxed A-pose with arms held slightly away from the body, all views the same height on one invisible baseline with wide empty gaps.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no text, no labels, no grid lines, no shadows.
+
+## SECTION B: 3D-input view, ONE figure per image (a 4-view sheet becomes 4 fused statues in image-to-3D). 1:1 at 4K.
+## No outlines and no cel shading here: the 3D runtime adds toon ramp and outline itself.
+{IDENTITY_LOCK}
+{CHARACTER}, adult body proportions with the head about one quarter of total height.
+Single full-body figure, orthographic {VIEW} view, relaxed A-pose with arms held away from the torso and legs slightly apart, flat unlit colours, no outlines, no cel shadows, no specular, plain 50% grey #808080 background, no floor, no cast shadow, whole figure in frame with margin.

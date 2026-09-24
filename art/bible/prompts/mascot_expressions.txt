@@ -1,0 +1,28 @@
+# TEMPLATE mascot_expressions.txt: expression, mouth, eye and hand sheets + key poses.
+# Reference: the approved front view (Section A crop) + 2-4 style anchors. Crop every cell into its own PNG afterwards.
+# Placeholders: {IDENTITY_LOCK} {STYLE_FORMULA} {KEY_HEX} {POSE} {ASPECT}
+# Never use: kid, child, cute, chibi, baby.
+
+## SECTION A: expression sheet, 3:2
+{IDENTITY_LOCK}
+Same character as the reference, 3x2 grid of head-and-shoulders portraits: neutral, big toothy grin, shocked excitement, wink, belly laugh, focused determination. Identical design and colours, equal cells with wide gutters.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no text.
+
+## SECTION B: mouth and eye sheet (drives shape keys / Spine face_ attachments), 3:2
+{IDENTITY_LOCK}
+Same character as the reference, 4x3 grid of front-view head close-ups, all at identical scale and position: mouth closed neutral, mouth open, mouth 'O', mouth 'E', smile, frown, eyes closed (blink), squint, brows up, brows down, surprised, angry. Equal cells with wide gutters.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no text.
+
+## SECTION C: hand sheet, 3:2
+{IDENTITY_LOCK}
+Same character as the reference, 3x2 grid of hands only: open palm, fist, pointing, thumbs up, holding a small prop, relaxed. Correct finger count as in the reference, identical style, equal cells with wide gutters.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no text.
+
+## SECTION D: key pose (look-dev, game tile foreground, or video start/end frame). {ASPECT} MUST equal the video aspect ratio.
+{IDENTITY_LOCK}
+Pose: {POSE}. Full body, character about 65% of frame height, centred, at least 15% empty margin above the head and below the feet.
+{STYLE_FORMULA}
+Flat solid {KEY_HEX} background filling the entire frame, no floor, no cast shadow.

@@ -1,0 +1,12 @@
+# TEMPLATE music.txt: music cue prompt (Eleven Music; A/B music_v2 vs music_v2_5). Enterprise agreement required before shipping.
+# Higgsfield sonilo_music: drafts only until its terms are cleared (licenses/denylist.json 'higgsfield-audio').
+# Placeholders: {STEM} {KEY} {BPM} {GENRE} {INSTRUMENTS} {ENERGY} {SECTION_PLAN} {DURATION_S}
+#   {STEM}          base | freegame | bigwin  (MusicStem in src/audio/manifest.ts) ; stingers use sfx.txt
+#   {KEY} {BPM}     global values from audio/cues.yaml (all cues share them so stems crossfade in tune)
+#   {GENRE}         SWAMP FUNK default: "swampy bayou funk, juke-joint groove"
+#   {INSTRUMENTS}   default: "clavinet, slap bass, tight drum kit, brass stabs, washboard, wah guitar"
+#   {SECTION_PLAN}  composition-plan chunks (<=30 chunks, 3-120 s each), e.g. "intro 4 bars / loop A 16 bars / loop B 16 bars"
+# Rules: instrumental only. force_instrumental works only in prompt mode, so composition plans must contain NO lyric lines.
+# Compose the base loop first with store_for_inpainting, then give every other cue conditioning_ref to it.
+# Stems: separate_stems six_stems_v1 for adaptive layers. Big-win cue: video_to_music on the big-win render.
+Instrumental {GENRE} loop for a premium slot game, {STEM} layer. Key {KEY}, {BPM} BPM, 4/4. {INSTRUMENTS}. Energy: {ENERGY}. Structure: {SECTION_PLAN}. Seamless loop point at the end, no fade-out, no vocals, no lyrics, no spoken words. {DURATION_S} seconds.

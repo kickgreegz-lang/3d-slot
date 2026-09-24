@@ -111,6 +111,9 @@
 .ui-panel.is-dialog {
   width: min(540px, 100%);
 }
+.ui-panel.is-wide {
+  width: min(640px, 100%);
+}
 .ui-panel.is-alert {
   width: min(460px, 100%);
 }
@@ -613,6 +616,12 @@
   color: #1b1400;
   box-shadow: 0 8px 22px -8px rgba(252, 216, 40, 0.75);
 }
+.ui-chips.is-money {
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+}
+.ui-chip > span {
+  white-space: nowrap;
+}
 .ui-chip small {
   display: block;
   font-family: var(--ui-body);
@@ -899,6 +908,9 @@
   .ui-chips {
     grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
     gap: 5px;
+  }
+  .ui-chips.is-money {
+    grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
   }
   .dl-label {
     margin: 8px 0 5px;

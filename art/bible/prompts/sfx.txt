@@ -1,0 +1,10 @@
+# TEMPLATE sfx.txt: sound effect prompt (ElevenLabs Sound Effects v2 'eleven_text_to_sound_v2'; Stable Audio 2.5/3.0 as alternate).
+# Higgsfield mirelo_text_to_audio: drafts only until its terms are cleared (licenses/denylist.json 'higgsfield-audio').
+# Placeholders: {CUE_ID} {SOURCE} {ACTION} {CHARACTER} {DURATION_S} {PITCH_NOTE} {TAIL}
+#   {CUE_ID}     an SfxId from src/game/events.ts (e.g. land_heavy, scatter_land_2, explode, spot_upgrade, ui_click)
+#   {TAIL}       "dry, very short tail" for UI/lands ; "natural short room tail" for stingers
+#   {PITCH_NOTE} e.g. "in key {KEY}" for tonal cues (global key/BPM live in audio/cues.yaml), or ""
+# Request settings: output pcm_48000 (wrap to WAV with ffmpeg; wav_48000 is TTS-only), duration {DURATION_S},
+# prompt_influence 0.5-0.8, loop=true only for risers/beds (<=30 s). Generate 4-8 takes per cue.
+# Stake requires unique audio: every shipped cue is layered and post-processed, and provenance is logged.
+Cartoon slot-game sound effect for '{CUE_ID}': {SOURCE} {ACTION}, {CHARACTER}. Punchy clean transient, {TAIL}, {PITCH_NOTE} no music, no voice, no words. {DURATION_S} seconds.

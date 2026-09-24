@@ -1,0 +1,7 @@
+# TEMPLATE royal_material_pass.txt: optional AI surface pass on a VECTOR royal (L1-L5).
+# Input: the resvg render of the vector glyph (art/source/ui/royal_<ID>.svg -> PNG on {KEY_HEX}) as the ONLY reference.
+# Afterwards: re-matte, then register the result back onto the vector alpha (OpenCV findTransformECC MOTION_AFFINE)
+# so the silhouette, outline weight and spelling stay exactly the vector's.
+# Placeholders: {GLYPH} {FACE_HEX} {FACE_NAME} {KEY_HEX}
+# {KEY_HEX}: #00FF00, except L3 'Q' (green face) -> #FF00FF.
+Same letterform '{GLYPH}' as the reference: identical silhouette, outline thickness, extrusion and framing; exactly one character, spelled exactly '{GLYPH}'. Change only the surface: a glossy {FACE_NAME} ({FACE_HEX}) candy-enamel face set in a chunky carved cypress-wood rim, one crisp white specular streak from the upper left, hard-edged cel shadow tones, pure-black outline, dark-plum extrusion toward the lower right unchanged. Solid uniform flat {KEY_HEX} background, no other text, no cast shadow.

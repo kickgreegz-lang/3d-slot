@@ -1,0 +1,16 @@
+# TEMPLATE symbol.txt: master still for a high-pay, wild or scatter symbol, on a key colour.
+# Lines starting with '#' are comments; the renderer drops them. See README.md.
+# Placeholders (values come from art/bible/artbible.json -> symbols.<ID>):
+#   {SUBJECT}        symbols.<ID>.brief (one sentence, no brand/studio/artist names)
+#   {LIGHT_NOTE}     "" by default; for negative restAngle: "Key light from the upper left, slightly more from above."
+#   {STYLE_FORMULA}  artbible.styleFormula (byte-identical, never edited)
+#   {FILL_PCT}       cellFill.promptFillPctOfFrame.<kind>  (high 85, special 85)
+#   {KEY_HEX}        symbols.<ID>.keyHex  (#00FF00 default, #FF00FF for green/teal assets, #0000FF if both clash)
+#   {RIG_READY_LINE} "" for the beauty master; for the Spine master use:
+#                    "Rig-ready pose: every part clearly separated from the body, mouth closed and neutral, eyes open, no motion blur."
+# References: 3-6 approved style anchors from art/source/refs/style/ (NBP/Higgsfield), or the Scenario style LoRA.
+# Output: 2048x2048 (Vertex image_size 2K / Higgsfield --resolution 2k / Scenario 2048). Upright: the runtime applies restAngle.
+Slot machine symbol of {SUBJECT} {LIGHT_NOTE}
+{STYLE_FORMULA}
+{RIG_READY_LINE}
+Single object, centred, filling {FILL_PCT}% of the frame height with equal empty margin on all four sides, upright, no text, no letters, no numbers. On a solid uniform flat {KEY_HEX} background, no gradient, no vignette, no cast shadow, no floor, no glow on the background, nothing cropped at the edges.

@@ -35,6 +35,7 @@ export class SpinButton extends HexButton {
   /** ring angular velocity (rad/s) */
   omega = 0;
   private breathe: gsap.core.Tween | null = null;
+  private readonly offTick: () => void;
   private attract: gsap.core.Timeline | null = null;
 
   constructor(ctx: GameContext, opts: HexButtonOptions, texts: TextPool) {
@@ -53,7 +54,7 @@ export class SpinButton extends HexButton {
     this.count = texts.make('', valueStyle(40));
     this.count.scale.set(0);
     this.face.addChild(this.stop, this.count);
-    clock.onUpdate((dt) => {
+    this.offTick = clock.onUpdate((dt) => {
       if (this.omega !== 0) this.iconSprite.rotation = (this.iconSprite.rotation + this.omega * dt) % (TAU * 64);
       this.iconShadow.rotation = this.iconSprite.rotation;
     });
@@ -207,5 +208,12 @@ export class SpinButton extends HexButton {
   protected override applyStatic(): void {
     super.applyStatic();
     this.iconSprite.tint = this.enabled ? 0xffffff : 0x9a9a9a;
+  }
+
+  override destroy(options?: Parameters<HexButton['destroy']>[0]): void {
+    this.offTick();
+    this.breathe?.kill();
+    this.attract?.kill();
+    super.destroy(options);
   }
 }

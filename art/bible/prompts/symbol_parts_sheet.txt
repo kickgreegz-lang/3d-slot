@@ -1,0 +1,20 @@
+# TEMPLATE symbol_parts_sheet.txt: edits that support the 2D -> Spine split (docs/PIPELINE.md phase 3).
+# Primary split route is SAM masks + mask-locked fill; these edits are the NBP/Higgsfield fallbacks and hint sources.
+# Send the APPROVED master as the ONLY reference image (edit mode). Describe only the change.
+# Placeholders: {SYMBOL_NAME} {PART_LIST} {PART} {KEY_HEX} {STATE_CHANGE} {STYLE_FORMULA}
+# Edit mode re-renders the whole image: outlines drift a few px, so every result is re-registered
+# to the master (OpenCV findTransformECC MOTION_AFFINE / SIFT+RANSAC) before use.
+
+## SECTION A: exploded parts sheet (hint for parts.json and for hidden-area content)
+Exploded part sheet of the same {SYMBOL_NAME} as the reference: {PART_LIST} laid out as separate pieces with wide empty gaps between them, each piece complete with its occluded areas painted in, identical outline weight, colours and cel shading as the reference.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no text, no labels, no cast shadows.
+
+## SECTION B: isolate one part
+Same {SYMBOL_NAME} as the reference. Show only the {PART}, complete and uncut, including the parts that were hidden behind other pieces, in exactly the same position, size, outline weight and colours. Everything else becomes solid uniform flat {KEY_HEX}.
+
+## SECTION C: hidden-area fill (NBP edit fallback after FLUX.1 Fill [pro]; visible pixels are re-locked afterwards)
+Complete the hidden part of the {PART}: continue its shape, outline weight and cel shading naturally into the transparent area. Keep every existing pixel unchanged. Flat {KEY_HEX} background.
+
+## SECTION D: state variant (blink, mouth shapes, win face) on the head crop
+Same {SYMBOL_NAME} as the reference: identical silhouette, outline thickness, colours, framing and flat {KEY_HEX} background. Change only: {STATE_CHANGE}.

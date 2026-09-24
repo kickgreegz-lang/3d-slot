@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
 import { Container, Graphics } from 'pixi.js';
-import type { LayoutSpec } from '../../config/layout';
+import type { Rect } from '../../config/layout';
 
 /**
  * Feature transition "curtain": a dark slanted band with gold / magenta / cyan
@@ -29,12 +29,15 @@ export class Wipe extends Container {
     this.visible = false;
   }
 
-  private build(L: LayoutSpec): void {
-    const pad = Math.max(L.width, L.height) * 0.5;
-    const top = -pad;
-    const bottom = L.height + pad;
+  /** `view` = visible design-space rect (design rect + letterbox). */
+  private build(view: Rect): void {
+    const m = 8;
+    const left = view.x - m;
+    const right = view.x + view.w + m;
+    const top = view.y - m;
+    const bottom = view.y + view.h + m;
     const skew = (bottom - top) * SLANT;
-    const bodyW = L.width + pad * 2 + skew;
+    const bodyW = right - left + skew;
     const stripesW = STRIPES.reduce((a, s) => a + s.w + STRIPE_GAP, 0);
     const g = this.g.clear();
     const para = (x0: number, w: number): number[] => [x0 + skew, top, x0 + skew + w, top, x0 + w, bottom, x0, bottom];
@@ -51,22 +54,22 @@ export class Wipe extends Container {
       g.poly(para(x, s.w)).fill({ color: s.color }).stroke({ width: 5, color: 0x000000, join: 'miter' });
       x -= STRIPE_GAP;
     }
-    this.geo.cover = -pad - skew;
-    this.geo.start = -pad - skew - bodyW - stripesW;
-    this.geo.end = L.width + pad + stripesW;
+    this.geo.cover = left - skew;
+    this.geo.start = left - skew - bodyW - stripesW;
+    this.geo.end = right + stripesW;
   }
 
   /** Sweep in (left -> right) until the band covers the screen. */
-  coverIn(L: LayoutSpec, duration: number): Promise<void> {
-    this.build(L);
+  coverIn(view: Rect, duration: number): Promise<void> {
+    this.build(view);
     this.visible = true;
     this.x = this.geo.start;
-    return this.to(this.geo.cover, duration, 'power3.out');
+    return this.to(this.geo.cover, duration, 'power2.inOut');
   }
 
   /** Continue the sweep off the right edge, revealing what is underneath. */
   coverOut(duration: number): Promise<void> {
-    return this.to(this.geo.end, duration, 'power2.in').then(() => {
+    return this.to(this.geo.end, duration, 'power2.inOut').then(() => {
       this.visible = false;
     });
   }

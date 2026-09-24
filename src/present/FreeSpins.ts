@@ -12,7 +12,7 @@ import type { GameEvents } from '../game/events';
 import { ensureAmountFont, ensureLabelFont, ensureValueFont } from './common/fonts';
 import { CYAN, GOLD, type GlyphStyle, PINK } from './common/glyphs';
 import { OverlayStage } from './common/OverlayStage';
-import { placementFor } from './common/placement';
+import { placementFor, visibleDesignRect } from './common/placement';
 import { Plate } from './common/Plate';
 import { label } from './common/text';
 import { Title } from './common/Title';
@@ -262,7 +262,7 @@ export class FreeSpins implements GameModule {
     const tweens: Array<gsap.core.Tween | gsap.core.Timeline> = [];
 
     this.stage.open({ dim: F.dimUnderWipe, fadeIn: s(F.dimIn), liftMascots: true, liftFx: true });
-    const wipeDone = this.wipe.coverIn(L, s(F.wipe));
+    const wipeDone = this.wipe.coverIn(visibleDesignRect(ctx), s(F.wipe));
     ctx.game.broadcast('sfx', { id: 'fs_intro' });
 
     const rays = new GodRays({ size: 1500, color: 0xff3fa8, speed: 0.2, alpha: 0.7 });
@@ -296,10 +296,10 @@ export class FreeSpins implements GameModule {
     });
 
     // banner lands as the wipe clears the centre
-    const land = s(F.wipe * 0.55);
+    const land = s(F.wipe * 0.5);
     tweens.push(
       gsap.to(rays.scale, { x: 1, y: 1, duration: s(700), delay: land, ease: 'back.out(1.5)' }),
-      gsap.fromTo(number.scale, { x: 3.2, y: 3.2 }, { x: 1, y: 1, duration: s(F.numberSlam), delay: land, ease: 'back.out(1.7)', immediateRender: false }),
+      gsap.fromTo(number.scale, { x: 2.4, y: 2.4 }, { x: 1, y: 1, duration: s(F.numberSlam), delay: land, ease: 'back.out(1.7)', immediateRender: false }),
       gsap.delayedCall(land + s(F.numberSlam * 0.35), () => {
         const c = this.design(0, number.y);
         ctx.game.broadcast('fx:shake', { trauma: 0.55 });
@@ -416,13 +416,12 @@ export class FreeSpins implements GameModule {
     const F = FS_TIMING;
     const money = ctx.money;
     const res = this.res();
-    const L = ctx.layout;
     const content = this.stage.content;
     const finalApi = money.fromBook(Math.max(0, p.amount));
     const spins = this.counter.total;
 
     this.stage.open({ dim: F.dimUnderWipe, fadeIn: s(F.dimIn), liftMascots: true, liftFx: true });
-    const wipeDone = this.wipe.coverIn(L, s(F.wipe));
+    const wipeDone = this.wipe.coverIn(visibleDesignRect(ctx), s(F.wipe));
     ctx.game.broadcast('sfx', { id: 'fs_outro' });
     ctx.game.broadcast('mascot:cue', { cue: 'fsEnd', intensity: Math.min(1, 0.4 + p.level * 0.08) });
 

@@ -71,6 +71,8 @@ export const autoplayDialog = (opts: {
   );
   const loss = chipGroup(LOSS_LIMITS, opts.initial.lossX, moneyChip, t('autoplay.lossLimit'), () => sync());
   const win = chipGroup(WIN_LIMITS, opts.initial.winX, moneyChip, t('autoplay.winLimit'), () => sync());
+  loss.el.classList.add('is-money');
+  win.el.classList.add('is-money');
   const sync = (): void => {
     const n = rounds.get();
     start.textContent = Number.isFinite(n) ? t('autoplay.startN', { n }) : t('autoplay.start');
@@ -78,7 +80,7 @@ export const autoplayDialog = (opts: {
   sync();
   start.addEventListener('click', () => opts.onStart({ rounds: rounds.get(), lossX: loss.get(), winX: win.get() }));
   return h(
-    'div.ui-panel.is-dialog',
+    'div.ui-panel.is-dialog.is-wide',
     null,
     head(t('autoplay.title'), opts.onCancel),
     h(

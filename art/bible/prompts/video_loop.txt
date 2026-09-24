@@ -1,0 +1,11 @@
+# TEMPLATE video_loop.txt: AI video for ANIMATICS and MOTION REFERENCE (Higgsfield seedance_2_0 / kling3_0),
+# or self-hosted Wan 2.x organic loops. Shipped mascot motion comes from the real rigs (Blender/three.js), not from AI video.
+# Placeholders: {ACTION} {PROP_FREEZE} {KEY_HEX} {RETURN_CLAUSE}
+#   {ACTION}         ONE action, e.g. "slow breathing, shoulders rise and fall, head nods gently to a beat, one blink, tail sways"
+#   {PROP_FREEZE}    "" or "The {prop} stays in the same hand and does not change."
+#   {RETURN_CLAUSE}  loops: "Seamless loop." ; reactions: "then settles back into exactly the starting pose."
+# Always pass aspect ratio, duration and resolution explicitly, and audio OFF
+# (seedance: --generate_audio false ; kling: --sound off). Start/end image = the approved key pose (mascot_expressions.txt D).
+# If identical start/end frames give near-static motion, use the two-half method (see README.md).
+{ACTION}. {RETURN_CLAUSE} {PROP_FREEZE}
+Camera locked: no camera movement, no zoom; frame 1 matches the start image including its empty margins; the character keeps the same size and position. The character performs only this action, nothing else happens, and keeps facing the same direction. Flat solid {KEY_HEX} background stays exactly {KEY_HEX} in every frame, flat even lighting, no shadows, no particles, no text. Keep the thick outlines and flat cel shading, no motion blur.

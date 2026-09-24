@@ -1,0 +1,124 @@
+{
+  "$comment": "Written by make_parts.mjs (stand-in for tools/split). Coordinates: 360x360 @2x canvas, image space (y down). make_blur.py adds blur entries.",
+  "symbol": "demo",
+  "canvas": [
+    360,
+    360
+  ],
+  "images": "images",
+  "parts": [
+    {
+      "name": "fx_glow",
+      "bbox": [
+        16,
+        44,
+        328,
+        316
+      ],
+      "z": 0,
+      "bone": "fx_glow",
+      "parent": "root",
+      "joint": [
+        180,
+        200
+      ],
+      "blend": "additive",
+      "color": "ffffff00"
+    },
+    {
+      "name": "antenna",
+      "bbox": [
+        248,
+        38,
+        74,
+        148
+      ],
+      "z": 1,
+      "bone": "phys_antenna_1",
+      "parent": "phys_jelly",
+      "joint": [
+        270,
+        150
+      ],
+      "tip": [
+        285,
+        105
+      ]
+    },
+    {
+      "name": "body",
+      "bbox": [
+        53,
+        91,
+        263,
+        239
+      ],
+      "z": 2,
+      "bone": "body"
+    },
+    {
+      "name": "speaker_R",
+      "bbox": [
+        76,
+        216,
+        92,
+        92
+      ],
+      "z": 3,
+      "bone": "face_speaker_R",
+      "parent": "body",
+      "joint": [
+        122,
+        262
+      ]
+    },
+    {
+      "name": "speaker_L",
+      "bbox": [
+        192,
+        216,
+        92,
+        92
+      ],
+      "z": 4,
+      "bone": "face_speaker_L",
+      "parent": "body",
+      "joint": [
+        238,
+        262
+      ]
+    },
+    {
+      "name": "eye_R",
+      "bbox": [
+        138,
+        166,
+        46,
+        54
+      ],
+      "z": 5,
+      "bone": "face_eye_R",
+      "parent": "phys_jelly",
+      "joint": [
+        161,
+        193
+      ]
+    },
+    {
+      "name": "eye_L",
+      "bbox": [
+        176,
+        166,
+        46,
+        54
+      ],
+      "z": 6,
+      "bone": "face_eye_L",
+      "parent": "phys_jelly",
+      "joint": [
+        199,
+        193
+      ]
+    }
+  ]
+}

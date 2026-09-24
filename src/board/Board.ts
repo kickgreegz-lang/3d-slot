@@ -42,9 +42,9 @@ const POOL_SPARES = 14;
 /** Symbol z-order: lower/right cells above upper/left (extrusion falls lower-right). */
 const zOf = (reel: number, row: number): number => row * 10 + reel;
 const Z_BEAM = 1000;
+const Z_OUTLINE = 1100;
 /** Safety gap (ms) between a column's fall-out end and its drop-in start. */
 const PIPELINE_MARGIN = 50;
-const Z_OUTLINE = 1100;
 const isScatter = (id: string): boolean => getSymbolDef(id).kind === 'scatter';
 
 export class Board implements GameModule {

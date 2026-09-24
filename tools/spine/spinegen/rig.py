@@ -37,6 +37,40 @@ def load_contract() -> dict:
     return json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
 
 
+# Every key rig.yaml may use. A typo (`accent:`, `ammount:`) must fail loudly instead of
+# silently generating the contract defaults. Keys starting with `$` or `x_` are comments.
+RIG_KEYS = {"symbol", "skeleton", "parts", "kind", "spine_version", "canvas", "attachment_prefix", "feet_y", "body_y",
+            "body_length", "bones", "meshes", "physics", "constraints", "motion", "accents", "events", "skins",
+            "compat", "roles"}
+BONE_KEYS = {"name", "parent", "joint", "tip", "rotation", "length", "inherit", "color"}
+MESH_KEYS = {"type", "cols", "rows", "spacing", "pad", "simplify", "interior", "weights"}
+WEIGHT_KEYS = {"mode", "stops", "bones", "power", "max"}
+PHYSICS_KEYS = {"bone", "name", "preset", "f", "zeta", "mass", "inertia", "fps", "limit", "strength", "damping",
+                "x", "y", "rotate", "scaleX", "scaleY", "shearX", "wind", "gravity", "mix"}
+ACCENT_KEYS = {"bone", "type", "amount", "at", "frames", "count", "beats", "offset", "cycles"}
+EVENT_KEYS = {"name", "at", "int", "float", "string"}
+COMPAT_KEYS = {"runtime_aliases"}
+ROLE_KEYS = {"eyes"}
+
+
+def check_keys(obj, allowed: set[str], where: str) -> None:
+    if obj is None:
+        return
+    if not isinstance(obj, dict):
+        raise RigError(f"{where}: expected a mapping, got {type(obj).__name__}")
+    bad = sorted(k for k in obj if not (str(k) in allowed or str(k).startswith(("$", "x_"))))
+    if bad:
+        raise RigError(f"{where}: unknown key(s) {', '.join(map(str, bad))} (known: {', '.join(sorted(allowed))})")
+
+
+def check_list(obj, where: str) -> list:
+    if obj is None:
+        return []
+    if not isinstance(obj, list):
+        raise RigError(f"{where}: expected a list, got {type(obj).__name__}")
+    return obj
+
+
 # ------------------------------------------------------------------------------------------
 # 2D setup-pose transforms (rotation + translation; setup scale is always 1 in generated rigs)
 # ------------------------------------------------------------------------------------------
@@ -118,6 +152,7 @@ class RigBuilder:
         self.rig_path = Path(rig_path).resolve()
         self.rig_dir = self.rig_path.parent
         self.rig = yaml.safe_load(self.rig_path.read_text(encoding="utf-8")) or {}
+        self._check_schema()
         self.report = Report(inputs=[self.rig_path])
         self.out_path = Path(out_path).resolve() if out_path else None
         self.images_override = images_path
@@ -132,6 +167,36 @@ class RigBuilder:
         if self.kind not in ("high", "special", "royal", "any"):
             raise RigError(f"rig.yaml kind '{self.kind}': use high | special | royal | any")
         self.prefix = str(self.rig.get("attachment_prefix") or self.skel_name)
+
+    def _check_schema(self) -> None:
+        r = self.rig
+        check_keys(r, RIG_KEYS, "rig.yaml")
+        for i, b in enumerate(check_list(r.get("bones"), "bones")):
+            check_keys(b, BONE_KEYS, f"bones[{i}]")
+            if "name" not in b:
+                raise RigError(f"bones[{i}]: `name` is required")
+        meshes = r.get("meshes") or {}
+        check_keys(meshes, set(meshes), "meshes")  # mapping check only; part names checked in build()
+        for m, spec in meshes.items():
+            check_keys(spec, MESH_KEYS, f"meshes.{m}")
+            check_keys((spec or {}).get("weights"), WEIGHT_KEYS, f"meshes.{m}.weights")
+        for i, ps in enumerate(check_list(r.get("physics"), "physics")):
+            check_keys(ps, PHYSICS_KEYS, f"physics[{i}]")
+        for i, c in enumerate(check_list(r.get("constraints"), "constraints")):
+            if not isinstance(c, dict):
+                raise RigError(f"constraints[{i}]: expected a mapping")
+        for section, keys in (("accents", ACCENT_KEYS), ("events", EVENT_KEYS)):
+            block = r.get(section) or {}
+            check_keys(block, set(block), section)
+            for anim, specs in block.items():
+                for i, spec in enumerate(check_list(specs, f"{section}.{anim}")):
+                    check_keys(spec, keys, f"{section}.{anim}[{i}]")
+                    if section == "events" and "name" not in spec:
+                        raise RigError(f"events.{anim}[{i}]: `name` is required (sfx, vfx, shake or a custom event)")
+                    if section == "accents" and "bone" not in spec:
+                        raise RigError(f"accents.{anim}[{i}]: `bone` is required")
+        check_keys(r.get("compat"), COMPAT_KEYS, "compat")
+        check_keys(r.get("roles"), ROLE_KEYS, "roles")
 
     # ---------------------------------------------------------------- parts
     def load_parts(self) -> None:
@@ -509,9 +574,10 @@ class RigBuilder:
                 payload = {k: ev[k] for k in ("int", "float", "string") if k in ev}
                 a.event(motionlib._resolve_at(ev.get("at", 0), a.markers), ev["name"], **payload)
             built[name] = a
-        for name in accents:
-            if name not in built:
-                raise RigError(f"accents.{name}: animation not generated")
+        for section in ("accents", "events"):
+            for name in (self.rig.get(section) or {}):
+                if name not in built:
+                    raise RigError(f"{section}.{name}: animation not generated (known: {', '.join(built)})")
         for name, a in built.items():
             anims[name] = a.to_json()
             for e in a.events:

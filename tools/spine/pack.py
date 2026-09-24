@@ -20,6 +20,7 @@ Regions: every attachment path of --skeleton (missing image = error), else every
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import sys
 
@@ -196,10 +197,9 @@ def write(out_dir: Path, name: str, pages, pma: bool, check: bool) -> tuple[list
             if (it.ox, it.oy, it.ow, it.oh) != (0, 0, it.img.width, it.img.height):
                 lines.append(f"offsets: {it.ox},{it.oy},{it.ow},{it.oh}")
         p = out_dir / page_name
-        tmp = out_dir / f".{page_name}.tmp"
-        canvas.save(tmp, format="PNG", compress_level=9)
-        new = tmp.read_bytes()
-        tmp.unlink()
+        buf = io.BytesIO()  # encode in memory: --check must write nothing (and --out may not exist)
+        canvas.save(buf, format="PNG", compress_level=9)
+        new = buf.getvalue()
         if not p.exists() or p.read_bytes() != new:
             changed = True
             if not check:

@@ -1,0 +1,93 @@
+# Example cue sheet. Copy to audio/cues.yaml (the planned single source of truth, keyed by the
+# runtime ids: SfxId in src/game/events.ts, MusicStem in src/audio/manifest.ts) and edit there.
+# Read by tools/audio/gen-sfx.mjs and tools/audio/gen-music.mjs. Prompts are RENDERED from
+# art/bible/prompts/{sfx,music}.txt with these values; never write a prompt by hand.
+# YAML subset: mappings, "- " lists, [flow, lists], {flow: maps}, quoted or plain scalars, # comments.
+version: 1
+global:
+  key: E minor              # one key and BPM for the whole game (stingers resolve musically)
+  bpm: 104
+  sfxModel: eleven_text_to_sound_v2
+  musicModel: music_v2      # A/B against music_v2_5
+  takes: 4                  # default takes per SFX cue (4-8)
+  promptInfluence: 0.6
+  outputFormat: pcm_48000   # raw PCM, wrapped to WAV (wav_48000 is TTS-only)
+  targets:                  # tools/audio/master.sh settings per bus
+    sfx: { mode: sfx, peak: -6 }
+    ui: { mode: sfx, peak: -12 }
+    music: { mode: loop, lufs: -16, tp: -1 }
+
+sfx:
+  land_heavy:
+    bus: sfx
+    source: a heavy golden boombox
+    action: slams down onto a glass reel panel
+    character: deep sub thump with a short glassy click on top
+    duration: 0.6
+    takes: 6
+  land_light:
+    bus: sfx
+    source: a small carved wooden letter tile
+    action: taps down onto a glass reel panel
+    character: light woody knock
+    duration: 0.5
+  scatter_land_1:
+    bus: sfx
+    source: a golden ribbon microphone
+    action: lands with a bright shimmering ring
+    character: sparkling bell tone
+    tonal: true               # adds "in key <global.key>" (PITCH_NOTE)
+    duration: 1.2
+    tail: natural short room tail
+  anticipation_loop:
+    bus: sfx
+    source: a swampy synth and shaker
+    action: builds a tense, steady pulse
+    character: rising tension bed, no downbeat accent at the loop point
+    tonal: true
+    loop: true                # seamless loop at generation (SFX v2 only, <= 30 s)
+    duration: 6
+    target: { mode: loop, lufs: -18, tp: -1 }
+  explode:
+    bus: sfx
+    source: a cartoon symbol
+    action: pops apart into sparkling confetti
+    character: punchy pop with a bright crackle
+    duration: 0.7
+  ui_click:
+    bus: ui
+    source: a small translucent hex button
+    action: is pressed
+    character: soft tight click
+    duration: 0.5
+    takes: 4
+  bigwin_start:
+    bus: sfx
+    source: a brass section and a gong
+    action: hit a triumphant stab
+    character: big celebratory swell
+    tonal: true
+    duration: 2.5
+    tail: natural short room tail
+
+music:
+  base:
+    energy: laid-back groove, medium intensity
+    durationS: 64
+    sectionPlan: intro 4 bars / loop A 16 bars / loop B 16 bars
+    storeForInpainting: true  # other stems condition on this song_id
+    stems: six_stems_v1       # separate after composing (adaptive layers)
+  freegame:
+    energy: brighter, busier, more percussion
+    durationS: 64
+    conditionOn: base         # plan mode: conditioning_ref to the base song on every chunk
+    chunks:
+      - { text: "intro: clavinet riff over washboard", durationMs: 9000, positiveStyles: [swamp funk, clavinet, washboard], negativeStyles: [vocals, lyrics] }
+      - { text: "loop A: full band groove, brass stabs on the offbeat", durationMs: 27000, positiveStyles: [slap bass, brass stabs], negativeStyles: [vocals, lyrics] }
+      - { text: "loop B: wah guitar lead, driving drums", durationMs: 28000, positiveStyles: [wah guitar, tight drum kit], negativeStyles: [vocals, lyrics] }
+  bigwin:
+    energy: triumphant, maximum energy
+    durationS: 30
+    sectionPlan: intro hit / sustainable loop 8 bars / outro sting
+    conditionOn: base
+    videoToMusic: build/video/bigwin.mp4   # optional: score the rendered big-win sequence

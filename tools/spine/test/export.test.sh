@@ -52,6 +52,15 @@ out="$("$EXPORT" --dry-run symbol H1)"; check "symbol --dry-run" 0 $?
 grep -q -- "-e binary" <<<"$out" && grep -q -- "-m" <<<"$out" && grep -q -- " -r" <<<"$out" && grep -q -- " -p " <<<"$out"
 check "symbol covers import/clean/export/pack" 0 $?
 "$EXPORT" --dry-run symbol 'H1;rm' >/dev/null 2>&1; check "symbol id sanitised" 2 $?
+"$EXPORT" --log-dir "$TMP/logs" import "$TMP/sym_T.json" "$TMP/proj/sym_T.spine" '../../x' >/dev/null 2>&1; check "skeleton name sanitised (log path)" 2 $?
+"$EXPORT" --log-dir "$TMP/logs" import "$TMP/sym_T.json" "$TMP/proj/a b.spine" >/dev/null 2>&1; check "derived skeleton name sanitised" 2 $?
+"$EXPORT" --log-dir "$TMP/logs" import-anims "$TMP/sym_T.json" "$TMP/proj/sym_T.spine" sym_T 'win;x' >/dev/null 2>&1; check "animation name sanitised" 2 $?
+"$EXPORT" --log-dir "$TMP/logs" --settings "$TMP/pack.json" pack "$TMP/images" "$TMP/out" '../sym' "$TMP/proj" >/dev/null 2>&1; check "atlas name sanitised" 2 $?
+[ ! -e "$TMP/x.log" ] && [ ! -e "$TMP/import-../../x.log" ]; check "no log written outside --log-dir" 0 $?
+: > "$FAKE_SPINE_LOG"
+"$EXPORT" --log-dir "$TMP/logs" version >/dev/null; check "version runs the launcher" 0 $?
+expect_log "version argv" "-u 4.3.23 --version"
+[ "$("$EXPORT" --help | grep -c '^set ')" = 0 ]; check "--help prints only the header" 0 $?
 
 [ $fails = 0 ] && echo "all export.sh tests passed" || echo "$fails export.sh test(s) failed"
 exit $(( fails > 0 ))

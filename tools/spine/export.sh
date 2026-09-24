@@ -10,7 +10,7 @@
 #   tools/spine/export.sh pack   [<images-dir>] [<out-dir>] [<atlas-name>] [<projects-root>]
 #                                                 default art/source/spine/images public/assets/spine symbols art/source/spine
 #   tools/spine/export.sh symbol <ID>                                   all four steps for sym_<ID> (contract paths)
-#   tools/spine/export.sh version                                       print the pinned editor version
+#   tools/spine/export.sh version                                       run `$SPINE -u $SPINE_VERSION --version` (downloads/pins the patch)
 # Options (before the command): --dry-run (print commands only)  --log-dir DIR (default build/spine/logs)
 #   --settings FILE (pack settings; default config/spine/pack-symbols.json, else tools/spine/config/pack-symbols.json)
 # Env: SPINE        path to the launcher (Linux /opt/spine/Spine.sh, macOS .../Spine.app/Contents/MacOS/Spine)
@@ -29,7 +29,7 @@ LOG_DIR="$REPO/build/spine/logs"
 SETTINGS=""
 FAIL_RE="${SPINE_FAIL_PATTERN:-warn|error|exception|missing|not found|could not|unable to|failed}"
 
-usage() { sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,/^set -uo pipefail$/p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; }
 die() { echo "export.sh: $*" >&2; exit 2; }
 
 while [ $# -gt 0 ]; do
@@ -87,12 +87,15 @@ run() {
 }
 
 need_file() { [ "$DRY" = 1 ] || [ -f "$1" ] || die "$2 not found: $1"; }
+# skeleton / animation names end up in Spine's --to / -a and in log file names: no paths, no spaces
+need_name() { [[ "$1" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]*$ ]] || die "bad $2 '$1' (letters, digits, _ . - only)"; }
 need_dir() { [ "$DRY" = 1 ] || [ -d "$1" ] || die "$2 not found: $1"; }
 
 do_import() {
   [ $# -ge 2 ] && [ $# -le 3 ] || die "usage: import <skeleton.json> <project.spine> [<skeleton-name>]"
   local json="$1" project="$2" name="${3:-}"
   [ -n "$name" ] || name="$(basename "$project" .spine)"
+  need_name "$name" "skeleton name"
   need_file "$json" "skeleton JSON"
   [[ "$project" == *.spine ]] || die "project must end in .spine: $project"
   [ "$DRY" = 1 ] || mkdir -p "$(dirname "$project")"
@@ -102,10 +105,11 @@ do_import() {
 do_import_anims() {
   [ $# -ge 4 ] || die "usage: import-anims <anims.json> <project.spine> <skeleton-name> <anim> [<anim>...]"
   local json="$1" project="$2" name="$3"; shift 3
+  need_name "$name" "skeleton name"
   need_file "$json" "animations JSON"
   need_file "$project" "project"
   local a=()
-  for anim in "$@"; do a+=(-a "$anim"); done
+  for anim in "$@"; do need_name "$anim" "animation name"; a+=(-a "$anim"); done
   run "import-anims-$name" --hide-license --disable-audio -i "$json" -o "$project" --to "$name" "${a[@]}" --replace -r
 }
 
@@ -126,6 +130,7 @@ do_export() {
 do_pack() {
   local images="${1:-$REPO/art/source/spine/images}" out="${2:-$REPO/public/assets/spine}" name="${3:-symbols}" root="${4:-$REPO/art/source/spine}"
   local settings; settings="$(pack_settings)"
+  need_name "$name" "atlas name"
   need_dir "$images" "images dir"
   need_file "$settings" "pack settings"
   [ "$DRY" = 1 ] || mkdir -p "$out"
@@ -144,7 +149,7 @@ do_symbol() {
 }
 
 case "$CMD" in
-  version) check_env; echo "$SPINE_VERSION"; exit 0 ;;
+  version) check_env; run "version" --version ;;
   import) check_env; do_import "$@" ;;
   import-anims) check_env; do_import_anims "$@" ;;
   clean) check_env; do_clean "$@" ;;

@@ -24,7 +24,7 @@ export interface HudPlacement {
   betPlus: Pt;
   /** small hex: visual radius, touch radius */
   small: { r: number; hit: number };
-  bonusBuy: Pt & { r: number; tilt: number; label: BuyLabelMode; hit: number };
+  bonusBuy: Pt & { r: number; tilt: number; label: BuyLabelMode; hit: number; short: boolean };
   bet: Pt & { align: Align; maxWidth: number };
   balance: Pt & { align: Align; maxWidth: number };
   win: Pt & { mode: WinMode; maxWidth: number };
@@ -83,7 +83,7 @@ export const resolveHudLayout = (L: LayoutSpec): HudPlacement => {
         betMinus: f.betMinus,
         betPlus: f.betPlus,
         small: { r, hit: Math.max(r, h.smallButton / 2) },
-        bonusBuy: { ...f.bonusBuy, r: 76, tilt: -20, label: 'below', hit: 85 },
+        bonusBuy: { ...f.bonusBuy, r: 76, tilt: -20, label: 'below', hit: 85, short: false },
         bet: { ...f.betValue, align: 'center', maxWidth: f.betPlus.x - f.betMinus.x - 2 * r - 24 },
         balance: { ...f.balance, align: 'left', maxWidth: f.betMinus.x - r - f.balance.x - 24 },
         win: { ...f.win, mode: 'row', maxWidth: 560 },
@@ -106,7 +106,7 @@ export const resolveHudLayout = (L: LayoutSpec): HudPlacement => {
         betMinus: f.betMinus,
         betPlus: f.betPlus,
         small: { r, hit: Math.max(r + 6, h.smallButton / 2) },
-        bonusBuy: { ...f.bonusBuy, r: 33, tilt: 20, label: 'below', hit: 42 },
+        bonusBuy: { ...f.bonusBuy, r: 33, tilt: 20, label: 'below', hit: 42, short: true },
         bet: { ...f.betValue, align: 'center', maxWidth: f.betPlus.x - f.betMinus.x - 2 * r - 12 },
         balance: { ...f.balance, align: 'row', maxWidth: 252 },
         win: { ...f.win, mode: 'row', maxWidth: 252 },
@@ -129,7 +129,7 @@ export const resolveHudLayout = (L: LayoutSpec): HudPlacement => {
         betMinus: h.betMinus,
         betPlus: h.betPlus,
         small: { r, hit: r * 1.12 },
-        bonusBuy: { ...h.bonusBuy, r: 88, tilt: -20, label: 'edge', hit: 92 },
+        bonusBuy: { ...h.bonusBuy, r: 88, tilt: -20, label: 'edge', hit: 92, short: false },
         bet: { ...h.betValue, align: 'center', maxWidth: h.betPlus.x - h.betMinus.x - 2 * r - 24 },
         balance: { ...h.balance, align: 'left', maxWidth: 420 },
         win: { ...h.win, mode: 'row', maxWidth: 640 },

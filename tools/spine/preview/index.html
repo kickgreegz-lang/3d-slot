@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Spine rig preview</title>
+  <link rel="icon" href="data:," />
+  <!-- No bundler: the browser ESM builds come straight from node_modules (tools/spine/preview/serve.mjs). -->
+  <script type="importmap">
+    {
+      "imports": {
+        "pixi.js": "/node_modules/pixi.js/dist/pixi.mjs",
+        "@esotericsoftware/spine-pixi-v8": "/node_modules/@esotericsoftware/spine-pixi-v8/dist/esm/spine-pixi-v8.mjs"
+      }
+    }
+  </script>
+  <style>
+    html, body { margin: 0; background: #0a0420; color: #ddd; font: 12px/1.4 ui-monospace, monospace; }
+    #bar { padding: 6px 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    #bar button { background: #2a0f5e; color: #fff; border: 1px solid #6b3a57; border-radius: 4px; padding: 3px 8px; cursor: pointer; }
+    #log { padding: 0 8px; white-space: pre; opacity: .8; }
+    body.capture #bar, body.capture #log { display: none; }
+  </style>
+</head>
+<body>
+  <div id="bar"></div>
+  <div id="stage"></div>
+  <div id="log"></div>
+  <script type="module" src="./preview.mjs"></script>
+</body>
+</html>

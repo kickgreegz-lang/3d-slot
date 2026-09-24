@@ -86,7 +86,7 @@ export class BonusBuyButton extends HexButton {
     const { radius: r, tilt = 0 } = this.opts;
     if (this.labelMode === 'below') {
       this.caption.rotation = 0;
-      fitWidth(this.caption, r * 2.6);
+      fitWidth(this.caption, r * 3);
       this.caption.position.set(0, r * 0.98 + this.labelSize * 0.55);
       return;
     }

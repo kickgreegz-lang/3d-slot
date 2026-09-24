@@ -250,7 +250,7 @@ export class Hud implements GameModule {
     this.buy.configure({ radius: bb.r, tilt: bb.tilt, hitRadius: bb.hit });
     this.buy.rebake(bakeRes);
     this.buy.setLabelMode(bb.label, Math.round(P.labelFont * (bb.label === 'edge' ? 0.95 : 0.8)));
-    this.buy.setText(bb.label === 'edge' ? t('bonusBuy') : t('hud.buyShort'));
+    this.buy.setText(bb.short ? t('hud.buyShort') : t('bonusBuy'));
     this.buy.position.set(bb.x, bb.y);
 
     const fsHex = P.fs.mode === 'hex';

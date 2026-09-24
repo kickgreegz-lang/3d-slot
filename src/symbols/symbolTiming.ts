@@ -139,8 +139,19 @@ export const SYMBOL_TIMING = {
     canvasPx: 360,
     /** Procedural body squash is scaled down when a Spine land animation also squashes. */
     squashScale: 0.5,
-    /** physicsTranslate impulse (skeleton units) per unit of squash on land. */
+    /** physicsTranslate impulse (skeleton units) per unit of squash on land (applied upward). */
     physicsImpulse: 26,
-    mix: 0.12,
+    /** Container-motion inheritance for physics after the impact (hop/squash drive the parts). */
+    landInheritance: 0.6,
+    /** docs/ANIMATION_CONTRACT.md §3 mixes (seconds). '*' = from any animation. */
+    mix: 0.08,
+    mixes: [
+      ['land', 'idle', 0.15],
+      ['idle', 'win', 0.06],
+      ['win', 'win_loop', 0],
+      ['*', 'explode', 0.05],
+      ['blur', 'idle', 0],
+      ['idle', 'blur', 0],
+    ] as ReadonlyArray<readonly [string, string, number]>,
   },
 } as const;

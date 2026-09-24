@@ -1,0 +1,61 @@
+# Demo rig: a golden boombox critter (NOT production art; exercises every generator feature).
+# Coordinates are 360x360 @2x canvas IMAGE space (x right, y down), like parts.json.
+# Everything not written here uses the ANIMATION_CONTRACT defaults (tools/spine/contract.json,
+# tools/spine/spinegen/motion.py DEFAULTS).
+symbol: demo                  # -> skeleton sym_demo, attachment paths sym_demo/<part>
+parts: parts.json
+kind: special                 # validator profile: high | special (special also requires `anticipation`)
+# spine_version: 4.3.23       # default from contract.json; pin the editor patch here if it differs
+# feet_y: auto                # squash bone = bottom of the opaque content (skeleton y)
+# body_y: auto                # body bone = centre of the content
+
+bones:
+  # jelly: the top half of the body mesh follows this bone; translation physics makes it wobble
+  - {name: phys_jelly, parent: body, joint: [180, 168], tip: [180, 138]}
+  # second antenna segment (the first one, phys_antenna_1, is declared by the antenna part)
+  - {name: phys_antenna_2, parent: phys_antenna_1, joint: [262, 125], tip: [268, 86]}
+
+meshes:
+  body:                       # alpha-traced, weighted: bottom rides `body`, top rides `phys_jelly`
+    type: trace
+    spacing: 40
+    weights: {mode: vertical, stops: [[body, 300], [phys_jelly, 170]]}
+  antenna:                    # bends along the two-bone physics chain
+    type: grid
+    cols: 2
+    rows: 6
+    weights: {mode: idw, bones: [phys_antenna_1, phys_antenna_2]}
+
+physics:                      # strength/damping computed from f (Hz) and zeta
+  - {bone: phys_jelly, preset: jelly, x: 1, y: 1, rotate: 0, inertia: 0.5}
+  - {bone: phys_antenna_1, preset: default, rotate: 1, inertia: 0.6}
+  - {bone: phys_antenna_2, preset: floppy, rotate: 1, inertia: 0.7}
+
+motion:                       # per-symbol overrides of the contract defaults
+  land: {squash: 0.85, rebound: 0.06, frames: 12}
+  win: {pop: 1.22}
+
+accents:                      # overlap on top of the base motion (at: frame or marker[+/-n])
+  land:
+    - {bone: face_eye_L, type: squash, amount: 0.25, at: impact+1}
+    - {bone: face_eye_R, type: squash, amount: 0.25, at: impact+1}
+    - {bone: face_speaker_L, type: pump, amount: 0.14, at: impact+1}
+    - {bone: face_speaker_R, type: pump, amount: 0.14, at: impact+2}
+  win:
+    - {bone: face_speaker_L, type: pump, amount: 0.24, at: peak}
+    - {bone: face_speaker_R, type: pump, amount: 0.24, at: peak+1}
+    - {bone: face_eye_L, type: pump, amount: 0.18, at: dip}
+    - {bone: face_eye_R, type: pump, amount: 0.18, at: dip}
+  win_loop:
+    - {bone: face_speaker_L, type: pulse, amount: 0.1, beats: 2}
+    - {bone: face_speaker_R, type: pulse, amount: 0.1, beats: 2, offset: 1}
+  anticipation:
+    - {bone: face_speaker_L, type: pump, amount: 0.08, at: lub, frames: 6}
+    - {bone: face_speaker_R, type: pump, amount: 0.08, at: lub, frames: 6}
+
+events:                       # extra payload events (sfx = SfxId, vfx = FX id, shake = trauma)
+  win:
+    - {name: vfx, at: peak, string: fx_sparkle}
+
+compat:
+  runtime_aliases: false      # true = also emit anticipation_loop / impact / burst for today's src/

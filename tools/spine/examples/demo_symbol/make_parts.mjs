@@ -48,12 +48,14 @@ const OUT = 9; // outer outline @2x (ART_BIBLE outline.symbolOuter.at2x)
 const INN = 5; // interior lines @2x
 
 // ---------------------------------------------------------------- geometry (canvas px, y down)
-const body = { x: 62, y: 144, w: 236, h: 168, r: 34 };
+const body = { x: 72, y: 164, w: 216, h: 148, r: 30 };
 const ext = 9; // plum extrusion toward the lower right
-const speakers = { speaker_R: [122, 262], speaker_L: [238, 262] }; // character's own L/R
-const eyes = { eye_R: [161, 193], eye_L: [199, 193] };
-const antenna = { base: [262, 172], joint: [270, 150], mid: [285, 105], tip: [300, 60], ball: 14 };
-const glowC = [180, 200];
+const speakers = { speaker_R: [126, 272], speaker_L: [234, 272] }; // character's own L/R
+const SPK = 32; // speaker rim radius
+const eyes = { eye_R: [162, 209], eye_L: [198, 209] };
+const EYE = [15, 19]; // sclera radii
+const antenna = { base: [252, 186], joint: [256, 164], mid: [262, 125], tip: [268, 86], ball: 13 };
+const glowC = [180, 226];
 
 const rrect = (b, extra = '') =>
   `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="${b.r}" ${extra}/>`;
@@ -61,7 +63,7 @@ const rrect = (b, extra = '') =>
 const partsSvg = {
   fx_glow: () => `
     <defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter></defs>
-    <ellipse cx="${glowC[0]}" cy="${glowC[1]}" rx="112" ry="104" fill="${C.glow}" filter="url(#g)"/>`,
+    <ellipse cx="${glowC[0]}" cy="${glowC[1]}" rx="104" ry="92" fill="${C.glow}" filter="url(#g)"/>`,
 
   antenna: () => {
     const [bx, by] = antenna.base;
@@ -86,14 +88,14 @@ const partsSvg = {
                    M ${b.x + b.w - 40} ${b.y} L ${b.x + b.w} ${b.y} L ${b.x + b.w} ${b.y + b.h} L ${b.x + b.w - 52} ${b.y + b.h} Z`;
     const deep = `M ${b.x} ${b.y + b.h - 16} L ${b.x + b.w} ${b.y + b.h - 26} L ${b.x + b.w} ${b.y + b.h} L ${b.x} ${b.y + b.h} Z`;
     const sockets = Object.values(speakers)
-      .map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="40" fill="${C.socket}" stroke="${C.ink}" stroke-width="${INN}"/>`)
+      .map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="${SPK + 2}" fill="${C.socket}" stroke="${C.ink}" stroke-width="${INN}"/>`)
       .join('');
     return `
     <defs><clipPath id="bodyClip">${rrect(b)}</clipPath></defs>
     <!-- carry handle -->
-    <path d="M 116 158 C 116 96 244 96 244 158" fill="none" stroke="${C.ink}" stroke-width="${14 + 2 * OUT}" stroke-linecap="round"/>
-    <path d="M 116 158 C 116 96 244 96 244 158" fill="none" stroke="${C.goldShade}" stroke-width="14" stroke-linecap="round"/>
-    <path d="M 124 150 C 126 110 200 104 222 116" fill="none" stroke="${C.gold}" stroke-width="7" stroke-linecap="round"/>
+    <path d="M 120 176 C 120 120 240 120 240 176" fill="none" stroke="${C.ink}" stroke-width="${14 + 2 * OUT}" stroke-linecap="round"/>
+    <path d="M 120 176 C 120 120 240 120 240 176" fill="none" stroke="${C.goldShade}" stroke-width="14" stroke-linecap="round"/>
+    <path d="M 128 168 C 130 132 196 126 218 136" fill="none" stroke="${C.gold}" stroke-width="7" stroke-linecap="round"/>
     <!-- plum extrusion, lower right -->
     ${rrect({ ...b, x: b.x + ext, y: b.y + ext }, `fill="${C.plum}" stroke="${C.ink}" stroke-width="${OUT}"`)}
     <!-- body -->
@@ -107,27 +109,27 @@ const partsSvg = {
     ${rrect(b, `fill="none" stroke="${C.ink}" stroke-width="${OUT}"`)}
     <line x1="${b.x + 22}" y1="${b.y + 80}" x2="${b.x + 22}" y2="${b.y + 66}" stroke="${C.spec}" stroke-width="7" stroke-linecap="round"/>
     <!-- cassette window (the face plate) -->
-    <rect x="126" y="166" width="108" height="54" rx="18" fill="${C.window}" stroke="${C.ink}" stroke-width="${INN}"/>
-    <path d="M 136 176 L 150 176" stroke="${C.plumLight}" stroke-width="4" stroke-linecap="round"/>
+    <rect x="128" y="184" width="104" height="50" rx="17" fill="${C.window}" stroke="${C.ink}" stroke-width="${INN}"/>
+    <path d="M 138 194 L 152 194" stroke="${C.plumLight}" stroke-width="4" stroke-linecap="round"/>
     <!-- speaker sockets (speakers are separate parts that pump) -->
     ${sockets}
     <!-- deck buttons -->
-    <rect x="164" y="232" width="32" height="12" rx="6" fill="${C.goldDeep}" stroke="${C.ink}" stroke-width="${INN}"/>
-    <rect x="164" y="254" width="32" height="12" rx="6" fill="${C.goldDeep}" stroke="${C.ink}" stroke-width="${INN}"/>`;
+    <rect x="166" y="247" width="28" height="11" rx="5.5" fill="${C.goldDeep}" stroke="${C.ink}" stroke-width="${INN}"/>
+    <rect x="166" y="267" width="28" height="11" rx="5.5" fill="${C.goldDeep}" stroke="${C.ink}" stroke-width="${INN}"/>`;
   },
 
   ...Object.fromEntries(
     Object.entries(speakers).map(([name, [cx, cy]]) => [
       name,
       () => `
-    <clipPath id="rim"><circle cx="${cx}" cy="${cy}" r="38"/></clipPath>
+    <clipPath id="rim"><circle cx="${cx}" cy="${cy}" r="${SPK}"/></clipPath>
     <g clip-path="url(#rim)">
-      <circle cx="${cx}" cy="${cy}" r="38" fill="${C.goldShade}"/>
-      <circle cx="${cx - 4}" cy="${cy - 4}" r="37" fill="${C.gold}"/>
+      <circle cx="${cx}" cy="${cy}" r="${SPK}" fill="${C.goldShade}"/>
+      <circle cx="${cx - 4}" cy="${cy - 4}" r="${SPK - 1}" fill="${C.gold}"/>
     </g>
-    <circle cx="${cx}" cy="${cy}" r="38" fill="none" stroke="${C.ink}" stroke-width="${INN + 2}"/>
-    <circle cx="${cx}" cy="${cy}" r="27" fill="${C.cone}" stroke="${C.ink}" stroke-width="${INN}"/>
-    <circle cx="${cx}" cy="${cy}" r="18" fill="none" stroke="${C.coneRing}" stroke-width="4"/>
+    <circle cx="${cx}" cy="${cy}" r="${SPK}" fill="none" stroke="${C.ink}" stroke-width="${INN + 2}"/>
+    <circle cx="${cx}" cy="${cy}" r="${SPK - 9}" fill="${C.cone}" stroke="${C.ink}" stroke-width="${INN}"/>
+    <circle cx="${cx}" cy="${cy}" r="${SPK - 17}" fill="none" stroke="${C.coneRing}" stroke-width="4"/>
     <clipPath id="cap"><circle cx="${cx}" cy="${cy}" r="10"/></clipPath>
     <g clip-path="url(#cap)">
       <circle cx="${cx}" cy="${cy}" r="10" fill="${C.goldShade}"/>
@@ -135,7 +137,7 @@ const partsSvg = {
     </g>
     <circle cx="${cx}" cy="${cy}" r="10" fill="none" stroke="${C.ink}" stroke-width="4"/>
     <ellipse cx="${cx - 3.5}" cy="${cy - 4}" rx="2.6" ry="1.8" fill="${C.spec}"/>
-    <path d="M ${cx - 26} ${cy - 14} A 30 30 0 0 1 ${cx - 12} ${cy - 27}" fill="none" stroke="${C.goldLight}" stroke-width="4" stroke-linecap="round"/>`,
+    <path d="M ${cx - 22} ${cy - 12} A 26 26 0 0 1 ${cx - 10} ${cy - 23}" fill="none" stroke="${C.goldLight}" stroke-width="4" stroke-linecap="round"/>`,
     ]),
   ),
 
@@ -143,13 +145,13 @@ const partsSvg = {
     Object.entries(eyes).map(([name, [cx, cy]]) => [
       name,
       () => `
-    <clipPath id="sc"><ellipse cx="${cx}" cy="${cy}" rx="16" ry="20"/></clipPath>
+    <clipPath id="sc"><ellipse cx="${cx}" cy="${cy}" rx="${EYE[0]}" ry="${EYE[1]}"/></clipPath>
     <g clip-path="url(#sc)">
-      <ellipse cx="${cx}" cy="${cy}" rx="16" ry="20" fill="${C.scleraShade}"/>
-      <ellipse cx="${cx - 3}" cy="${cy - 4}" rx="16" ry="20" fill="${C.sclera}"/>
+      <ellipse cx="${cx}" cy="${cy}" rx="${EYE[0]}" ry="${EYE[1]}" fill="${C.scleraShade}"/>
+      <ellipse cx="${cx - 3}" cy="${cy - 4}" rx="${EYE[0]}" ry="${EYE[1]}" fill="${C.sclera}"/>
     </g>
-    <ellipse cx="${cx}" cy="${cy}" rx="16" ry="20" fill="none" stroke="${C.ink}" stroke-width="${INN}"/>
-    <ellipse cx="${cx + 1.5}" cy="${cy + 3}" rx="8" ry="10" fill="${C.ink}"/>
+    <ellipse cx="${cx}" cy="${cy}" rx="${EYE[0]}" ry="${EYE[1]}" fill="none" stroke="${C.ink}" stroke-width="${INN}"/>
+    <ellipse cx="${cx + 1.5}" cy="${cy + 3}" rx="7.5" ry="9.5" fill="${C.ink}"/>
     <circle cx="${cx - 1.5}" cy="${cy - 1}" r="3" fill="${C.spec}"/>`,
     ]),
   ),
@@ -157,7 +159,7 @@ const partsSvg = {
 
 // z order (back -> front), bones, joints/tips (canvas image space)
 const PLAN = [
-  { name: 'fx_glow', z: 0, bone: 'fx_glow', parent: 'root', joint: glowC, blend: 'additive', color: 'ffffff00', fixedBox: [16, 44, 328, 316] },
+  { name: 'fx_glow', z: 0, bone: 'fx_glow', parent: 'root', joint: glowC, blend: 'additive', color: 'ffffff00', fixedBox: [28, 84, 304, 284] },
   { name: 'antenna', z: 1, bone: 'phys_antenna_1', parent: 'phys_jelly', joint: antenna.joint, tip: antenna.mid },
   { name: 'body', z: 2, bone: 'body' },
   { name: 'speaker_R', z: 3, bone: 'face_speaker_R', parent: 'body', joint: speakers.speaker_R },

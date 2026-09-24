@@ -144,13 +144,13 @@ const explode = (c: BurstContext, p: BurstPayload, k: number, power: number, col
     s.g = -50 * k;
     s.rot = rand(0, TAU);
     s.vrot = rand(-1, 1);
-    s.size0 = rand(70, 100) * k;
-    s.size1 = rand(170, 210) * k;
+    s.size0 = rand(60, 90) * k;
+    s.size1 = rand(140, 180) * k;
     s.sizeMode = SIZE.easeOut;
-    s.alpha0 = 0.5;
+    s.alpha0 = 0.3;
     s.alphaMode = ALPHA.inOut;
-    s.life = rand(0.55, 0.85);
-    s.color = mixColor(color, 0x2a1840, 0.55);
+    s.life = rand(0.45, 0.7);
+    s.color = mixColor(color, 0xffffff, 0.25);
   }
   // tinted shards: cel colours of the symbol (base, highlight, shadow)
   const shard = c.tex('shard');

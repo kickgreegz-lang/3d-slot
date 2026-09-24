@@ -10,17 +10,17 @@
     {
       "name": "fx_glow",
       "bbox": [
-        16,
-        44,
-        328,
-        316
+        28,
+        84,
+        304,
+        284
       ],
       "z": 0,
       "bone": "fx_glow",
       "parent": "root",
       "joint": [
         180,
-        200
+        226
       ],
       "blend": "additive",
       "color": "ffffff00"
@@ -28,97 +28,103 @@
     {
       "name": "antenna",
       "bbox": [
-        248,
-        38,
-        74,
-        148
+        238,
+        65,
+        51,
+        135
       ],
       "z": 1,
       "bone": "phys_antenna_1",
       "parent": "phys_jelly",
       "joint": [
-        270,
-        150
+        256,
+        164
       ],
       "tip": [
-        285,
-        105
-      ]
+        262,
+        125
+      ],
+      "blur": true
     },
     {
       "name": "body",
       "bbox": [
-        53,
-        91,
-        263,
-        239
+        63,
+        114,
+        243,
+        216
       ],
       "z": 2,
-      "bone": "body"
+      "bone": "body",
+      "blur": true
     },
     {
       "name": "speaker_R",
       "bbox": [
-        76,
-        216,
-        92,
-        92
+        86,
+        232,
+        80,
+        80
       ],
       "z": 3,
       "bone": "face_speaker_R",
       "parent": "body",
       "joint": [
-        122,
-        262
-      ]
+        126,
+        272
+      ],
+      "blur": true
     },
     {
       "name": "speaker_L",
       "bbox": [
-        192,
-        216,
-        92,
-        92
+        194,
+        232,
+        80,
+        80
       ],
       "z": 4,
       "bone": "face_speaker_L",
       "parent": "body",
       "joint": [
-        238,
-        262
-      ]
+        234,
+        272
+      ],
+      "blur": true
     },
     {
       "name": "eye_R",
       "bbox": [
-        138,
-        166,
-        46,
-        54
+        140,
+        183,
+        44,
+        52
       ],
       "z": 5,
       "bone": "face_eye_R",
       "parent": "phys_jelly",
       "joint": [
-        161,
-        193
-      ]
+        162,
+        209
+      ],
+      "blur": true
     },
     {
       "name": "eye_L",
       "bbox": [
         176,
-        166,
-        46,
-        54
+        183,
+        44,
+        52
       ],
       "z": 6,
       "bone": "face_eye_L",
       "parent": "phys_jelly",
       "joint": [
-        199,
-        193
-      ]
+        198,
+        209
+      ],
+      "blur": true
     }
   ]
 }

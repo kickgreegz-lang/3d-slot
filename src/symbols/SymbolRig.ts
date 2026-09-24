@@ -6,11 +6,11 @@ import type { SpineRef } from '../assets/art';
 import { type LandWeight, type SymbolDef, getSymbolDef } from '../config/game';
 import { clock } from '../core/clock';
 import { TIMING, s, sUi, speedScale } from '../core/timing';
-import type { SfxId } from '../game/events';
+import type { GameEvents, SfxId } from '../game/events';
 import type { GameContext } from '../game/context';
 import { measureContent } from './contentBounds';
 import { type JellyFrame, type JellyMesh, acquireJelly, releaseJelly } from './JellyMesh';
-import { SpineRig } from './SpinePool';
+import { SPINE_ANIM, SPINE_EVENT, type SpineCue, SpineRig } from './SpinePool';
 import { FrameLoop, Spring } from './spring';
 import type { SymbolFxParams } from './symbolFxShader';
 import { SYMBOL_TIMING as T } from './symbolTiming';
@@ -42,6 +42,22 @@ const feedback = {
 };
 
 let instanceCounter = 0;
+
+/** Art-pipeline FX ids (docs/ANIMATION_CONTRACT.md §8.2) that map onto an fx:burst kind. */
+const VFX_KIND: Record<string, GameEvents['fx:burst']['kind']> = {
+  fx_explode: 'explode',
+  fx_poof: 'explode',
+  fx_explosion_big: 'explode',
+  fx_dust: 'dust',
+  fx_land_puff: 'dust',
+  fx_smoke: 'dust',
+  fx_sparkle: 'sparkle',
+  fx_coins: 'coins',
+  fx_coin_shower: 'coins',
+  fx_confetti: 'confetti',
+  fx_spot_spark: 'spotSpark',
+  fx_scatter: 'scatter',
+};
 
 type Hold = 'win' | 'explode' | 'anticipation' | 'glint';
 
@@ -108,6 +124,18 @@ export class SymbolRig implements SymbolView {
   private readonly p1 = new Point();
   private readonly p2 = new Point();
   private readonly onGlow = (): void => this.applyGlow();
+  /** Generic Spine payload events: `sfx` (SfxId), `vfx` (fx id -> fx:burst kind), `shake` (trauma). */
+  private readonly onSpineCue: SpineCue = (name, ev) => {
+    const c = this.toRoot(this.pose, 0, 0);
+    if (name === 'sfx' && ev.stringValue) {
+      this.ctx.game.broadcast('sfx', { id: ev.stringValue as SfxId });
+    } else if (name === 'vfx' && ev.stringValue) {
+      const kind = VFX_KIND[ev.stringValue];
+      if (kind) this.ctx.game.broadcast('fx:burst', { kind, x: c.x, y: c.y, color: this.def.color });
+    } else if (name === 'shake' && ev.floatValue > 0) {
+      this.ctx.game.broadcast('fx:shake', { trauma: Math.min(1, ev.floatValue) });
+    }
+  };
 
   constructor(
     private readonly ctx: GameContext,
@@ -197,7 +225,11 @@ export class SymbolRig implements SymbolView {
     if (on) {
       this.fadeGlow(0);
       const ref = this.spineRef();
-      if (ref && SpineRig.supports(ref, 'blur')) void this.useSpine(ref)?.play('blur', true);
+      if (ref && SpineRig.supports(ref, 'blur')) {
+        const rig = this.useSpine(ref);
+        rig.detachPhysics();
+        void rig.play('blur', true);
+      }
       if (this._state === 'static' || this._state === 'land') this._state = 'blur';
     } else if (this._state === 'blur') {
       this._state = 'static';
@@ -231,10 +263,10 @@ export class SymbolRig implements SymbolView {
     const rig = ref && SpineRig.supports(ref, 'land') ? this.useSpine(ref) : null;
     if (rig) {
       this.squashGain = T.spine.squashScale;
-      rig.kick(T.spine.physicsImpulse * m);
-      if (rig.hasEvent('impact')) rig.once('impact', () => this.landFeedback(weight, m, !!opts.tumble));
+      rig.impact(T.spine.physicsImpulse * m);
+      if (rig.hasEvent(SPINE_EVENT.impact)) rig.once(SPINE_EVENT.impact, () => this.landFeedback(weight, m, !!opts.tumble));
       else this.landFeedback(weight, m, !!opts.tumble);
-      void rig.play('land').then(() => {
+      void rig.play('land', false, true).then(() => {
         if (this.rig === rig && (this._state === 'land' || this._state === 'static')) this.releaseSpine();
       });
     } else {
@@ -334,8 +366,12 @@ export class SymbolRig implements SymbolView {
       );
     }
 
-    const c = this.toRoot(this.pose, 0, 0);
-    this.ctx.game.broadcast('fx:burst', { kind: 'sparkle', x: c.x, y: c.y, color: this.def.color, count: W.sparkleCount, power: 1 });
+    const sparkle = () => {
+      const c = this.toRoot(this.pose, 0, 0);
+      this.ctx.game.broadcast('fx:burst', { kind: 'sparkle', x: c.x, y: c.y, color: this.def.color, count: W.sparkleCount, power: 1 });
+    };
+    if (rig?.hasEvent(SPINE_EVENT.winPeak)) rig.once(SPINE_EVENT.winPeak, sparkle);
+    else sparkle();
 
     return new Promise<void>((resolve) => {
       this.pending.push(resolve);
@@ -373,15 +409,19 @@ export class SymbolRig implements SymbolView {
     const rig = ref && SpineRig.supports(ref, 'explode') ? this.useSpine(ref) : null;
     this.hold('explode');
     if (rig) {
-      if (rig.hasEvent('burst')) rig.once('burst', emitBurst);
+      const hasBurst = rig.hasEvent(SPINE_EVENT.burst);
+      if (hasBurst) rig.once(SPINE_EVENT.burst, emitBurst);
+      const finish = () => {
+        if (this.rig !== rig || this._state !== 'explode') return;
+        rig.flushEvents();
+        if (!hasBurst) emitBurst();
+        this.finishExplode();
+      };
+      // `explode_done` lets the art end the state (and return the instance) before the clip ends
+      if (rig.hasEvent(SPINE_EVENT.done)) rig.once(SPINE_EVENT.done, finish);
       return new Promise<void>((resolve) => {
         this.pending.push(resolve);
-        void rig.play('explode').then(() => {
-          if (this.rig !== rig || this._state !== 'explode') return;
-          rig.flushEvents();
-          if (!rig.hasEvent('burst')) emitBurst();
-          this.finishExplode();
-        });
+        void rig.play('explode').then(finish);
       });
     }
 
@@ -426,12 +466,13 @@ export class SymbolRig implements SymbolView {
       this.beat.base = 1 + (A.pulseScale - 1) * 0.35;
       this.beat.peak = A.pulseScale;
       const ref = this.spineRef();
-      const rig = ref && SpineRig.supports(ref, 'anticipation_loop') ? this.useSpine(ref) : null;
-      if (rig) {
+      const loopName = ref ? SpineRig.pick(ref, SPINE_ANIM.anticipationLoop) : null;
+      const rig = ref && loopName ? this.useSpine(ref) : null;
+      if (rig && loopName) {
         if (rig.has('anticipation_intro')) {
           void rig.play('anticipation_intro');
-          rig.queueLoop('anticipation_loop');
-        } else void rig.play('anticipation_loop', true);
+          rig.queueLoop(loopName);
+        } else void rig.play(loopName, true);
       } else {
         this.releaseSpine();
         this.ensureJelly();
@@ -511,12 +552,10 @@ export class SymbolRig implements SymbolView {
     const ref = this.spineRef();
     if (ref && SpineRig.supports(ref, 'idle')) {
       const rig = this.useSpine(ref);
-      if (rig) {
-        void rig.play('idle').then(() => {
-          if (this.rig === rig && this._state === 'static') this.releaseSpine();
-        });
-        return;
-      }
+      void rig.play('idle').then(() => {
+        if (this.rig === rig && this._state === 'static') this.releaseSpine();
+      });
+      return;
     }
     if (this.ctx.budget.idleShaders && this.def.kind !== 'royal') {
       // glint: shine sweep + a soft jelly nudge
@@ -791,10 +830,11 @@ export class SymbolRig implements SymbolView {
     return this._id ? this.ctx.art.spine(this._id) : null;
   }
 
-  private useSpine(ref: SpineRef): SpineRig | null {
+  private useSpine(ref: SpineRef): SpineRig {
     if (!this.rig) {
       this.dropJelly();
       const rig = new SpineRig(ref);
+      rig.onCue(this.onSpineCue);
       this.placeSpine(rig);
       this.art.addChild(rig.spine);
       this.sprite.visible = false;

@@ -1,20 +1,26 @@
 import { gsap } from 'gsap';
 import { type Container, Rectangle } from 'pixi.js';
-import type { LayoutSpec } from '../../config/layout';
+import type { Rect } from '../../config/layout';
 import { removeFilter, tryAddFilter } from './budget';
 import { ChromaticFilter } from './ChromaticFilter';
 import { ShockwaveFilter } from './ShockwaveFilter';
 
 /**
  * One-shot filter pulses on a design-space container (normally `layers.root`).
- * Each pulse borrows a budget slot for its lifetime only, uses resolution 0.5 and a
- * filterArea equal to the design rect, and silently does nothing when the tier
- * budget is exhausted (the particle ring still sells the hit).
+ * Each pulse borrows a budget slot for its lifetime only, covers the visible design
+ * rect and silently does nothing when the tier budget is exhausted (the particle ring
+ * still sells the hit).
+ *
+ * Both pulses go on the SAME container (one FilterEffect, one FilterSystem stack slot):
+ * live filters must never nest. Pixi 8.21 reads a nested push's resolution from the
+ * slot's previous input texture, already back in the TexturePool, and a resize destroys
+ * those -> TypeError inside render -> the ticker stops for good.
  */
 
 export interface PulseTarget {
   target: Container;
-  layout: LayoutSpec;
+  /** target-local visible rect (design rect + letterbox, see visibleDesignRect) */
+  view: Rect;
 }
 
 let shock: ShockwaveFilter | null = null;
@@ -35,6 +41,20 @@ let chroma: ChromaticFilter | null = null;
 let chromaTween: gsap.core.Tween | null = null;
 let chromaOn: Container | null = null;
 
+/** The other pulse is live on a different container: adding here would nest filters. */
+const nests = (other: Container | null, target: Container): boolean => other !== null && other !== target;
+
+/**
+ * filterArea = the visible rect (anything smaller clips what the target draws outside
+ * it, e.g. the letterbox-covering overlay dimmer), padded so the camera shake never
+ * exposes an edge. The pass is clipped to the viewport, so the pad costs nothing and
+ * the output frame is the unpadded rect the uniforms are normalised against.
+ */
+const coverView = (target: Container, v: Rect): void => {
+  const pad = (v.w + v.h) * 0.03;
+  target.filterArea = new Rectangle(v.x - pad, v.y - pad, v.w + pad * 2, v.h + pad * 2);
+};
+
 export interface ShockwaveOptions {
   /** seconds (already speed-scaled by the caller) */
   duration: number;
@@ -47,12 +67,8 @@ export interface ShockwaveOptions {
   brightness?: number;
 }
 
-/**
- * Expanding displacement ring centred at design point (x, y). The filterArea is the
- * design rect (a smaller area would clip everything outside it — filters render
- * their container only inside the filter bounds).
- */
-export const pulseShockwave = ({ target, layout }: PulseTarget, x: number, y: number, o: ShockwaveOptions): void => {
+/** Expanding displacement ring centred at design point (x, y). */
+export const pulseShockwave = ({ target, view: v }: PulseTarget, x: number, y: number, o: ShockwaveOptions): void => {
   shock ??= new ShockwaveFilter();
   const f = shock;
   f.resolution = filterResolution;
@@ -60,13 +76,12 @@ export const pulseShockwave = ({ target, layout }: PulseTarget, x: number, y: nu
   if (shockOn !== target) {
     if (shockOn) removeFilter(shockOn, f);
     shockOn = null;
-    if (!tryAddFilter(target, f)) return;
+    if (nests(chromaOn, target) || !tryAddFilter(target, f)) return;
     shockOn = target;
   }
-  target.filterArea = new Rectangle(0, 0, layout.width, layout.height);
-  const W = layout.width;
-  f.setCenter({ x: x / W, y: y / layout.height, aspect: W / layout.height });
-  f.halfWidth = o.width / 2 / W;
+  coverView(target, v);
+  f.setCenter({ x: (x - v.x) / v.w, y: (y - v.y) / v.h, aspect: v.w / v.h });
+  f.halfWidth = o.width / 2 / v.w;
   f.brightness = o.brightness ?? 0.18;
   const state = { t: 0 };
   shockTween = gsap.to(state, {
@@ -75,8 +90,8 @@ export const pulseShockwave = ({ target, layout }: PulseTarget, x: number, y: nu
     ease: 'none',
     onUpdate: () => {
       const e = 1 - (1 - state.t) ** 2.2;
-      f.radius = (e * o.radius) / W;
-      f.amplitude = ((1 - state.t) ** 1.5 * o.amplitude) / W;
+      f.radius = (e * o.radius) / v.w;
+      f.amplitude = ((1 - state.t) ** 1.5 * o.amplitude) / v.w;
     },
     onComplete: () => {
       if (shockOn) removeFilter(shockOn, f);
@@ -93,30 +108,23 @@ export interface ChromaticOptions {
 }
 
 /**
- * Quick RGB-split "lens" punch radiating from design point (x, y). Applied to the
- * whole stage (screen space, so it never shares a filterArea with a shockwave on
- * the root); `root` converts the design point to screen coordinates.
+ * Quick RGB-split "lens" punch radiating from design point (x, y). Same container
+ * and filterArea as the shockwave (a tier punch fires both), so the two share one
+ * FilterEffect instead of nesting.
  */
-export const pulseChromatic = (
-  view: { stage: Container; root: Container; width: number; height: number },
-  x: number,
-  y: number,
-  o: ChromaticOptions,
-): void => {
+export const pulseChromatic = ({ target, view: v }: PulseTarget, x: number, y: number, o: ChromaticOptions): void => {
   chroma ??= new ChromaticFilter();
   const f = chroma;
   f.resolution = filterResolution;
-  const target = view.stage;
   chromaTween?.kill();
   if (chromaOn !== target) {
     if (chromaOn) removeFilter(chromaOn, f);
     chromaOn = null;
-    if (!tryAddFilter(target, f)) return;
+    if (nests(shockOn, target) || !tryAddFilter(target, f)) return;
     chromaOn = target;
   }
-  target.filterArea = new Rectangle(0, 0, view.width, view.height);
-  const p = view.root.toGlobal({ x, y });
-  f.setCenter(p.x / view.width, p.y / view.height);
+  coverView(target, v);
+  f.setCenter((x - v.x) / v.w, (y - v.y) / v.h);
   const state = { t: 0 };
   chromaTween = gsap.to(state, {
     t: 1,

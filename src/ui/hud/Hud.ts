@@ -3,7 +3,7 @@ import type { LayoutSpec } from '../../config/layout';
 import type { SpeedProfile } from '../../core/timing';
 import type { GameContext, GameModule } from '../../game/context';
 import type { HudState } from '../../game/events';
-import { t } from '../../i18n';
+import { currentLang, isSocial, t } from '../../i18n';
 import { modalState, uiBus } from '../bus';
 import { GAME_INFO } from '../dom/gameInfo';
 import type { HudStateExt } from '../state';
@@ -19,6 +19,9 @@ import { HUD_COLORS, TextPool, fitWidth, labelStyle } from './theme';
 import { WinDisplay } from './WinDisplay';
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
+
+/** What t() currently resolves against (social wording can switch on after boot). */
+const i18nKey = (): string => `${currentLang()}|${isSocial()}`;
 
 /** Neutral state shown until the flow's first 'hud:state' (and in ?dev=lab). */
 const defaultState = (ctx: GameContext): HudState => ({
@@ -79,6 +82,8 @@ export class Hud implements GameModule {
   private spinCaption!: Text;
   private status!: StatusLine;
   private shownTurbo: SpeedProfile | null = null;
+  /** i18nKey() the captions were last read with */
+  private shownI18n = '';
   private captionMax = 520;
   private replayMax = 520;
   /** compact: the free-spin counter replaces the bet readout */
@@ -138,6 +143,7 @@ export class Hud implements GameModule {
 
   private build(): void {
     const ui = this.ctx.ui;
+    this.shownI18n = i18nKey();
     this.balance = new LabeledValue(this.texts, t('balance'), 'balance');
     this.bet = new LabeledValue(this.texts, t('bet'), 'bet');
     this.win = new WinDisplay(this.ctx, this.texts, t('win'));
@@ -299,16 +305,70 @@ export class Hud implements GameModule {
     this.replayMax = P.replay.maxWidth;
     fitWidth(this.replayInfo, this.replayMax);
 
-    this.status.visible = L.kind !== 'compact';
-    this.status.configure(Math.round(L.kind === 'portrait' ? 28 : 26), true);
-    this.status.position.set(L.kind === 'portrait' ? 24 : 18, L.kind === 'portrait' ? 6 : 8);
+    this.layoutStatus(L);
     // layout-dependent visibility (e.g. compact free spins in the bet slot)
     this.apply(this.state, false);
+  }
+
+  /**
+   * Status line = title | clock + the jurisdiction readouts (RTP, net position, session
+   * timer), which must stay visible in every layout. Landscape puts the readouts on a
+   * second line so they never reach the logo on the beam. Compact has no room at the
+   * top (logo) or in the HUD column, so it shows the readouts alone, centred on the
+   * frame's sill under the grid (the line hides itself when there are none).
+   */
+  private layoutStatus(L: LayoutSpec): void {
+    if (L.kind === 'compact') {
+      const f = L.frame;
+      this.status.configure({
+        size: 24,
+        showTitle: false,
+        showClock: false,
+        split: false,
+        maxWidth: f.w - 2 * L.frameParts.post - 16,
+        anchorX: 0.5,
+        anchorY: 0.5,
+      });
+      this.status.position.set(f.x + f.w / 2, f.y + f.h - L.frameParts.sill / 2);
+      return;
+    }
+    const portrait = L.kind === 'portrait';
+    const landscape = L.kind === 'landscape';
+    const x = portrait ? 24 : 18;
+    this.status.configure({
+      size: portrait ? 28 : 26,
+      showTitle: true,
+      showClock: true,
+      split: landscape,
+      maxWidth: landscape ? L.logo.x - 16 - x : L.width - 2 * x,
+      anchorX: 0,
+      anchorY: 0,
+    });
+    this.status.position.set(x, portrait || landscape ? 6 : 8);
+  }
+
+  /**
+   * Re-read every caption baked at build time. jurisdiction.socialCasino turns social
+   * wording on at authenticate, after build ('BET' -> 'PLAY', 'BONUS BUY' -> 'GET BONUS').
+   * The re-layout re-reads the bonus-buy caption, refits the labels and re-bakes the
+   * replay chip to its new width.
+   */
+  private relabel(): void {
+    this.balance.setLabel(t('balance'));
+    this.bet.setLabel(t('bet'));
+    this.fs.setLabel(t('freeSpins'));
+    this.replay.setLabel(t('replay'));
+    this.layout(this.ctx.layout);
   }
 
   // ── state ──────────────────────────────────────────────────────────────
 
   private apply(s: HudStateExt, animate = true): void {
+    const i18n = i18nKey();
+    if (i18n !== this.shownI18n) {
+      this.shownI18n = i18n;
+      this.relabel();
+    }
     const prev = this.state;
     this.state = s;
     const replay = s.replay;

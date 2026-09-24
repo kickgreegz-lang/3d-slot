@@ -89,9 +89,13 @@ interface BakedGlyph {
   /** glyph visual centre relative to the pen origin (x) / baseline (y) */
   cx: number;
   cy: number;
+  /** bake resolution (the set a high-tier release keeps, see releaseGlyphCache) */
+  res: number;
 }
 
 const glyphCache = new Map<string, BakedGlyph>();
+/** Resolution of the latest title request. */
+let latestRes = 1;
 
 const glyphKey = (char: string, st: GlyphStyle, res: number): string => {
   const outline = Math.max(2, Math.round(st.size * (st.outline ?? 0.07)));
@@ -223,12 +227,20 @@ const bakeGlyph = (char: string, st: GlyphStyle, res: number): BakedGlyph => {
     source: new CanvasSource({ resource: canvas, resolution: res, width: tw, height: th, transparent: true }),
     defaultAnchor: { x: (ox + cx) / tw, y: (oy + cy) / th },
   });
-  const baked: BakedGlyph = { texture, advance: met.width + st.size * (st.tracking ?? 0.02), cx, cy };
+  const baked: BakedGlyph = { texture, advance: met.width + st.size * (st.tracking ?? 0.02), cx, cy, res };
   glyphCache.set(key, baked);
   return baked;
 };
 
-const clampRes = (resolution: number): number => Math.max(1, Math.min(2, resolution));
+/**
+ * Bake resolution in quarter steps (1, 1.25 ... 2), remembered as the latest request:
+ * callers derive it from the window size, and every distinct value would otherwise
+ * bake a whole new glyph set.
+ */
+const clampRes = (resolution: number): number => {
+  latestRes = Math.max(1, Math.min(2, Math.ceil(resolution * 4) / 4));
+  return latestRes;
+};
 
 /**
  * Bake jobs for the not-yet-cached glyphs of `text`, to be run one per frame
@@ -304,8 +316,15 @@ export class BakedWord extends Container {
   }
 }
 
-/** Free every cached glyph texture (e.g. after a big win, to return VRAM). */
-export const releaseGlyphCache = (): void => {
-  for (const g of glyphCache.values()) g.texture.destroy(true);
-  glyphCache.clear();
+/**
+ * Free cached glyph textures (e.g. after a big win, to return VRAM). `keepLatest`: keep
+ * the set at the latest requested resolution and free only older ones (left behind by
+ * window resizes). Call only while no title is on screen.
+ */
+export const releaseGlyphCache = (keepLatest = false): void => {
+  for (const [key, g] of glyphCache) {
+    if (keepLatest && g.res === latestRes) continue;
+    g.texture.destroy(true);
+    glyphCache.delete(key);
+  }
 };

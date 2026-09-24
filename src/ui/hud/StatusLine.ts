@@ -1,18 +1,23 @@
 import { Container, type Text } from 'pixi.js';
 import { clock } from '../../core/clock';
-import { HUD_COLORS, type TextPool, labelStyle } from './theme';
+import { HUD_COLORS, type TextPool, fitWidth, labelStyle } from './theme';
 
 /**
  * Top-left status line (reference: "GAME NAME | 23:50"): title, local clock and the
  * jurisdiction widgets the flow provides (RTP, net position, session timer).
  * The clock is read from Date once per second of UI time — display only.
+ * Hides itself while it has nothing to show (compact without jurisdiction extras).
  */
 export class StatusLine extends Container {
   private readonly line: Text;
   private extras: string[] = [];
   private acc = 1;
   private minute = -1;
+  private titleOn = true;
   private clockOn = true;
+  /** extras on their own line under title | clock (keeps them clear of the landscape logo) */
+  private split = false;
+  private maxWidth = Number.POSITIVE_INFINITY;
   private readonly offTick: () => void;
 
   constructor(
@@ -28,13 +33,25 @@ export class StatusLine extends Container {
       if (this.acc < 1) return;
       this.acc = 0;
       const m = new Date().getMinutes();
-      if (m !== this.minute) this.render();
+      if (this.clockOn && m !== this.minute) this.render();
     });
   }
 
-  configure(size: number, showClock: boolean): void {
-    this.line.style = labelStyle(size, HUD_COLORS.value);
-    this.clockOn = showClock;
+  configure(opts: {
+    size: number;
+    showTitle: boolean;
+    showClock: boolean;
+    split: boolean;
+    maxWidth: number;
+    anchorX: number;
+    anchorY: number;
+  }): void {
+    this.line.style = { ...labelStyle(opts.size, HUD_COLORS.value), lineHeight: Math.round(opts.size * 1.15) };
+    this.line.anchor.set(opts.anchorX, opts.anchorY);
+    this.titleOn = opts.showTitle;
+    this.clockOn = opts.showClock;
+    this.split = opts.split;
+    this.maxWidth = opts.maxWidth;
     this.render();
   }
 
@@ -50,9 +67,15 @@ export class StatusLine extends Container {
     const d = new Date();
     this.minute = d.getMinutes();
     const hhmm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    const parts = [this.title.toUpperCase()];
-    if (this.clockOn) parts.push(hhmm);
-    this.line.text = [...parts, ...this.extras].join('  |  ');
+    const head: string[] = [];
+    if (this.titleOn) head.push(this.title.toUpperCase());
+    if (this.clockOn) head.push(hhmm);
+    const sep = '  |  ';
+    const extras = this.extras.join(sep);
+    this.line.text =
+      this.split && head.length > 0 && extras !== '' ? `${head.join(sep)}\n${extras}` : [...head, ...this.extras].join(sep);
+    this.visible = this.line.text !== '';
+    fitWidth(this.line, this.maxWidth);
   }
 
   override destroy(options?: Parameters<Container['destroy']>[0]): void {

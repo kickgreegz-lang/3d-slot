@@ -7,14 +7,15 @@ import type { JurisdictionFlags } from '../rgs/types';
  * web-sdk only stores them). Missing / malformed values fall back to permissive
  * defaults, as the authenticate docs mark the object "do not use".
  *
- *   disabledTurbo / disabledSuperTurbo -> speed profiles offered by ui:turbo
+ *   disabledTurbo / disabledSuperTurbo -> speed profiles offered by ui:turbo, and the
+ *                                         cap on a slam-stop's speed-up (slamProfile)
  *   disabledSlamstop                   -> ui:skip / spin-to-stop ignored
  *   disabledAutoplay                   -> ui:autoplay ignored, HUD hides it
  *   disabledBuyFeature                 -> ui:buy ignored, HUD hides it
  *   disabledSpacebar                   -> capture-phase Space blocker (DOM guard)
  *   disabledFullscreen                 -> requestFullscreen rejected (DOM guard), HUD hides it
  *   displayNetPosition / displayRTP / displaySessionTimer -> HUD extras (FlowHudState)
- *   minimumRoundDuration               -> round end held until elapsed >= value
+ *   minimumRoundDuration               -> round end held until elapsed >= value (wall clock)
  */
 export const DEFAULT_JURISDICTION: JurisdictionFlags = {
   socialCasino: false,
@@ -83,9 +84,14 @@ export class Jurisdiction {
   get minimumRoundMs(): number {
     return this.flags.minimumRoundDuration;
   }
-  /** Speed used for the rest of a round after a slam-stop. */
+  /**
+   * Speed used for the rest of a round after a slam-stop: the fastest profile the
+   * jurisdiction lets the player pick. Under disabledTurbo that is 'normal', so a
+   * slam never becomes a per-round turbo the player could not otherwise select.
+   */
   get slamProfile(): SpeedProfile {
-    return this.flags.disabledSuperTurbo ? 'turbo' : 'superTurbo';
+    const list = this.profiles;
+    return list[list.length - 1] ?? 'normal';
   }
 
   nextProfile(current: SpeedProfile): SpeedProfile {
@@ -138,34 +144,54 @@ export class Jurisdiction {
 }
 
 /**
- * Real-time stopwatch on THE clock (unfrozen `realDt`, so hit-stops do not
- * stretch it; deterministic under manual stepping). Used for the jurisdiction
- * minimum round duration and the session timer.
+ * Wall-clock stopwatch for the jurisdiction session timer and minimum round duration.
+ * Elapsed time comes from performance.now(), so frames longer than the clock's 100 ms
+ * cap, main-thread stalls and hidden tabs (no frames at all) are all counted. Under
+ * manual stepping (automated capture) it counts the stepped frame time instead, so
+ * captures stay deterministic. The clock only triggers `onTick` / `reached`.
  */
 export class Stopwatch {
   private ms = 0;
+  /** performance.now() up to which `ms` is accounted */
+  private mark = 0;
   private running = false;
   private readonly off: () => void;
 
   constructor(onTick?: (elapsedMs: number) => void) {
     this.off = clock.onUpdate(() => {
       if (!this.running) return;
-      this.ms += clock.realDt * 1000;
+      const now = performance.now();
+      this.ms += clock.isManual ? clock.realDt * 1000 : now - this.mark;
+      this.mark = now;
       onTick?.(this.ms);
     });
   }
 
   get elapsedMs(): number {
-    return this.ms;
+    return this.running && !clock.isManual ? this.ms + performance.now() - this.mark : this.ms;
   }
 
   restart(): void {
     this.ms = 0;
+    this.mark = performance.now();
     this.running = true;
   }
 
   stop(): void {
+    this.ms = this.elapsedMs;
     this.running = false;
+  }
+
+  /** Resolves on the first frame at which at least `ms` have elapsed (at once if already, or if stopped). */
+  reached(ms: number): Promise<void> {
+    if (!this.running || this.elapsedMs >= ms) return Promise.resolve();
+    return new Promise((resolve) => {
+      const off = clock.onUpdate(() => {
+        if (this.running && this.elapsedMs < ms) return;
+        off();
+        resolve();
+      });
+    });
   }
 
   destroy(): void {

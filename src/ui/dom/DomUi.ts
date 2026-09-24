@@ -3,7 +3,7 @@ import type { SpeedProfile } from '../../core/timing';
 import type { GameContext, GameModule } from '../../game/context';
 import { safeText, t } from '../../i18n';
 import { uiBus } from '../bus';
-import type { HudStateExt } from '../state';
+import { type HudStateExt, allowedSpeeds } from '../state';
 import { type AutoplayChoice, autoplayDialog, buyDialog, errorDialog } from './dialogs';
 import { buyMode, GAME_INFO } from './gameInfo';
 import { clear, h, svg } from './h';
@@ -139,9 +139,19 @@ export class DomUi implements GameModule {
     this.ctx.ui.broadcast('ui:sound', { enabled: on });
   }
 
-  /** ui:turbo cycles the allowed profiles; step until the requested one is active. */
+  /**
+   * ui:turbo cycles the allowed profiles; step until the requested one is active. A
+   * barred target is ignored, and a full cycle back to the start stops the loop, so it
+   * never lands on a profile the player did not ask for.
+   */
   private setTurbo(target: SpeedProfile): void {
-    for (let i = 0; i < 3 && this.state.turbo !== target; i++) this.ctx.ui.broadcast('ui:turbo', undefined);
+    const start = this.state.turbo;
+    if (allowedSpeeds(this.state).includes(target)) {
+      for (let i = 0; i < 3 && this.state.turbo !== target; i++) {
+        this.ctx.ui.broadcast('ui:turbo', undefined);
+        if (this.state.turbo === start) break;
+      }
+    }
     this.menu?.syncSettings?.();
   }
 

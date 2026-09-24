@@ -1,6 +1,7 @@
 import { gsap } from 'gsap';
 import { Container, Sprite, Texture } from 'pixi.js';
 import type { ParticleKey } from '../assets/art';
+import type { Rect } from '../config/layout';
 import { clock } from '../core/clock';
 import { registerTiming, s } from '../core/timing';
 import type { GameContext, GameModule } from '../game/context';
@@ -59,8 +60,21 @@ export class Fx implements GameModule {
     ctx.layers.screenFx.addChild(this.flash);
     this.layout();
 
+    // Pixi 8.21 FilterSystem keeps each stack slot's last input texture after pop (it is
+    // back in the TexturePool) and reads its resolution on the next NESTED filter push
+    // (e.g. the logo shine's alpha mask under a root shockwave); a resize destroys idle
+    // screen-sized pool textures -> TypeError inside render and the ticker never
+    // recovers. Resizes run outside render: drop the stale references.
+    const renderer = ctx.app.renderer;
+    const dropStaleFilterInputs = (): void => {
+      const fs = renderer.filter as unknown as { _filterStack: Array<{ inputTexture: unknown } | undefined> };
+      for (const fd of fs._filterStack) if (fd) fd.inputTexture = null;
+    };
+    renderer.on('resize', dropStaleFilterInputs);
+
     const g = ctx.game;
     this.offs.push(
+      () => renderer.off('resize', dropStaleFilterInputs),
       g.on('fx:burst', (p) => this.burst(p)),
       g.on('fx:shake', ({ trauma }) => this.shake.add(trauma)),
       g.on('fx:flash', (p) => this.doFlash(p)),
@@ -82,6 +96,15 @@ export class Fx implements GameModule {
     this.flash.height = L.height + pad * 2;
   }
 
+  /** Visible part of the design space (design rect + letterbox), in design px. */
+  private visibleRect(): Rect {
+    const { app, layout: L } = this.ctx;
+    const k = this.ctx.scale || 1;
+    const w = app.screen.width / k;
+    const h = app.screen.height / k;
+    return { x: (L.width - w) / 2, y: (L.height - h) / 2, w, h };
+  }
+
   private texture(key: ParticleKey): Texture {
     let t = this.textures.get(key);
     if (!t) {
@@ -96,7 +119,7 @@ export class Fx implements GameModule {
     if (p.kind === 'scatter') {
       const o = FX_TIMING.scatterShock;
       const k = this.ctx.layout.cell / 150;
-      pulseShockwave({ target: this.ctx.layers.root, layout: this.ctx.layout }, p.x, p.y, {
+      pulseShockwave({ target: this.ctx.layers.root, view: this.visibleRect() }, p.x, p.y, {
         duration: s(o.duration),
         radius: o.radius * k * (p.power ?? 1),
         amplitude: o.amplitude * k,

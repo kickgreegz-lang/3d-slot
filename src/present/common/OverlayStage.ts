@@ -8,11 +8,12 @@ import { placementFor } from './placement';
 let openStages = 0;
 
 /**
- * Low tier only: drop the baked title glyph textures once no overlay is showing
- * (they are re-baked on demand; high tier keeps them for instant re-use).
+ * Once no overlay is showing, drop baked title glyph textures (re-baked on demand):
+ * low tier drops them all; high tier keeps the current set for instant re-use and
+ * drops only sets baked at an older resolution (window resize / rotation).
  */
 export const releaseTitlesIfIdle = (ctx: GameContext): void => {
-  if (ctx.tier === 'low' && openStages === 0) releaseGlyphCache();
+  if (openStages === 0) releaseGlyphCache(ctx.tier !== 'low');
 };
 
 /**
@@ -31,7 +32,9 @@ export const releaseTitlesIfIdle = (ctx: GameContext): void => {
  *
  * The stage is (re)appended to the overlay layer on every open(), so the most recently
  * opened stage is always on top (e.g. a big win straight after the free-spin outro).
- * Taps on the dimmer and 'ui:skip' (spacebar / skip button) are forwarded to `onTap`.
+ * Taps on the dimmer and 'ui:skip' (spacebar / skip button) are forwarded to `onTap`,
+ * unless the jurisdiction disallows slam-stop ('hud:state' slamStopAllowed: false): then
+ * taps cannot skip and the presenters only auto-advance on their own timers.
  */
 export class OverlayStage {
   readonly root = new Container({ label: 'overlayStage' });
@@ -45,6 +48,8 @@ export class OverlayStage {
   private tapHandler: (() => void) | null = null;
   private dimTween: gsap.core.Tween | null = null;
   private offSkip: (() => void) | null = null;
+  private offHud: () => void;
+  private skipAllowed = true;
 
   constructor(
     private ctx: GameContext,
@@ -52,14 +57,28 @@ export class OverlayStage {
   ) {
     this.root.label = label;
     this.root.visible = false;
+    // the dimmer always swallows taps (nothing under an open stage is clickable)
     this.dimmer.eventMode = 'static';
     this.dimmer.cursor = 'pointer';
-    this.dimmer.on('pointertap', () => this.tapHandler?.());
+    this.dimmer.on('pointertap', () => this.tap());
     this.root.addChild(this.dimmer, this.under, this.backdrop, this.lift, this.content, this.front);
+    this.offHud = ctx.hud.on('hud:state', (s) => {
+      this.skipAllowed = s.slamStopAllowed !== false;
+      this.dimmer.cursor = this.skipAllowed ? 'pointer' : 'default';
+    });
   }
 
   get isOpen(): boolean {
     return this.root.visible;
+  }
+
+  /** Taps / 'ui:skip' may skip or close (false under jurisdiction disabledSlamstop). */
+  get tapsAllowed(): boolean {
+    return this.skipAllowed;
+  }
+
+  private tap(): void {
+    if (this.skipAllowed) this.tapHandler?.();
   }
 
   /** Layout-dependent overlay scale (content is authored for landscape). */
@@ -95,7 +114,7 @@ export class OverlayStage {
     if (opts.liftFx) this.lift.attach(layers.fx);
     this.lifted = !!(opts.liftMascots || opts.liftFx);
     this.offSkip?.();
-    this.offSkip = this.ctx.ui.on('ui:skip', () => this.tapHandler?.());
+    this.offSkip = this.ctx.ui.on('ui:skip', () => this.tap());
   }
 
   /** Dim alpha tween (e.g. lighter dim for a retrigger pop). */
@@ -140,6 +159,7 @@ export class OverlayStage {
 
   destroy(): void {
     this.release();
+    this.offHud();
     this.offSkip?.();
     this.dimTween?.kill();
     this.root.destroy({ children: true });

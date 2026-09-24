@@ -26,6 +26,8 @@ export class AnticipationBeam {
   private bottom = 0;
   private left = 0;
   private width = 0;
+  private reel = 0;
+  private color = 0xffffff;
 
   constructor() {
     this.view.visible = false;
@@ -53,6 +55,33 @@ export class AnticipationBeam {
 
   /** Light up `reel` (fades in, or slides over from the previous column). */
   show(reel: number, color: number, L: LayoutSpec): void {
+    this.reel = reel;
+    this.color = color;
+    this.fit(L);
+    const wasVisible = this.view.visible;
+    this.view.visible = true;
+    gsap.killTweensOf(this.view);
+    if (!wasVisible) this.view.alpha = 0;
+    gsap.to(this.view, { alpha: 1, duration: s(TIMING.anticipation.introDuration), ease: 'power2.out' });
+    this.pulse?.kill();
+    this.beam.alpha = 0.55;
+    this.pulse = gsap.to(this.beam, {
+      alpha: 0.9,
+      duration: s(TIMING.anticipation.pulsePeriod / 2),
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: -1,
+    });
+    if (!this.offUpdate) this.offUpdate = clock.onUpdate((dt) => this.tick(dt));
+  }
+
+  /** Re-place over the same column in a new layout (fades and pulse keep running). */
+  layout(L: LayoutSpec): void {
+    if (this.view.visible) this.fit(L);
+  }
+
+  private fit(L: LayoutSpec): void {
+    const { reel, color } = this;
     const g = gridRect(L);
     const k = L.cell / 150;
     const cx = slotPos(L, reel, GRID.firstVisibleRow).x;
@@ -62,7 +91,6 @@ export class AnticipationBeam {
     this.width = L.cell;
     this.left = cx - L.cell / 2;
 
-    const wasVisible = this.view.visible;
     this.beam.tint = color;
     this.beam.width = L.cell * 1.55;
     this.beam.height = this.bottom - this.top;
@@ -82,21 +110,6 @@ export class AnticipationBeam {
       st.sp.y = this.top + this.rng() * (this.bottom - this.top);
       st.speed = BOARD_TIMING.beamStreakSpeed * k * (0.6 + this.rng() * 0.8);
     }
-
-    this.view.visible = true;
-    gsap.killTweensOf(this.view);
-    if (!wasVisible) this.view.alpha = 0;
-    gsap.to(this.view, { alpha: 1, duration: s(TIMING.anticipation.introDuration), ease: 'power2.out' });
-    this.pulse?.kill();
-    this.beam.alpha = 0.55;
-    this.pulse = gsap.to(this.beam, {
-      alpha: 0.9,
-      duration: s(TIMING.anticipation.pulsePeriod / 2),
-      ease: 'sine.inOut',
-      yoyo: true,
-      repeat: -1,
-    });
-    if (!this.offUpdate) this.offUpdate = clock.onUpdate((dt) => this.tick(dt));
   }
 
   /** Fade out; resolves when hidden. */

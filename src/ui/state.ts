@@ -1,3 +1,4 @@
+import type { SpeedProfile } from '../core/timing';
 import type { HudState } from '../game/events';
 
 /**
@@ -18,6 +19,8 @@ export type HudStateExt = HudState &
     spacebarAllowed: boolean;
     fullscreenAllowed: boolean;
     soundEnabled: boolean;
+    /** player-selectable speed profiles (jurisdiction disabledTurbo / disabledSuperTurbo) */
+    turboProfiles: SpeedProfile[];
     netPositionText: string | null;
     rtpText: string | null;
     sessionTimeText: string | null;
@@ -26,3 +29,9 @@ export type HudStateExt = HudState &
     replayInfoText: string | null;
     replayResultText: string | null;
   }>;
+
+const ALL_SPEEDS: readonly SpeedProfile[] = ['normal', 'turbo', 'superTurbo'];
+
+/** Speed profiles the player may pick; without the flow's list, turboAllowed gates them all. */
+export const allowedSpeeds = (s: HudStateExt): readonly SpeedProfile[] =>
+  s.turboProfiles ?? (s.turboAllowed ? ALL_SPEEDS : ['normal']);

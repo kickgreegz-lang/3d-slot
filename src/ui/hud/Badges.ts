@@ -160,6 +160,11 @@ export class ReplayChip extends Container {
     this.text.position.set(pad + dotR * 2 + size * 0.35, size * 0.04);
   }
 
+  /** New caption; configure() re-bakes the plate to its width. */
+  setLabel(text: string): void {
+    this.text.text = text;
+  }
+
   setShown(on: boolean): void {
     if (on === this.shown) return;
     this.shown = on;

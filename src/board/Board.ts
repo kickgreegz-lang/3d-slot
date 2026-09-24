@@ -28,6 +28,10 @@ import { SpotGrid } from './SpotGrid';
  * Every scene handler returns a promise that resolves when its motion is done
  * (the flow awaits `broadcastAsync`). All motion runs on GSAP via core/clock
  * (hit-stop + deterministic stepping); durations come from TIMING via s().
+ *
+ * Views are positioned in CELL units (reel, fractional padded row) and drawn
+ * from the current layout, so a layout change mid-animation (device rotation)
+ * re-targets motion already in flight instead of finishing at old coordinates.
  */
 const WEIGHT_RANK: Record<LandWeight, number> = { light: 0, medium: 1, heavy: 2, special: 3 };
 const LAND_SFX: Record<LandWeight, SfxId> = {
@@ -46,6 +50,11 @@ const Z_OUTLINE = 1100;
 /** Safety gap (ms) between a column's fall-out end and its drop-in start. */
 const PIPELINE_MARGIN = 50;
 const isScatter = (id: string): boolean => getSymbolDef(id).kind === 'scatter';
+/** Logical position of a view: reel + fractional padded row (tweened instead of pixels). */
+interface Cell {
+  reel: number;
+  row: number;
+}
 
 export class Board implements GameModule {
   private readonly root = new Container({ label: 'boardSymbols', sortableChildren: true });
@@ -56,6 +65,7 @@ export class Board implements GameModule {
   private slots: SymbolView[][] = [];
   private boardIds: BoardIds = [];
   private readonly pool: SymbolView[] = [];
+  private readonly cells = new Map<SymbolView, Cell>();
   private readonly elevated = new Set<SymbolView>();
   private readonly dimmed = new Set<SymbolView>();
   private readonly anticipating = new Set<SymbolView>();
@@ -72,10 +82,11 @@ export class Board implements GameModule {
   private tumblesSinceReveal = 0;
   private fallOutPromise: Promise<void> | null = null;
   private fallOutTl: gsap.core.Timeline | null = null;
-  /** per column: ms (unscaled) after fall-out start when its old symbols are gone */
+  /** per column: fall-out timeline time (s, speed fixed when built) when its old symbols are gone */
   private fallOutClear: number[] = [];
+  /** per column: bumped when the drop-in takes the column over, so a late fall-out never touches it */
+  private readonly colEpoch: number[] = new Array<number>(GRID.reels).fill(0);
   private idleCall: gsap.core.Tween | null = null;
-  private pendingRefresh = false;
 
   constructor(private ctx: GameContext) {
     this.spots = new SpotGrid(ctx);
@@ -96,6 +107,8 @@ export class Board implements GameModule {
       for (let row = 0; row < GRID.paddedRows; row++) {
         const sv = createSymbolView(ctx, this.boardIds[reel][row]);
         this.root.addChild(sv.view);
+        sv.view.zIndex = zOf(reel, row);
+        this.put(sv, reel, row);
         col.push(sv);
       }
       this.slots.push(col);
@@ -134,9 +147,12 @@ export class Board implements GameModule {
     const p = L.panel;
     this.maskG.clear().rect(p.x, p.y, p.w, p.h).fill(0xffffff);
     this.spots.layout(L);
-    // SymbolViews re-fit themselves on layout:change; the Board only re-positions.
-    if (this.busy) this.pendingRefresh = true;
-    else this.snapAll();
+    // SymbolViews re-fit themselves on layout:change; the Board only re-positions. Running
+    // tweens move cells (not pixels) and re-draw from ctx.layout every frame, so motion in
+    // flight continues in the new layout instead of waiting for the round to go idle.
+    for (const sv of this.cells.keys()) this.place(sv);
+    this.outlines.layout(L);
+    this.beam.layout(L);
   }
 
   destroy(): void {
@@ -196,21 +212,28 @@ export class Board implements GameModule {
       this.fallOutClear = [];
       for (let reel = 0; reel < GRID.reels; reel++) {
         let clear = 0;
+        const epoch = this.colEpoch[reel];
+        const owned = () => this.colEpoch[reel] === epoch;
         for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) {
           const sv = this.slots[reel][row];
           const at = reel * stagger(T.fallOutColumnStagger) + (GRID.lastVisibleRow - row) * stagger(T.fallOutRowStagger);
           const end = at + T.fallOutDuration;
           clear = Math.max(clear, end);
-          tl.to(sv.view, { y: sv.view.y + dist, duration: s(T.fallOutDuration), ease: T.fallOutEase }, s(at));
-          tl.call(() => sv.setBlur(true), [], s(at + tBlur));
+          const to = this.cellOf(sv).row + T.fallOutDistanceCells;
+          this.tweenRow(tl, sv, to, s(T.fallOutDuration), T.fallOutEase, s(at));
           tl.call(() => {
+            if (owned()) sv.setBlur(true);
+          }, [], s(at + tBlur));
+          tl.call(() => {
+            if (!owned()) return;
             sv.setBlur(false);
             sv.view.visible = false;
           }, [], s(end));
         }
-        this.fallOutClear.push(clear);
+        // timeline seconds as built: a later speed change (slam / turbo) does not rescale this timeline
+        this.fallOutClear.push(s(clear));
       }
-      tl.call(firstClear, [], s(this.fallOutClear[0]));
+      tl.call(firstClear, [], this.fallOutClear[0]);
       this.fallOutTl = tl;
       await this.play(tl);
       if (this.fallOutTl === tl) this.fallOutTl = null;
@@ -221,12 +244,22 @@ export class Board implements GameModule {
     }
   }
 
-  /** ms from now until `reel`'s old symbols are gone (0 when no fall-out is running). */
+  /**
+   * ms from now until `reel`'s old symbols are gone (0 when no fall-out is running), in the
+   * reveal's unscaled ms for the CURRENT profile: the remaining fall-out time is measured in
+   * the fall-out timeline's own seconds (a slam / turbo switch may have changed the profile).
+   */
   private columnClearIn(reel: number): number {
     const tl = this.fallOutTl;
     if (!tl) return 0;
-    const elapsed = tl.time() * 1000 * speedScale();
-    return Math.max(0, this.fallOutClear[reel] - elapsed + PIPELINE_MARGIN);
+    return Math.max(0, (this.fallOutClear[reel] - tl.time()) * 1000 * speedScale() + PIPELINE_MARGIN);
+  }
+
+  /** The drop-in takes `reel` over: a fall-out still running must not move or hide its views. */
+  private takeColumn(reel: number): void {
+    this.colEpoch[reel]++;
+    const tl = this.fallOutTl;
+    if (tl) for (const sv of this.slots[reel]) tl.killTweensOf(this.cellOf(sv));
   }
 
   // =========================================================================
@@ -284,14 +317,13 @@ export class Board implements GameModule {
       // (added first so the placement renders before that column's drop tweens)
       for (let reel = 0; reel < GRID.reels; reel++) {
         tl.call(() => {
+          this.takeColumn(reel);
           for (let row = 0; row < GRID.paddedRows; row++) {
             const sv = this.slots[reel][row];
             sv.reset();
             sv.setSymbol(board[reel][row]);
-            const p = slotPos(L, reel, row);
-            sv.view.x = p.x;
             // padding rows are never seen at rest: park them hidden in their slot
-            sv.view.y = isVisibleRow(row) ? p.y - dist : p.y;
+            this.put(sv, reel, isVisibleRow(row) ? row - D.startOffsetCells : row);
             sv.view.zIndex = zOf(reel, row);
             sv.view.visible = isVisibleRow(row);
           }
@@ -333,8 +365,7 @@ export class Board implements GameModule {
           const sv = this.slots[reel][row];
           const id = board[reel][row];
           const at = colStart[reel] + (GRID.lastVisibleRow - row) * rowStagger;
-          const target = slotPos(L, reel, row).y;
-          tl.to(sv.view, { y: target, duration: s(T), ease: 'power1.in' }, s(at));
+          this.tweenRow(tl, sv, row, s(T), 'power1.in', s(at));
           if (tBlurOff - tBlur > 16) {
             tl.call(() => sv.setBlur(true), [], s(at + tBlur));
             tl.call(() => sv.setBlur(false), [], s(at + tBlurOff));
@@ -406,7 +437,6 @@ export class Board implements GameModule {
     const gen = this.gen;
     this.busy++;
     try {
-      const L = this.ctx.layout;
       const winners = new Set<SymbolView>();
       for (const w of wins) for (const p of w.positions) winners.add(this.slots[p.reel][p.row]);
       this.forVisible((sv) => {
@@ -430,7 +460,7 @@ export class Board implements GameModule {
           anims.push(sv.win());
         }
         this.spots.highlight(w.positions, color);
-        anims.push(this.outlines.show(w.positions, color, L));
+        anims.push(this.outlines.show(w.positions, color, this.ctx.layout));
         await Promise.all(anims);
       });
       await Promise.all(jobs);
@@ -530,8 +560,7 @@ export class Board implements GameModule {
             sv = this.slots[reel][src.fromRow];
           } else {
             sv = this.acquire(src.id);
-            const p = slotPos(L, reel, src.fromRow);
-            sv.view.position.set(p.x, p.y);
+            this.put(sv, reel, src.fromRow);
           }
           sv.view.zIndex = zOf(reel, row);
           // resting padding stays hidden; anything moving (incl. row 0 sliding in) shows
@@ -552,8 +581,7 @@ export class Board implements GameModule {
         moving.forEach((m, k) => {
           const at = colDelay + k * stagger(Tu.rowStagger);
           const T = fallTime((m.to - m.from) * pitch, g, TIMING.drop.minFall);
-          const target = slotPos(L, reel, m.to).y;
-          tl.to(m.sv.view, { y: target, duration: s(T), ease: 'power1.in' }, s(at));
+          this.tweenRow(tl, m.sv, m.to, s(T), 'power1.in', s(at));
           if (T - BOARD_TIMING.blurOffLead - tBlur > 16) {
             tl.call(() => m.sv.setBlur(true), [], s(at + tBlur));
             tl.call(() => m.sv.setBlur(false), [], s(at + T - BOARD_TIMING.blurOffLead));
@@ -597,15 +625,13 @@ export class Board implements GameModule {
     this.gen++;
     this.killTimelines();
     this.clearPresentation(false);
-    const L = this.ctx.layout;
     for (let reel = 0; reel < GRID.reels; reel++) {
       for (let row = 0; row < GRID.paddedRows; row++) {
         const sv = this.slots[reel][row];
-        gsap.killTweensOf(sv.view);
+        gsap.killTweensOf(this.cellOf(sv));
         sv.reset();
         sv.setSymbol(board[reel][row]);
-        const p = slotPos(L, reel, row);
-        sv.view.position.set(p.x, p.y);
+        this.put(sv, reel, row);
         sv.view.zIndex = zOf(reel, row);
         sv.view.visible = isVisibleRow(row);
       }
@@ -615,7 +641,6 @@ export class Board implements GameModule {
     this.fallOutPromise = null;
     this.fallOutTl = null;
     this.busy = 0;
-    this.pendingRefresh = false;
     this.assertConsistent('set');
   }
 
@@ -727,7 +752,7 @@ export class Board implements GameModule {
     this.unelevate(sv);
     this.dim(sv, false, false);
     if (this.anticipating.delete(sv)) sv.setAnticipation(false);
-    gsap.killTweensOf(sv.view);
+    gsap.killTweensOf(this.cellOf(sv));
     sv.reset();
     sv.view.visible = false;
     this.pool.push(sv);
@@ -763,21 +788,42 @@ export class Board implements GameModule {
 
   private done(): void {
     this.busy = Math.max(0, this.busy - 1);
-    if (!this.busy && this.pendingRefresh) this.snapAll();
   }
 
-  /** Put every slot view at its cell centre (after a layout change). */
-  private snapAll(): void {
-    const L = this.ctx.layout;
-    this.pendingRefresh = false;
-    for (let reel = 0; reel < GRID.reels; reel++) {
-      for (let row = 0; row < GRID.paddedRows; row++) {
-        const sv = this.slots[reel][row];
-        const p = slotPos(L, reel, row);
-        sv.view.position.set(p.x, this.shown ? p.y : sv.view.y);
-        sv.view.zIndex = zOf(reel, row);
-      }
+  private cellOf(sv: SymbolView): Cell {
+    let c = this.cells.get(sv);
+    if (!c) {
+      c = { reel: 0, row: 0 };
+      this.cells.set(sv, c);
     }
+    return c;
+  }
+
+  /** Draw a view at its logical cell in the CURRENT layout. */
+  private place(sv: SymbolView): void {
+    const c = this.cellOf(sv);
+    const p = slotPos(this.ctx.layout, c.reel, c.row);
+    sv.view.position.set(p.x, p.y);
+  }
+
+  /** Move a view to (reel, padded row; fractional rows sit between cells). */
+  private put(sv: SymbolView, reel: number, row: number): void {
+    const c = this.cellOf(sv);
+    c.reel = reel;
+    c.row = row;
+    this.place(sv);
+  }
+
+  /** Tween a view's logical row (duration/at in seconds, as tl.to); drawn from ctx.layout every frame. */
+  private tweenRow(
+    tl: gsap.core.Timeline,
+    sv: SymbolView,
+    row: number,
+    duration: number,
+    ease: string,
+    at: number,
+  ): void {
+    tl.to(this.cellOf(sv), { row, duration, ease, onUpdate: () => this.place(sv) }, at);
   }
 
   /** DEV: views <-> boardIds <-> positions must agree after every tumble. */

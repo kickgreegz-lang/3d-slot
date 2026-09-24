@@ -187,6 +187,7 @@ export class FreeSpins implements GameModule {
       g.on('layout:change', ({ layout }) => {
         this.counter.place(layout);
         if (this.stage.isOpen) this.stage.layout(layout);
+        this.wipe.relayout(visibleDesignRect(ctx));
       }),
       ctx.hud.on('hud:state', (st) => {
         this.autoplay = st.autoplayRemaining !== null && st.autoplayRemaining !== 0;
@@ -334,7 +335,7 @@ export class FreeSpins implements GameModule {
       gsap.to(words, { waveAmp: 6, duration: s(800), delay: land + s(F.numberSlam + F.letterIn) }),
       gsap.delayedCall(land + s(F.numberSlam + 500), () => void number.sweep(s(620))),
     );
-    if (!this.autoplay) {
+    if (!this.autoplay && this.stage.tapsAllowed) {
       tweens.push(gsap.to(hint, { alpha: 1, duration: s(300), delay: land + s(900) }));
       const pulse = { duration: s(600), delay: land + s(900), ease: 'sine.inOut', yoyo: true, repeat: -1 };
       tweens.push(scaleTo(hint.scale, 1.06, pulse));

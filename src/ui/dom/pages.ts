@@ -3,7 +3,7 @@ import type { SpeedProfile } from '../../core/timing';
 import { t } from '../../i18n';
 import { GAME_INFO } from './gameInfo';
 import { h, svg } from './h';
-import type { HudStateExt } from '../state';
+import { type HudStateExt, allowedSpeeds } from '../state';
 import { SVG_ICONS } from './svgIcons';
 
 export type MenuPage = 'paytable' | 'rules' | 'guide' | 'settings';
@@ -319,10 +319,12 @@ export const settingsPage = (deps: PageDeps): { el: HTMLElement; sync(): void } 
 
   const sync = (): void => {
     const st = deps.state();
+    const allowed = allowedSpeeds(st);
     sound.setAttribute('aria-checked', String(deps.sound()));
     segBtns.forEach((b, i) => {
       b.setAttribute('aria-pressed', String(st.turbo === speeds[i]));
-      b.disabled = !st.turboAllowed;
+      // a barred profile (disabledSuperTurbo) is disabled; disabledTurbo locks the whole row
+      b.disabled = !st.turboAllowed || !allowed.includes(speeds[i]);
     });
     turboDesc.textContent = st.turboAllowed ? t('settings.turbo.desc') : t('settings.turbo.locked');
   };

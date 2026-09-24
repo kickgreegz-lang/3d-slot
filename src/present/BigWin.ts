@@ -12,7 +12,7 @@ import type { GameEvents } from '../game/events';
 import { ensureAmountFont } from './common/fonts';
 import { GOLD, glyphBakeJobs } from './common/glyphs';
 import { OverlayStage, releaseTitlesIfIdle } from './common/OverlayStage';
-import { placementFor } from './common/placement';
+import { placementFor, visibleDesignRect } from './common/placement';
 import { Plate } from './common/Plate';
 import { label, titleLines } from './common/text';
 import { punchScale, scaleTo } from './common/anim';
@@ -301,9 +301,9 @@ export class BigWin implements GameModule {
         ctx.game.broadcast('fx:burst', { kind: 'coins', x: c.x, y: c.y + 60, count: 22, power: 1.2 });
         ctx.game.broadcast('sfx', { id: 'bigwin_tier' });
         ctx.game.broadcast('mascot:cue', { cue: 'celebrate', intensity: 0.6 + 0.1 * tier });
-        const { width, height } = ctx.app.screen;
-        const view = { stage: ctx.layers.stage, root: ctx.layers.root, width, height };
-        pulseChromatic(view, c.x, c.y, { duration: sUi(T.chroma.duration), amount: T.chroma.amount });
+        // same container as the scatter shockwave above: the two filters must never nest
+        const pulse = { target: ctx.layers.root, view: visibleDesignRect(ctx) };
+        pulseChromatic(pulse, c.x, c.y, { duration: sUi(T.chroma.duration), amount: T.chroma.amount });
       };
 
       // --- count-up ----------------------------------------------------------

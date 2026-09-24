@@ -29,6 +29,8 @@ interface Loop {
 interface Item {
   g: Graphics;
   heads: Sprite[];
+  /** cluster cells (padded rows), kept to re-trace the loops on a layout change */
+  positions: Position[];
   loops: Loop[];
   color: number;
   core: number;
@@ -71,6 +73,7 @@ export class ClusterOutlines {
     const item: Item = {
       g,
       heads,
+      positions,
       loops,
       color,
       core: mix(color, 0xffffff, 0.65),
@@ -128,6 +131,16 @@ export class ClusterOutlines {
         for (const h of it.heads) h.visible = false;
       }
     });
+  }
+
+  /** Re-trace every held outline for a new layout (device rotation while wins are shown). */
+  layout(L: LayoutSpec): void {
+    for (const it of this.items) {
+      it.loops = traceCluster(it.positions).map((l) => this.sampleLoop(l, L));
+      it.width = Math.max(2.5, L.cell * 0.03);
+      for (const h of it.heads) h.width = h.height = L.cell * 0.42;
+      this.draw(it);
+    }
   }
 
   clear(): void {

@@ -85,6 +85,7 @@ export interface FlowDevApi {
 }
 
 const positive = (v: number | undefined): number | null => (typeof v === 'number' && v > 0 ? v : null);
+const roundId = (r: RgsRound | null | undefined): number | null => r?.betID ?? r?.roundID ?? null;
 const noop = (): void => undefined;
 
 export class FlowController {
@@ -114,12 +115,18 @@ export class FlowController {
   private soundEnabled = true;
   /** session wins - bets (API units), for jurisdiction.displayNetPosition */
   private netPosition = 0;
+  /** newest round id this session knows (a new id at resync = a /play whose response was lost) */
+  private lastRoundId: number | null = null;
+  /** a round whose bet is in netPosition but whose end-round response was lost */
+  private unsettledWin: { id: number | null; win: number } | null = null;
   private sceneGameType: GameType = 'basegame';
   private sceneBoard: string[][] | null = null;
   private readonly roundWatch = new Stopwatch();
   private readonly sessionWatch: Stopwatch;
   private sessionSecond = -1;
   private pollMs = 0;
+  /** bumped when a round starts or the balance is re-read: a balance poll sent before is stale */
+  private balanceEpoch = 0;
   private messageShown = false;
   private lastHud: FlowHudState | null = null;
   private betTexts: { currency: string; texts: string[] } | null = null;
@@ -164,6 +171,7 @@ export class FlowController {
     this.applyAuth(auth);
     this.sessionWatch.restart();
     const round = auth.round;
+    this.lastRoundId = roundId(round);
     if (round?.active && Array.isArray(round.state)) {
       void this.guard(() => this.resume(round));
       return;
@@ -198,7 +206,8 @@ export class FlowController {
     this.jur = new Jurisdiction(parseJurisdiction(cfg?.jurisdiction));
     this.uninstallGuards?.();
     this.uninstallGuards = this.jur.installDomGuards();
-    if (this.jur.flags.socialCasino && !this.social) {
+    const socialSwitch = this.jur.flags.socialCasino && !this.social;
+    if (socialSwitch) {
       this.social = true;
       configureI18n({ lang: this.params.lang, social: true });
     }
@@ -211,6 +220,8 @@ export class FlowController {
     this.playerSpeed = this.jur.clampProfile(this.playerSpeed);
     setSpeedProfile(this.playerSpeed);
     this.ctx.money.setBet(this.bets.value);
+    // social wording / money are live from here: tell the HUD now (it relabels on `social`)
+    if (socialSwitch) this.broadcastState();
   }
 
   private wireUi(): void {
@@ -396,6 +407,7 @@ export class FlowController {
     }
     const res: PlayResponse = played.value;
     const round = res.round;
+    this.lastRoundId = roundId(round);
     const events = normalizeEvents(round.state);
     const policy = endRoundPolicy(round, countReveals(events));
     // single-reveal win: settle now, but HOLD the balance until the animation is over
@@ -411,17 +423,20 @@ export class FlowController {
       presentError = e;
     }
 
+    const win = typeof round.payout === 'number' ? round.payout : this.ctx.money.fromBook(playback.roundTotal);
     let finalBalance = res.balance.amount;
     try {
       if (settled) finalBalance = (await settled).balance.amount;
       else if (policy === 'afterPresentation') finalBalance = (await client.endRound()).balance.amount;
     } catch (e) {
+      // the bet is spent; the win is counted once a resync finds the round settled
+      this.netPosition -= cost;
+      this.unsettledWin = { id: roundId(round), win };
       this.needsResync = true;
       await this.finishRound(playback.roundTotal, 'idle');
       this.fail(e);
       return null;
     }
-    const win = typeof round.payout === 'number' ? round.payout : this.ctx.money.fromBook(playback.roundTotal);
     this.balance = finalBalance;
     this.netPosition += win - cost;
     await this.finishRound(playback.roundTotal, after);
@@ -473,10 +488,15 @@ export class FlowController {
     } catch (e) {
       presentError = e;
     }
+    // the bet is already counted (at /play, by resync for a lost /play) or predates this session
+    const win = typeof round.payout === 'number' ? round.payout : this.ctx.money.fromBook(playback.roundTotal);
     try {
       const final = settled ? await settled : policy === 'afterPresentation' ? await client.endRound() : await client.balance();
       this.balance = final.balance.amount;
+      this.netPosition += win;
+      this.unsettledWin = null;
     } catch (e) {
+      this.unsettledWin = { id: roundId(round), win };
       this.needsResync = true;
       await this.finishRound(playback.roundTotal, 'idle');
       this.fail(e);
@@ -504,12 +524,35 @@ export class FlowController {
     }
     this.needsResync = false;
     this.balance = auth.balance.amount;
+    this.balanceEpoch += 1;
+    this.reconcileNet(auth.round);
     if (auth.round?.active && Array.isArray(auth.round.state)) {
       await this.resume(auth.round);
       return true;
     }
     this.to('idle');
     return false;
+  }
+
+  /**
+   * displayNetPosition after lost responses: count the bet of a /play the RGS took but
+   * whose response never arrived (a round id this session has not seen; its win, if
+   * still open, is counted by resume), and the win of a round whose end-round response
+   * was lost but which the RGS has settled since.
+   */
+  private reconcileNet(round: RgsRound | null): void {
+    const id = roundId(round);
+    if (round && id !== this.lastRoundId) {
+      this.lastRoundId = id;
+      const mode = (round.mode ?? BASE_MODE).toUpperCase();
+      this.netPosition -= Math.round((round.amount ?? 0) * modeCost(this.modes, mode));
+      if (!round.active) this.netPosition += round.payout ?? 0;
+    }
+    const pending = this.unsettledWin;
+    if (pending && !(round?.active && id === pending.id)) {
+      this.netPosition += pending.win;
+      this.unsettledWin = null;
+    }
   }
 
   private newPlayback(): RoundPlayback {
@@ -523,6 +566,7 @@ export class FlowController {
     this.hudWin = 0;
     this.freeSpins = null;
     this.pollMs = 0;
+    this.balanceEpoch += 1;
   }
 
   private endRoundCleanup(): void {
@@ -536,8 +580,7 @@ export class FlowController {
   private async finishRound(totalWin: number, after: FlowState): Promise<void> {
     this.broadcastState();
     await this.ctx.game.broadcastAsync('round:end', { totalWin });
-    const left = this.jur.minimumRoundMs - this.roundWatch.elapsedMs;
-    if (left > 0) await clock.waitUi(left);
+    await this.roundWatch.reached(this.jur.minimumRoundMs);
     this.endRoundCleanup();
     this.freeSpins = null;
     this.to(after);
@@ -740,10 +783,12 @@ export class FlowController {
     this.pollMs = 0;
     const client = this.client;
     if (!client || this.state !== 'idle' || this.replay) return;
+    const epoch = this.balanceEpoch;
     client
       .balance()
       .then((r) => {
-        if (this.state !== 'idle') return;
+        // a round (or resync) since the request makes this answer stale
+        if (this.state !== 'idle' || epoch !== this.balanceEpoch) return;
         this.balance = r.balance.amount;
         this.broadcastState();
       })

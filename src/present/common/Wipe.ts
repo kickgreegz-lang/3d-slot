@@ -18,9 +18,13 @@ const STRIPE_GAP = 10;
 const SLANT = Math.tan((20 * Math.PI) / 180);
 const BODY = 0x0b0620;
 
+type Stop = 'start' | 'cover' | 'end';
+
 export class Wipe extends Container {
   private g = new Graphics();
-  private geo = { start: 0, cover: 0, end: 0 };
+  private geo: Record<Stop, number> = { start: 0, cover: 0, end: 0 };
+  /** current sweep leg: x = geo[from] -> geo[to] at progress u (survives a rebuild) */
+  private leg: { from: Stop; to: Stop; u: number } = { from: 'start', to: 'start', u: 1 };
   private tween: gsap.core.Tween | null = null;
 
   constructor(private bodyAlpha = 0.88) {
@@ -63,21 +67,37 @@ export class Wipe extends Container {
   coverIn(view: Rect, duration: number): Promise<void> {
     this.build(view);
     this.visible = true;
-    this.x = this.geo.start;
-    return this.to(this.geo.cover, duration, 'power2.inOut');
+    return this.to('start', 'cover', duration, 'power2.inOut');
   }
 
   /** Continue the sweep off the right edge, revealing what is underneath. */
   coverOut(duration: number): Promise<void> {
-    return this.to(this.geo.end, duration, 'power2.inOut').then(() => {
+    return this.to('cover', 'end', duration, 'power2.inOut').then(() => {
       this.visible = false;
     });
   }
 
-  private to(x: number, duration: number, ease: string): Promise<void> {
+  /**
+   * New visible rect (resize / rotation) while showing: rebuild the band for it and
+   * keep the running sweep (and its promise) at the same progress.
+   */
+  relayout(view: Rect): void {
+    if (!this.visible) return;
+    this.build(view);
+    this.place();
+  }
+
+  private place(): void {
+    const { from, to, u } = this.leg;
+    this.x = this.geo[from] + (this.geo[to] - this.geo[from]) * u;
+  }
+
+  private to(from: Stop, to: Stop, duration: number, ease: string): Promise<void> {
     this.tween?.kill();
+    const leg = (this.leg = { from, to, u: 0 });
+    this.place();
     return new Promise((resolve) => {
-      this.tween = gsap.to(this, { x, duration, ease, onComplete: () => resolve() });
+      this.tween = gsap.to(leg, { u: 1, duration, ease, onUpdate: () => this.place(), onComplete: () => resolve() });
     });
   }
 }

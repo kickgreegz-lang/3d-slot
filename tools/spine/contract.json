@@ -40,7 +40,8 @@
   ],
   "animations": {
     "idle":               { "loop": true,  "frames": [60, 120], "required": ["high", "special"], "events": [] },
-    "land":               { "loop": false, "frames": [9, 15],   "required": ["high", "special"], "events": ["land_impact"], "endsAtSetup": true, "inCell": true },
+    "land":               { "loop": false, "frames": [9, 15],   "required": ["high", "special"], "events": ["land_impact"], "endsAtSetup": true, "inCell": true,
+                            "squash": { "bone": "squash", "sy": [0.83, 0.87], "gate": [0.80, 0.88], "volumeTol": 0.03 } },
     "win":                { "loop": false, "frames": [18, 27],  "required": ["high", "special"], "events": ["win_peak"], "endsAt": "win_loop" },
     "win_loop":           { "loop": true,  "frames": [30, 60],  "required": ["high", "special"], "events": [] },
     "anticipation":       { "loop": true,  "frames": [12, 24],  "required": ["special"], "events": [] },
@@ -55,7 +56,7 @@
     "fx_glow":            { "loop": true,  "frames": [1, 120],  "required": [], "events": [], "overlay": 1 }
   },
   "runtimeAliases": {
-    "$comment": "Names the CURRENT runtime (src/symbols/SpinePool.ts) listens for until ANIMATION_CONTRACT section 10 items 1-2 land. gen.py emits them only with compat.runtime_aliases: true.",
+    "$comment": "Legacy runtime names. src/symbols/SpinePool.ts (SPINE_EVENT / SPINE_ANIM) now accepts both these and the contract names, so new rigs do not need them; gen.py emits them only with compat.runtime_aliases: true (older runtimes).",
     "animations": { "anticipation_loop": "anticipation" },
     "events": { "impact": "land_impact", "burst": "explode_burst" }
   },

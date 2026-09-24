@@ -35,6 +35,8 @@ const cases = [
   ['curve arity', (d) => { d.animations.land.bones.squash.scale[0].curve = d.animations.land.bones.squash.scale[0].curve.slice(0, 4); }, /expected 8/],
   ['missing event', (d) => { d.animations.land.events = d.animations.land.events.filter((e) => e.name !== 'land_impact'); }, /land_impact/],
   ['loop seam', (d) => { const k = d.animations.idle.bones.squash.scale; k[k.length - 1].y = 1.05; }, /loop seam/],
+  ['land squash too shallow', (d) => { for (const k of d.animations.land.bones.squash.scale) { delete k.curve; if ((k.y ?? 1) < 1) k.y = 0.95; } }, /peak squash sy 0\.950 .*feel gate/],
+  ['land squash too deep', (d) => { for (const k of d.animations.land.bones.squash.scale) { delete k.curve; if ((k.y ?? 1) < 0.9) k.y = 0.7; } }, /peak squash sy 0\.700 .*feel gate/],
   ['out of cell', (d) => { for (const k of d.animations.land.bones.squash.scale) k.y = Math.max(k.y ?? 1, 1.25); }, /leaves the 300x300 cell/],
   ['missing required animation', (d) => { delete d.animations.win_loop; }, /missing required animation "win_loop"/],
   ['win too long', (d) => { const k = d.animations.win.bones.body.scale; k[k.length - 1].time = 1.0; }, /frames outside the contract window|TIMING\.win/],

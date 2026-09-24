@@ -3,7 +3,7 @@
  * Spine 4.3 symbol-skeleton contract validator (ANIMATION_CONTRACT sections 2-4), on the
  * OFFICIAL runtime @esotericsoftware/spine-core 4.3.13 — the same code the game ships.
  *
- *   node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind auto|high|special|any]
+ *   node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind auto|high|special|royal|any]
  *        [--cell 300] [--kick 26] [--report <out.json>] [--strict] [--quiet] [--help]
  *
  * Static checks (raw JSON): 4.3 header + unified root `constraints[]` in IK -> transform ->
@@ -18,8 +18,10 @@
  *   NaN in bones/slots/vertices while stepping with physics at 60 Hz until 2 frames past the
  *   end (last-frame events fire on the next update), required events fired, event frames,
  *   loop seams sampled with loop=false (first pose == last pose), win end == win_loop start,
- *   land/appear/anticipation_out end on the setup pose, explode ends at alpha 0, and `land`
- *   stays inside the cell (+-cell/2 skeleton units) with the runtime's physics kick applied.
+ *   land/appear/anticipation_out end on the setup pose, explode ends at alpha 0, `land`
+ *   squashes the `squash` bone to sy 0.83-0.87 (error outside the 0.80-0.88 feel gate; warning
+ *   when sx != 1/sqrt(sy)), and `land` stays inside the cell (+-cell/2 skeleton units) with the
+ *   runtime's physics kick applied.
  * --kind auto: sym_W / sym_S -> special, other sym_H* -> high, sym_L* -> royal (nothing
  *   required), anything else -> special (strictest). Exit 0 = pass (warnings allowed unless
  *   --strict), 1 = contract failure, 2 = usage / unreadable input.
@@ -444,6 +446,34 @@ if (data) {
       const d = poseDiff(last, sample(data.findAnimation(rule.endsAt), 0));
       if (d.d > TOL) err(`${anim.name}: last pose != first pose of ${rule.endsAt} (diff ${d.d.toFixed(3)}, ${d.why}); the mix must be able to be 0`);
     }
+    if (rule.squash) {
+      // ANIMATION_CONTRACT 3 (land): squash on the `squash` bone to sy 0.83-0.87 with sx = 1/sqrt(sy);
+      // 9 feel gate: peak squash 0.80-0.88. Keyed pose sampled at 60 Hz (bezier extremes included).
+      const q = rule.squash;
+      const bd = data.findBone(q.bone);
+      if (!bd) err(`${anim.name}: squash bone "${q.bone}" missing`);
+      else {
+        const s0x = bd.setupPose.scaleX || 1;
+        const s0y = bd.setupPose.scaleY || 1;
+        let peak = { sy: Infinity, sx: 1, frame: 0 };
+        const n = Math.ceil(anim.duration * 60 - 1e-6);
+        for (let i = 0; i <= n; i++) {
+          const t = Math.min(anim.duration, i / 60);
+          const s = new spine.Skeleton(data);
+          s.setupPose();
+          anim.apply(s, t, t, false, null, 1, spine.MixFrom.setup, false, false, false);
+          const p = s.findBone(q.bone).pose;
+          if (p.scaleY / s0y < peak.sy) peak = { sy: p.scaleY / s0y, sx: p.scaleX / s0x, frame: Math.round(t * FPS * 100) / 100 };
+        }
+        rep.squash = { sy: Math.round(peak.sy * 1e4) / 1e4, sx: Math.round(peak.sx * 1e4) / 1e4, frame: peak.frame };
+        const out = (r) => peak.sy < r[0] - 1e-3 || peak.sy > r[1] + 1e-3;
+        if (out(q.gate)) err(`${anim.name}: peak squash sy ${peak.sy.toFixed(3)} on bone "${q.bone}" is outside the feel gate ${q.gate.join('-')} (contract ${q.sy.join('-')})`);
+        else if (out(q.sy)) warn(`${anim.name}: peak squash sy ${peak.sy.toFixed(3)} is outside the contract ${q.sy.join('-')} (gate ${q.gate.join('-')})`);
+        const vol = 1 / Math.sqrt(peak.sy);
+        if (Number.isFinite(vol) && Math.abs(peak.sx - vol) > q.volumeTol)
+          warn(`${anim.name}: squash sx ${peak.sx.toFixed(3)} at the peak != 1/sqrt(sy) = ${vol.toFixed(3)} (volume preservation)`);
+      }
+    }
     if (rule.endsAlpha0) {
       const s = new spine.Skeleton(data);
       s.setupPose();
@@ -468,7 +498,8 @@ if (!quiet || !ok) {
   for (const [n, r] of Object.entries(report.animations)) {
     const ev = r.events.map((e) => `${e.name}@${e.frame}${e.string ? `(${e.string})` : ''}`).join(' ');
     const e = r.maxExtent;
-    lines.push(`  anim  ${n.padEnd(19)} ${String(r.frames).padStart(5)} f ${r.loop ? 'loop' : '    '}${r.seam !== undefined ? ` seam ${r.seam}` : ''}  x ${e.x0}..${e.x1} y ${e.y0}..${e.y1}${ev ? `  events ${ev}` : ''}`);
+    const sq = r.squash ? `  squash sy ${r.squash.sy} sx ${r.squash.sx} @${r.squash.frame}` : '';
+    lines.push(`  anim  ${n.padEnd(19)} ${String(r.frames).padStart(5)} f ${r.loop ? 'loop' : '    '}${r.seam !== undefined ? ` seam ${r.seam}` : ''}  x ${e.x0}..${e.x1} y ${e.y0}..${e.y1}${sq}${ev ? `  events ${ev}` : ''}`);
   }
   for (const w of warnings) lines.push(`  WARN  ${w}`);
   for (const e of errors) lines.push(`  FAIL  ${e}`);

@@ -1,9 +1,12 @@
 import { GAME_META, spotTier } from '../config/game';
 import { clock } from '../core/clock';
 import { TIMING, s } from '../core/timing';
+import type { GameType } from '../book/types';
 import type { GameContext, GameModule } from '../game/context';
 import type { GameEvents, SfxId } from '../game/events';
 import { AudioEngine, type PlayOpts } from './engine';
+import type { MusicStem } from './manifest';
+import { AUDIO_TIMING } from './mix';
 
 /** localStorage key + encoding of the player's sound choice — shared with ui/dom/DomUi ('on' | 'off'). */
 const PREF_KEY = `${GAME_META.storagePrefix}.sound`;
@@ -40,6 +43,9 @@ const writePref = (on: boolean): void => {
  *      bigwin:show               big-win groove / stem + duck; bigwin_tier escalates
  *      fs:trigger                duck under the trigger fanfare
  *      mode:change               base <-> free-game music (bar-quantised)
+ *      music:stem                a game's feature variant ('megamix') over the gameType stem
+ *  - bass_charge carries its span (the charge length, speed-scaled) so the riser and the
+ *    music's high-pass sweep end on the boom in every speed profile.
  *  - 'ui:sound' toggles sound (persisted); hidden tabs suspend the context.
  *  - The AudioContext is created on the first real user gesture (no autoplay warnings).
  */
@@ -50,6 +56,8 @@ export class Sound implements GameModule {
   private spotTierNow = 1;
   private bigwinStep = 0;
   private winLevel = 0;
+  private gameType: GameType = 'basegame';
+  private musicVariant: MusicStem | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.engine = new AudioEngine({ lowTier: ctx.tier === 'low', enabled: readPref() });
@@ -92,7 +100,13 @@ export class Sound implements GameModule {
         e.duck(SCENE_DUCK.fsTrigger.db, SCENE_DUCK.fsTrigger.hold);
       }),
       game.on('mode:change', ({ gameType }) => {
-        e.setMode(gameType === 'freegame' ? 'freegame' : 'base');
+        this.gameType = gameType;
+        if (gameType === 'basegame') this.musicVariant = null;
+        this.applyMusic();
+      }),
+      game.on('music:stem', ({ stem }) => {
+        this.musicVariant = stem;
+        this.applyMusic();
       }),
       game.on('round:end', () => {
         this.cascade = 0;
@@ -123,6 +137,10 @@ export class Sound implements GameModule {
     this.engine.setHidden(document.hidden);
   };
 
+  private applyMusic(): void {
+    this.engine.setMode(this.musicVariant ?? (this.gameType === 'freegame' ? 'freegame' : 'base'));
+  }
+
   private onSfx(p: GameEvents['sfx']): void {
     if (p.id === 'bigwin_tier') this.bigwinStep++;
     const opts: PlayOpts = {
@@ -130,6 +148,7 @@ export class Sound implements GameModule {
       rate: p.rate,
       step: this.stepFor(p.id),
       period: s(TIMING.anticipation.pulsePeriod),
+      span: s(AUDIO_TIMING.chargeSpan * 1000),
     };
     const fire = (): void => {
       this.engine.play(p.id, opts);

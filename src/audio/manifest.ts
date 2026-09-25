@@ -9,7 +9,7 @@ import type { SfxId } from '../game/events';
  *   sfx:   one URL, or several round-robin variations, per SfxId.
  *          'anticipation_loop' should be a seamless loop (it is played looped).
  *   music: loopable stems, streamed through <audio> elements (never decoded to PCM,
- *          which keeps iOS memory low) and crossfaded base <-> freegame <-> bigwin.
+ *          which keeps iOS memory low) and crossfaded base <-> freegame <-> megamix <-> bigwin.
  *
  * Format alternatives: end a URL with `.{ogg,m4a}` (AssetPack emits both); the first
  * extension the browser can play is chosen and ONLY that file is requested.
@@ -18,7 +18,11 @@ import type { SfxId } from '../game/events';
  *   sfx: { land_heavy: ['./assets/audio/sfx/land_heavy_1.{ogg,m4a}', './assets/audio/sfx/land_heavy_2.{ogg,m4a}'] },
  *   music: { base: './assets/audio/music/base.{ogg,m4a}' },
  */
-export type MusicStem = 'base' | 'freegame' | 'bigwin';
+/**
+ * base / freegame follow the round's gameType; 'megamix' is a hotter feature variant a game
+ * selects with 'music:stem' (Bass Drop's Mega Mix, 112 BPM); bigwin plays over everything.
+ */
+export type MusicStem = 'base' | 'freegame' | 'megamix' | 'bigwin';
 
 export interface AudioManifest {
   sfx: Partial<Record<SfxId, string | readonly string[]>>;

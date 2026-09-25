@@ -1,5 +1,5 @@
 import type { SfxId } from '../game/events';
-import { type AudioGraph, audioTimer, createGraph, dbToGain, rampFreqTo, rampTo } from './graph';
+import { type AudioGraph, MUSIC_HP_OPEN, audioTimer, busNode, createGraph, dbToGain, rampFreqTo, rampTo } from './graph';
 import { AUDIO_MANIFEST, type AudioManifest, type MusicStem, musicUrls, sfxUrls } from './manifest';
 import { AUDIO_TIMING, SFX_RULES, VOLUME_JITTER_DB } from './mix';
 import { Groove } from './music';
@@ -14,6 +14,8 @@ export interface PlayOpts {
   step?: number;
   /** anticipation heartbeat period (s) */
   period?: number;
+  /** length (s, speed-scaled) of a riser / sweep: bass_charge's music sweep and voice */
+  span?: number;
 }
 
 interface GroupState {
@@ -43,6 +45,8 @@ type AudioContextCtor = new (opts?: AudioContextOptions) => AudioContext;
  *    nothing renders, the music clock stops, and it resumes seamlessly.
  *  - Voice limiting per group (max concurrent, min gap, priority), random pitch
  *    and level spread per play, music ducking and the anticipation filter.
+ *  - Hero sounds (bass boom) duck every other SFX, cut their riser and snap the music's
+ *    charge sweep (high-pass + duck) open with a downbeat accent (SfxRule duckSfx/cuts/music).
  *  - Production files from manifest.ts replace synth voices / the groove per id.
  */
 export class AudioEngine {
@@ -63,6 +67,11 @@ export class AudioEngine {
   private anticipating = false;
   private duckDb = 0;
   private duckUntil = 0;
+  private sfxDuckDb = 0;
+  private sfxDuckUntil = 0;
+  /** a bass-drop charge sweep holds the music high-pass + duck */
+  private charging = false;
+  private chargeGen = 0;
   private listening = false;
   private pumping = false;
 
@@ -326,23 +335,85 @@ export class AudioEngine {
     this.applyDuck();
   }
 
-  private applyDuck(): void {
+  private applyDuck(attack: number = AUDIO_TIMING.duckAttack): void {
     const ac = this.ac;
     const g = this.g;
     if (!ac || !g) return;
     const now = ac.currentTime;
-    const base = this.anticipating ? dbToGain(AUDIO_TIMING.anticipationDuckDb) : 1;
+    let base = this.anticipating ? dbToGain(AUDIO_TIMING.anticipationDuckDb) : 1;
+    if (this.charging) base = Math.min(base, dbToGain(AUDIO_TIMING.chargeDuckDb));
     const p = g.musicDuck.gain;
     p.cancelScheduledValues(now);
     p.setValueAtTime(p.value, now);
     if (this.duckUntil > now) {
       const target = Math.min(base, dbToGain(this.duckDb));
-      p.linearRampToValueAtTime(target, now + AUDIO_TIMING.duckAttack);
-      p.setValueAtTime(target, Math.max(now + AUDIO_TIMING.duckAttack, this.duckUntil));
-      p.linearRampToValueAtTime(base, Math.max(now + AUDIO_TIMING.duckAttack, this.duckUntil) + AUDIO_TIMING.duckRelease);
+      p.linearRampToValueAtTime(target, now + attack);
+      p.setValueAtTime(target, Math.max(now + attack, this.duckUntil));
+      p.linearRampToValueAtTime(base, Math.max(now + attack, this.duckUntil) + AUDIO_TIMING.duckRelease);
     } else {
-      p.linearRampToValueAtTime(base, now + AUDIO_TIMING.duckAttack * 2);
+      p.linearRampToValueAtTime(base, now + attack * 2);
     }
+  }
+
+  /** Dip every SFX / UI voice (not music, not the hero bus) by `db` for `hold` s. */
+  duckSfx(db: number, hold: number): void {
+    const ac = this.ac;
+    const g = this.g;
+    if (!ac || !g) return;
+    const now = ac.currentTime;
+    this.sfxDuckDb = now < this.sfxDuckUntil ? Math.min(this.sfxDuckDb, db) : db;
+    this.sfxDuckUntil = Math.max(this.sfxDuckUntil, now + hold);
+    const A = AUDIO_TIMING;
+    const target = dbToGain(this.sfxDuckDb);
+    const p = g.sfxDuck.gain;
+    p.cancelScheduledValues(now);
+    p.setValueAtTime(p.value, now);
+    p.linearRampToValueAtTime(target, now + A.sfxDuckAttack);
+    const until = Math.max(now + A.sfxDuckAttack, this.sfxDuckUntil);
+    p.setValueAtTime(target, until);
+    p.linearRampToValueAtTime(1, until + A.sfxDuckRelease);
+  }
+
+  /**
+   * Bass-drop charge: the music high-passes chargeHpFrom -> chargeHpTo and ducks chargeDuckDb
+   * over `span` s, holding until a drop (or chargeSafety s after the span).
+   */
+  private chargeMusic(span: number): void {
+    const ac = this.ac;
+    const g = this.g;
+    if (!ac || !g) return;
+    const A = AUDIO_TIMING;
+    const now = ac.currentTime;
+    const dur = Math.max(0.05, span);
+    const gen = ++this.chargeGen;
+    this.charging = true;
+    const hp = g.musicHp.frequency;
+    hp.cancelScheduledValues(now);
+    hp.setValueAtTime(Math.max(MUSIC_HP_OPEN, Math.min(hp.value, A.chargeHpFrom)), now);
+    hp.exponentialRampToValueAtTime(A.chargeHpFrom, now + 0.01);
+    hp.exponentialRampToValueAtTime(A.chargeHpTo, now + dur);
+    this.applyDuck(dur);
+    audioTimer(ac, ac.destination, dur + A.chargeSafety, () => {
+      if (gen === this.chargeGen && this.charging) this.releaseCharge(A.duckRelease);
+    });
+  }
+
+  /** Open the charge sweep (a drop snaps it; the safety timeout eases it). */
+  private releaseCharge(fade: number): void {
+    const ac = this.ac;
+    const g = this.g;
+    if (!ac || !g || !this.charging) return;
+    this.charging = false;
+    rampFreqTo(g.musicHp.frequency, MUSIC_HP_OPEN, ac.currentTime, fade);
+    this.applyDuck(fade);
+  }
+
+  /** The drop: the charge snaps open and the groove answers with a downbeat accent. */
+  private dropMusic(): void {
+    const ac = this.ac;
+    if (!ac) return;
+    this.releaseCharge(AUDIO_TIMING.dropSnap);
+    this.groove?.accent(ac.currentTime + AHEAD);
   }
 
   private setAnticipation(on: boolean): void {
@@ -388,7 +459,9 @@ export class AudioEngine {
     rate *= 1 + (this.random() * 2 - 1) * rule.pitchJitter;
     const volume = clamp(o.volume ?? 1, 0, 2) * rule.gain * dbToGain((this.random() * 2 - 1) * VOLUME_JITTER_DB);
     const t = now + AHEAD;
-    const v = new Voice(ac, rule.bus === 'ui' ? g.ui : g.sfx, g.reverbIn, g.noise, t, this.random);
+    if (rule.cuts) for (const cut of this.groups.get(rule.cuts)?.voices ?? []) cut.release(now, AUDIO_TIMING.cutFade);
+    const span = o.span ?? AUDIO_TIMING.chargeSpan;
+    const v = new Voice(ac, busNode(g, rule.bus), g.reverbIn, g.noise, t, this.random);
     v.level.gain.value = volume;
 
     const bufs = this.buffers.get(id);
@@ -397,7 +470,7 @@ export class AudioEngine {
       const isLoop = id === 'anticipation_loop';
       v.buffer(v.out, buf, t, rate, isLoop, isLoop ? AUDIO_TIMING.anticipationMax : Infinity);
     } else {
-      SYNTH_VOICES[id](v, { t, r: rate, step: Math.max(0, step), period: o.period ?? 0.52 });
+      SYNTH_VOICES[id](v, { t, r: rate, step: Math.max(0, step), period: o.period ?? 0.52, span });
     }
     st.voices.push(v);
     v.finish(() => {
@@ -414,6 +487,9 @@ export class AudioEngine {
       this.setAnticipation(true);
     }
     if (rule.duck) this.duck(rule.duck.db, rule.duck.holdMs / 1000);
+    if (rule.duckSfx) this.duckSfx(rule.duckSfx.db, rule.duckSfx.holdMs / 1000);
+    if (rule.music === 'charge') this.chargeMusic(span);
+    else if (rule.music === 'drop') this.dropMusic();
     return v;
   }
 
@@ -450,6 +526,7 @@ export class AudioEngine {
       music: this.stems?.current ?? this.groove?.current ?? null,
       grooveRunning: this.groove?.isRunning ?? false,
       anticipating: this.anticipating,
+      charging: this.charging,
       voices,
       buffers: this.buffers.size,
       time: this.ac?.currentTime ?? 0,

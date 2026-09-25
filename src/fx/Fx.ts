@@ -14,7 +14,12 @@ import { ScreenShake } from './shake';
 
 /** Local FX tuning (candidates for TIMING.fx — see contract requests). */
 export const FX_TIMING = registerTiming('fx', {
-  flash: { defaultDuration: 150, defaultAlpha: 0.35 },
+  /**
+   * Full-screen flashes. Limiter (CR-7, photosensitivity): at most `maxPerSecond` flash
+   * starts in any 1 s window of wall time AND at least `minGap` ms between two starts;
+   * a flash over the limit is DROPPED (never queued).
+   */
+  flash: { defaultDuration: 150, defaultAlpha: 0.35, maxPerSecond: 3, minGap: 334 },
   /** scatter hit: displacement ring on the whole design space */
   scatterShock: { duration: 560, radius: 540, amplitude: 22, width: 150 },
 } as const);
@@ -25,6 +30,7 @@ export const FX_TIMING = registerTiming('fx', {
  *   'fx:burst'  {kind,x,y,color?,count?,power?} -> layered particle preset at design (root) coords
  *   'fx:shake'  {trauma}                        -> trauma-based camera shake on layers.root
  *   'fx:flash'  {color?,alpha?,durationMs?}     -> additive full-screen flash in layers.screenFx
+ *                                                  (limiter: <= 3 starts/s, >= 334 ms apart; excess dropped)
  *
  * Everything advances on `clock.onUpdate`, so hit-stop freezes particles and shake.
  */
@@ -33,6 +39,10 @@ export class Fx implements GameModule {
   private shake: ScreenShake;
   private flash!: Sprite;
   private flashTween: gsap.core.Tween | null = null;
+  /** wall-clock starts (s, clock.realTime) of the last accepted flashes, oldest first */
+  private readonly flashStarts: number[] = [];
+  /** DEV/QA read-out of the limiter */
+  readonly flashStats = { shown: 0, dropped: 0 };
   private burstCtx!: BurstContext;
   private textures = new Map<ParticleKey, Texture>();
   private offs: Array<() => void> = [];
@@ -128,7 +138,24 @@ export class Fx implements GameModule {
     }
   }
 
+  /** Flash limiter: true when a flash may start now (and records it). */
+  private admitFlash(): boolean {
+    const F = FX_TIMING.flash;
+    const now = clock.realTime;
+    const starts = this.flashStarts;
+    while (starts.length && now - (starts[0] ?? 0) >= 1) starts.shift();
+    const last = starts[starts.length - 1];
+    if (starts.length >= F.maxPerSecond || (last !== undefined && (now - last) * 1000 < F.minGap - 0.5)) {
+      this.flashStats.dropped++;
+      return false;
+    }
+    starts.push(now);
+    this.flashStats.shown++;
+    return true;
+  }
+
   private doFlash(p: GameEvents['fx:flash']): void {
+    if (!this.admitFlash()) return;
     const f = this.flash;
     const alpha = p.alpha ?? FX_TIMING.flash.defaultAlpha;
     this.flashTween?.kill();

@@ -117,9 +117,15 @@ export type CoreGameEvents = {
    * settled. Cells already showing the id are left alone (so a follow-up transform is a
    * cheap reconcile). Styles:
    *   'drop'   the new symbol falls into the cell from above the grid and smashes the old one;
-   *   'impact' the old symbol is crushed NOW; TIMING.explode.anticipateDuration (s()-scaled)
-   *            later the new one is placed with a heavy impact squash (a caller flying its own
-   *            proxy calls this at contact - anticipateDuration and hides the proxy then);
+   *   'impact' the old symbol is crushed NOW (explode, fx power 0.6, `symbol_crush`, NO
+   *            board:burst / orb); TIMING.explode.anticipateDuration (s()-scaled) later the new
+   *            one is placed with a heavy impact (sy 0.72 at f1, 1.10 at f5, settled by f15 —
+   *            or the rig's `drop_impact`) and the 4 orthogonal neighbours are pushed out
+   *            6 x k px and spring back over 200 ms; resolves when settled (~330 ms normal).
+   *            Never staggered, and it also replaces a cell that already shows the id.
+   *            A caller flying its own proxy calls it at contact - anticipateDuration, hides
+   *            the proxy at contact and plays the contact feedback itself (impact SFX, dust /
+   *            flipbook, shake, hit-stop, board:thump, mascot cue): the Board adds none;
    *   'morph'  swap in place with a sparkle pop;
    *   'set'    instant, no fanfare (resume / replay).
    */
@@ -127,30 +133,46 @@ export type CoreGameEvents = {
   /**
    * Hang (display) or remove (null) a decoration `key` on the symbol view at a padded cell
    * (multiplier badges, sticky clamps, tags). It follows that VIEW - through tumble falls,
-   * squash and win pops - not the cell. The Board detaches it (removeFromParent, never
-   * destroys it) when the view is recycled after an explode or a fall-out; owners check
-   * `display.parent` or re-attach. Synchronous: fire with ctx.game.emit.
+   * squash and win pops - not the cell. The display lives in the view's `decor` holder:
+   * design px with the origin at the cell centre (at rest), above the art, sharing the
+   * symbol's dim tint, fading with its explode. The same key replaces the previous display.
+   * The Board detaches it (removeFromParent, never destroys it) when the view is recycled:
+   * after an explode, at a fall-out, board:set, or a symbol swap (transform 'set' / 'morph').
+   * Owners check `display.parent` or re-attach, and re-size on layout:change.
+   * Synchronous: fire with ctx.game.broadcast.
    */
   'board:decorate': { reel: number; row: number; key: string; display: Container | null };
-  /** Grid container dips `px` design px (x k) and springs back (wild impacts, booms). */
+  /**
+   * Grid container dips `px` design px (x k, k = pitch / 154) and springs back (9 Hz, zeta 0.5:
+   * peak ~21 ms, settled ~150 ms); overlapping thumps stack. Reduced motion: x 0.3.
+   */
   'board:thump': { px: number };
   /**
-   * Board-wide reaction wave: every visible symbol hops (sy ~0.95) with an onset delay of
-   * `perPxMs` x its distance (design px) from (x, y), capped at `capMs`. power 0..1.
+   * Board-wide reaction wave: every visible symbol hops (sy ~0.95, 8 frames; Spine rigs play
+   * `bass_react` on track 1) with an onset delay of `perPxMs` x its distance (design px) from
+   * (x, y), capped at `capMs` (s()-scaled). Additive: safe mid-land / mid-win. power 0..1.
    */
   'board:react': { x: number; y: number; perPxMs: number; capMs: number; power?: number };
-  /** Dim every visible symbol except `cells` (tint), or restore all (cells null). */
+  /**
+   * Dim every visible symbol except `cells` toward `tint` (default 0xcccccc, 170 ms), or
+   * restore all (cells null). A second dim channel: the darker of it and the win dim shows.
+   * Also cleared by a fall-out and board:set.
+   */
   'board:focus': { cells: Position[] | null; tint?: number };
   /**
-   * Hold set for the NEXT fall-out (CR-10b): these padded cells stay in place while the
-   * rest falls out, if they still show `id`; the next reveal skips their drop-in when its
-   * id matches. Cleared after that reveal (or with an empty list).
+   * Hold set for the NEXT fall-out (CR-10b): these padded cells stay in place (idle, drawn
+   * above the falling symbols, decorations kept) while the rest falls out, if their view
+   * still shows `id` when the fall-out starts; the next reveal skips their drop-in when its
+   * id matches (a mismatch drops in normally). The request is consumed by that fall-out
+   * (emit it again for every spin, before the reveal: e.g. on fs:update) and the held set
+   * ends with that reveal; an empty list cancels a pending request. Tumbles never use it.
    */
   'board:hold': { cells: Array<Position & { id: string }> };
   /**
    * Emitted BY the Board (not the flow) during 'board:tumble', at the explode-burst frame
-   * (explode start + TIMING.explode.anticipateDuration): the exploding positions whose
-   * burst is happening now. Orbs, link snaps and count pops sync to it.
+   * (explode start + TIMING.explode.anticipateDuration, s()-scaled, slam-safe), once per
+   * tumble with every exploding position, just before the explode hit-stop starts. Never
+   * for 'impact' crushes. Orbs, link snaps and count pops sync to it. Synchronous.
    */
   'board:burst': { positions: Position[] };
 
@@ -183,7 +205,18 @@ export type CoreGameEvents = {
   /** Base <-> free-game presentation switch (background, music, spot panel). */
   'mode:change': { gameType: GameType };
 
-  'mascot:cue': { cue: MascotCue; intensity?: number };
+  /**
+   * Mascot reaction. `intensity` scales it (cue-specific: meterThreshold = notch / 6,
+   * featureLock 1 = 40 / 2 = 60, meterHeat 0 = heat off). `look` (design px, optional) turns
+   * both heads toward a point for the cue (the meter on bassDropCharge / meter cues).
+   */
+  'mascot:cue': { cue: MascotCue; intensity?: number; look?: { x: number; y: number } };
+  /**
+   * Feature music variant on top of the gameType stem (Bass Drop's Mega Mix: 'megamix',
+   * 112 BPM, switched on the next bar); null returns to the gameType stem. A switch back to
+   * the base game (mode:change basegame) clears it. Games without variants never emit it.
+   */
+  'music:stem': { stem: 'megamix' | null };
   'sfx': { id: SfxId; volume?: number; rate?: number; delayMs?: number };
   /** Add trauma (0..1) to the camera shake. */
   'fx:shake': { trauma: number };

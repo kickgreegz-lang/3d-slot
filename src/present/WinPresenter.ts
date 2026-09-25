@@ -1,8 +1,9 @@
 import { gsap } from 'gsap';
 import { BitmapText, Container, Sprite } from 'pixi.js';
-import type { ClusterWin } from '../book/types';
-import { SYMBOLS, toSpotRow } from '../config/game';
+import type { ClusterWin, Position } from '../book/types';
+import { FEATURES, SYMBOLS, toSpotRow } from '../config/game';
 import { cellCenter, gridSize, type LayoutSpec } from '../config/layout';
+import { clock } from '../core/clock';
 import { followSpeed, registerTiming, s, stagger, TIMING } from '../core/timing';
 import { glowTexture } from '../fx/textures';
 import { lighten } from '../fx/util';
@@ -23,7 +24,45 @@ export const WIN_PRESENT_TIMING = registerTiming('winPresent', {
   platePunch: 260,
   plateIn: 300,
   plateOut: 220,
+  /**
+   * Wild-multiplier label sum (clusters with meta.wildMult > 1, DESIGN bass-drop §7 step 6):
+   * badge punch per bump, value count winWithoutMult -> win, slam, hold before the float-out.
+   * `autoGap`: 'auto' mode pause between the badge punch and the count. `timeout`: 'external'
+   * mode safety net (game ms after the label landed) before the auto sequence takes over.
+   */
+  multSum: {
+    badgePunch: 180,
+    badgePunchFrom: 1.7,
+    count: 250,
+    slam: 220,
+    slamScale: 1.25,
+    slamEase: 'back.out(3)',
+    holdAfter: 320,
+    autoGap: 120,
+    timeout: 2500,
+  },
 } as const);
+
+/** Wild-multiplier sum state of one label (null on labels without meta.wildMult > 1). */
+interface MultSum {
+  overlay: Position;
+  /** meta.wildMult: the badge's value when the sum is done */
+  target: number;
+  /** label value before / after the multiplier (book units) */
+  from: number;
+  to: number;
+  /** badge value on screen (0 = hidden) */
+  shown: number;
+  /** a bump that arrived before the pop-in finished */
+  pendingMult: number;
+  /** pop-in done: bumps and the final may animate */
+  ready: boolean;
+  wantFinal: boolean;
+  finalized: boolean;
+  /** resolves when the slam has settled */
+  settled: () => void;
+  timers: gsap.core.Animation[];
+}
 
 /** One pooled cluster-win label: symbol-coloured glow + money value + optional xN badge. */
 class ClusterLabel extends Container {
@@ -31,6 +70,9 @@ class ClusterLabel extends Container {
   readonly value: BitmapText;
   readonly badge: BitmapText;
   busy = false;
+  sum: MultSum | null = null;
+  /** label width reference for the badge (the value text changes while counting) */
+  k = 1;
 
   constructor(font: string) {
     super({ label: 'clusterLabel' });
@@ -47,6 +89,17 @@ class ClusterLabel extends Container {
  *    overlay cell, holding, then floating away while the symbols explode;
  *  - a running tumble-win plate on the frame sill fed by 'win:tumble', counting up
  *    with a punch on every increase, hidden on round start/end and on a new reveal.
+ *
+ * Wild-multiplier sums (clusters with meta.wildMult > 1): the label pops in with
+ * meta.winWithoutMult and its xN badge hidden, holds, then the badge shows the multiplier
+ * and the value counts to `win` and slams (scale 1.25, back.out(3)); the round is held
+ * until that has settled. FEATURES.wildMultSum picks the driver:
+ *   'auto' (default)  WinPresenter plays a compact sequence by itself (badge punch, count);
+ *   'external'        a game module drives it with 'win:labelMult' {overlay, mult} (show /
+ *                     bump the badge, one punch each) and {overlay, mult?, final:true}
+ *                     (count + slam); labels are matched by overlay cell. Without a final
+ *                     within multSum.timeout game ms the auto sequence takes over.
+ * Swamp Funk's clusterMult badge (no wildMult) is unchanged.
  */
 export class WinPresenter implements GameModule {
   private layer = new Container({ label: 'winPresenter' });
@@ -90,6 +143,7 @@ export class WinPresenter implements GameModule {
     const g = ctx.game;
     this.offs.push(
       g.on('board:showWins', (p) => this.showWins(p)),
+      g.on('win:labelMult', (p) => this.onLabelMult(p)),
       g.on('win:tumble', ({ amount }) => this.setTumble(amount)),
       g.on('round:start', () => this.hidePlate()),
       g.on('board:reveal', () => this.hidePlate()),
@@ -132,15 +186,18 @@ export class WinPresenter implements GameModule {
     const lab = this.acquireLabel();
     const def = SYMBOLS[w.symbol];
     const color = def?.color ?? 0xffd54a;
-    lab.value.text = this.ctx.money.format(this.ctx.money.fromBook(w.win));
+    const wildMult = w.meta?.wildMult ?? 0;
+    const summing = wildMult > 1;
+    lab.k = k;
+    lab.value.text = this.money(summing ? w.meta.winWithoutMult : w.win);
     lab.value.style.fontSize = 86 * k;
+    lab.badge.style.fontSize = 54 * k;
+    lab.badge.scale.set(1);
     const mult = w.meta?.clusterMult ?? 1;
-    lab.badge.visible = mult > 1;
-    if (mult > 1) {
+    lab.badge.visible = !summing && mult > 1;
+    if (lab.badge.visible) {
       lab.badge.text = `x${mult}`;
-      lab.badge.style.fontSize = 54 * k;
-      lab.badge.position.set(lab.value.width / 2 + lab.badge.width * 0.35, -lab.value.height * 0.42);
-      lab.badge.rotation = 0.14;
+      this.placeBadge(lab);
     }
     lab.glow.tint = lighten(color, 0.15);
     lab.glow.width = Math.max(lab.value.width * 1.9, 260 * k);
@@ -164,16 +221,144 @@ export class WinPresenter implements GameModule {
       tl.to(lab, { rotation: 0, duration: s(T.clusterLabelIn * 1.4), ease: 'elastic.out(1, 0.5)' }, 0);
       tl.to(lab.glow, { alpha: 1, duration: s(T.clusterLabelIn * 0.5), ease: 'power1.out' }, 0);
       tl.to(lab.glow, { alpha: 0.7, duration: s(T.clusterLabelHold), ease: 'sine.inOut' }, s(T.clusterLabelIn));
-      tl.call(() => resolve(), undefined, s(T.clusterLabelIn + T.clusterLabelHold));
-      const out = s(T.clusterLabelIn + T.clusterLabelHold);
-      tl.to(lab, { y: c.y - T.clusterLabelFloat * k, duration: s(T.clusterLabelOut), ease: 'power1.in' }, out);
-      tl.to(lab, { alpha: 0, duration: s(T.clusterLabelOut), ease: 'power2.in' }, out);
-      tl.to(lab.scale, { x: 1.06, y: 1.06, duration: s(T.clusterLabelOut), ease: 'power1.out' }, out);
-      tl.call(() => {
-        lab.visible = false;
-        lab.busy = false;
+      if (!summing) {
+        tl.call(() => resolve(), undefined, s(T.clusterLabelIn + T.clusterLabelHold));
+        this.labelOut(tl, lab, c.y, s(T.clusterLabelIn + T.clusterLabelHold));
+        return;
+      }
+      // multiplier sum: hold until the slam has settled (never before the normal hold ends)
+      const minHold = new Promise<void>((r) => tl.call(r, undefined, s(T.clusterLabelIn + T.clusterLabelHold)));
+      const settled = new Promise<void>((r) => {
+        lab.sum = {
+          overlay: { reel: ov.reel, row: ov.row },
+          target: wildMult,
+          from: w.meta.winWithoutMult,
+          to: w.win,
+          shown: 0,
+          pendingMult: 0,
+          ready: false,
+          wantFinal: false,
+          finalized: false,
+          settled: r,
+          timers: [],
+        };
+      });
+      tl.call(() => this.sumReady(lab), undefined, s(T.clusterLabelIn));
+      void Promise.all([minHold, settled.then(() => clock.wait(WIN_PRESENT_TIMING.multSum.holdAfter))]).then(() => {
+        resolve();
+        const out = followSpeed(gsap.timeline());
+        this.labelOut(out, lab, c.y, 0);
       });
     });
+  }
+
+  /** Float-out + release at `at` (timeline seconds). */
+  private labelOut(tl: gsap.core.Timeline, lab: ClusterLabel, y0: number, at: number): void {
+    const T = TIMING.win;
+    tl.to(lab, { y: y0 - T.clusterLabelFloat * lab.k, duration: s(T.clusterLabelOut), ease: 'power1.in' }, at);
+    tl.to(lab, { alpha: 0, duration: s(T.clusterLabelOut), ease: 'power2.in' }, at);
+    tl.to(lab.scale, { x: 1.06, y: 1.06, duration: s(T.clusterLabelOut), ease: 'power1.out' }, at);
+    tl.call(() => {
+      lab.visible = false;
+      lab.busy = false;
+      lab.sum = null;
+    });
+  }
+
+  private money(book: number): string {
+    return this.ctx.money.format(this.ctx.money.fromBook(book));
+  }
+
+  /** xN badge at the value's top-right corner. */
+  private placeBadge(lab: ClusterLabel): void {
+    lab.badge.position.set(lab.value.width / 2 + lab.badge.width * 0.35, -lab.value.height * 0.42);
+    lab.badge.rotation = 0.14;
+  }
+
+  // ── wild-multiplier label sum ────────────────────────────────────────────
+
+  /** Pop-in finished: apply what arrived early, start the auto sequence or the safety net. */
+  private sumReady(lab: ClusterLabel): void {
+    const sum = lab.sum;
+    if (!sum) return;
+    sum.ready = true;
+    if (sum.pendingMult > 0) this.bump(lab, sum.pendingMult);
+    if (sum.wantFinal) {
+      this.finalize(lab);
+      return;
+    }
+    const M = WIN_PRESENT_TIMING.multSum;
+    const auto = (FEATURES.wildMultSum ?? 'auto') === 'auto';
+    const run = (): void => {
+      if (sum.finalized || lab.sum !== sum) return;
+      if (sum.shown !== sum.target) this.bump(lab, sum.target, auto || sum.shown === 0);
+      sum.timers.push(followSpeed(gsap.delayedCall(s(M.badgePunch + M.autoGap), () => this.finalize(lab))));
+    };
+    if (auto) run();
+    else sum.timers.push(followSpeed(gsap.delayedCall(s(M.timeout), run)));
+  }
+
+  /** 'win:labelMult': show / bump the badge of the label at `overlay`; `final` counts + slams. */
+  private onLabelMult({ overlay, mult, final }: GameEvents['win:labelMult']): void {
+    const lab = this.labels.find(
+      (l) => l.busy && l.sum && !l.sum.finalized && l.sum.overlay.reel === overlay.reel && l.sum.overlay.row === overlay.row,
+    );
+    const sum = lab?.sum;
+    if (!lab || !sum) return;
+    if (mult > 0 && mult !== sum.shown) {
+      if (sum.ready) this.bump(lab, mult);
+      else sum.pendingMult = mult;
+    }
+    if (final) {
+      sum.wantFinal = true;
+      if (sum.ready) this.finalize(lab);
+    }
+  }
+
+  /** Badge shows xN with a punch (one per bump). */
+  private bump(lab: ClusterLabel, mult: number, sfx = false): void {
+    const sum = lab.sum;
+    if (!sum) return;
+    const M = WIN_PRESENT_TIMING.multSum;
+    sum.shown = mult;
+    sum.pendingMult = 0;
+    const b = lab.badge;
+    b.text = `x${mult}`;
+    b.visible = true;
+    this.placeBadge(lab);
+    gsap.killTweensOf(b.scale);
+    followSpeed(gsap.fromTo(b.scale, { x: M.badgePunchFrom, y: M.badgePunchFrom }, { x: 1, y: 1, duration: s(M.badgePunch), ease: 'back.out(3)' }));
+    if (sfx) this.ctx.game.broadcast('sfx', { id: 'wild_mult' });
+  }
+
+  /** Count winWithoutMult -> win, then slam; settles the label's hold. */
+  private finalize(lab: ClusterLabel): void {
+    const sum = lab.sum;
+    if (!sum || sum.finalized) return;
+    sum.finalized = true;
+    for (const t of sum.timers) t.kill();
+    sum.timers = [];
+    if (sum.shown === 0) this.bump(lab, sum.target);
+    const M = WIN_PRESENT_TIMING.multSum;
+    const v = { n: sum.from };
+    const tl = followSpeed(gsap.timeline());
+    tl.to(v, {
+      n: sum.to,
+      duration: s(M.count),
+      ease: 'power1.out',
+      onUpdate: () => {
+        lab.value.text = this.money(Math.round(v.n));
+        this.placeBadge(lab);
+      },
+    });
+    tl.call(() => {
+      lab.value.text = this.money(sum.to);
+      this.placeBadge(lab);
+      lab.glow.width = Math.max(lab.value.width * 1.9, 260 * lab.k);
+    });
+    tl.fromTo(lab.scale, { x: M.slamScale, y: M.slamScale }, { x: 1, y: 1, duration: s(M.slam), ease: M.slamEase, immediateRender: false });
+    tl.fromTo(lab.glow, { alpha: 1 }, { alpha: 0.7, duration: s(M.slam), ease: 'power2.out', immediateRender: false }, '<');
+    tl.call(() => sum.settled());
   }
 
   // ── tumble plate ─────────────────────────────────────────────────────────

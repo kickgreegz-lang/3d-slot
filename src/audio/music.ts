@@ -13,7 +13,12 @@ import { Voice, mtof } from './voice';
  *
  *   base     100 BPM, laid-back: kick/snare/hats, syncopated bass, Rhodes comping
  *   freegame 106 BPM, hotter: 16th hats, open hats, busier octave bass, clav chanks
+ *   megamix  112 BPM, the hottest: four-on-the-floor + pushes, 16th hats, driving octave bass,
+ *            clav always on, fills every 2 bars (a game's feature variant, 'music:stem')
  *   bigwin   110 BPM, four-on-the-floor party variation
+ *
+ * `accent(t)` plays a downbeat "drop" hit (kick + sub + crash) on the groove's bus: the
+ * music answering a bass drop without waiting for the bar (gameplay never waits for the beat).
  *
  * `energy` (0..3, e.g. the tumble cascade depth) layers shaker -> open hats -> clav
  * onto whatever pattern is playing. Pattern switches land on a bar (or beat).
@@ -98,6 +103,22 @@ const PATTERNS: Record<MusicStem, Pattern> = {
     keys: [[0, EM9, 1, 0.6], [2, EM9, 2, 0.8], [7, EM9, 3, 0.7], [12, EM9, 1, 0.5], [16, A13, 1, 0.6], [18, A13, 2, 0.8], [23, A13, 3, 0.7], [28, A13, 1, 0.5]],
     clav: [[1, CLAV_E, 1, 0.45], [5, CLAV_E, 1, 0.5], [9, CLAV_E, 1, 0.45], [13, CLAV_E, 1, 0.5], [17, CLAV_A, 1, 0.45], [21, CLAV_A, 1, 0.5], [25, CLAV_A, 1, 0.45], [29, CLAV_A, 1, 0.5]],
   },
+  megamix: {
+    bpm: 112, gain: 1.12, swing: 0.1, steps: 32, energy: 3, fillEvery: 2, crashEvery: 4,
+    kick: [...range(8).map((i) => [i * 4, 1] as const), [3, 0.5], [11, 0.55], [14, 0.6], [19, 0.5], [27, 0.55], [30, 0.6]],
+    snare: [[4, 1], [12, 1], [20, 1], [28, 1], [7, 0.22], [10, 0.2], [15, 0.3], [23, 0.22], [26, 0.2], [31, 0.34]],
+    hats: hats16(32, [2, 6, 10, 14, 18, 22, 26, 30]),
+    openHats: [2, 6, 10, 14, 18, 22, 26, 30].map((s) => [s, 0.36] as const),
+    hypeHats: [],
+    bass: [
+      [0, 40, 1, 1], [1, 52, 1, 0.6], [2, 40, 1, 0.8], [3, 52, 1, 0.7], [4, 43, 1, 0.9], [6, 45, 1, 0.8], [7, 47, 1, 0.7],
+      [8, 40, 1, 1], [10, 52, 1, 0.8], [11, 50, 1, 0.7], [12, 47, 1, 0.9], [14, 45, 1, 0.8], [15, 43, 1, 0.7],
+      [16, 45, 1, 1], [17, 57, 1, 0.6], [18, 45, 1, 0.8], [19, 57, 1, 0.7], [20, 48, 1, 0.9], [22, 50, 1, 0.8], [23, 52, 1, 0.7],
+      [24, 45, 1, 1], [26, 57, 1, 0.8], [27, 55, 1, 0.7], [28, 52, 1, 0.9], [30, 47, 1, 0.85], [31, 42, 1, 0.7],
+    ],
+    keys: [[0, EM9, 1, 0.7], [3, EM9, 1, 0.55], [6, EM9, 2, 0.7], [10, EM9, 1, 0.55], [14, EM9, 1, 0.6], [16, A13, 1, 0.7], [19, A13, 1, 0.55], [22, A13, 2, 0.7], [26, A13, 1, 0.55], [30, A13, 1, 0.6]],
+    clav: [[1, CLAV_E, 1, 0.5], [3, CLAV_E, 1, 0.4], [5, CLAV_E, 1, 0.5], [9, CLAV_E, 1, 0.5], [11, CLAV_E, 1, 0.4], [13, CLAV_E, 1, 0.5], [17, CLAV_A, 1, 0.5], [19, CLAV_A, 1, 0.4], [21, CLAV_A, 1, 0.5], [25, CLAV_A, 1, 0.5], [27, CLAV_A, 1, 0.4], [29, CLAV_A, 1, 0.5]],
+  },
   bigwin: {
     bpm: 110, gain: 1.12, swing: 0.08, steps: 32, energy: 3, fillEvery: 4, crashEvery: 4,
     kick: [...range(8).map((i) => [i * 4, 1] as const), [14, 0.5], [30, 0.5]],
@@ -145,6 +166,7 @@ const compile = (p: Pattern): StepEvents[] => {
 const COMPILED: Record<MusicStem, StepEvents[]> = {
   base: compile(PATTERNS.base),
   freegame: compile(PATTERNS.freegame),
+  megamix: compile(PATTERNS.megamix),
   bigwin: compile(PATTERNS.bigwin),
 };
 
@@ -266,6 +288,19 @@ export class Groove {
     gp.linearRampToValueAtTime(0, t + Math.max(0.01, fade));
     this.lfo?.stop(t + fade + 0.05);
     this.lfo = null;
+  }
+
+  /**
+   * Downbeat "drop" accent at context time `t` (the bass boom): a hard kick, an E1 sub hit
+   * through the bass drive and a crash, on the groove's own bus (ducks / filters apply).
+   */
+  accent(t: number): void {
+    if (!this.running) return;
+    const v = new Voice(this.g.ac, this.out, null, this.g.noise, t, this.random);
+    kick(v, this.drums, t, { f0: 160, f1: 42, drop: 0.08, decay: 0.42, level: LEVEL.kick * 1.15, click: 0.3, clickFreq: 2600 });
+    bass(v, this.bassIn, t, mtof(28), LEVEL.bass * 1.1, 0.42, 1);
+    crash(v, this.drums, t, LEVEL.crash * 1.2, 1.8);
+    v.finish(() => undefined);
   }
 
   /** Switch pattern on the next `quantum` boundary (16 = bar, 4 = beat). */

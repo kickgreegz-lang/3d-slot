@@ -8,6 +8,8 @@ import { clock } from '../core/clock';
 import { TIMING, followSpeed, s, sUi, speedScale } from '../core/timing';
 import type { GameEvents, SfxId } from '../game/events';
 import type { GameContext } from '../game/context';
+import { reducedMotion } from '../fx/motion';
+import { BodyOverlay } from './bodyOverlay';
 import { measureContent } from './contentBounds';
 import { type JellyFrame, type JellyMesh, acquireJelly, releaseJelly } from './JellyMesh';
 import { SPINE_ANIM, SPINE_EVENT, type SpineCue, SpineRig } from './SpinePool';
@@ -21,6 +23,11 @@ const clamp = (v: number, a: number, b: number): number => Math.min(b, Math.max(
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 const lerpGray = (from: number, to: number, t: number): number => {
   const ch = (shift: number) => Math.round(lerp((from >> shift) & 255, (to >> shift) & 255, t));
+  return (ch(16) << 16) | (ch(8) << 8) | ch(0);
+};
+/** Per-channel minimum of two tints (the darker of two dims wins). */
+const darker = (a: number, b: number): number => {
+  const ch = (shift: number) => Math.min((a >> shift) & 255, (b >> shift) & 255);
   return (ch(16) << 16) | (ch(8) << 8) | ch(0);
 };
 
@@ -66,8 +73,10 @@ type Hold = 'win' | 'explode' | 'anticipation' | 'glint';
  *
  *   view  (Board: cell centre, drop tweens)
  *    └ body  origin at the FEET: squash/stretch spring, hop, rock wobble (weight)
+ *            + additive overlay channels (bass_react, drop impact, neighbour push)
  *       └ pose  origin at the content centre: pop / pulse / breathe / sway / burst
- *          └ art  fit scale + restAngle; children: glow (add) · sprite | jelly mesh | spine
+ *          ├ art    fit scale + restAngle; children: glow (add) · sprite | jelly mesh | spine
+ *          └ decor  Board decorations (badges, clamps; design px, origin = cell centre at rest)
  *
  * Static = one batched Sprite. While animating, a pooled JellyMesh (and, for win /
  * explode / glint, the FX shader) or a pooled Spine instance replaces the sprite,
@@ -80,6 +89,8 @@ export class SymbolRig implements SymbolView {
   private readonly art = new Container({ label: 'art' });
   private readonly glow = new Sprite();
   private readonly sprite = new Sprite();
+  /** Board decorations hang here: they squash / pop / explode with the symbol, above the art. */
+  readonly decor = new Container({ label: 'decor', sortableChildren: true });
 
   private _id = '';
   private _state: SymbolState = 'static';
@@ -106,6 +117,10 @@ export class SymbolRig implements SymbolView {
   private readonly fx: SymbolFxParams = { shine: -1, shineWidth: 0.16, shineIntensity: 0, flash: 0, dissolve: 0 };
   private readonly glowState = { a: 0, s: 1 };
   private readonly dim = { t: 0, target: 0 };
+  /** second dim channel (board:focus); the darker of dim / focus shows */
+  private readonly focus = { t: 0, target: 0, tint: 0xcccccc };
+  private focusTween: gsap.core.Tween | null = null;
+  private readonly overlay = new BodyOverlay(() => this.applyBody());
   private readonly sway = { env: 0, t: 0 };
   private readonly beat = { base: 1, peak: 1 };
   private readonly holds = new Set<Hold>();
@@ -147,7 +162,7 @@ export class SymbolRig implements SymbolView {
     this.glow.anchor.set(0.5);
     this.glow.visible = false;
     this.art.addChild(this.glow, this.sprite);
-    this.pose.addChild(this.art);
+    this.pose.addChild(this.art, this.decor);
     this.body.addChild(this.pose);
     this.view.addChild(this.body);
     this.offLayout = ctx.game.on('layout:change', () => this.fit());
@@ -386,7 +401,7 @@ export class SymbolRig implements SymbolView {
     });
   }
 
-  explode(): Promise<void> {
+  explode(opts: { power?: number } = {}): Promise<void> {
     this.interrupt();
     this.stopBreath();
     this.antOn = false;
@@ -395,6 +410,7 @@ export class SymbolRig implements SymbolView {
     const X = T.explode;
     const burstAt = s(E.anticipateDuration);
     const burst = s(E.burstDuration);
+    const power = (opts.power ?? 1) * (this.def.kind === 'royal' ? 0.8 : 1);
     const emitBurst = () => {
       const c = this.toRoot(this.pose, 0, 0);
       this.ctx.game.broadcast('fx:burst', {
@@ -403,9 +419,13 @@ export class SymbolRig implements SymbolView {
         y: c.y,
         color: this.def.color,
         count: E.particles,
-        power: this.def.kind === 'royal' ? 0.8 : 1,
+        power,
       });
     };
+    // decorations (badges, clamps) break apart with the symbol
+    if (this.decor.children.length) {
+      this.track(gsap.to(this.decor, { alpha: 0, duration: burst, delay: burstAt, ease: X.fadeEase }));
+    }
 
     const ref = this.spineRef();
     const rig = ref && SpineRig.supports(ref, 'explode') ? this.useSpine(ref) : null;
@@ -613,7 +633,13 @@ export class SymbolRig implements SymbolView {
     this.dimTween = null;
     this.dim.t = 0;
     this.dim.target = 0;
+    this.focusTween?.kill();
+    this.focusTween = null;
+    this.focus.t = 0;
+    this.focus.target = 0;
     this.applyDim();
+    this.overlay.kill();
+    this.decor.alpha = 1;
     for (const sp of [this.squash, this.rock, this.bulge, this.lag, this.shear]) sp.reset(0);
     this.squashHeld = false;
     this.squashGain = 1;
@@ -652,7 +678,118 @@ export class SymbolRig implements SymbolView {
     this.destroyed = true;
     this.offLayout();
     this.setElevated(false);
+    // decorations belong to their owners: detach, never destroy
+    this.decor.removeChildren();
     this.view.destroy({ children: true });
+  }
+
+  // ───────────────────────── board reactions (additive) ─────────────────────────
+
+  /**
+   * Board-wide bass reaction: Spine `bass_react` on track 1 (additive) when the skeleton has
+   * it, else a procedural squash (sy ~0.95) + small hop. Never interrupts the current state,
+   * so it is safe mid-land / mid-win; ignored while exploding or hidden.
+   */
+  react(power = 1): void {
+    if (this.destroyed || this._state === 'hidden' || this._state === 'explode' || !this.body.visible) return;
+    if (this.rig?.has('bass_react')) {
+      void this.rig.playOverlay('bass_react');
+      return;
+    }
+    const ref = this.spineRef();
+    if (!this.rig && ref && this._state === 'static' && SpineRig.supports(ref, 'bass_react')) {
+      this.stopBreath();
+      const rig = this.useSpine(ref);
+      void rig.playOverlay('bass_react').then(() => {
+        if (this.rig !== rig || this._state !== 'static') return;
+        this.releaseSpine();
+        this.startBreath();
+      });
+      return;
+    }
+    const hop = reducedMotion() ? 0 : T.bassReact.hopCells * this.ctx.layout.cell;
+    this.overlay.playReact(power, hop);
+  }
+
+  /**
+   * Heavy drop impact at the contact frame: Spine `drop_impact` when the skeleton has it,
+   * else procedural keys (sy 0.72 at f1, rebound 1.10 at f5, setup pose by f15) plus a jelly
+   * bulge. Resolves when settled (or interrupted).
+   */
+  impact(): Promise<void> {
+    this.interrupt();
+    this.stopBreath();
+    this._state = 'land';
+    if (this.blurred || this.sprite.texture !== this.staticTex) {
+      this.blurred = false;
+      this.sprite.texture = this.staticTex;
+      this.jelly?.bind(this.staticTex, this.frame);
+    }
+    this.restorePose();
+    this.fadeGlow(0);
+    this.squash.reset(0);
+    this.squashHeld = false;
+    this.hop.active = false;
+    this.hop.h = 0;
+    const ref = this.spineRef();
+    const rig = ref && SpineRig.supports(ref, 'drop_impact') ? this.useSpine(ref) : null;
+    let motion: Promise<void>;
+    if (rig) {
+      rig.impact(T.spine.maxImpulse);
+      motion = rig.play('drop_impact');
+    } else {
+      this.releaseSpine();
+      this.ensureJelly();
+      this.bulge.v += T.dropImpact.bulgeKick;
+      this.lag.v += T.jelly.landLagKick * 2;
+      motion = this.overlay.playImpact();
+    }
+    this.loop.start();
+    return new Promise<void>((resolve) => {
+      this.pending.push(resolve);
+      void motion.then(() => {
+        if (!this.pending.includes(resolve)) return;
+        this.pending = this.pending.filter((p) => p !== resolve);
+        if (this._state === 'land') this._state = 'static';
+        if (rig && this.rig === rig && this._state === 'static') this.releaseSpine();
+        resolve();
+      });
+    });
+  }
+
+  /** Push the body by (dx, dy) design px and spring back; `ms` covers out + back. Additive. */
+  nudge(dx: number, dy: number, ms: number): void {
+    if (this.destroyed) return;
+    this.overlay.nudge(dx, dy, ms);
+  }
+
+  /** Focus dim (board:focus): tint toward `tint`, or `null` to clear; the darker of win-dim and focus shows. */
+  setFocusDim(tint: number | null, animate = true): void {
+    const target = tint === null ? 0 : 1;
+    if (tint !== null) this.focus.tint = tint;
+    if (target === this.focus.target && (animate || this.focus.t === target)) {
+      if (tint !== null) this.applyDim();
+      return;
+    }
+    this.focus.target = target;
+    this.focusTween?.kill();
+    this.focusTween = null;
+    if (animate) {
+      this.focusTween = followSpeed(
+        gsap.to(this.focus, {
+          t: target,
+          duration: s(TIMING.win.dimDuration),
+          ease: 'power2.out',
+          onUpdate: () => this.applyDim(),
+          onComplete: () => {
+            this.focusTween = null;
+          },
+        }),
+      );
+    } else {
+      this.focus.t = target;
+      this.applyDim();
+    }
   }
 
   // ───────────────────────────── internals ─────────────────────────────
@@ -773,7 +910,10 @@ export class SymbolRig implements SymbolView {
   }
 
   private applyDim(): void {
-    this.art.tint = lerpGray(0xffffff, TIMING.win.dimTint, this.dim.t);
+    const d = lerpGray(0xffffff, TIMING.win.dimTint, this.dim.t);
+    const tint = this.focus.t > 0 ? darker(d, lerpGray(0xffffff, this.focus.tint, this.focus.t)) : d;
+    this.art.tint = tint;
+    this.decor.tint = tint;
   }
 
   private applyGlow(): void {
@@ -788,8 +928,9 @@ export class SymbolRig implements SymbolView {
     const p = Math.log(squashX) / -Math.log(squashY);
     const a = this.squash.x * this.squashGain;
     const sy = Math.max(0.3, 1 - a * (1 - squashY));
-    this.body.scale.set(Math.pow(sy, -p), sy);
-    this.body.position.set(0, this.frame.feetY - this.hop.h);
+    const o = this.overlay;
+    this.body.scale.set(Math.pow(sy, -p) * o.sx, sy * o.sy);
+    this.body.position.set(o.x, this.frame.feetY - this.hop.h + o.y);
     this.body.rotation = this.rock.x;
   }
 

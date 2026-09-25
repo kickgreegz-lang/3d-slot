@@ -136,6 +136,43 @@ export const SYMBOL_TIMING = registerTiming('symbol', {
     bulge: 0.07,
     lag: -0.05,
   },
+  /**
+   * `bass_react` overlay (DESIGN bass-drop §5, ANIMATION_SET §2.0): 8 frames at 60 fps,
+   * squash sy 0.95 / sx 1.03 at f1, rebound sy 1.03 at f4 with a small hop, back by f8.
+   * Additive: never interrupts land / win / anticipation. hopCells = hop height / cell size.
+   */
+  bassReact: {
+    squashY: 0.95,
+    squashX: 1.03,
+    reboundY: 1.03,
+    reboundX: 0.985,
+    hopCells: 0.04,
+    /** f0 -> f1, f1 -> f4, f4 -> f8 (ms) */
+    inMs: 17,
+    riseMs: 50,
+    fallMs: 67,
+  },
+  /**
+   * Heavy drop impact (board:transform 'impact'; the W rig's `drop_impact` replaces it):
+   * f1 sy 0.72 / sx 1.18, f5 rebound sy 1.10 / sx 0.95, f9 sy 0.97, setup pose by f15.
+   */
+  dropImpact: {
+    squashY: 0.72,
+    squashX: 1.18,
+    reboundY: 1.1,
+    reboundX: 0.95,
+    settleY: 0.97,
+    settleX: 1.02,
+    /** key times (ms after contact) of f1 / f5 / f9 / f15 */
+    f1: 17,
+    f5: 83,
+    f9: 150,
+    f15: 250,
+    /** jelly belly bulge kick at contact (procedural rig) */
+    bulgeKick: 2.2,
+  },
+  /** Neighbour push (nudge): share of the duration spent moving out; spring-back ease. */
+  nudge: { outShare: 0.2, backEase: 'back.out(2.2)' },
   feedback: {
     /** Identical land SFX closer than this (ms of game time) are dropped. */
     sfxMinGap: 30,

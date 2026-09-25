@@ -3,6 +3,7 @@ import { AUDIO_TIMING } from './mix';
 import {
   brass, crash, fm, glass, kick, marimba, pad, pluck, subBoom, swell,
 } from './instruments';
+import { BASS_DROP_VOICES } from './synthBassDrop';
 import { FLOOR, type Voice, glide, mtof, penta, perc } from './voice';
 
 /**
@@ -21,6 +22,8 @@ export interface VoiceArgs {
   step: number;
   /** anticipation heartbeat period (s, speed-profile scaled) */
   period: number;
+  /** riser / sweep length (s, speed-profile scaled): bass_charge */
+  span: number;
 }
 
 export type VoiceFn = (v: Voice, a: VoiceArgs) => void;
@@ -489,34 +492,8 @@ export const SYNTH_VOICES: Record<SfxId, VoiceFn> = {
   ui_click: uiClick,
   ui_bet_up: uiBetUp,
   ui_bet_down: uiBetDown,
-  // Bass Drop ids: TEMPORARY aliases of existing voices (phase B engine track replaces them)
-  link_connect: spotMark,
-  orb_launch: tumbleDrop,
-  orb_absorb: counterTick,
-  meter_threshold: spotUpgrade,
-  meter_lock_bonus: fsTrigger,
-  meter_lock_super: fsTrigger,
-  meter_heat: anticipationLoop,
-  meter_drain: fallOut,
-  meter_lap: spotUpgrade,
-  bass_charge: anticipationLoop,
-  bass_boom: (v, a) => thud(v, a, LAND_HEAVY),
-  wild_launch: tumbleDrop,
-  wild_whoosh: fallOut,
-  wild_impact: (v, a) => thud(v, a, LAND_HEAVY),
-  symbol_crush: explode,
-  wild_mult: spotUpgrade,
-  sticky_lock: landSpecial,
-  sticky_mult_up: spotUpgrade,
-  feature_upgrade: fsIntro,
-  intro_card: (v, a) => thud(v, a, LAND_LIGHT),
-  buy_open: uiClick,
-  buy_select: uiBetUp,
-  buy_confirm: uiClick,
-  button_slam: (v, a) => thud(v, a, LAND_MEDIUM),
-  cooler_slam: (v, a) => thud(v, a, LAND_HEAVY),
-  mic_drop: (v, a) => thud(v, a, LAND_MEDIUM),
-  dj_scratch: spotMark,
+  // Bass Drop (DESIGN bass-drop §17): dedicated voices in synthBassDrop.ts
+  ...BASS_DROP_VOICES,
 };
 
 export const SFX_IDS = Object.keys(SYNTH_VOICES) as SfxId[];

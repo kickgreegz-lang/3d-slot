@@ -10,7 +10,8 @@ import { registerTiming } from '../core/timing';
  * sits near -20 LUFS integrated, so the SFX read ~8-12 LU above the music.
  */
 
-export type BusId = 'sfx' | 'ui';
+/** 'hero': the one sound that ducks the others (bass boom) plays outside the SFX duck. */
+export type BusId = 'sfx' | 'ui' | 'hero';
 
 /** Linear bus gains (the limiter adds ~+3 dB of makeup gain, see graph.ts). */
 export const BUS_LEVELS = {
@@ -47,7 +48,26 @@ export interface SfxRule {
   priority?: number;
   /** duck the music bus while this plays */
   duck?: { db: number; holdMs: number };
+  /** duck the SFX + UI buses (everything but music and the hero bus) while this plays */
+  duckSfx?: { db: number; holdMs: number };
+  /** voices of this group are cut (fast fade) when this plays (the boom cuts the charge riser) */
+  cuts?: string;
+  /**
+   * Music-bus reaction: 'charge' = high-pass sweep + duck over the play's span (released by a
+   * 'drop' or a safety timeout); 'drop' = the filter snaps open, the duck lifts and the
+   * groove plays a downbeat accent.
+   */
+  music?: 'charge' | 'drop';
 }
+
+/**
+ * Rate for a 'degrees' sound that climbs `degrees` pentatonic scale steps (the engine turns
+ * the rate back into whole steps: round(12 log2(rate) / 2.4)). e.g. meter_threshold notch n.
+ */
+export const pentaRate = (degrees: number): number => 2 ** ((degrees * 2.4) / 12);
+
+/** Rate for a 'free' sound shifted by `semitones` (orb_absorb +1 per arrival, bass_boom +2 per chain step). */
+export const semitoneRate = (semitones: number): number => 2 ** (semitones / 12);
 
 /** ±1.5 dB random level spread on every play (avoids the machine-gun effect). */
 export const VOLUME_JITTER_DB = 1.5;
@@ -74,7 +94,7 @@ export const SFX_RULES: Record<SfxId, SfxRule> = {
   anticipation_end: perc(0.8, 'anticEnd', 1, 100),
   win_small: tonal(0.8, 'winSmall', 1, 80),
   win_cluster: { ...tonal(0.8, 'win', 2, 60), pitch: 'degrees' },
-  explode: perc(0.85, 'explode', 3, 35),
+  explode: perc(0.85, 'explode', 6, 35),
   tumble_drop: perc(1.1, 'tumble', 3, 30),
   spot_mark: tonal(0.9, 'spot', 3, 40),
   spot_upgrade: { ...tonal(0.8, 'spot', 3, 50), pitch: 'degrees' },
@@ -89,33 +109,46 @@ export const SFX_RULES: Record<SfxId, SfxRule> = {
   ui_click: ui(1),
   ui_bet_up: { ...ui(0.75), pitch: 'octave', pitchJitter: 0.002 },
   ui_bet_down: { ...ui(0.75), pitch: 'octave', pitchJitter: 0.002 },
-  // Bass Drop ids: TEMPORARY rules (phase B engine track tunes them, DESIGN bass-drop §17)
-  link_connect: tonal(0.7, 'link', 2, 40),
-  orb_launch: perc(0.8, 'orb', 1, 60),
-  orb_absorb: { ...tonal(0.6, 'orbAbsorb', 4, 35), pitch: 'free' },
-  meter_threshold: { ...tonal(0.85, 'meter', 2, 60), pitch: 'free' },
-  meter_lock_bonus: { ...tonal(0.9, 'meterLock', 1, 200), duck: { db: -4, holdMs: 900 } },
-  meter_lock_super: { ...tonal(0.9, 'meterLock', 1, 200), duck: { db: -4, holdMs: 900 } },
-  meter_heat: tonal(0.4, 'meterHeat', 1, 0),
-  meter_drain: perc(0.5, 'meterDrain', 1, 200),
-  meter_lap: tonal(0.7, 'meter', 2, 100),
-  bass_charge: tonal(0.8, 'bassCharge', 1, 60),
-  bass_boom: { ...perc(1.3, 'bassBoom', 1, 60, 5), pitch: 'free', duck: { db: -4, holdMs: 300 } },
-  wild_launch: { ...perc(0.8, 'wildLaunch', 3, 30), pitch: 'free' },
-  wild_whoosh: perc(0.7, 'wildWhoosh', 3, 30),
+  // ---- Bass Drop (DESIGN bass-drop §17). Callers pass `rate` as noted; 'degrees' rates via pentaRate().
+  /** once per cluster at link draw-on; rate = symbol tier pitch (free) */
+  link_connect: { ...perc(0.8, 'link', 2, 40), pitchJitter: 0.02 },
+  /** first orb burst of a step (one bundle, not per orb) */
+  orb_launch: perc(0.7, 'orb', 1, 60),
+  /** each orb arrival; rate = semitoneRate(arrival index, cap 12); <= 1 per 35 ms, 4 voices */
+  orb_absorb: { ...perc(0.65, 'orbAbsorb', 4, 35), pitchJitter: 0.002 },
+  /** minor notch chime; rate = pentaRate(notch index) */
+  meter_threshold: { ...tonal(0.85, 'meter', 2, 60), pitch: 'degrees' },
+  meter_lock_bonus: { ...tonal(0.95, 'meterLock', 1, 200), duck: { db: -5, holdMs: 1100 } },
+  meter_lock_super: { ...tonal(1, 'meterLock', 1, 200), duck: { db: -6, holdMs: 1500 } },
+  /** one low tick per play: call it on each heat pulse */
+  meter_heat: { ...perc(0.4, 'meterHeat', 1, 90), pitchJitter: 0.01 },
+  meter_drain: perc(0.45, 'meterDrain', 1, 200),
+  meter_lap: { ...tonal(0.7, 'meter', 2, 100), pitch: 'degrees' },
+  /** charge riser; the music high-passes + ducks over the charge until the boom */
+  bass_charge: { ...perc(0.8, 'bassCharge', 1, 60), pitchJitter: 0, music: 'charge' },
+  /** THE loudest SFX; rate = semitoneRate(2 x chain step); ducks every other SFX -4 dB for 300 ms */
+  bass_boom: {
+    bus: 'hero', group: 'bassBoom', max: 2, minGapMs: 60, pitch: 'free', pitchJitter: 0.005, gain: 1.35, priority: 5,
+    duckSfx: { db: -4, holdMs: 300 }, cuts: 'bassCharge', music: 'drop',
+  },
+  /** rate = semitoneRate(2 x wild index) */
+  wild_launch: { ...perc(0.75, 'wildLaunch', 3, 30), pitchJitter: 0.01 },
+  wild_whoosh: perc(0.65, 'wildWhoosh', 3, 30),
   wild_impact: perc(1.1, 'wildImpact', 3, 30, 4),
   symbol_crush: perc(0.8, 'crush', 3, 30),
-  wild_mult: { ...tonal(0.8, 'wildMult', 3, 40), pitch: 'free' },
+  /** badge slam / label-sum arrival; rate = pentaRate(tier or arrival index) */
+  wild_mult: { ...tonal(0.8, 'wildMult', 3, 40), pitch: 'degrees' },
   sticky_lock: perc(0.85, 'sticky', 3, 40),
-  sticky_mult_up: { ...tonal(0.8, 'sticky', 3, 50), pitch: 'degrees' },
-  feature_upgrade: { ...tonal(0.85, 'fs', 2, 200), duck: { db: -6, holdMs: 2200 } },
-  intro_card: ui(0.8),
-  buy_open: ui(0.9),
-  buy_select: ui(0.9),
-  buy_confirm: ui(1),
+  /** rate = pentaRate(badge tier) */
+  sticky_mult_up: { ...tonal(0.8, 'stickyUp', 3, 50), pitch: 'degrees' },
+  feature_upgrade: { ...tonal(0.9, 'fs', 2, 200), duck: { db: -6, holdMs: 2200 } },
+  intro_card: ui(0.75),
+  buy_open: ui(0.85),
+  buy_select: { ...ui(0.8), pitch: 'octave', pitchJitter: 0.002 },
+  buy_confirm: ui(0.95),
   button_slam: perc(0.8, 'foley', 3, 30),
   cooler_slam: perc(0.9, 'foley', 3, 30),
-  mic_drop: perc(0.9, 'foley', 3, 30),
+  mic_drop: perc(0.85, 'foley', 3, 30),
   dj_scratch: perc(0.7, 'foley', 3, 30),
 };
 
@@ -145,4 +178,21 @@ export const AUDIO_TIMING = registerTiming('audio', {
   anticipationFadeOut: 0.14,
   /** longest an anticipation loop may run without an 'anticipation_end' */
   anticipationMax: 12,
+  /**
+   * Bass-drop music reaction: over a 'charge' play the music high-pass sweeps chargeHpFrom ->
+   * chargeHpTo Hz and ducks chargeDuckDb across the play's span (the charge length, normal
+   * speed: chargeSpan s, speed-scaled by Sound); a 'drop' snaps it open in dropSnap s. Without
+   * a drop the charge releases itself chargeSafety s after the span.
+   */
+  chargeSpan: 0.5,
+  chargeHpFrom: 200,
+  chargeHpTo: 2000,
+  chargeDuckDb: -6,
+  chargeSafety: 0.8,
+  dropSnap: 0.025,
+  /** voice-cut fade when a sound cuts another group (boom cuts the charge riser) */
+  cutFade: 0.03,
+  /** SFX duck attack / release (hero sounds) */
+  sfxDuckAttack: 0.012,
+  sfxDuckRelease: 0.18,
 } as const);

@@ -1,6 +1,7 @@
 import type { GameType } from '../book/types';
 import type { clock as Clock } from '../core/clock';
 import { getSpeedProfile, setSpeedProfile, type SpeedProfile, type Timing } from '../core/timing';
+import { reducedMotion, setReducedMotion } from '../fx/motion';
 import type { GameContext } from '../game/context';
 import type { GameEvents } from '../game/events';
 import { type FixtureBooks, loadFixtures, type SceneEmit } from './fixtures';
@@ -44,6 +45,9 @@ import {
  *                                             per-frame y/scaleX/scaleY of one symbol
  *   __slot.events(true)                       scene-event log (t in real ms), optionally cleared
  *   __slot.now()                              real ms since boot (hit-stop inclusive)
+ *   __slot.gameTime()                         game-clock ms (frozen during hit-stops)
+ *   __slot.hitStop(60)                        clock.hitStop (CR-11: normal profile only, <= 120 ms)
+ *   __slot.reducedMotion(true|false|null)     reduced-motion override (null = OS preference)
  */
 
 export interface LoggedEvent {
@@ -83,6 +87,9 @@ export interface DevApi {
   motion: { start(spec?: MotionSpec): Promise<string>; stop(): MotionTrace };
   events(clear?: boolean): LoggedEvent[];
   now(): number;
+  gameTime(): number;
+  hitStop(ms: number): void;
+  reducedMotion(on?: boolean | null): boolean;
   inspector(): SymbolInspector;
   /** scene emitter that logs like the lab's own emits */
   emitLogged: SceneEmit;
@@ -213,6 +220,12 @@ export const createDevApi = (ctx: GameContext, clock: typeof Clock): DevApi => {
       return out;
     },
     now: stamp,
+    gameTime: () => Math.round(clock.time * 10000) / 10,
+    hitStop: (ms) => clock.hitStop(ms),
+    reducedMotion(on) {
+      if (on !== undefined) setReducedMotion(on);
+      return reducedMotion();
+    },
     inspector: getInspector,
     emitLogged: emit,
   };

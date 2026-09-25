@@ -20,6 +20,8 @@
  *   anticipation_out              once   ≈ TIMING.anticipation.outroDuration
  *   explode                       once   event `burst` on the frame the symbol breaks apart
  *   blur                          loop   optional fast-fall pose (else the 'blur' texture is used)
+ *   bass_react                    once   TRACK 1, additive: board-wide bass reaction (optional)
+ *   drop_impact                   once   heavy impact of a dropped wild (board:transform 'impact'; optional)
  * EVENTS (aliases accepted):
  *   `impact` | `land_impact`      syncs land SFX + dust + shake
  *   `burst`  | `explode_burst`    syncs the explode particles
@@ -284,6 +286,27 @@ export class SpineRig {
     if (loop) return Promise.resolve();
     return new Promise((resolve) => {
       entry.listener = { complete: () => resolve(), interrupt: () => resolve(), end: () => resolve() };
+    });
+  }
+
+  /**
+   * One-shot ADDITIVE overlay on `track` (contract: overlays live on track 1, e.g. `bass_react`),
+   * layered over whatever track 0 plays; the track is emptied when it ends. Resolves on
+   * complete OR interrupt, like play().
+   */
+  playOverlay(animation: string, track = 1): Promise<void> {
+    const state = this.spine.state;
+    const entry = state.setAnimation(track, animation, false);
+    entry.additive = true;
+    return new Promise((resolve) => {
+      entry.listener = {
+        complete: () => {
+          state.setEmptyAnimation(track, 0);
+          resolve();
+        },
+        interrupt: () => resolve(),
+        end: () => resolve(),
+      };
     });
   }
 

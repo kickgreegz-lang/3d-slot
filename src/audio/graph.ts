@@ -1,13 +1,17 @@
-import { BUS_LEVELS } from './mix';
+import { BUS_LEVELS, type BusId } from './mix';
 
 /**
  * The bus graph, built identically on a live AudioContext and on an
  * OfflineAudioContext (dev renders), so what we measure is what ships:
  *
  *   voices ─> sfx ─┐
- *   voices ─> ui ──┼──> master (mute/hide fade) ─> DC block ─> limiter ─> ceiling ─> destination
- *   groove/stems ─> musicIn ─> musicFilter (LP) ─> musicDuck ─> music ─┘
+ *   voices ─> ui ──┴─> sfxDuck ─┐
+ *   hero voices ─> hero ────────┼──> master (mute/hide fade) ─> DC block ─> limiter ─> ceiling ─> destination
+ *   groove/stems ─> musicIn ─> musicFilter (LP) ─> musicHp (HP) ─> musicDuck ─> music ─┘
  *   voice/instrument sends ─> reverbIn ─> HP ─> convolver ─> reverb ─┘
+ *
+ * `sfxDuck` dips every SFX / UI voice under a hero sound (the bass boom) that plays on the
+ * un-ducked `hero` bus; `musicHp` is open (10 Hz) except during a charge sweep.
  *
  * The limiter is a DynamicsCompressorNode (6 ms look-ahead; its automatic makeup
  * gain is ~+3.4 dB for these settings). Its attack lets fast transients overshoot,
@@ -20,8 +24,14 @@ export interface AudioGraph {
   limiter: DynamicsCompressorNode;
   sfx: GainNode;
   ui: GainNode;
+  /** SFX + UI duck (under hero sounds) */
+  sfxDuck: GainNode;
+  /** hero SFX bus: bypasses sfxDuck (the sound that ducks the others) */
+  hero: GainNode;
   musicIn: GainNode;
   musicFilter: BiquadFilterNode;
+  /** music high-pass (charge sweeps); open = MUSIC_HP_OPEN */
+  musicHp: BiquadFilterNode;
   musicDuck: GainNode;
   music: GainNode;
   reverbIn: GainNode;
@@ -44,6 +54,9 @@ const ceilingCurve = (knee: number, ceiling: number): Float32Array<ArrayBuffer> 
 };
 
 export const dbToGain = (db: number): number => 10 ** (db / 20);
+
+/** Resting cutoff of the music high-pass (Hz): effectively open. */
+export const MUSIC_HP_OPEN = 10;
 
 /** Deterministic PRNG (mulberry32) so buffers and offline renders are reproducible. */
 export const rng = (seed: number): (() => number) => {
@@ -131,10 +144,14 @@ export const createGraph = (ac: BaseAudioContext, opts: GraphOptions = {}): Audi
   const master = gain(1);
   master.connect(dcBlock);
 
+  const sfxDuck = gain(1);
+  sfxDuck.connect(master);
   const sfx = gain(BUS_LEVELS.sfx);
   const ui = gain(BUS_LEVELS.ui);
-  sfx.connect(master);
-  ui.connect(master);
+  sfx.connect(sfxDuck);
+  ui.connect(sfxDuck);
+  const hero = gain(BUS_LEVELS.sfx);
+  hero.connect(master);
 
   const music = gain(BUS_LEVELS.music);
   const musicDuck = gain(1);
@@ -142,9 +159,14 @@ export const createGraph = (ac: BaseAudioContext, opts: GraphOptions = {}): Audi
   musicFilter.type = 'lowpass';
   musicFilter.frequency.value = Math.min(20000, ac.sampleRate * 0.45);
   musicFilter.Q.value = 0.9;
+  const musicHp = ac.createBiquadFilter();
+  musicHp.type = 'highpass';
+  musicHp.frequency.value = MUSIC_HP_OPEN;
+  musicHp.Q.value = 0.9;
   const musicIn = gain(1);
   musicIn.connect(musicFilter);
-  musicFilter.connect(musicDuck);
+  musicFilter.connect(musicHp);
+  musicHp.connect(musicDuck);
   musicDuck.connect(music);
   music.connect(master);
 
@@ -161,7 +183,7 @@ export const createGraph = (ac: BaseAudioContext, opts: GraphOptions = {}): Audi
   reverb.connect(master);
 
   return {
-    ac, master, limiter, sfx, ui, musicIn, musicFilter, musicDuck, music, reverbIn, reverb,
+    ac, master, limiter, sfx, ui, sfxDuck, hero, musicIn, musicFilter, musicHp, musicDuck, music, reverbIn, reverb,
     noise: makeNoise(ac),
   };
 };
@@ -199,3 +221,6 @@ export const audioTimer = (ac: BaseAudioContext, dest: AudioNode, delay: number,
   src.start(t);
   src.stop(t + Math.max(0.001, delay));
 };
+
+/** The graph node a voice on `bus` plays into. */
+export const busNode = (g: AudioGraph, bus: BusId): GainNode => (bus === 'ui' ? g.ui : bus === 'hero' ? g.hero : g.sfx);

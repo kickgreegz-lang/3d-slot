@@ -1,5 +1,5 @@
 import { gsap } from 'gsap';
-import { GAME_META } from '../../config/game';
+import { FEATURES, GAME_META } from '../../config/game';
 import type { SpeedProfile } from '../../core/timing';
 import type { GameContext, GameModule } from '../../game/context';
 import { safeText, t } from '../../i18n';
@@ -107,7 +107,10 @@ export class DomUi implements GameModule {
         open ? this.openMenu(page ?? this.lastPage) : this.closeMenuFromEvent(),
       ),
       uiBus.on('dialog:autoplay', () => this.openAutoplay()),
-      uiBus.on('dialog:buy', ({ mode }) => this.openBuy(mode)),
+      // FEATURES.buyScreen 'game': the game's own buy screen module answers the bonus-buy hex
+      uiBus.on('dialog:buy', ({ mode }) => {
+        if (FEATURES.buyScreen !== 'game') this.openBuy(mode);
+      }),
       this.ctx.hud.on('hud:message', (m) => this.onMessage(m)),
       this.ctx.hud.on('hud:state', (s) => this.onState(s as HudStateExt)),
     );

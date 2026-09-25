@@ -47,4 +47,19 @@ export const BOARD_TIMING = registerTiming('board', {
   transformTrauma: 0.28,
   /** board:transform 'impact': landing speed fed to the symbol's squash spring (design px / s). */
   transformImpactVelocity: 5200,
+  /** board:transform 'impact': crush fx power of the replaced symbol (no board:burst, no orb). */
+  impactCrushPower: 0.6,
+  /** board:transform 'impact': the 4 orthogonal neighbours are pushed out this far (design px x k) and spring back. */
+  impactPush: 6,
+  impactPushMs: 200,
+  /**
+   * Physics / distance scale reference: k = pitch / physRefPitch (Swamp Funk landscape pitch 154),
+   * applied to board:thump dips and the impact push so they read the same on every cell size.
+   */
+  physRefPitch: 154,
+  /** board:thump grid spring: frequency (Hz) and damping ratio (ANIMATION_CONTRACT §9). */
+  thumpHz: 9,
+  thumpZeta: 0.5,
+  /** board:focus default tint for the non-focused symbols (a light 20% dim). */
+  focusTint: 0xcccccc,
 } as const);

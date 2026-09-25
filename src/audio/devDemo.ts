@@ -1,7 +1,7 @@
 import { GRID } from '../config/game';
 import type { SfxId } from '../game/events';
 import type { AudioEngine, PlayOpts } from './engine';
-import { createGraph, rng } from './graph';
+import { busNode, createGraph, rng } from './graph';
 import type { MusicStem } from './manifest';
 import { AUDIO_TIMING, SFX_RULES } from './mix';
 import { Groove } from './music';
@@ -86,9 +86,9 @@ const encodeWav = (buf: AudioBuffer): string => {
 
 const spawn = (g: ReturnType<typeof createGraph>, id: SfxId, t: number, o: PlayOpts, seed: number): Voice => {
   const rule = SFX_RULES[id];
-  const v = new Voice(g.ac, rule.bus === 'ui' ? g.ui : g.sfx, g.reverbIn, g.noise, t, rng(seed));
+  const v = new Voice(g.ac, busNode(g, rule.bus), g.reverbIn, g.noise, t, rng(seed));
   v.level.gain.value = rule.gain * (o.volume ?? 1);
-  SYNTH_VOICES[id](v, { t, r: o.rate ?? 1, step: o.step ?? 0, period: o.period ?? 0.52 });
+  SYNTH_VOICES[id](v, { t, r: o.rate ?? 1, step: o.step ?? 0, period: o.period ?? 0.52, span: o.span ?? AUDIO_TIMING.chargeSpan });
   return v;
 };
 

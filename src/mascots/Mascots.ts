@@ -26,6 +26,10 @@ const REACT = {
   beamFooting: 0.3,
   /** free-spin groove BPM for both mascots */
   fsGroove: 112,
+  /** seconds both heads stay on a cue's `look` point (the meter), per cue */
+  lookSeconds: { bassDropCharge: 1.3, meterHeat: 2, meterThreshold: 1.2, featureLock: 1.6 } as Partial<Record<MascotCue, number>>,
+  /** default look hold for any other cue that carries a look point */
+  lookDefault: 1.2,
 };
 
 /**
@@ -189,7 +193,10 @@ export class Mascots implements GameModule {
     const g = this.ctx.game;
     this.offs.push(
       g.on('layout:change', ({ layout }) => this.layout(layout)),
-      g.on('mascot:cue', ({ cue, intensity }) => this.onCue(cue, intensity)),
+      g.on('mascot:cue', ({ cue, intensity, look }) => {
+        if (look) for (const m of this.mascots) m.lookAt(look, REACT.lookSeconds[cue] ?? REACT.lookDefault);
+        this.onCue(cue, intensity);
+      }),
       g.on('round:start', () => {
         this.winsThisRound = 0;
         this.anticipationLeft = 0;
@@ -280,6 +287,54 @@ export class Mascots implements GameModule {
         break;
       case 'fsEnd':
         this.all('fs_end');
+        break;
+      // ---- Groove Meter / Bass Drop cues (DESIGN bass-drop §16) on the 3D clip set ----
+      case 'meterHeat':
+        // Gumbo glances at the stack / Croak leans on the fader: the held lean-in loop,
+        // until meterHeat {intensity: 0}, the next reveal or the round end
+        if (intensity <= 0) this.all('release');
+        else this.all('anticipation');
+        break;
+      case 'meterThreshold': {
+        // minor notch (intensity = notch / 6): Gumbo points at the meter, Croak nods along
+        const k = Math.max(0, Math.min(1, intensity));
+        left?.cue('react_small', left.def.reactDelay);
+        right?.procedural.nodKick(0.6 + 0.9 * k);
+        if (k >= 0.5) right?.cue('react_small', right.def.reactDelay);
+        break;
+      }
+      case 'bassDropCharge':
+        // Gumbo braces (squash down, wide eyes); Croak leans in over the drop button
+        left?.procedural.flinch(0.9 * intensity);
+        left?.flash('surprised', 0.8, 0.6);
+        right?.procedural.leanKick(0.28 * intensity);
+        right?.procedural.nodKick(-0.8 * intensity);
+        right?.flash('angry', 0.5, 0.6);
+        break;
+      case 'bassDrop':
+        // the boom: Gumbo is blown back, Croak follows through (headphones bounce)
+        left?.procedural.hop(1.1 * intensity);
+        left?.procedural.nodKick(-1.6 * intensity);
+        left?.flash('surprised', 1, 0.9);
+        right?.procedural.hop(0.8 * intensity);
+        right?.procedural.nodKick(1.8 * intensity);
+        right?.cue('react_small', right.def.reactDelay);
+        right?.flash('happy', 0.9, 1);
+        break;
+      case 'wildLand':
+        // wild_land_react overlay: a flinch + nod on both, no clip change
+        for (const m of this.mascots) {
+          m.procedural.flinch(0.55 * intensity);
+          m.procedural.nodKick(0.7 * intensity);
+        }
+        break;
+      case 'featureLock':
+        // 1 = 40 locked (Juke Jam), 2 = 60 locked (Mega Mix)
+        this.all(intensity >= 1.5 ? 'win_big' : 'react_small');
+        break;
+      case 'featureUpgrade':
+        left?.cue('win_big', left.def.reactDelay);
+        right?.cue('fs_trigger', right.def.reactDelay);
         break;
     }
   }

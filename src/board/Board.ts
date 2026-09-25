@@ -5,15 +5,18 @@ import { FEATURES, GRID, type LandWeight, SYMBOLS, getSymbolDef, isVisibleRow } 
 import type { LayoutSpec } from '../config/layout';
 import { clock } from '../core/clock';
 import { TIMING, fallTime, followSpeed, s, sUi, speedScale, stagger } from '../core/timing';
+import { REDUCED_SHAKE_SCALE, reducedMotion } from '../fx/motion';
 import type { GameContext, GameModule } from '../game/context';
-import type { BoardTransformStyle, SfxId } from '../game/events';
+import type { BoardTransformStyle, GameEvents, SfxId } from '../game/events';
 import { createSymbolView } from '../symbols/createSymbolView';
 import type { SymbolView } from '../symbols/types';
 import { AnticipationBeam } from './AnticipationBeam';
 import { BOARD_TIMING } from './boardTiming';
 import { ClusterOutlines } from './ClusterOutline';
+import { Decorations } from './decorations';
 import { type Board as BoardIds, cloneBoard, mulberry32, pitchOf, planTumble, slotPos } from './model';
 import { SpotGrid } from './SpotGrid';
+import { GridThump } from './thump';
 
 /**
  * BOARD — grid choreography: fall-out, gravity drop-in with anticipation,
@@ -33,6 +36,16 @@ import { SpotGrid } from './SpotGrid';
  * Views are positioned in CELL units (reel, fractional padded row) and drawn
  * from the current layout, so a layout change mid-animation (device rotation)
  * re-targets motion already in flight instead of finishing at old coordinates.
+ *
+ * Feature hooks (core scene events, synchronous unless noted; DESIGN bass-drop §5 / §8.3 / §9.3):
+ *   board:decorate  keyed displays on the VIEW at a cell (follow falls / pops / squash)
+ *   board:thump     the symbol container dips px x k on a 9 Hz spring
+ *   board:react     distance-staggered bass_react hop on every visible symbol
+ *   board:focus     light dim of everything but some cells (second dim channel)
+ *   board:hold      cells that stay standing through the next fall-out / drop-in (CR-10b)
+ *   board:burst     EMITTED here during board:tumble at the explode-burst frame
+ *   board:transform 'impact' (awaited): crush now, heavy impact placement anticipateDuration later
+ * where k = pitch / BOARD_TIMING.physRefPitch.
  */
 const WEIGHT_RANK: Record<LandWeight, number> = { light: 0, medium: 1, heavy: 2, special: 3 };
 const LAND_SFX: Record<LandWeight, SfxId> = {
@@ -52,6 +65,14 @@ const Z_OUTLINE = Z_BEAM + 100;
 /** Safety gap (ms) between a column's fall-out end and its drop-in start. */
 const PIPELINE_MARGIN = 50;
 const isScatter = (id: string): boolean => getSymbolDef(id).kind === 'scatter';
+const cellKey = (reel: number, row: number): string => `${reel},${row}`;
+/** Orthogonal neighbour offsets (reel, row) for the impact push. */
+const NEIGHBOURS: ReadonlyArray<readonly [number, number]> = [
+  [-1, 0],
+  [1, 0],
+  [0, -1],
+  [0, 1],
+];
 /** Logical position of a view: reel + fractional padded row (tweened instead of pixels). */
 interface Cell {
   reel: number;
@@ -89,6 +110,14 @@ export class Board implements GameModule {
   /** per column: bumped when the drop-in takes the column over, so a late fall-out never touches it */
   private readonly colEpoch: number[] = new Array<number>(GRID.reels).fill(0);
   private idleCall: gsap.core.Tween | null = null;
+  private readonly decorations = new Decorations();
+  private readonly thump = new GridThump(this.root);
+  /** board:focus: cells kept bright (cellKey) + the tint of the rest; null = no focus */
+  private focus: { keep: Set<string>; tint: number } | null = null;
+  /** board:hold request for the next fall-out: cellKey -> id */
+  private holdReq: Map<string, string> | null = null;
+  /** views standing through the current fall-out, until the reveal has settled */
+  private readonly held = new Set<SymbolView>();
 
   constructor(private ctx: GameContext) {
     this.spots = new SpotGrid(ctx);
@@ -135,6 +164,16 @@ export class Board implements GameModule {
       g.on('board:tumble', ({ exploding, newSymbols }) => this.tumble(exploding, newSymbols)),
       g.on('board:set', ({ board }) => this.setBoard(board)),
       g.on('board:transform', ({ cells, style }) => this.transform(cells, style)),
+      g.on('board:decorate', ({ reel, row, key, display }) => {
+        const sv = this.slots[reel]?.[row];
+        if (sv) this.decorations.set(sv, key, display);
+      }),
+      g.on('board:thump', ({ px }) => this.thump.kick(px * this.physK() * (reducedMotion() ? REDUCED_SHAKE_SCALE : 1))),
+      g.on('board:react', (p) => this.react(p)),
+      g.on('board:focus', ({ cells, tint }) => this.setFocus(cells, tint)),
+      g.on('board:hold', ({ cells }) => {
+        this.holdReq = cells.length ? new Map(cells.map((c) => [cellKey(c.reel, c.row), c.id])) : null;
+      }),
       g.on('spots:update', ({ grid }) => (FEATURES.multiplierSpots ? this.spots.update(grid) : undefined)),
       g.on('spots:reset', ({ grid }) => this.spots.reset(grid)),
       g.on('fs:trigger', ({ positions }) => this.celebrate(positions)),
@@ -163,6 +202,8 @@ export class Board implements GameModule {
     for (const off of this.unsubs) off();
     this.idleCall?.kill();
     this.killTimelines();
+    this.thump.reset();
+    this.decorations.clear();
     this.beam.stop();
     this.outlines.clear();
     this.spots.destroy();
@@ -205,6 +246,7 @@ export class Board implements GameModule {
     this.busy++;
     try {
       this.clearPresentation(false);
+      this.takeHold();
       const L = this.ctx.layout;
       const T = TIMING.spin;
       const dist = T.fallOutDistanceCells * pitchOf(L);
@@ -219,6 +261,7 @@ export class Board implements GameModule {
         const owned = () => this.colEpoch[reel] === epoch;
         for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) {
           const sv = this.slots[reel][row];
+          if (this.held.has(sv)) continue;
           const at = reel * stagger(T.fallOutColumnStagger) + (GRID.lastVisibleRow - row) * stagger(T.fallOutRowStagger);
           const end = at + T.fallOutDuration;
           clear = Math.max(clear, end);
@@ -231,6 +274,7 @@ export class Board implements GameModule {
             if (!owned()) return;
             sv.setBlur(false);
             sv.view.visible = false;
+            this.decorations.detach(sv);
           }, [], s(end));
         }
         // local timeline seconds as built: a later speed change retimes the timeline (timeScale), not these
@@ -317,6 +361,8 @@ export class Board implements GameModule {
 
       this.boardIds = cloneBoard(board);
       const tl = this.timeline();
+      // CR-10b: a held view whose reveal id matches just stays (no drop-in); a mismatch drops in
+      const heldRows = this.slots.map((col, reel) => col.map((sv, row) => this.held.has(sv) && board[reel][row] === sv.id));
 
       // ---- place each column's new symbols above their slots when it starts --
       // (added first so the placement renders before that column's drop tweens)
@@ -325,6 +371,9 @@ export class Board implements GameModule {
           this.takeColumn(reel);
           for (let row = 0; row < GRID.paddedRows; row++) {
             const sv = this.slots[reel][row];
+            if (heldRows[reel][row]) continue;
+            if (this.held.delete(sv)) sv.view.zIndex = zOf(reel, row);
+            this.decorations.detach(sv);
             sv.reset();
             sv.setSymbol(board[reel][row]);
             // padding rows are never seen at rest: park them hidden in their slot
@@ -345,6 +394,7 @@ export class Board implements GameModule {
       for (let reel = 0; reel < GRID.reels; reel++) {
         let heaviest: LandWeight | null = null;
         for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) {
+          if (heldRows[reel][row]) continue;
           const def = getSymbolDef(board[reel][row]);
           if (def.kind === 'scatter') continue;
           if (!heaviest || WEIGHT_RANK[def.landWeight] > WEIGHT_RANK[heaviest]) heaviest = def.landWeight;
@@ -369,6 +419,7 @@ export class Board implements GameModule {
         for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) {
           const sv = this.slots[reel][row];
           const id = board[reel][row];
+          if (heldRows[reel][row]) continue;
           const at = colStart[reel] + (GRID.lastVisibleRow - row) * rowStagger;
           this.tweenRow(tl, sv, row, s(T), 'power1.in', s(at));
           if (tBlurOff - tBlur > 16) {
@@ -391,11 +442,41 @@ export class Board implements GameModule {
       await Promise.all(lands);
       if (gen !== this.gen) return;
       for (const sv of [...this.elevated]) this.unelevate(sv);
+      this.releaseHeld();
       this.shown = true;
       this.fallOutPromise = null;
     } finally {
       this.done();
     }
+  }
+
+  /**
+   * CR-10b: consume the board:hold request at the fall-out: every listed cell whose view
+   * still shows the id stays standing (drawn above the falling symbols) until the reveal.
+   */
+  private takeHold(): void {
+    const req = this.holdReq;
+    this.holdReq = null;
+    this.releaseHeld();
+    if (!req) return;
+    for (const [key, id] of req) {
+      const [reel, row] = key.split(',').map(Number);
+      const sv = this.slots[reel]?.[row];
+      if (!sv || !isVisibleRow(row) || sv.id !== id || !sv.view.visible || sv.state === 'explode' || sv.state === 'hidden') continue;
+      this.held.add(sv);
+      sv.view.zIndex = Z_BEAM - 2;
+    }
+  }
+
+  /** Held views return to their normal z-order (after the reveal, board:set). */
+  private releaseHeld(): void {
+    for (let reel = 0; reel < GRID.reels; reel++) {
+      for (let row = 0; row < GRID.paddedRows; row++) {
+        const sv = this.slots[reel][row];
+        if (this.held.delete(sv)) sv.view.zIndex = zOf(reel, row);
+      }
+    }
+    this.held.clear();
   }
 
   private scatterLanded(sv: SymbolView, reel: number, row: number, n: number, keepAnticipating: boolean): void {
@@ -518,7 +599,10 @@ export class Board implements GameModule {
       const E = TIMING.explode;
       const bursts = doomed.map((sv) => sv.explode());
       const n = doomed.length;
+      const burstPositions = uniq.map((p) => ({ reel: p.reel, row: p.row }));
       const impact = gsap.delayedCall(s(E.anticipateDuration), () => {
+        // orbs / link snaps / count pops sync to the burst frame (before the freeze starts)
+        this.ctx.game.broadcast('board:burst', { positions: burstPositions });
         clock.hitStop(E.hitStop);
         const B = BOARD_TIMING;
         this.ctx.game.broadcast('fx:shake', {
@@ -629,9 +713,11 @@ export class Board implements GameModule {
 
   private async transform(cells: Array<Position & { id: string }>, style: BoardTransformStyle): Promise<void> {
     const seen = new Set<string>();
+    // 'impact' replaces even a cell that already shows the id (a drop onto a W, [M-6])
     const todo = cells.filter((c) => {
       const k = `${c.reel},${c.row}`;
-      if (seen.has(k) || !this.slots[c.reel]?.[c.row] || this.boardIds[c.reel][c.row] === c.id) return false;
+      if (seen.has(k) || !this.slots[c.reel]?.[c.row]) return false;
+      if (style !== 'impact' && this.boardIds[c.reel][c.row] === c.id) return false;
       seen.add(k);
       return true;
     });
@@ -643,6 +729,7 @@ export class Board implements GameModule {
         for (const c of todo) {
           const sv = this.slots[c.reel][c.row];
           gsap.killTweensOf(this.cellOf(sv));
+          this.decorations.detach(sv);
           sv.reset();
           sv.setSymbol(c.id);
           this.put(sv, c.reel, c.row);
@@ -651,7 +738,8 @@ export class Board implements GameModule {
         return;
       }
       const jobs = todo.map(async (c, i) => {
-        const delay = i * stagger(BOARD_TIMING.transformStagger);
+        // 'impact' is frame-locked to the caller's proxy contact: never staggered
+        const delay = style === 'impact' ? 0 : i * stagger(BOARD_TIMING.transformStagger);
         if (delay > 0) await clock.wait(delay);
         if (gen !== this.gen) return;
         if (style === 'morph') await this.morphCell(c);
@@ -672,6 +760,7 @@ export class Board implements GameModule {
     const sv = this.slots[c.reel][c.row];
     const def = getSymbolDef(c.id);
     const p = slotPos(this.ctx.layout, c.reel, c.row);
+    this.decorations.detach(sv);
     sv.reset();
     sv.setSymbol(c.id);
     this.boardIds[c.reel][c.row] = c.id;
@@ -682,29 +771,44 @@ export class Board implements GameModule {
   }
 
   /**
-   * Crush + place: the old symbol explodes now; anticipateDuration later (when a caller's
-   * flying proxy makes contact) the new one takes the cell with a heavy impact squash.
+   * Crush + place (CR-10a, DESIGN bass-drop §8.3). At the call the old symbol is crushed: it
+   * explodes with fx power BOARD_TIMING.impactCrushPower + `symbol_crush` (no board:burst, so
+   * no orb). TIMING.explode.anticipateDuration (s()-scaled) later — the caller's proxy contact
+   * — the new id takes the cell with its heavy impact (SymbolView.impact: `drop_impact` or the
+   * procedural sy 0.72 squash) and the 4 orthogonal neighbours are pushed out and spring
+   * back. Resolves when the new symbol has settled and the crush is done. Contact feedback
+   * (impact SFX, dust, shake, hit-stop, board thump, mascot cue) belongs to the caller.
    */
   private async impactCell(c: Position & { id: string }, gen: number): Promise<void> {
     const old = this.slots[c.reel][c.row];
-    const def = getSymbolDef(c.id);
     this.unelevate(old);
     this.dim(old, false, false);
-    const burst = old.explode();
+    const burst = old.explode({ power: BOARD_TIMING.impactCrushPower });
+    this.sfx('symbol_crush');
     await clock.wait(TIMING.explode.anticipateDuration);
     if (gen !== this.gen) return;
     const sv = this.acquire(c.id);
     this.put(sv, c.reel, c.row);
-    sv.view.zIndex = zOf(c.reel, c.row);
+    // above its neighbours while the slam spills out of the cell
+    sv.view.zIndex = Z_BEAM - 1;
     this.slots[c.reel][c.row] = sv;
     this.boardIds[c.reel][c.row] = c.id;
-    const L = this.ctx.layout;
-    const p = slotPos(L, c.reel, c.row);
-    this.ctx.game.broadcast('fx:shake', { trauma: BOARD_TIMING.transformTrauma });
-    this.ctx.game.broadcast('fx:burst', { kind: 'dust', x: p.x, y: p.y + L.cell * 0.4, color: def.color, power: 1 });
-    this.sfx(LAND_SFX[def.landWeight]);
-    await Promise.all([burst, sv.land({ velocity: BOARD_TIMING.transformImpactVelocity, silent: true })]);
+    if (this.focus && !this.focus.keep.has(cellKey(c.reel, c.row))) sv.setFocusDim(this.focus.tint, false);
+    this.pushNeighbours(c.reel, c.row);
+    await Promise.all([burst, sv.impact()]);
     this.release(old);
+    if (gen === this.gen && this.slots[c.reel][c.row] === sv) sv.view.zIndex = zOf(c.reel, c.row);
+  }
+
+  /** The 4 orthogonal neighbours of an impact are shoved out and spring back. */
+  private pushNeighbours(reel: number, row: number): void {
+    const d = BOARD_TIMING.impactPush * this.physK();
+    for (const [dr, dc] of NEIGHBOURS) {
+      const r = reel + dr;
+      const w = row + dc;
+      if (r < 0 || r >= GRID.reels || !isVisibleRow(w)) continue;
+      this.slots[r]?.[w]?.nudge(dr * d, dc * d, BOARD_TIMING.impactPushMs);
+    }
   }
 
   /**
@@ -764,6 +868,10 @@ export class Board implements GameModule {
     this.gen++;
     this.killTimelines();
     this.clearPresentation(false);
+    this.thump.reset();
+    this.decorations.clear();
+    this.holdReq = null;
+    this.releaseHeld();
     for (let reel = 0; reel < GRID.reels; reel++) {
       for (let row = 0; row < GRID.paddedRows; row++) {
         const sv = this.slots[reel][row];
@@ -808,6 +916,47 @@ export class Board implements GameModule {
       const j = Math.floor(this.rng() * pick.length);
       pick.splice(j, 1)[0]?.idleAccent();
     }
+  }
+
+  // =========================================================================
+  // feature hooks: bass reaction wave, focus dim
+  // =========================================================================
+
+  /**
+   * board:react — every visible symbol plays its bass reaction with an onset of
+   * min(capMs, perPxMs x distance from (x, y)) (design px, s()-scaled), so the wave visibly
+   * travels across the board. Additive on the symbols (safe mid-land / mid-win).
+   */
+  private react({ x, y, perPxMs, capMs, power }: GameEvents['board:react']): void {
+    const L = this.ctx.layout;
+    const pw = power ?? 1;
+    const tl = this.timeline();
+    this.forVisible((sv) => {
+      const c = this.cellOf(sv);
+      const p = slotPos(L, c.reel, c.row);
+      const delay = Math.max(0, Math.min(capMs, perPxMs * Math.hypot(p.x - x, p.y - y)));
+      if (delay < 1) sv.react(pw);
+      else tl.call(() => sv.react(pw), [], s(delay));
+    });
+    void this.play(tl);
+  }
+
+  /** board:focus — light dim of every visible symbol except `cells`; null restores all. */
+  private setFocus(cells: Position[] | null, tint: number = BOARD_TIMING.focusTint): void {
+    if (!cells) {
+      if (!this.focus) return;
+      this.focus = null;
+      for (const col of this.slots) for (const sv of col) sv.setFocusDim(null);
+      return;
+    }
+    const keep = new Set(cells.map((c) => cellKey(c.reel, c.row)));
+    this.focus = { keep, tint };
+    this.forVisible((sv, reel, row) => sv.setFocusDim(keep.has(cellKey(reel, row)) ? null : tint));
+  }
+
+  /** Physics / distance scale of the current layout: k = pitch / BOARD_TIMING.physRefPitch. */
+  private physK(): number {
+    return pitchOf(this.ctx.layout) / BOARD_TIMING.physRefPitch;
   }
 
   // =========================================================================
@@ -862,8 +1011,9 @@ export class Board implements GameModule {
     }
   }
 
-  /** Drop every presentation state (dim, elevation, anticipation, outlines, beams). */
+  /** Drop every presentation state (dim, focus, elevation, anticipation, outlines, beams). */
   private clearPresentation(animate: boolean): void {
+    this.setFocus(null);
     this.beam.stop();
     this.outlines.clear();
     this.spots.clearHighlights(animate);
@@ -889,6 +1039,8 @@ export class Board implements GameModule {
   }
 
   private release(sv: SymbolView): void {
+    this.decorations.detach(sv);
+    this.held.delete(sv);
     this.unelevate(sv);
     this.dim(sv, false, false);
     if (this.anticipating.delete(sv)) sv.setAnticipation(false);

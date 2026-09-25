@@ -1,8 +1,11 @@
 import { gsap } from 'gsap';
 import { type Ticker, UPDATE_PRIORITY } from 'pixi.js';
-import { followSpeed, s } from './timing';
+import { followSpeed, getSpeedProfile, onSpeedChange, s } from './timing';
 
 type TickFn = (dtSeconds: number) => void;
+
+/** Longest single hit-stop (ms, real time; DESIGN bass-drop §19 / ANIMATION_CONTRACT §9). */
+export const HIT_STOP_MAX_MS = 120;
 
 /**
  * The ONE frame clock. GSAP, Spine, three.js mixers, particles and shake all
@@ -22,6 +25,8 @@ class Clock {
   dt = 0;
   /** real (unfrozen) delta of the last frame (s) — UI that must not freeze */
   realDt = 0;
+  /** accumulated real (unfrozen) time (s): rate limits measured in wall time (flash limiter) */
+  realTime = 0;
   private ticker: Ticker | null = null;
   private freezeLeftMs = 0;
   private listeners = new Set<TickFn>();
@@ -44,6 +49,7 @@ class Clock {
       advance = ms - frozen;
     }
     this.realDt = ms / 1000;
+    this.realTime += this.realDt;
     this.dt = advance / 1000;
     this.time += this.dt;
     gsap.updateRoot(this.time);
@@ -56,9 +62,26 @@ class Clock {
     return () => this.listeners.delete(fn);
   }
 
-  /** Freeze all gameplay motion for `ms` real milliseconds (impact emphasis). */
+  /**
+   * Freeze all gameplay motion for `ms` real milliseconds (impact emphasis).
+   * CR-11: hit-stops play in the 'normal' speed profile only (turbo / super turbo would pay
+   * them on every tumble step), each is capped at HIT_STOP_MAX_MS, and overlapping ones do
+   * not add up: the longer remaining freeze wins. A switch out of 'normal' (slam-stop,
+   * turbo mid-round) drops the freeze still pending.
+   */
   hitStop(ms: number): void {
-    this.freezeLeftMs = Math.max(this.freezeLeftMs, ms);
+    if (getSpeedProfile() !== 'normal' || !(ms > 0)) return;
+    this.freezeLeftMs = Math.max(this.freezeLeftMs, Math.min(ms, HIT_STOP_MAX_MS));
+  }
+
+  /** Drop any pending hit-stop freeze. */
+  releaseHitStop(): void {
+    this.freezeLeftMs = 0;
+  }
+
+  /** ms of hit-stop freeze still pending (0 when the game clock runs). */
+  get frozenMs(): number {
+    return this.freezeLeftMs;
   }
 
   /** Speed-profile-scaled wait driven by the game clock (deterministic); a slam-stop shortens it. */
@@ -95,3 +118,7 @@ class Clock {
 }
 
 export const clock = new Clock();
+// CR-11: leaving 'normal' mid-freeze (slam-stop) releases the pending hit-stop at once.
+onSpeedChange(() => {
+  if (getSpeedProfile() !== 'normal') clock.releaseHitStop();
+});

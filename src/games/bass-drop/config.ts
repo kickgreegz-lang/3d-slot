@@ -101,12 +101,13 @@ export const SPOT_BANDS: SpotBand[] = [
 
 /**
  * Bet modes (math-sdk keys, sent verbatim to /wallet/play). Both buys cost more than 2x,
- * so the confirm step is mandatory (Stake rule). TODO(math): RTP / max win placeholders.
+ * so the confirm step is mandatory (Stake rule). TODO(math): RTP placeholders; max win
+ * follows the mock math's wincap (5,000x, mock/games/bass-drop/books wincap fixture).
  */
 export const BET_MODES: Record<string, BetModeDef> = {
-  BASE: { key: 'BASE', cost: 1, buy: false, rtp: 0.962, maxWinX: 10000 },
-  BONUS: { key: 'BONUS', cost: 100, buy: true, rtp: 0.962, maxWinX: 10000 },
-  SUPER: { key: 'SUPER', cost: 300, buy: true, rtp: 0.962, maxWinX: 10000 },
+  BASE: { key: 'BASE', cost: 1, buy: false, rtp: 0.962, maxWinX: 5000 },
+  BONUS: { key: 'BONUS', cost: 100, buy: true, rtp: 0.962, maxWinX: 5000 },
+  SUPER: { key: 'SUPER', cost: 300, buy: true, rtp: 0.962, maxWinX: 5000 },
 };
 
 /** Idle board before the first spin: no scatter in this game, one wild teaser. */

@@ -34,6 +34,16 @@ def label(x, y, text, size=22, color=None, anchor='middle', weight='600'):
             f'fill="{color}" text-anchor="{anchor}" dominant-baseline="middle">{text}</text>')
 
 
+# Visual HUD hex radii per space, mirrored from src/ui/hud/hudLayout.ts (None = derived:
+# small = smallButton / 2, spin = size * 0.56). Keep in step with that file.
+HUD_VISUAL = {
+    'landscape': {'small': None, 'buy': 88, 'spin': None},
+    'tablet': {'small': None, 'buy': 88, 'spin': None},
+    'portrait': {'small': 58, 'buy': 76, 'spin': None},
+    'compact': {'small': 30, 'buy': 33, 'spin': 80},
+}
+
+
 def hexagon(cx, cy, d, stroke, fill='none', sw=3, tilt=0):
     r = d / 2
     pts = []
@@ -150,10 +160,11 @@ def render(name, S):
     txc, tyc = t['x'] + t['w'] / 2, t['y'] + t['h'] / 2
     apexY = max(S['wildApexMinY'], min(oy, G['y']) - 1.2 * pitch)
     cxp = (ox + txc) / 2
-    # quadratic control so that the curve's apex ~ apexY: control y = 2*apex - (oy+ty)/2
-    cyp = 2 * apexY - (oy + tyc) / 2
+    # quadratic control whose curve peaks exactly at apexY (DESIGN.md section 8.2):
+    # y(t) peaks at (y0*y2 - c^2) / (y0 - 2c + y2)  =>  c = apex - sqrt((y0 - apex) * (y2 - apex))
+    cyp = apexY - math.sqrt(max(0.0, (oy - apexY) * (tyc - apexY)))
     s.append(f'<path d="M{ox},{oy} Q{cxp:.1f},{cyp:.1f} {txc:.1f},{tyc:.1f}" fill="none" stroke="{COL["arc"]}" stroke-width="{3*k}" stroke-dasharray="{12*k},{8*k}"/>')
-    s.append(label(cxp, apexY - 14 * k if apexY > 30 else apexY + 18 * k, 'wild arc (apex ≥ %d)' % S['wildApexMinY'], size=round(18 * k), color='#ffffff'))
+    s.append(label(cxp, apexY - 14 * k if apexY > 30 else apexY + 18 * k, 'wild arc (apex y %d, min %d)' % (round(apexY), S['wildApexMinY']), size=round(18 * k), color='#ffffff'))
     # orb path from a far cell
     sx, sy = G['x'] + 5 * pitch + S['cell'] / 2, G['y'] + 5 * pitch + S['cell'] / 2
     mx, my = (sx + ox) / 2, (sy + oy) / 2
@@ -174,15 +185,18 @@ def render(name, S):
     s.append(label(tp['x'], tp['y'], 'tumble win', size=round(18 * k), color=COL['plate']))
     # HUD
     hud = S['hud']
-    sb = hud['smallButton']
+    # visual hex radii as drawn by src/ui/hud/hudLayout.ts (smallButton is the touch target)
+    vis = HUD_VISUAL.get(name, HUD_VISUAL['landscape'])
+    small_r = vis['small'] if vis['small'] is not None else hud['smallButton'] / 2
     for key in ('autoplay', 'turbo', 'menu', 'betMinus', 'betPlus'):
         p = hud[key]
-        s.append(hexagon(p['x'], p['y'], sb, COL['hud'], fill='#000000'))
+        s.append(hexagon(p['x'], p['y'], 2 * small_r, COL['hud'], fill='#000000'))
     bb = hud['bonusBuy']
-    s.append(hexagon(bb['x'], bb['y'], sb * 1.6, COL['buy'], fill=COL['buy']))
+    s.append(hexagon(bb['x'], bb['y'], 2 * vis['buy'], COL['buy'], fill=COL['buy']))
     s.append(label(bb['x'], bb['y'], 'BUY', size=round(18 * k), color='#ffffff'))
     sp = hud['spin']
-    s.append(hexagon(sp['x'], sp['y'], sp['size'], COL['spin'], fill='#000000', tilt=sp['tilt']))
+    spin_r = vis['spin'] if vis['spin'] is not None else sp['size'] * 0.56
+    s.append(hexagon(sp['x'], sp['y'], 2 * spin_r, COL['spin'], fill='#000000', tilt=sp['tilt']))
     s.append(label(sp['x'], sp['y'], 'SPIN', size=round(26 * k), color='#ffffff'))
     for key, txt in (('balance', 'BALANCE'), ('betValue', 'BET'), ('win', 'WIN')):
         p = hud[key]

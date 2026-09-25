@@ -1,15 +1,12 @@
 import type { LayoutKind, LayoutSpec, Pt, Rect } from '../../config/layout';
 
 /**
- * SWAMP: BASS DROP design spaces (6x6 grid, 4 design spaces). Numbers are copied from the
+ * SWAMP FUNK: BASS DROP design spaces (6x6 grid, 4 design spaces). Numbers are copied from the
  * design track's docs/games/bass-drop/layout.json (DESIGN.md section 15 is authoritative;
  * fix both together). The square grid sits slightly right of centre in landscape, leaving
  * the left column for the Groove Meter speaker cabinet above Gumbo, with Baron Croak and
- * his DJ booth on the right.
- *
- * Deviation: portrait bet-row anchors are nudged up (label baselines 1834, bet buttons
- * 1856) so the values hanging below the labels stay inside 1920; layout.json lists
- * 1842-1880 for them.
+ * his DJ booth on the right. Portrait / compact HUD anchors are the collision-free
+ * placements (label baselines keep the values inside the design space).
  */
 
 /** Groove Meter ring (every other meter radius is a fraction of ringOuterD / 2, see layout.json meterGeometry). */

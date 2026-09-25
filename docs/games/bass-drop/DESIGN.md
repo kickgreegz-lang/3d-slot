@@ -20,10 +20,9 @@ Tags used here:
 
 ## 0. Reference study (what we took, what we did not)
 
-Sources:
-- `ref_dragon_1.png` (Dragonspire intro, 1073×604);
-- `ref_dragon_2.png` + `ref_dragon_2_grid.png` (Dragonspire base game, 1079×607);
-- our current Swamp Funk captures (`shots/art/final/1920x1080/shot.png`, `shots/final/final_grid.png`).
+Sources (none of them is in the repo: third-party frames are never committed, and our own captures are local QA output):
+- `ref_dragon_1.png` (Dragonspire intro, 1073×604) and `ref_dragon_2.png` + `ref_dragon_2_grid.png` (Dragonspire base game, 1079×607): the user's screenshots, kept in the session scratchpad only;
+- our Swamp Funk captures from `tools/capture/shot.mjs` at 1920×1080 (regenerate them; they are not committed).
 
 The live demo could not be captured: the proxy refuses `paperclip.live.engine.io` and `rgsd.engine.io` (HTTP 403 on CONNECT). **Every timing in this document is derived from our own `timing.ts` plus AAA norms, not measured from Dragonspire.** Timings that need the capture carry **[RM]**.
 
@@ -73,8 +72,7 @@ Pillars:
 | Mega Mix | The meter restarts at 0 (at the trigger, and again at an upgrade). Drop wilds carry ×2..×10. A drop wild with `sticky:true` makes its target cell a **home** for the rest of the feature: within a spin it is an ordinary wild (it wins, explodes, feeds the meter and falls with gravity), and at **every later free-spin reveal it respawns at its home** (`stickyWilds` lists the homes). Each `winInfo` it is part of adds +1 to its multiplier (cap ×25), shown from the next reveal. The mock caps the home registry at 5; later drops are one-shot `sticky:false` multiplier wilds ([M-10]) |
 | Bonus buy | `BONUS` 100× → Juke Jam; `SUPER` 300× → Mega Mix. Both need a confirm step (cost > 2×) |
 
-Math-owned decisions, with the FE default that ships until math says otherwise:
-The mock math (`tools/mockmath/bass-drop/`, rules in [mock/games/bass-drop/README.md](../../../mock/games/bass-drop/README.md)) has already decided most of these; the defaults below follow it.
+Math-owned decisions, with the FE default that ships until math says otherwise. The mock math (`tools/mockmath/bass-drop/`, rules in [mock/games/bass-drop/README.md](../../../mock/games/bass-drop/README.md)) has already decided most of them, and the defaults below follow it (checked against the generated books).
 
 - **[M-1] Juke Jam start value.** The meter restarts at **0** at `featureTrigger` (mock rule; no event says so, so the FE resets it itself behind the wipe). A `meterUpdate {delta:0}` before the first free-spin reveal would override it silently (CR-2).
 - **[M-2] Mega Mix meter.** Restarts at **0** at `featureTrigger` and again at `featureUpgrade` (mock rule; the FE resets it behind the upgrade screen). It keeps counting past 60 (values like 118 happen), but **no threshold above 60 is listed or dropped**: at ≥ 60 the meter shows the MAX state (section 6.7). The FE still tolerates a threshold T > 60 if a future math lists one: notch `((T/10 − 1) mod 6) + 1`, one lap pip per full 60.
@@ -257,7 +255,7 @@ LED colour per segment. The head tick is white-hot with a glow; unlit ticks are 
 | `armed` | a threshold was crossed and its `wild:drop` has not played yet | The crossed notch strobes gold at 2 Hz; the cone vibrates 1.5 px; the neon tube glows |
 | `lockedBonus` | ≥ 40 (base) | JJ badge `lit` permanently for the round; rim trim → gold |
 | `lockedSuper` | ≥ 60 (base) / upgrade | MM badge `lit`; rim trim → pink; overdrive loop |
-| `jukejam` / `megamix` | feature modes | Skins `jukejam` (gold trim) / `megamix` (pink trim + lap pips) |
+| `jukejam` / `megamix` | feature modes | Skins `jukejam` (gold trim) / `megamix` (pink trim; lap pips only in the fallback of section 6.7) |
 
 ### 6.3 Energy orbs (the connection → meter link)
 
@@ -502,7 +500,7 @@ At the same time: the meter drains to 0 and its skin → `megamix` (the math res
 
 ## 11. Win tiers and big-win screens (reuse)
 
-- Tiers and thresholds are unchanged: `WIN_TIERS` BIG 15× / SUPER 30× / MEGA 50× / EPIC 100× / MAX (`src/config/game.ts`).
+- Tiers and thresholds are unchanged: `WIN_TIERS` BIG 15× / SUPER 30× / MEGA 50× / EPIC 100× / MAX (`WIN_TIERS` in `src/games/bass-drop/config.ts`, same values as Swamp Funk).
 - Durations and interaction are unchanged: `TIMING.bigWin` 5 / 7 / 9 / 13 / 18 s, not speed-scaled; first tap jumps, second tap closes; `BIGWIN_TIMING`. **[RM]**: compare the tier thresholds and durations with Dragonspire.
 - **Re-skin only:** `ui_bigwin` gets the Bass Drop set (vinyl-disc sunburst, speaker cones pumping behind the title, gold/pink per tier). The **tier-punch** also fires a meter `pump` and the horns' `boom_follow`, so the room pumps with every tier. `TIER_TINT` is unchanged.
 - Small wins count up with `TIMING.counters.smallByLevel` (speed-scaled), unchanged.
@@ -678,7 +676,7 @@ New `SfxId`s (CR-5). Every one has a visual counterpart (section 20).
 | `meter_lock_bonus` / `meter_lock_super` | 40 / 60 | Signature stingers |
 | `meter_heat` | Heat state | Seamless loop, low tick |
 | `meter_drain` | Base spin start | Descending filter sweep, quiet |
-| `meter_lap` | Mega Mix lap | |
+| `meter_lap` | Fallback lap (section 6.7) | Never plays with the current math |
 | `bass_charge` | Drop charge | 500 ms riser; the chained variant is cut short |
 | `bass_boom` | Boom | The loudest SFX; sub 35–60 Hz + transient; +2 st per chain step |
 | `wild_launch` / `wild_whoosh` | Launch / flight | +2 st per wild index / doppler |
@@ -780,6 +778,7 @@ export const BASS_DROP_TIMING = registerTiming('bassDrop', {
              thumpPx: 5, settle: 300, multSlamDelay: 120, multSlam: 180, stickyLockDelay: 180, dimTint: 0xcccccc,
              boardReactPerPx: 0.25, boardReactCap: 180 },
   multSum: { flight: 240, stagger: 150, count: 250, slamScale: 1.25 },
+  sticky:  { homeMarkerIn: 200, plusOneDelay: 150, plusOneRise: 30, plusOne: 400, returnStagger: 90, multUpStagger: 120, multUpCap: 600 },
   feature: { triggerHold: 200, triggerDim: 0.5, pumpGap: 600, triggerTotal: 1800, upgrade: 2200, introTapLock: 900,
              introCardsTapLock: 600 /* UI time, sUi() */ },
   shake:   { explodeBase: 0.08, explodePerSymbol: 0.02, explodeMax: 0.35, thresholdMinor: 0.1, thresholdBonus: 0.3,
@@ -801,9 +800,9 @@ The explode shake values **replace** `BOARD_TIMING.explodeTrauma*` for Bass Drop
   - Camera shake (root) is only for booms, feature triggers, upgrades, major thresholds and big-win tiers.
   - Wild impacts use the **board thump** (grid container spring) plus a small trauma.
   - Ordinary lands never shake (ANIMATION_CONTRACT §9).
-- **Peaks** (at `shake.maxOffset` 22 px): boom 0.45 → 4.5 px; chained max 0.65 → 9.3 px; feature trigger 0.6 → 7.9 px; upgrade 0.5 → 5.5 px. Everything stays inside the 6–14 px big-win shake gate.
+- **Peaks** (at `shake.maxOffset` 22 px): boom 0.45 → 4.5 px; chained max 0.65 → 9.3 px; feature trigger 0.6 → 7.9 px; upgrade 0.5 → 5.5 px. Offset = maxOffset × trauma² (`src/fx/shake.ts`). Nothing exceeds the 14 px ceiling of the big-win shake gate (6–14 px), so the big-win tiers stay the strongest shake in the game; a single boom (4.5 px) is deliberately below that gate.
 - **Flashes:** a global limiter keeps them **≤ 3 per second** with ≥ 334 ms between flashes; excess flashes are **dropped**, not queued. There is never a saturated red full-screen flash.
-- **Hit-stops:** normal speed only, capped at 120 ms (thresholds 60, boom 60, wild impact 40, trigger 80, explode 100).
+- **Hit-stops:** normal speed only (CR-11), capped at 120 ms (thresholds 60, boom 60, wild impact 40, trigger 80, explode 100). Overlapping hit-stops do not add up: `clock.hitStop` keeps the longer remaining freeze.
 - **Filters:** at most 3 live filters (low tier 1). The shockwave has priority, then the chromatic pulse (high tier only), then god rays (intros only).
 
 ---
@@ -871,22 +870,23 @@ Tool: the reference capture track's `tools/reference/capture.mjs`, which capture
 
 ## 23. Open decisions and contract requests
 
-Math: [M-1] … [M-9] (section 2).
+Math: [M-1] … [M-10] (section 2). Open with math: [M-10] (the spec says every Mega Mix drop wild is sticky; the mock caps homes at 5) and the final `wincap` value (mock 5,000×; `BET_MODES.maxWinX` in `src/games/bass-drop/config.ts` now follows it at 5,000 and must change with it).
 
-Contract requests (outside docs/games/bass-drop; each one lands in the same PR as the code that needs it):
+Contract requests (outside docs/games/bass-drop; each one lands in the same PR as the code that needs it). Status as of the mock math and the current `src/games/bass-drop/`:
 
-| CR | Change | Where |
-|---|---|---|
-| **CR-1** | Emit `stickyWilds` **also after every Mega Mix `tumbleBoard` whose wins included a sticky wild** (post-increment multipliers). The FE animates `mult_up` from the diff. Alternative: add `meta.stickyAfter:[{reel,row,multiplier}]` to `winInfo` | book contract / math |
-| **CR-2** | `meterUpdate {delta:0, thresholds:[]}` is a legal **silent set** (feature start, resume) | book contract / math |
-| **CR-3** | Bass Drop `GameSceneEvents`: `meter:update`, `meter:set`, `wild:drop`, `wild:sticky`, `feature:trigger`, `feature:upgrade`, `intro:show` (no core change). **Core:** `music:beat` (CR-6) and the new `MascotCue`s `meterHeat`, `meterThreshold`, `bassDropCharge`, `bassDrop`, `wildLand`, `featureLock`, `featureUpgrade` (the cue union is core, `src/game/events.ts`) | `src/games/bass-drop/events.ts`; `src/game/events.ts` |
-| **CR-4** | Tumble rule with pinned cells (section 9.3) in `applyTumble` and in the math | `src/book/handlers.ts`, math |
-| **CR-5** | New `SfxId`s (section 17) and `MusicStem` `megamix` | `src/game/events.ts`, `src/audio/manifest.ts` |
-| **CR-6** | `music:beat {bar, beat}` from Sound, so meter/booth/mascot loops can phase-lock (fallback: a 600 ms clock loop) | `src/audio/*` |
-| **CR-7** | Soft trauma stacking in `ScreenShake.add`; flash limiter ≤ 3/s | `src/fx/shake.ts`, `src/fx/Fx.ts` (already listed as open in ANIMATION_CONTRACT §10.6) |
-| **CR-8** | ANIMATION_CONTRACT + `tools/spine/contract.json`: new animation names, events and FX ids from ANIMATION_SET §9–§12; the `drop_impact` squash exception; the 2D mascot rig section; UI skeleton names | `docs/ANIMATION_CONTRACT.md`, `tools/spine/contract.json` |
-| **CR-9** | Bet modes `BASE` 1×, `BONUS` 100×, `SUPER` 300× | bass-drop bet-mode table |
-| **CR-10** | `board:transform` style **`'impact'`**: crush the old symbol now, place the new id after `TIMING.explode.anticipateDuration`, play `drop_impact` (or a procedural squash of 0.72), then resolve (section 8.3). Also: a pinned-cell set for Mega Mix, so fall-out, drop-in and refill skip pinned cells (section 9) | `src/board/Board.ts`, `src/game/events.ts` |
+| CR | Change | Where | Status |
+|---|---|---|---|
+| **CR-1** | ~~Emit `stickyWilds` also after Mega Mix tumbles~~. The math reports the grown multiplier at the next reveal (+ its `stickyWilds`), and the FE animates `mult_up` there with a `+1` preview at win time (section 9) | book contract / math | **Withdrawn** |
+| **CR-2** | `meterUpdate {delta:0, thresholds:[]}` is a legal **silent set** (feature start, resume) | book contract / math | Optional: the mock never emits it; the FE resets the meter itself at trigger/upgrade and handles `delta:0` if it arrives (`src/games/bass-drop/book.ts` documents it) |
+| **CR-3** | Bass Drop `GameSceneEvents`: `meter:update`, `meter:set`, `wild:drop`, `wild:sticky`, `feature:trigger`, `feature:upgrade`, `intro:show` (no core change). **Core:** `music:beat` (CR-6) and the new `MascotCue`s `meterHeat`, `meterThreshold`, `bassDropCharge`, `bassDrop`, `wildLand`, `featureLock`, `featureUpgrade` (the cue union is core, `src/game/events.ts`) | `src/games/bass-drop/events.ts`; `src/game/events.ts` | Game events landed except `intro:show`; the core `MascotCue`s and `music:beat` are open |
+| **CR-4** | ~~Tumble rule with pinned cells~~. The math keeps the standard web-sdk rule; sticky wilds tumble within a spin and respawn at their home (section 9) | `src/book/handlers.ts`, math | **Withdrawn** |
+| **CR-5** | New `SfxId`s (section 17) and `MusicStem` `megamix` | `src/game/events.ts`, `src/audio/manifest.ts` | Open |
+| **CR-6** | `music:beat {bar, beat}` from Sound, so meter/booth/mascot loops can phase-lock (fallback: a 600 ms clock loop) | `src/audio/*` | Open |
+| **CR-7** | Soft trauma stacking in `ScreenShake.add`; flash limiter ≤ 3/s | `src/fx/shake.ts`, `src/fx/Fx.ts` (already listed as open in ANIMATION_CONTRACT §10.6) | Open (`ScreenShake.add` still adds linearly) |
+| **CR-8** | ANIMATION_CONTRACT + `tools/spine/contract.json`: new animation names, events and FX ids from ANIMATION_SET §9–§12; the `drop_impact` squash exception; the 2D mascot rig section; UI skeleton names | `docs/ANIMATION_CONTRACT.md`, `tools/spine/contract.json` | Open |
+| **CR-9** | Bet modes `BASE` 1×, `BONUS` 100×, `SUPER` 300× | bass-drop bet-mode table | **Landed** (`src/games/bass-drop/config.ts` `BET_MODES`, `mock/games/bass-drop/mock.json`) |
+| **CR-10** | (a) `board:transform` style **`'impact'`**: crush the old symbol now, place the new id after `TIMING.explode.anticipateDuration`, play `drop_impact` (or a procedural squash of 0.72), then resolve (section 8.3). (b) A Mega Mix **hold set** for `board:reveal`: cells whose current symbol equals the reveal's id at that cell (a W on its own home) stay in place through the fall-out and are skipped by the drop-in (section 9.3). Tumbles never use it | `src/board/Board.ts`, `src/game/events.ts` | (a) **Landed** (`BoardTransformStyle` has `'impact'`; `Board.impactCell` still uses the procedural land, `drop_impact` comes with the W rig). (b) Open, P1 |
+| **CR-11** | Gate hit-stops to the normal profile: `Board.tumble`'s explode hit-stop (and every Bass Drop hit-stop) only when `getSpeedProfile() === 'normal'` (section 18) | `src/board/Board.ts` (or a profile check in `clock.hitStop`) | Open |
 
 Art-lead decisions (default in brackets):
 - the logo word-mark: stacked "SWAMP FUNK / BASS DROP" [yes];
@@ -897,30 +897,42 @@ Art-lead decisions (default in brackets):
 
 ## 24. Acceptance (what QA captures and checks)
 
-Mock books the implementation must add under `mock/games/bass-drop/books/` (6×8 padded, Bass Drop events):
-- `loss`, `one_cluster`, `drop_10` (crosses 10, 1 wild), `chain_10_20_30` (three thresholds in one step);
-- `lock_40` (Juke Jam trigger), `lock_60` (Mega Mix trigger);
-- `jukejam_full` (with multiplier sums), `jukejam_upgrade`, `megamix_full` (stickies, `mult_up` to the ×25 cap, laps);
-- `buy_bonus`, `buy_super`, `wincap`.
+Mock books (`mock/games/bass-drop/books/`, generated by `tools/mockmath/bass-drop/`; force one with `?book=<scenario or id>`). QA checkpoint → book:
+
+| Needed | Book | Notes |
+|---|---|---|
+| loss | `loss` | |
+| one cluster | `small_win` | |
+| one drop (10, 1 wild) | `meter_10` | The dropped wild wins |
+| three drops | `meter_30` | 1 + 1 + 2 wilds, one per step |
+| chained drops in one step | `bonus_trigger` (index 63: `[20,30]`), `super_trigger` (index 18: `[50,60]`), **`30030`** (index 117: `[40,50,60]`) | `30030` is in `books_super_50.json` |
+| Juke Jam trigger / full feature with multiplier sums | `bonus_trigger` | Base meter 54 |
+| Juke Jam upgrade | `bonus_upgrade` | |
+| Mega Mix trigger / homes / `mult_up` | `super_trigger` | 5 homes, then one-shot wilds; highest sticky ×9 |
+| buys | any id 20001–20050 (BONUS), 30001–30050 (SUPER) | Buy books start with a real base spin ([M-7]) |
+| win cap | `wincap` | Capping step has no `tumbleBoard` ([M-9]) |
+| **missing:** a sticky reaching the ×25 cap | none (the highest sticky in every mock book is ×13) | Request a forced `sticky_cap` fixture from math; until then check the t5 badge and the maxed shimmer in the dev lab |
 
 Captures (`tools/capture/shot.mjs`, manual clock, 4 viewports: 1920×1080, 1080×1920, 1920×1920, 960×540):
 
 | Checkpoint | Pass criteria |
 |---|---|
 | Idle, meter 0/60 | Composition matches the wireframe; meter readable at 64 px thumbnail |
-| Links held (`one_cluster`) | Links visible between every adjacent pair; gold links through a W |
+| Links held (`small_win`; a W link in `meter_10`) | Links visible between every adjacent pair; gold links through a W |
 | Orbs mid-flight | ≥ 3 distinct streams, no stacked orbs, trails visible; the count pop is readable |
 | Threshold burst at 10 and at 40 | Notch icon readable; one flash only |
 | Boom frame | Shockwave ring visible; cone at max; both mascots in sync pose (button pressed / Gumbo blown back) |
 | Wild at the flight apex | Scale ≈ 1.75, over the frame; landing shadow on the target |
 | Impact frame | Squash sy ≈ 0.72; dust crown; neighbours pushed |
 | Juke Jam label sum | `×N` badge sums correctly; the final value equals `win` |
-| Mega Mix board with 6+ stickies | Clamps visible; badge tiers t1..t5 distinguishable in greyscale |
+| Mega Mix board with 5 homes + one-shot wilds (`super_trigger`, spin 5) | Clamps and home markers visible, also on a home whose wild has exploded; one-shot wilds show a badge but no clamps; badge tiers distinguishable in greyscale (t1..t3 in this book; t4/t5 in the dev lab) |
+| Mega Mix return (`super_trigger`, spin 3 reveal) | Both homes return with `sticky_lock`; `mult_up` on the one that grew (×2 → ×3); the value equals the book's `stickyWilds` |
 | Intro, buy choose/confirm, feature intro/upgrade/outro | All text live (OCR finds only live-text layers); social mode shows no BUY/BET |
-| Super turbo `chain_10_20_30` | Every boom still visible (charge ≥ 160 ms); orbs as ≤ 6 comets; total ≤ the section 18.1 value + 10% |
+| Super turbo `?book=30030` (`[40,50,60]` chain) | Every boom still visible (charge ≥ 160 ms); orbs as ≤ 6 comets; total ≤ the section 18.1 value + 10% |
+| `wincap` capping step | No orbs and no drop after the last `meterUpdate`; the counter snaps to its value; no `armed` strobe remains |
 
 Feel gates: ANIMATION_CONTRACT §9, plus:
 - boom peak shake 4–10 px;
-- ≤ 3 flashes/s over the whole `chain_10_20_30` book;
+- ≤ 3 flashes/s over the whole `30030` book;
 - the orb counter always ends on `meterUpdate.value`;
 - p95 frame time < 16.7 ms with 36 orbs and 3 flying wilds on the mid-tier device.

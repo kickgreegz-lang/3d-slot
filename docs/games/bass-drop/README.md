@@ -9,4 +9,6 @@ The second game in the Swamp Funk world: a 6×6 cluster tumble with a **Groove M
 | [layout.json](layout.json) | Machine-readable layout rects for the 4 design spaces, plus the intro and buy screens |
 | [wireframes/](wireframes/) | SVG wireframes rendered from `layout.json` (`python3 docs/games/bass-drop/wireframes/render.py`) |
 
-Reference timings from Dragonspire Frostfall are still to be captured (network blocked at writing time). DESIGN.md §22 has the protocol, and every value that needs it is tagged **[RM]**.
+The book-level rules (meter resets, drops only up to 60, sticky homes that respawn each Mega Mix spin, win cap) follow the mock math contract in [mock/games/bass-drop/README.md](../../../mock/games/bass-drop/README.md); DESIGN.md §2 lists them as [M-1]…[M-10].
+
+Reference timings from Dragonspire Frostfall are still to be captured (the proxy refuses the demo hosts with HTTP 403). DESIGN.md §22 has the protocol, and every value that needs it is tagged **[RM]**.

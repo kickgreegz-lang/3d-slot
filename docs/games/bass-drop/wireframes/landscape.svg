@@ -143,8 +143,8 @@
 <text x="248.0" y="506.0" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">NEXT DROP 30 · W W</text>
 <rect x="1514" y="300" width="344" height="110" rx="16" fill="#0a0420" fill-opacity="0.8" stroke="#35f2e0" stroke-width="2"/>
 <text x="1686.0" y="355.0" font-family="Inter,Arial,sans-serif" font-size="20" font-weight="600" fill="#35f2e0" text-anchor="middle" dominant-baseline="middle">FS PLATE: JUKE JAM 3/8</text>
-<path d="M248,318 Q700.0,-408.5 1152.0,595.0" fill="none" stroke="#ffffff" stroke-width="3.0" stroke-dasharray="12.0,8.0"/>
-<text x="700.0" y="42.0" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">wild arc (apex ≥ 24)</text>
+<path d="M248,318 Q700.0,-385.7 1152.0,595.0" fill="none" stroke="#ffffff" stroke-width="3.0" stroke-dasharray="12.0,8.0"/>
+<text x="700.0" y="42.0" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">wild arc (apex y 24, min 24)</text>
 <path d="M1280.0,851.0 Q865.0,389.0 248,318" fill="none" stroke="#35f2e0" stroke-width="2.5" stroke-dasharray="4.0,6.0"/>
 <circle cx="1280.0" cy="851.0" r="9.0" fill="#35f2e0"/>
 <text x="864.9545102481703" y="409.03085445382413" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#35f2e0" text-anchor="middle" dominant-baseline="middle">orb path</text>
@@ -155,9 +155,9 @@
 <polygon points="197.2,730.0 166.0,748.0 134.8,730.0 134.8,694.0 166.0,676.0 197.2,694.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
 <polygon points="1560.2,1027.0 1529.0,1045.0 1497.8,1027.0 1497.8,991.0 1529.0,973.0 1560.2,991.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
 <polygon points="1885.2,1027.0 1854.0,1045.0 1822.8,1027.0 1822.8,991.0 1854.0,973.0 1885.2,991.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
-<polygon points="199.9,874.8 150.0,903.6 100.1,874.8 100.1,817.2 150.0,788.4 199.9,817.2" fill="#f828c8" fill-opacity="0.35" stroke="#f828c8" stroke-width="3"/>
+<polygon points="226.2,890.0 150.0,934.0 73.8,890.0 73.8,802.0 150.0,758.0 226.2,802.0" fill="#f828c8" fill-opacity="0.35" stroke="#f828c8" stroke-width="3"/>
 <text x="150" y="846" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">BUY</text>
-<polygon points="1827.3,895.8 1704.2,917.5 1623.9,821.7 1666.7,704.2 1789.8,682.5 1870.1,778.3" fill="#000000" fill-opacity="0.35" stroke="#ffffff" stroke-width="3"/>
+<polygon points="1837.0,907.2 1699.1,931.6 1609.1,824.3 1657.0,692.8 1794.9,668.4 1884.9,775.7" fill="#000000" fill-opacity="0.35" stroke="#ffffff" stroke-width="3"/>
 <text x="1747" y="800" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">SPIN</text>
 <text x="46" y="1000" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="600" fill="#f8d828" text-anchor="start" dominant-baseline="middle">BALANCE</text>
 <text x="1692" y="1000" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">BET</text>

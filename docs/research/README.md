@@ -20,7 +20,7 @@ This folder holds **reference copies** of the research behind the stack and the 
   - a Spine 4.3 JSON generator validated by `spine-core` 4.3.13;
   - a Blender toon symbol render;
   - a juice harness that measured the feel values;
-  - math-sdk 7x5 fixture books, which now live in `mock/books/`.
+  - math-sdk 7x5 fixture books, which now live in `mock/games/swamp-funk/books/`.
 - **Limits.** The sandbox egress proxy blocked many vendor sites, including higgsfield.ai, openai.com, esotericsoftware.com, scenario.com, recraft.ai, elevenlabs.io, fal.ai, tripo3d.ai, meshy.ai, hyper3d.ai and stake-engine.com. Where a primary page could not be read, the claim was checked against GitHub repos, SDK source, npm/PyPI metadata or search-index snippets. If none of those confirmed it, the claim is tagged **UNVERIFIED** or **(U)**. Those tags are carried into the maintained docs. **Check every (U) price and every vendor term yourself before paying or shipping.**
 - **Not legal advice.** Licence and ToS findings are research notes. Written clearance from each vendor and a review by gaming/IP counsel remain release gates (see [STACK § Where a human is still needed](../STACK.md#where-a-human-is-still-needed)).
 

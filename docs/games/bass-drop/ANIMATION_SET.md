@@ -22,7 +22,7 @@ Naming follows [ANIMATION_CONTRACT.md](../../ANIMATION_CONTRACT.md): contract na
 | Physics | Contract §2.5 presets: `floppy` 3.0 Hz/ζ 0.20 (tails, cables, chains), `default` 3.5/0.25 (jowls, pouch, belly), `stiff` 4.0/0.30 (toothpick, antennae), `jelly` 5.0/0.30 (sauce). `limit` ≥ 12,000 on symbols; characters 6,000 (they never fall) |
 | Packing | PMA, 2048² max pages, `pot:false`, padding 2, polygons, no extensions in region names; packs at `[1, 0.5]` (@2x and @0.5x). **No clipping attachments, no sequence attachments** (contract §2.4) |
 | Files | Shared symbol rigs keep their Swamp Funk paths (`public/assets/spine/sym_<ID>.skel`, `symbols.atlas`). Bass Drop–only rigs go in `public/assets/bass-drop/spine/<id>.skel` with atlases `bd_ui`, `bd_env`, `bd_chr_gumbo`, `bd_chr_croak`, and flipbooks in `public/assets/bass-drop/fx/` (implementation may move the folder; ids stay) |
-| Validation | `pnpm spine:validate <json> --kind <symbol\|wild\|ui\|env\|character>`. The new kinds and their budgets (§10) are CR-8 |
+| Validation | `GAME=bass-drop pnpm spine:validate <json> --kind <auto\|high\|royal\|wild\|ui\|env\|character>`. Today the validator accepts only `auto\|high\|special\|royal\|any`; the new kinds, their budgets (§10) and the `wild` mapping (§12) are CR-8 |
 
 Priorities:
 - **P0**: first playable with the full bass-drop loop;
@@ -198,7 +198,7 @@ The runtime picks the skin from the wild's mode and attaches the tier attachment
 | `land` | 12 | no | `land_impact` f0 | Natural landing (special weight), contract squash |
 | `win` | 24 | no | `win_peak` f8 | Pop 1.25; badge punch 1.15 |
 | `win_loop` | 45 | yes | — | Tooth rocks ±4°, glow pulse |
-| `explode` | 15 | no | `explode_burst` f2, `explode_done` f13 | Tooth cracks, cap flies, the badge spins away |
+| `explode` | 15 | no | `explode_burst` f2, `explode_done` f13 | Tooth cracks, cap flies, the badge spins away. On skin `sticky` the clamps spring open first (f0–f2): a winning Mega Mix sticky explodes like any wild and returns at its home next spin (DESIGN §9), so it must read "released", not "lost" |
 | `blur` | 1 | yes | — | `_blur` regions |
 | `appear` | 9 | no | — | |
 | `bass_react` | 8 | overlay | — | Chain jingle, glow flare |
@@ -221,7 +221,7 @@ Validator entries (CR-8):
 ### 2.7 Symbol pooling (runtime note for the art budget)
 
 - Normal symbols borrow pooled Spine instances only for actions (≈ 4 per type).
-- **Sticky wilds are live instances for the whole of Mega Mix.** At most **24** animated symbol instances at once. Above that, the oldest sticky wilds fall back to a static sprite + runtime glint (low tier: above 12).
+- **Sticky wilds are live instances while they are on the board** (at most 5 homes in the mock, plus one-shot multiplier wilds). A sticky W is an ordinary board symbol within a spin (it wins, explodes and tumbles) and returns at its home on the next reveal (DESIGN §9). At most **24** animated symbol instances at once. Above that, the oldest sticky wilds fall back to a static sprite + runtime glint (low tier: above 12).
 
 ---
 
@@ -232,7 +232,7 @@ Validator entries (CR-8):
 **Bones (≤ 40):**
 - `root`, `cabinet` (pivot at the cabinet's bottom centre, for squash/stretch), `cabinet_top`;
 - `ring`, `cone`, `ctrl_cone` (runtime additive scale for beat pumps), `dust_cap`, `txt_count`;
-- `swirl`, `notch_1..6` (on radius 0.94 R at −100°, −50°, 0°, +50°, +100°, +150°), `fx_notch` (runtime rotates it to the active notch), `lap_1..5`;
+- `swirl`, `notch_1..6` (on radius 0.94 R at −100°, −50°, 0°, +50°, +100°, +150°), `fx_notch` (runtime rotates it to the active notch), `lap_1..5` (fallback laps only, P2);
 - `fx_glow`, `fx_burst`, `fx_blast`, `led_arc`, `chip_anchor`.
 
 **Slots (≤ 30, back to front):**
@@ -250,13 +250,13 @@ Validator entries (CR-8):
 | `dust_cap` | `dust_cap` | Dark glass disc |
 | `txt_count` | **empty** | Runtime counter "23/60" |
 | `notch_1..6` | `notch_w1`, `notch_w2`, `notch_w3` (pip variants), `notch_jj`, `notch_mm`, each in states `_off` / `_next` / `_lit` / `_spent` | Runtime sets states; icons carry **no text** |
-| `lap_1..5` | `pip_off`, `pip_on` | Mega Mix laps |
+| `lap_1..5` | `pip_off`, `pip_on` | Fallback laps (DESIGN §6.7): only if a book lists a threshold above 60, which the current math never does. P2 |
 | `fx_swirl` | `swirl` | Additive, rotates in `charge` / `armed_loop` |
 | `fx_glow` | `glow_ring` | Additive rim glow, tinted by state |
 | `fx_burst` | `burst_star` | Additive notch burst on `fx_notch` |
 | `fx_blast` | **empty** | Runtime attaches the `fx_speaker_blast` flipbook |
 
-**Skins:** `base` (teal trim), `jukejam` (gold), `megamix` (pink + lap pips visible), `bare` (compact: no cabinet slots).
+**Skins:** `base` (teal trim), `jukejam` (gold), `megamix` (pink; lap pips shown only in the fallback), `bare` (compact: no cabinet slots).
 
 **Animations** (the runtime conducts; events are garnish hooks):
 
@@ -265,7 +265,7 @@ Validator entries (CR-8):
 | `idle` | 0 | 72 | yes | — | 4 beats @100 BPM: cone breathe 1.00→1.02 per beat, dim glow. The runtime also pumps `ctrl_cone` on `music:beat` |
 | `heat_loop` | 0 | 16 | yes | — | ≈ 1.9 Hz cone flutter + rim shimmer (DESIGN §6.2) |
 | `armed_loop` | 0 | 15 | yes | — | 2 Hz: swirl turning slowly, cone vibration ±1.5 units |
-| `overdrive_loop` | 0 | 24 | yes | — | ≥ 60 (base / Juke Jam): pink sparks, rim pulse 1.25 Hz |
+| `overdrive_loop` | 0 | 24 | yes | — | ≥ 60 in every mode (the MAX state, DESIGN §6.7): pink sparks, rim pulse 1.25 Hz |
 | `tick` | 1 | 4 | no | — | Orb arrival: cone 1.00→1.03→1.00, dust-cap flash |
 | `pump` | 1 | 6 | no | — | Big-win tier punch / music accents: cone 1.08 |
 | `threshold_minor` | 2 | 15 | no | `threshold_hit` f2 | `fx_notch` burst star 0→1.6, rim flash sweep once around (`fx_glow` rotation) |
@@ -273,9 +273,9 @@ Validator entries (CR-8):
 | `charge` | 0 | **15** | no | `charge_start` f0 | Cone pulls to 0.88 (`power2.in` feel), cabinet sy 0.94, swirl 0→720°/s, glow ramps to 1; last frame = `boom` f0 pose |
 | `charge_chained` | 0 | **6** | no | `charge_start` f0 | Short version (swirl already spinning) |
 | `boom` | 0 | **18** | no | `boom` f0 | **f1 cone 1.20**, f5 0.96, f8 1.04, f14 1.00; cabinet sy 1.08 at f1 → settle f12; `fx_glow` flash; `fx_blast` flipbook starts at f0 (runtime). Ends on the `idle` pose |
-| `drain` | 1 | 12 | no | — | Cone relax + glow fade; the LEDs are drained by code over the same 400 ms |
+| `drain` | 1 | 12 | no | — | Cone relax + glow fade; the LEDs are drained by code over the same 400 ms. Plays at base spin start, behind the feature wipe and behind the upgrade screen (the math restarts the meter at both) |
 | `feature_trigger` | 0 | **54** | no | `pump_hit` f0, f18, f36 | Three pumps on the beat (cone 1.12 / 1.16 / 1.30); f36 is the big one (cabinet stretch 1.12); ends in `overdrive_loop` pose |
-| `lap` | 2 | 9 | no | — | Ring flash; the runtime lights the next pip |
+| `lap` | 2 | 9 | no | — | Fallback only (P2). Ring flash; the runtime lights the next pip |
 
 Runtime timeScale: `charge`, `charge_chained` and `boom` are scaled so their lengths equal `s(BASS_DROP_TIMING.drop.charge)` etc. The 15 f `charge` therefore always ends exactly on the boom, in every speed profile.
 
@@ -579,7 +579,9 @@ Particle budget: ≤ 1,000 live (low tier 400). A worst-case step (36 orbs with 
 | Count pop `+N` | BitmapText (Titan One) | Live number |
 | Target reticle | `reticle_ring` region (dashed ring, drawn once to a texture) | Positioned per target |
 | Landing shadow | `shadow_ellipse` region, multiply | |
-| Lap pips / chip / plates | Existing `Plate` + `pip` regions | Live text |
+| Lap pips (fallback) / chip / plates | Existing `Plate` + `pip` regions | Live text |
+| Mega Mix home marker | `home_rim` (gold 3 px rounded-rect ring) + 4 `home_clamp` corner brackets, on the tile layer | Stays for the whole feature, also while the home's wild is away |
+| Sticky `+1` preview | BitmapText (Titan One), teal | Live number, popped off the badge at win time (DESIGN §9.2) |
 | Neon-tube charge pulse | The Frame's tube + a moving additive `tube_pulse` sprite | Reuses the existing tube |
 | Board thump, neighbour push | Container springs | Physics |
 
@@ -707,6 +709,11 @@ Add to `docs/ANIMATION_CONTRACT.md` and `tools/spine/contract.json` in the same 
             "fx_wild_trail", "fx_wild_dust", "fx_wild_impact", "fx_mult_spark", "fx_lock_glint", "fx_crush", "fx_feature_blast"]
 }
 ```
+
+How the validator applies it (the contract's `required` lists hold kind names, and `--kind auto` maps a symbol through `symbolKinds`):
+- `wild` **extends** `special`: an animation whose `required` lists `special` is also required for `wild`, plus the ones above that list `wild`. Swamp Funk's W stays `special`.
+- `--kind auto` maps `sym_W` to `wild` when `GAME=bass-drop` (the validator already reads `src/games/$GAME/config.ts`, where the Bass Drop W has `kind: 'wild'`), and to `symbolKinds.W` (`special`) otherwise.
+- `overlay` (track index) and `cellOverflow` (allowed spill outside the cell, the opposite of the existing `inCell`) are new rule keys the validator must learn. `ui`, `env` and `character` are skeleton kinds with budgets only, no symbol rules.
 
 Plus these ANIMATION_CONTRACT prose changes:
 - §1: add the Bass Drop skeleton ids (§1 here).

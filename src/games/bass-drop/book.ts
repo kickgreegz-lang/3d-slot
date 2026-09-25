@@ -99,6 +99,18 @@ const mergeStickies = (state: RoundPlayback, wilds: readonly DroppedWild[]): voi
 
 const wildCells = (wilds: readonly Position[]) => wilds.map((w) => ({ reel: w.reel, row: w.row, id: WILD }));
 
+/**
+ * The math restarts the meter at 0 at featureTrigger and at featureUpgrade (DESIGN.md [M-1] /
+ * [M-2], mock/games/bass-drop/README.md "Groove meter") and no event says so: the live handler
+ * and the resume fold both apply it, so a resume before the feature's first meterUpdate shows 0.
+ */
+const enterFeature = (g: GameRoundState, feature: GrooveFeature): void => {
+  g.feature = feature;
+  g.meterMode = feature;
+  g.meter = 0;
+  g.chain = 0;
+};
+
 export const gameBookHandlers: GameBookHandlers<GameBookEvent> = {
   meterUpdate: async (e, env) => {
     env.state.game.meter = e.value;
@@ -123,8 +135,7 @@ export const gameBookHandlers: GameBookHandlers<GameBookEvent> = {
 
   featureTrigger: async (e, env) => {
     const { state } = env;
-    state.game.feature = e.feature;
-    state.game.meterMode = e.feature;
+    enterFeature(state.game, e.feature);
     state.freeSpins = { current: 0, total: e.totalFs };
     env.hudChanged();
     await env.emit('feature:trigger', { feature: e.feature, meter: e.meter, totalFs: e.totalFs, bought: state.betMode !== 'BASE' });
@@ -136,8 +147,7 @@ export const gameBookHandlers: GameBookHandlers<GameBookEvent> = {
     const { state } = env;
     const current = state.freeSpins?.current ?? 0;
     const total = (state.freeSpins?.total ?? 0) + e.addFs;
-    state.game.feature = e.to;
-    state.game.meterMode = e.to;
+    enterFeature(state.game, e.to);
     state.freeSpins = { current, total };
     env.hudChanged();
     await env.emit('feature:upgrade', { from: e.from, to: e.to, addFs: e.addFs });
@@ -163,14 +173,12 @@ export const foldGameEvent = (state: RoundPlayback, e: BookEvent): void => {
       placeWilds(state, e.wilds);
       break;
     case 'featureTrigger':
-      g.feature = e.feature;
-      g.meterMode = e.feature;
+      enterFeature(g, e.feature);
       state.freeSpins = { current: state.freeSpins?.current ?? 0, total: e.totalFs };
       state.gameType = 'freegame';
       break;
     case 'featureUpgrade':
-      g.feature = e.to;
-      g.meterMode = e.to;
+      enterFeature(g, e.to);
       state.freeSpins = { current: state.freeSpins?.current ?? 0, total: (state.freeSpins?.total ?? 0) + e.addFs };
       break;
     case 'freeSpinEnd':

@@ -56,8 +56,10 @@ replay: `?replay=true&game=g7x5&version=1&mode=BONUS&event=177&amount=1000000&cu
 src/
   games/<id>/           one folder per game — the ONLY game-specific code
     meta.json           id, title (index.html <title>), mock RGS game id, localStorage prefix
-    config.ts           GRID, SYMBOLS, WIN_TIERS, SPOT_BANDS, FEATURES, BET_MODES, ATTRACT (+ game data)
-    layout.ts           LAYOUTS: landscape / portrait / tablet / compact LayoutSpecs (+ game extras)
+    config.ts           GRID, SYMBOLS, WIN_TIERS, SPOT_BANDS, FEATURES, BET_MODES, ATTRACT,
+                        DEV_FIXTURE_ALIASES (+ game data, e.g. Bass Drop GROOVE)
+    layout.ts           LAYOUTS: landscape / portrait / tablet / compact LayoutSpecs (HUD anchors, optional
+                        plate placement `present`) + game extras (Bass Drop meter / cabinet rects)
     modules.ts          createModules(ctx): the ordered visual modules
     book.ts             game book events + handlers (GameBookEvent, gameBookHandlers, fold/restore)
     events.ts           game scene events (GameSceneEvents) for its feature modules

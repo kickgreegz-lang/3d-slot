@@ -75,7 +75,7 @@ The contract leaves these points open. The generator decides them as follows, an
 
 **Board and symbols**
 - A symbol is `{name}`. A wild is `{name:'W', wild:true}`. A multiplier wild is `{name:'W', wild:true, multiplier:n}`, and it only appears on a reveal board at a Mega Mix sticky home.
-- `newSymbols` never carry multipliers. Natural `W` can land from the reel strips: base and Juke Jam only, and rarely.
+- `newSymbols` never carry multipliers. Natural `W` (multiplier 1) can land from the reel strips: base and Juke Jam only, and rarely. The one exception is the `wincap` fixture: its Mega Mix spins are forced onto the `wcap` strips, which carry natural `W`, so plain wilds also land in that Mega Mix.
 - `reveal` also has `paddingPositions` (the reel stops), like the Swamp Funk books. `anticipation` is always `[0,0,0,0,0,0]` because this game has no scatters.
 
 **Clusters and pays**
@@ -105,7 +105,7 @@ The contract leaves these points open. The generator decides them as follows, an
 - Mega Mix drop wilds are x2..x10, heavily weighted toward x2 and x3.
 
 **Mega Mix sticky wilds**
-- A sticky wild's home is the cell it dropped on. `sticky: true` is set on the first 5 drops only (`FEATURES.super.maxSticky`). Later Mega Mix drops are one-shot x2..x10 wilds with `sticky: false`.
+- A sticky wild's home is the cell it dropped on. `sticky: true` is set on the first 5 wilds dropped in Mega Mix only (`FEATURES.super.maxSticky`; counted per wild, not per `wildDrop` event). Later Mega Mix drops are one-shot x2..x10 wilds with `sticky: false`.
 - Within a spin a sticky wild behaves like any wild: it explodes when it wins (so it counts for the meter) and falls with gravity when something under it explodes.
 - On every later Mega Mix reveal it respawns at its home. The reveal board already has `W` + `multiplier` there, so a morph onto an already-wild cell is a no-op. `stickyWilds` then lists the whole registry (home cell and current multiplier).
 - Each `winInfo` a sticky wild is part of adds +1 to its multiplier, capped at x25. The new value applies from the next reveal and shows in the next `stickyWilds`. The front end may show the +1 at win time.

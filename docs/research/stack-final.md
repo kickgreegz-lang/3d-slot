@@ -1,4 +1,4 @@
-> **Reference copy.** Copied verbatim from the 2026-09-24 multi-agent research run (see [README](README.md)). The only change: absolute paths into the temporary research workspace were replaced with `[research sandbox]/…`. Those files no longer exist. The generated 7x5 fixture books mentioned below now live in `mock/books/` in this repo. Treat this file as a historical record. The maintained docs are in `docs/`.
+> **Reference copy.** Copied verbatim from the 2026-09-24 multi-agent research run (see [README](README.md)). The only change: absolute paths into the temporary research workspace were replaced with `[research sandbox]/…`. Those files no longer exist. The generated 7x5 fixture books mentioned below now live in `mock/games/swamp-funk/books/` in this repo. Treat this file as a historical record. The maintained docs are in `docs/`.
 
 # FINAL STACK
 ## scores

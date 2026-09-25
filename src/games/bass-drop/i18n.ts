@@ -22,7 +22,8 @@ export const GAME_STRINGS: GameStrings = {
     'paytable.wild.desc.bassdrop':
       'Substitutes for all paying symbols and can be part of any cluster. Wilds are dropped onto the board by the Bass Drop and can carry multipliers in the features.',
 
-    'rules.wild.body': 'The Wild substitutes for all paying symbols. Wilds only reach the board through the Bass Drop.',
+    'rules.wild.body':
+      'The Wild substitutes for all paying symbols. Wilds can land on the reels, and the Bass Drop drops more Wilds onto the board.',
     'rules.groove.title': 'GROOVE METER',
     'rules.groove.body':
       'Every winning symbol that explodes adds 1 to the Groove Meter. The meter counts every connected symbol of the round (shown up to {max}) and starts again from 0 on every base game spin.',
@@ -33,10 +34,10 @@ export const GAME_STRINGS: GameStrings = {
     'rules.bassdrop.wilds': '{wilds} Wild(s)',
     'rules.jukejam.title': 'JUKE JAM',
     'rules.jukejam.body':
-      'End a base game round with the Groove Meter at {at} or more to trigger Juke Jam with {spins} Free Spins. The meter keeps its value for the whole feature and dropped Wilds carry a multiplier from x{min} to x{max}: a winning cluster is multiplied by the sum of the Wild multipliers in it. Reaching {superAt} during Juke Jam upgrades it to Mega Mix with {addFs} extra Free Spins.',
+      'End a base game round with the Groove Meter at {at} or more to trigger Juke Jam with {spins} Free Spins. The Groove Meter starts again from 0 when Juke Jam begins and keeps its value across all of its Free Spins. Dropped Wilds carry a multiplier from x{min} to x{max}: a winning cluster is multiplied by the sum of the Wild multipliers in it. Reaching {superAt} during Juke Jam upgrades it to Mega Mix with {addFs} extra Free Spins.',
     'rules.megamix.title': 'MEGA MIX',
     'rules.megamix.body':
-      'End a base game round with the Groove Meter at {at} or more to trigger Mega Mix with {spins} Free Spins. Dropped Wilds carry a multiplier from x{min} to x{max} and stay on the board for the rest of the feature. Every time a sticky Wild is part of a win, its multiplier grows by 1, up to x{cap}.',
+      'End a base game round with the Groove Meter at {at} or more to trigger Mega Mix with {spins} Free Spins. The Groove Meter starts again from 0 and keeps its value across all of its Free Spins. Dropped Wilds carry a multiplier from x{min} to x{max} and are sticky: a sticky Wild returns to the cell it landed on at the start of every remaining Free Spin. Every time a sticky Wild is part of a win, its multiplier grows by 1, up to x{cap}.',
 
     'rules.modes.bonus': 'Juke Jam feature',
     'rules.modes.super': 'Mega Mix feature',

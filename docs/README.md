@@ -117,7 +117,7 @@ Architecture decisions and their evidence: [research/frontend-decisions.md](rese
               tsconfig.json (@game = swamp-funk) · tsconfig.bass-drop.json (@game = bass-drop)
 
  engine (src/**)                         shims                      game (src/games/<id>/)
- board · symbols · flow · book · ...  ─► config/game.ts      ─► @game/config    GRID · SYMBOLS · WIN_TIERS · SPOT_BANDS · FEATURES · BET_MODES · ATTRACT
+ board · symbols · flow · book · ...  ─► config/game.ts      ─► @game/config    GRID · SYMBOLS · WIN_TIERS · SPOT_BANDS · FEATURES · BET_MODES · ATTRACT · DEV_FIXTURE_ALIASES
                                          config/layout.ts    ─► @game/layout    LAYOUTS (4 LayoutSpecs, HUD anchors included)
                                          ui/dom/gameInfo.ts  ─► @game/gameInfo  modes · paytable specials · feature rule sections
  main.ts                             ─────────────────────► @game/modules   createModules(ctx)

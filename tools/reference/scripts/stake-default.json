@@ -1,0 +1,54 @@
+{
+  "name": "stake-default",
+  "description": "Generic Stake-Engine-style slot tour: intro -> idle 3 s -> first spin at every frame (6 s) -> 10 spins at every 3rd frame -> turbo on + 5 spins -> menu/paytable screenshots. Points are GUESSES for a 16:9 desktop layout: calibrate them with a --probe run (shots/*.grid.png) and override with --point name=x,y or a copy of this file.",
+  "viewport": "1920x1080",
+  "fps": 60,
+  "points": {
+    "intro": [0.5, 0.5],
+    "spin": [0.5, 0.9],
+    "turbo": [0.62, 0.9],
+    "menu": [0.05, 0.92],
+    "info": [0.5, 0.45],
+    "close": [0.95, 0.07]
+  },
+  "steps": [
+    { "do": "waitReady", "timeout": 180000, "quietMs": 2000, "response": "/wallet/authenticate", "canvasMinArea": 0.3 },
+    { "do": "screenshot", "name": "boot", "grid": true },
+    { "do": "frames", "name": "intro-idle", "n": 60, "every": 3, "notes": "intro / press-to-continue screen, before any input" },
+    { "do": "click", "at": "intro", "note": "dismiss intro (press to continue)" },
+    { "do": "frames", "name": "intro-dismiss", "n": 90, "every": 1, "notes": "transition into the base game, every frame" },
+    { "do": "screenshot", "name": "base-game", "grid": true },
+    { "do": "frames", "name": "idle", "n": 180, "every": 3, "notes": "idle 3 s (ambient loops)" },
+    { "do": "key", "key": "Space", "note": "spin 01" },
+    { "do": "frames", "name": "spin-01", "n": 360, "every": 1, "notes": "first spin, EVERY frame for 6 s: spin-up, loop, stop sequence, bounce, win" },
+    { "do": "repeat", "times": 10, "start": 2, "steps": [
+      { "do": "key", "key": "Space", "note": "spin {i}" },
+      { "do": "frames", "name": "spin-{i}", "n": 360, "every": 3, "notes": "base spin, every 3rd frame" }
+    ] },
+    { "do": "click", "at": "turbo", "note": "turbo / quick-spin toggle" },
+    { "do": "frames", "name": "turbo-toggle", "n": 30, "every": 3 },
+    { "do": "screenshot", "name": "turbo-on", "grid": true },
+    { "do": "repeat", "times": 5, "steps": [
+      { "do": "key", "key": "Space", "note": "turbo spin {i}" },
+      { "do": "frames", "name": "turbo-spin-{i}", "n": 240, "every": 3, "notes": "turbo spin, every 3rd frame" }
+    ] },
+    { "do": "click", "at": "turbo", "note": "turbo off again" },
+    { "do": "wait", "ms": 500 },
+    { "do": "click", "at": "menu", "note": "open menu" },
+    { "do": "frames", "name": "menu-open", "n": 45, "every": 3 },
+    { "do": "screenshot", "name": "menu", "grid": true },
+    { "do": "click", "at": "info", "note": "open paytable / game info" },
+    { "do": "frames", "name": "paytable-open", "n": 45, "every": 3 },
+    { "do": "screenshot", "name": "paytable-01" },
+    { "do": "repeat", "times": 5, "start": 2, "steps": [
+      { "do": "wheel", "at": "center", "dy": 700, "note": "scroll/next paytable page" },
+      { "do": "wait", "ms": 400 },
+      { "do": "screenshot", "name": "paytable-{i}" }
+    ] },
+    { "do": "key", "key": "Escape" },
+    { "do": "wait", "ms": 300 },
+    { "do": "click", "at": "close", "note": "close menu" },
+    { "do": "frames", "name": "menu-close", "n": 45, "every": 3 },
+    { "do": "screenshot", "name": "end" }
+  ]
+}

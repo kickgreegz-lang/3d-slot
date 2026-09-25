@@ -1,0 +1,12 @@
+{
+  "name": "clock-exactness",
+  "description": "Used by test/run-tests.mjs against test/anim.html: every-frame + every-3rd capture around an uncaptured wait.",
+  "viewport": "640x360",
+  "steps": [
+    { "do": "waitReady", "canvasMinArea": 0.5, "quietMs": 0, "timeout": 30000 },
+    { "do": "frames", "name": "every-frame", "n": 120, "every": 1 },
+    { "do": "wait", "ms": 500 },
+    { "do": "frames", "name": "every-3rd", "n": 90, "every": 3 },
+    { "do": "screenshot", "name": "end", "grid": true }
+  ]
+}

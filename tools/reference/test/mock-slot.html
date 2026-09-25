@@ -1,0 +1,219 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>mock slot (reference-capture test)</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0d1020; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+/*
+ * A tiny Stake-Engine-shaped "slot" for testing tools/reference/capture.mjs + timings.mjs.
+ *  - boot: fetches fixture assets (png/atlas/spine json/wav/woff2) with a loading bar, then
+ *    POST {rgs}/wallet/authenticate, then a setTimeout "min loading time", then an intro
+ *    "PRESS TO CONTINUE" screen (click anywhere).
+ *  - Space (or the spin button) -> POST /wallet/play; reels spin, then stop left->right at
+ *    t(response) + 500 + 200*i ms (turbo: 150 + 60*i), each with a 120 ms landing bounce.
+ *    Winning rounds flash the middle row (toggle every 125 ms) for 2 s (turbo 1 s), then
+ *    POST /wallet/end-round.
+ *  - Round end: POST /bet/event whose extra `debug` field carries the ground-truth timeline
+ *    (page performance.now() ms) so the test can check what timings.mjs detects.
+ *  - UI (normalised canvas coords, matching scripts/stake-default.json points):
+ *    spin (0.5,0.9)  turbo (0.62,0.9)  menu (0.05,0.92)  menu->info (0.5,0.45)  close (0.95,0.07)
+ *    paytable: mouse wheel = next/prev page, Escape = close overlay.
+ *  - An ambient pulse at the top keeps the full frame "never still", like real games.
+ */
+const q = new URLSearchParams(location.search);
+const SESSION = q.get('sessionID');
+const RGS = q.get('rgs_url') || '';
+const RGS_BASE = (/^(localhost|127\.)/.test(RGS) ? 'http://' : 'https://') + RGS;
+const canvas = document.getElementById('c');
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+const W = canvas.width, H = canvas.height;
+const ctx = canvas.getContext('2d');
+const G = { x: 0.2 * W, y: 0.15 * H, w: 0.6 * W, h: 0.6 * H };
+const CW = G.w / 5, CH = G.h / 3;
+const COLORS = { A: '#e5484d', B: '#f76b15', C: '#ffc53d', D: '#46a758', E: '#0090ff', F: '#8e4ec6', G: '#d6409f', W: '#ffffff' };
+const STRIP = 'ABCDEFGACEGBDF';
+const post = (p, body) =>
+  fetch(RGS_BASE + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sessionID: SESSION, ...body }) }).then((r) => r.json());
+
+let state = 'loading', progress = 0, introAt = 0, fadeAt = 0;
+let turbo = false, menuOpen = false, menuAt = 0, pay = 0, payAt = 0, payPage = 0;
+let spins = 0, round = null;
+const reels = Array.from({ length: 5 }, (_, r) => ({ sym: ['A', 'B', 'C'].map((_, i) => STRIP[(r * 3 + i) % STRIP.length]), spinning: false, offset: 0, stopAt: 0, landAt: -1 }));
+
+async function boot() {
+  const list = ['/assets/symbols.png', '/assets/symbols.atlas', '/assets/dragon.json', '/assets/sheet.json', '/assets/sfx/spin.wav', '/assets/fonts/ui.woff2'];
+  for (let i = 0; i < list.length; i++) {
+    const r = await fetch(list[i]);
+    if (list[i].endsWith('.png')) await createImageBitmap(await r.blob());
+    else await r.arrayBuffer();
+    progress = (i + 1) / (list.length + 1);
+  }
+  await post('/wallet/authenticate', { language: 'en' });
+  progress = 1;
+  setTimeout(() => { state = 'intro'; introAt = performance.now(); }, 600);
+}
+
+function spin() {
+  if (state !== 'idle' || menuOpen || pay) return;
+  state = 'spinning';
+  spins++;
+  const pressAt = performance.now();
+  for (const r of reels) { r.spinning = true; r.landAt = -1; }
+  post('/wallet/play', { amount: 1000000, mode: 'base', currency: 'USD' }).then((res) => {
+    const now = performance.now();
+    const base = turbo ? 150 : 500, gap = turbo ? 60 : 200;
+    const board = res.round.state[0].board;
+    reels.forEach((r, i) => { r.stopAt = now + base + gap * i; r.final = board[i].map((s) => s.name); });
+    const win = res.round.payoutMultiplier > 0;
+    const last = reels[4].stopAt + 120;
+    round = { n: spins, win, pressAt, respAt: now, stops: reels.map((r) => r.stopAt), settles: reels.map((r) => r.stopAt + 120), flash: win ? { start: last, toggleMs: 125, dur: turbo ? 1000 : 2000 } : null, turbo };
+  });
+}
+
+function finishRound() {
+  const r = round;
+  state = 'idle';
+  const done = () => post('/bet/event', { event: String(r.n), debug: r });
+  if (r.win) post('/wallet/end-round', {}).then(done);
+  else done();
+}
+
+addEventListener('keydown', (e) => {
+  if (e.code === 'Space') { e.preventDefault(); spin(); }
+  if (e.code === 'Escape' && pay) { pay = 0; }
+});
+const hit = (e, x, y, rad = 0.045) => Math.hypot(e.clientX / W - x, (e.clientY / H - y) * (H / W)) < rad;
+canvas.addEventListener('pointerdown', (e) => {
+  if (state === 'intro') { state = 'fade'; fadeAt = performance.now(); return; }
+  if (pay) { if (hit(e, 0.95, 0.07)) pay = 0; return; }
+  if (menuOpen) {
+    if (hit(e, 0.5, 0.45, 0.08)) { pay = 1; payAt = performance.now(); payPage = 0; }
+    else if (hit(e, 0.95, 0.07) || hit(e, 0.05, 0.92)) menuOpen = false;
+    return;
+  }
+  if (hit(e, 0.5, 0.9)) spin();
+  else if (hit(e, 0.62, 0.9)) turbo = !turbo;
+  else if (hit(e, 0.05, 0.92)) { menuOpen = true; menuAt = performance.now(); }
+});
+addEventListener('wheel', (e) => { if (pay) { payPage = Math.max(0, Math.min(4, payPage + Math.sign(e.deltaY))); payAt = performance.now(); } });
+
+function text(s, x, y, size, color = '#fff', align = 'center') {
+  ctx.fillStyle = color;
+  ctx.font = `bold ${Math.round(size)}px sans-serif`;
+  ctx.textAlign = align;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(s, x, y);
+}
+function button(x, y, label, on) {
+  ctx.fillStyle = on ? '#ffc53d' : '#2a3050';
+  ctx.beginPath();
+  ctx.arc(x * W, y * H, 0.04 * W, 0, Math.PI * 2);
+  ctx.fill();
+  text(label, x * W, y * H, 0.014 * W, on ? '#000' : '#fff');
+}
+function drawReel(i, t) {
+  const r = reels[i];
+  const x = G.x + i * CW;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, G.y, CW, G.h);
+  ctx.clip();
+  ctx.fillStyle = '#161a33';
+  ctx.fillRect(x, G.y, CW, G.h);
+  let yOff = 0;
+  let syms = r.sym;
+  if (r.spinning) {
+    if (r.stopAt && t >= r.stopAt) {
+      r.spinning = false;
+      r.sym = r.final;
+      r.landAt = r.stopAt;
+      r.stopAt = 0;
+      syms = r.sym;
+    } else {
+      const k = Math.floor(r.offset / CH);
+      syms = [0, 1, 2, 3].map((j) => STRIP[(k + j + i * 5) % STRIP.length]);
+      yOff = (r.offset % CH) - CH;
+    }
+  }
+  if (!r.spinning && r.landAt >= 0 && t < r.landAt + 120) yOff = 0.15 * CH * Math.sin((Math.PI * (t - r.landAt)) / 120);
+  syms.forEach((s, j) => {
+    let col = COLORS[s] || '#888';
+    if (!r.spinning && round && round.flash && j === 1 && t >= round.flash.start && t < round.flash.start + round.flash.dur) {
+      col = Math.floor((t - round.flash.start) / round.flash.toggleMs) % 2 === 0 ? '#ffe066' : '#333';
+    }
+    ctx.fillStyle = col;
+    ctx.fillRect(x + 8, G.y + j * CH + yOff + 8, CW - 16, CH - 16);
+    text(s, x + CW / 2, G.y + j * CH + yOff + CH / 2, CH * 0.35, '#000');
+  });
+  ctx.restore();
+}
+
+let last = 0;
+function frame(ts) {
+  const dt = last ? Math.min(100, ts - last) : 16;
+  last = ts;
+  const t = performance.now();
+  ctx.fillStyle = '#0d1020';
+  ctx.fillRect(0, 0, W, H);
+  // ambient pulse (title glow) — never still, like real games
+  const pulse = 0.5 + 0.5 * Math.sin(ts / 400);
+  ctx.fillStyle = `rgba(80,120,255,${0.25 + 0.5 * pulse})`;
+  ctx.fillRect(0.3 * W, 0.02 * H, 0.4 * W, 0.08 * H);
+  text('MOCK FROSTFALL', 0.5 * W, 0.06 * H, 0.03 * W);
+  if (state === 'loading') {
+    ctx.fillStyle = '#2a3050';
+    ctx.fillRect(0.3 * W, 0.5 * H, 0.4 * W, 0.03 * H);
+    ctx.fillStyle = '#46a758';
+    ctx.fillRect(0.3 * W, 0.5 * H, 0.4 * W * progress, 0.03 * H);
+    text('LOADING', 0.5 * W, 0.45 * H, 0.025 * W);
+  } else if (state === 'intro') {
+    text('PRESS TO CONTINUE', 0.5 * W, 0.5 * H, 0.03 * W, `rgba(255,255,255,${0.4 + 0.6 * pulse})`);
+  } else {
+    for (const r of reels) if (r.spinning) r.offset += (dt * CH * 25) / 1000;
+    for (let i = 0; i < 5; i++) drawReel(i, t);
+    button(0.5, 0.9, 'SPIN', state === 'spinning');
+    button(0.62, 0.9, 'TURBO', turbo);
+    button(0.05, 0.92, 'MENU', menuOpen);
+    text(`spins ${spins}`, 0.85 * W, 0.92 * H, 0.015 * W, '#aab');
+    if (state === 'spinning' && round && reels.every((r) => !r.spinning) && t >= round.settles[4] + (round.flash ? round.flash.dur : 0)) finishRound();
+    if (state === 'fade') {
+      const a = Math.min(1, (t - fadeAt) / 400);
+      ctx.fillStyle = `rgba(13,16,32,${1 - a})`;
+      ctx.fillRect(0, 0, W, H);
+      if (a >= 1) state = 'idle';
+    }
+    if (menuOpen) {
+      const a = Math.min(1, (t - menuAt) / 300);
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(0, H * (1 - a), W, H);
+      text('PAYTABLE', 0.5 * W, 0.45 * H + H * (1 - a), 0.03 * W);
+      text('RULES', 0.5 * W, 0.55 * H + H * (1 - a), 0.03 * W);
+      text('X', 0.95 * W, 0.07 * H, 0.03 * W);
+    }
+    if (pay) {
+      const a = Math.min(1, (t - payAt) / 200);
+      ctx.fillStyle = '#10142a';
+      ctx.fillRect(0.1 * W, 0.1 * H, 0.8 * W, 0.8 * H);
+      text(`PAYTABLE PAGE ${payPage + 1} / 5`, 0.5 * W, 0.2 * H, 0.03 * W);
+      Object.keys(COLORS).forEach((s, k) => {
+        ctx.fillStyle = COLORS[s];
+        ctx.fillRect(0.15 * W + ((k * 0.09 + payPage * 0.02) % 0.7) * W, 0.35 * H + 0.1 * H * (1 - a), 0.07 * W, 0.12 * H);
+      });
+      text('X', 0.95 * W, 0.07 * H, 0.03 * W);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+boot();
+</script>
+</body>
+</html>

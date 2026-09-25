@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>reference-capture clock test</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #202020; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+/*
+ * Clock-exactness fixture for tools/reference/capture.mjs.
+ * A box moves at SPEED px per ms of performance.now(); every frame also paints four 24-bit
+ * barcodes (white square = 1) so a test can read the exact times back out of the PNG:
+ *   row 0: floor(performance.now())      row 1: floor(rAF timestamp)
+ *   row 2: rAF callback count            row 3: cached Date.now() - Date.now()@load (GSAP style)
+ * Query: gl=1 (draw with WebGL scissor-clears, preserveDrawingBuffer:false, like Pixi)
+ *        slow=MS (sync XHR per frame -> the render really takes MS of wall time)
+ *        speed=PX_PER_MS (default 1)    bootDelay=MS (setTimeout before the loop starts)
+ */
+const q = new URLSearchParams(location.search);
+const GL = q.get('gl') === '1';
+const SLOW = Number(q.get('slow') || 0);
+const SPEED = Number(q.get('speed') || 1);
+const BOOT = Number(q.get('bootDelay') || 0);
+const cachedDateNow = Date.now; // cached reference, like GSAP's `_getTime = Date.now`
+const date0 = cachedDateNow();
+const canvas = document.getElementById('c');
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+const W = canvas.width, H = canvas.height;
+const SQ = 12, X0 = 8, Y0 = 8, ROW = SQ + 4;
+window.animLog = [];
+let frames = 0;
+
+let rect, clear;
+if (GL) {
+  const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false, antialias: false });
+  gl.enable(gl.SCISSOR_TEST);
+  rect = (x, y, w, h, [r, g, b]) => {
+    gl.scissor(x, H - y - h, w, h);
+    gl.clearColor(r / 255, g / 255, b / 255, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  };
+  clear = () => rect(0, 0, W, H, [32, 32, 32]);
+} else {
+  const ctx = canvas.getContext('2d');
+  rect = (x, y, w, h, [r, g, b]) => {
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(x, y, w, h);
+  };
+  clear = () => rect(0, 0, W, H, [32, 32, 32]);
+}
+const barcode = (row, v) => {
+  v = Math.max(0, Math.floor(v)) & 0xffffff;
+  const y = Y0 + row * ROW;
+  rect(X0 - 2, y - 2, 24 * SQ + 4, SQ + 4, [0, 0, 0]);
+  for (let i = 0; i < 24; i++) if ((v >> (23 - i)) & 1) rect(X0 + i * SQ, y, SQ, SQ, [255, 255, 255]);
+};
+
+function frame(ts) {
+  frames++;
+  const now = performance.now();
+  const d = cachedDateNow() - date0;
+  if (SLOW) {
+    const x = new XMLHttpRequest();
+    x.open('GET', '/sleep?ms=' + SLOW, false); // blocks the main thread for SLOW ms of wall time
+    x.send();
+  }
+  clear();
+  barcode(0, now);
+  barcode(1, ts);
+  barcode(2, frames);
+  barcode(3, d);
+  // box A: performance.now()-driven (lane y=100); box B: cached-Date.now()-driven (lane y=160)
+  const lane = W - 40;
+  rect(Math.floor(now * SPEED) % lane, 100, 40, 40, [230, 60, 60]);
+  rect(Math.floor(d * SPEED) % lane, 160, 40, 40, [60, 160, 230]);
+  if (window.animLog.length < 20000) window.animLog.push({ frames, now, ts, d });
+  window.animReady = true;
+  requestAnimationFrame(frame);
+}
+setTimeout(() => requestAnimationFrame(frame), BOOT);
+</script>
+</body>
+</html>

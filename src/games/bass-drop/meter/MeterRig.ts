@@ -33,14 +33,14 @@ export class MeterRig {
   readonly led: LedArc;
   readonly counter = new Counter();
   readonly notches: Notches;
-  /** `fx_blast`: above the cone, below the rim and txt_count (a flying wild launches from here) */
+  /** `fx_blast`: above the cone and the swirl, below txt_count and the notches */
   readonly blastSlot = new Container({ label: 'fx_blast' });
   private readonly cabinet = new Container({ label: 'cabinet' });
   private readonly cabSprite = new Sprite();
   private readonly cabTrim = new Sprite();
   private readonly ring = new Container({ label: 'ring' });
-  private readonly rim = new Sprite({ anchor: 0.5 });
-  private readonly trim = new Sprite({ anchor: 0.5 });
+  private readonly rim = new Sprite({ anchor: 0.5, label: 'rim' });
+  private readonly trim = new Sprite({ anchor: 0.5, label: 'rim_trim' });
   private readonly coneRoot = new Container({ label: 'cone' });
   private readonly cone = new Sprite({ anchor: 0.5 });
   private readonly cap = new Sprite({ anchor: 0.5 });
@@ -70,9 +70,9 @@ export class MeterRig {
     const icons = art.icons;
     this.led = new LedArc(tex.tick);
     this.notches = new Notches(tex.notchPlate, tex.notchRing, (d) => art.notchIcon(d.kind, d.pips));
-    this.swirl = new Sprite({ texture: icons.swirl, anchor: 0.5, blendMode: 'add', alpha: 0, tint: TEAL });
+    this.swirl = new Sprite({ texture: icons.swirl, anchor: 0.5, blendMode: 'add', alpha: 0, tint: TEAL, label: 'fx_swirl' });
     this.swirl.width = this.swirl.height = R_REF * 1.34;
-    this.glow = new Sprite({ texture: icons.glowRing, anchor: 0.5, blendMode: 'add', alpha: 0 });
+    this.glow = new Sprite({ texture: icons.glowRing, anchor: 0.5, blendMode: 'add', alpha: 0, label: 'fx_glow' });
     this.glow.width = this.glow.height = (R_REF * 2.05) / 0.82;
     this.capFlash.width = this.capFlash.height = R_REF * GEOM.counterR * 2.6;
     this.blastStar.width = this.blastStar.height = R_REF * 1.5;
@@ -127,7 +127,6 @@ export class MeterRig {
     this.trimColor = color;
     this.trim.tint = color;
     this.cabTrim.tint = color;
-    this.glow.tint = color;
   }
 
   setGlowLevel(level: number): void {
@@ -230,7 +229,7 @@ export class MeterRig {
     const b = this.blastStar;
     gsap.killTweensOf([b, b.scale]);
     const k = (R_REF * 1.5 * power) / b.texture.width;
-    b.alpha = 1;
+    b.alpha = 0.85;
     b.rotation = 0;
     b.tint = 0xffffff;
     followSpeed(
@@ -238,7 +237,7 @@ export class MeterRig {
         .timeline()
         .fromTo(b.scale, { x: k * 0.2, y: k * 0.2 }, { x: k, y: k, duration: f(6), ease: 'power3.out' }, 0)
         .to(b, { rotation: 0.6, duration: f(16), ease: 'power1.out' }, 0)
-        .to(b, { alpha: 0, duration: f(12), ease: 'power2.in' }, f(4)),
+        .to(b, { alpha: 0, duration: f(10), ease: 'power2.in' }, f(3)),
     );
   }
 

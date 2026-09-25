@@ -9,7 +9,7 @@ import { GEOM, R_REF } from './geometry';
 
 const SUFFIX = 0xf8d828;
 /** widest the value group may get on the dust cap (rig units) */
-const MAX_W = R_REF * GEOM.counterR * 1.8;
+const MAX_W = R_REF * GEOM.counterR * 1.86;
 const MAX_LAP_PIPS = 5;
 
 /**
@@ -72,16 +72,26 @@ export class Counter {
     this.arrange();
   }
 
+  /**
+   * Inline "23/60" when it fits the cap; otherwise ("118 MAX") the tag goes under the digits so
+   * the digits keep their full size (readability gate: >= 19 CSS px at Mobile S portrait).
+   */
   private arrange(): void {
     const gap = this.fontPx * 0.06;
     const numW = this.num.width;
     const sufW = this.suffix.width;
-    const w = numW + gap + sufW;
-    this.num.position.set(-w / 2, 0);
-    // bottoms line up: the suffix sits on the digits' baseline
-    this.suffix.position.set(-w / 2 + numW + gap, this.fontPx * 0.17);
-    const k = w > MAX_W ? MAX_W / w : 1;
-    this.group.scale.set(k);
+    const inline = numW + gap + sufW;
+    if (inline <= MAX_W) {
+      this.num.position.set(-inline / 2, 0);
+      // bottoms line up: the suffix sits on the digits' baseline
+      this.suffix.position.set(-inline / 2 + numW + gap, this.fontPx * 0.17);
+      this.group.scale.set(1);
+      return;
+    }
+    this.num.position.set(-numW / 2, -this.fontPx * 0.14);
+    this.suffix.position.set(-sufW / 2, this.fontPx * 0.44);
+    const w = Math.max(numW, sufW);
+    this.group.scale.set(w > MAX_W ? MAX_W / w : 1);
   }
 
   private drawPips(): void {

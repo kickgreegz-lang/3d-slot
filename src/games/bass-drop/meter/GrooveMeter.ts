@@ -7,24 +7,23 @@ import { clock } from '../../../core/clock';
 import { followSpeed, getSpeedProfile, s } from '../../../core/timing';
 import type { GameContext, GameModule } from '../../../game/context';
 import type { GameEvents } from '../../../game/events';
-import { label } from '../../../present/common/text';
 import { GROOVE } from '../config';
 import type { GrooveFeature, MeterMode } from '../events';
-import { BASS_DROP_TIMING, GOLD, PINK, TEAL } from '../timing';
+import { BASS_DROP_TIMING, PINK } from '../timing';
 import { MeterArt } from './art';
-import { Chip, type ChipModel } from './Chip';
+import { Beats } from './beats';
+import { Chip } from './Chip';
+import { boomBeat, thresholdBurst, triggerPump } from './choreo';
 import { MeterFx } from './effects';
 import { ensureMeterFonts } from './fonts';
-import { GEOM, METER_LOOK as LOOK, NOTCHES, type NotchState, R_REF, type RigLayout, notchIndex, polar, rigLayout, valueDeg } from './geometry';
-import { MeterRig, type MeterLoop } from './MeterRig';
-import { Notches } from './Notches';
+import { METER_LOOK as LOOK, R_REF, type RigLayout, polar, rigLayout } from './geometry';
+import { deriveLook } from './look';
+import { MeterRig } from './MeterRig';
 import { type OrbMode, type PlanCell, cellKey, orbsFor, planStep } from './plan';
 
 const T = BASS_DROP_TIMING;
 const M = T.meter;
 const MAX = GROOVE.displayMax;
-/** Mega Mix home registry cap ([M-10], mock FEATURES.super.maxSticky) */
-const MAX_HOMES = 5;
 const CHAINED_FLOOR = 0.06;
 
 /** A meter:update waiting for the board:tumble that launches its orbs. */
@@ -52,11 +51,6 @@ interface PendingBurst {
   threshold: number;
   /** false: no drop follows (win cap / step end), so no armed strobe */
   strobe: boolean;
-}
-
-interface Scheduled {
-  tween: gsap.core.Tween;
-  fn: () => void;
 }
 
 /**
@@ -90,8 +84,9 @@ export class GrooveMeter implements GameModule {
   private geo!: RigLayout;
   private readonly body = new Container({ label: 'grooveMeter' });
   private offs: Array<() => void> = [];
-  private readonly calls = new Set<gsap.core.Tween>();
-  private featureCalls: Scheduled[] = [];
+  /** charge -> boom beats of the drops / trigger pumps + the feature drains and skin swaps */
+  private readonly dropBeats = new Beats();
+  private readonly featureBeats = new Beats();
 
   // ---- model
   private mode: MeterMode = 'base';
@@ -192,10 +187,11 @@ export class GrooveMeter implements GameModule {
   destroy(): void {
     for (const off of this.offs) off();
     this.offs = [];
-    this.killCalls();
-    this.cancelFeatureCalls();
+    this.dropBeats.cancel();
+    this.featureBeats.cancel();
     this.drainTween?.kill();
     this.endRun();
+    this.ctx.layers.winLayer.detach(this.fx.view);
     this.fx.destroy();
     this.chip.destroy();
     this.rig.destroy();
@@ -206,8 +202,8 @@ export class GrooveMeter implements GameModule {
   // ======================================================================= round flow
 
   private onRoundStart(): void {
-    this.killCalls();
-    this.flushFeatureCalls();
+    this.dropBeats.cancel();
+    this.featureBeats.flush();
     this.endRun();
     this.armed = null;
     this.pendingBursts = [];
@@ -224,7 +220,7 @@ export class GrooveMeter implements GameModule {
   private onRoundEnd(): void {
     this.finishNoTumble();
     this.endRun();
-    this.flushFeatureCalls();
+    this.featureBeats.flush();
     this.armedNotches.clear();
     this.charging = null;
     this.refresh();
@@ -232,7 +228,7 @@ export class GrooveMeter implements GameModule {
 
   private onReveal(): void {
     this.finishNoTumble();
-    this.flushFeatureCalls();
+    this.featureBeats.flush();
     this.revealed = true;
     this.clusters = [];
   }
@@ -252,7 +248,7 @@ export class GrooveMeter implements GameModule {
     // freegame: the trigger beats keep their schedule (the first free-spin reveal flushes them)
     if (gameType === 'freegame') return;
     // feature over (outro): skin back to base, value silently 0 (DESIGN §10.5)
-    this.cancelFeatureCalls();
+    this.featureBeats.cancel();
     this.cancelDrain();
     this.mode = 'base';
     this.fsFeature = null;
@@ -266,7 +262,7 @@ export class GrooveMeter implements GameModule {
   private onMeterSet(p: GameEvents['meter:set']): void {
     this.endRun();
     this.cancelDrain();
-    this.cancelFeatureCalls();
+    this.featureBeats.cancel();
     this.armed = null;
     this.pendingBursts = [];
     this.armedNotches.clear();
@@ -549,49 +545,9 @@ export class GrooveMeter implements GameModule {
     }
   }
 
-  /** Which feature a threshold locks: base 40 -> Juke Jam, base 60 -> Mega Mix, Juke Jam 60 -> the upgrade. */
-  private lockOf(t: number): GrooveFeature | null {
-    if (this.mode === 'base') return t === GROOVE.bonusAt ? 'bonus' : t === GROOVE.superAt ? 'super' : null;
-    if (this.mode === 'bonus') return t === GROOVE.superAt ? 'super' : null;
-    return null;
-  }
-
-  /** Threshold burst on the notch (DESIGN §6.4): minor 10/20/30/50, major 40/60. */
   private burst(pb: PendingBurst): void {
-    const t = pb.threshold;
-    const i = notchIndex(t);
-    const def = NOTCHES[i];
-    const lock = this.lockOf(t);
-    const major = lock !== null || t === GROOVE.superAt;
-    const superish = lock === 'super' || t === GROOVE.superAt;
-    const color = major ? (superish ? PINK : GOLD) : Notches.burstColor(def);
-    const sec = s(major ? M.thresholdMajor : M.thresholdMinor);
-    this.rig.notches.badges[i].burst(major, sec, color);
-    this.rig.led.sweep(color, sec * 0.85, major ? 2 : 1);
-    this.rig.flashRim(color, sec);
-    const p = this.notchPoint(t);
-    this.fx.sparks(p.x, p.y, this.geo.k, major ? LOOK.sparksMajor : LOOK.sparksMinor, color, LOOK.sparkLife[major ? 1 : 0], major ? 1.3 : 1);
-    const SH = T.shake;
-    if (major) {
-      this.fx.shake(superish ? SH.thresholdSuper : SH.thresholdBonus);
-      this.fx.flash(superish ? PINK : GOLD, T.flash.thresholdMajor, 150);
-      this.fx.hitStop(T.hitStop.thresholdMajor);
-      this.fx.sfx(superish ? 'meter_lock_super' : 'meter_lock_bonus');
-      if (lock) this.fx.cue('featureLock', lock === 'super' ? 2 : 1);
-      else this.fx.cue('meterThreshold', 1);
-    } else {
-      this.fx.shake(SH.thresholdMinor);
-      this.fx.sfx('meter_threshold', 2 ** ((i * 2) / 12));
-      this.fx.cue('meterThreshold', (i + 1) / 6);
-    }
-    if (pb.strobe) this.armedNotches.add(t);
-  }
-
-  /** Design-space position of a notch badge. */
-  private notchPoint(t: number): { x: number; y: number } {
-    const g = this.geo;
-    const p = polar(valueDeg((notchIndex(t) + 1) * 10), R_REF * GEOM.notchRadius);
-    return { x: g.cx + p.x * g.scale, y: g.cy + p.y * g.scale };
+    thresholdBurst(this.rig, this.fx, this.geo, this.mode, pb.threshold);
+    if (pb.strobe) this.armedNotches.add(pb.threshold);
   }
 
   // ======================================================================= bass drop beats
@@ -610,14 +566,11 @@ export class GrooveMeter implements GameModule {
     this.charging = p.threshold;
     this.rig.charge(sec, !first);
     this.refresh();
-    this.schedule(sec, () => this.boom(p.threshold));
+    this.dropBeats.at(sec, () => this.boom(p.threshold));
   }
 
   private boom(threshold: number): void {
-    this.rig.boom();
-    const g = this.geo;
-    this.fx.soundRings(g.cx, g.cy, g.k, g.R * GEOM.counterR, TEAL);
-    this.fx.smoke(g.cx, g.cy, g.k, g.R * 0.9, LOOK.blastSmoke, 0xd6cce2);
+    boomBeat(this.rig, this.fx, this.geo);
     this.armedNotches.delete(threshold);
     if (this.charging === threshold) this.charging = null;
     this.refresh();
@@ -638,7 +591,7 @@ export class GrooveMeter implements GameModule {
    * the pumps. Resolves immediately: FeatureScreens owns the timeline.
    */
   private onFeatureTrigger(p: GameEvents['feature:trigger']): void {
-    this.cancelFeatureCalls();
+    this.featureBeats.cancel();
     // the merged FS line (portrait / compact) reads "JUKE JAM 0/8" from the feature start on
     this.fs = { current: 0, total: p.totalFs };
     if (!this.revealed) {
@@ -646,25 +599,14 @@ export class GrooveMeter implements GameModule {
       return;
     }
     const F = T.feature;
-    for (let i = 0; i < 3; i++) this.scheduleFeature(s(F.triggerHold + i * F.pumpGap), () => this.triggerPump(i, p.feature));
-    this.scheduleFeature(s(F.triggerTotal + LOOK.wipeCover), () => this.enterFeature(p.feature));
+    for (let i = 0; i < 3; i++) this.featureBeats.at(s(F.triggerHold + i * F.pumpGap), () => this.triggerPump(i, p.feature), true);
+    this.featureBeats.at(s(F.triggerTotal + LOOK.wipeCover), () => this.enterFeature(p.feature));
   }
 
   private triggerPump(i: number, feature: GrooveFeature): void {
-    const last = i >= 2;
-    this.rig.featurePump(i);
-    this.fx.shake(T.shake.triggerPumps[i] ?? 0.2);
-    const g = this.geo;
-    if (!last) {
-      this.fx.sparks(g.cx, g.cy - g.R * 0.2, g.k, 14, feature === 'super' ? PINK : GOLD, 450, 0.8);
-      return;
-    }
-    this.fx.flash(0xffffff, T.flash.trigger, T.flash.triggerMs);
-    this.fx.hitStop(T.hitStop.triggerFinal);
-    this.fx.sfx('fs_trigger');
-    this.ctx.game.broadcast('fx:burst', { kind: 'explode', x: g.cx, y: g.cy, color: feature === 'super' ? PINK : GOLD, power: 1 });
-    this.fx.soundRings(g.cx, g.cy, g.k, g.R * GEOM.counterR, feature === 'super' ? PINK : GOLD);
-    this.fx.smoke(g.cx, g.cy, g.k, g.R * 0.9, LOOK.blastSmoke, 0xd6cce2);
+    triggerPump(this.rig, this.fx, this.geo, i, feature, (x, y, color) =>
+      this.ctx.game.broadcast('fx:burst', { kind: 'explode', x, y, color, power: 1 }),
+    );
   }
 
   private enterFeature(feature: GrooveFeature): void {
@@ -677,10 +619,10 @@ export class GrooveMeter implements GameModule {
 
   /** Juke Jam -> Mega Mix (DESIGN §10.4): drain + megamix skin behind the upgrade screen. Resolves at once. */
   private onFeatureUpgrade(p: GameEvents['feature:upgrade']): void {
-    this.cancelFeatureCalls();
+    this.featureBeats.cancel();
     const upgradedTotal = (this.fs?.total ?? 0) + p.addFs;
-    this.scheduleFeature(s(LOOK.upgradeDrainAt), () => this.drain(false));
-    this.scheduleFeature(s(LOOK.upgradeSkinAt), () => {
+    this.featureBeats.at(s(LOOK.upgradeDrainAt), () => this.drain(false));
+    this.featureBeats.at(s(LOOK.upgradeSkinAt), () => {
       this.mode = 'super';
       this.fsFeature = 'super';
       // the plate retitles and its total jumps (+4); the next updateFreeSpin confirms it
@@ -692,128 +634,38 @@ export class GrooveMeter implements GameModule {
     });
   }
 
-  // ======================================================================= scheduling
-
-  private schedule(sec: number, fn: () => void): void {
-    const tw = followSpeed(
-      gsap.delayedCall(sec, () => {
-        this.calls.delete(tw);
-        fn();
-      }),
-    );
-    this.calls.add(tw);
-  }
-
-  private killCalls(): void {
-    for (const c of this.calls) c.kill();
-    this.calls.clear();
-  }
-
-  private scheduleFeature(sec: number, fn: () => void): void {
-    const entry: Scheduled = {
-      fn,
-      tween: followSpeed(
-        gsap.delayedCall(sec, () => {
-          this.featureCalls = this.featureCalls.filter((e) => e !== entry);
-          fn();
-        }),
-      ),
-    };
-    this.featureCalls.push(entry);
-  }
-
-  /** Run what is still pending now (the flow moved on before the beats played). */
-  private flushFeatureCalls(): void {
-    const list = this.featureCalls;
-    this.featureCalls = [];
-    for (const e of list) {
-      e.tween.kill();
-      e.fn();
-    }
-  }
-
-  private cancelFeatureCalls(): void {
-    for (const e of this.featureCalls) e.tween.kill();
-    this.featureCalls = [];
-  }
-
   // ======================================================================= state -> look
 
   /** Re-derive the whole look from the model (cheap; called on every counter step and state change). */
   private refresh(): void {
     if (!this.rig) return;
-    const v = this.shown;
-    const mode = this.mode;
-    const lvl = this.ringLevel(v);
-    const full = !this.lapMode && v >= MAX;
-    this.rig.led.setLevel(lvl, lvl > 0 && lvl < MAX);
-    if (this.lapMode) this.rig.counter.set(v % MAX, false, Math.floor(v / MAX));
-    else this.rig.counter.set(v, full);
-
-    const trim = mode === 'bonus' ? GOLD : mode === 'super' ? PINK : v >= GROOVE.superAt ? PINK : v >= GROOVE.bonusAt ? GOLD : TEAL;
-    this.rig.setTrim(trim);
-
-    const heat = mode !== 'super' && ((v >= 35 && v < 40) || (v >= 55 && v < 60));
-    if (heat && !this.heat) {
+    const look = deriveLook({
+      mode: this.mode,
+      shown: this.shown,
+      lapMode: this.lapMode,
+      armed: this.armedNotches,
+      charging: this.charging,
+      homes: this.homes.size,
+      chipHasFs: this.geo.chipHasFs,
+      fsFeature: this.fsFeature,
+      fs: this.fs,
+    });
+    const rig = this.rig;
+    rig.led.setLevel(look.level, look.hot);
+    rig.counter.set(look.count, look.max, look.laps);
+    rig.setTrim(look.trim);
+    rig.setGlowLevel(look.glow);
+    rig.play(look.loop);
+    if (look.heat && !this.heat) {
       this.fx.cue('meterHeat');
       this.fx.sfx('meter_heat');
     }
-    this.heat = heat;
-    const locked = (mode === 'base' && v >= GROOVE.bonusAt) || full;
-    this.rig.setGlowLevel(locked ? LOOK.glow.locked : heat ? LOOK.glow.heat : v >= 10 ? LOOK.glow.warm : LOOK.glow.cold);
-    const loop: MeterLoop = full ? 'overdrive_loop' : this.armedNotches.size ? 'armed_loop' : heat ? 'heat_loop' : 'idle';
-    this.rig.play(loop);
-
-    const shownLap = this.lapMode ? v % MAX : v;
-    const next = shownLap >= MAX ? null : (Math.floor(shownLap / 10) + 1) * 10;
-    for (const b of this.rig.notches.badges) {
-      const t = b.def.threshold;
-      const armed = this.armedNotches.has(t);
-      const lock = this.lockOf(t);
-      let st: NotchState;
-      if (armed) st = 'lit';
-      else if (shownLap >= t) st = lock ? 'lit' : 'spent';
-      else if (t === next) st = 'next';
-      else st = 'off';
-      b.configure(st, armed, armed && this.charging === t, heat && t === next);
-    }
-    this.chip.set(this.chipModel(shownLap, next, trim));
-  }
-
-  private chipModel(v: number, next: number | null, accent: number): ChipModel {
-    const fs =
-      this.geo.chipHasFs && this.fsFeature && this.fs
-        ? { feature: this.fsFeature, current: this.fs.current, total: this.fs.total }
-        : null;
-    const t = next ?? MAX;
-    const m: ChipModel = {
-      kind: 'next',
-      accent,
-      threshold: t,
-      wilds: GROOVE.wildsPerDrop[t] ?? 1,
-      sticky: false,
-      feature: null,
-      tag: null,
-      upgradeAt: null,
-      homes: this.homes.size,
-      fs,
-    };
-    const range = (r: readonly [number, number]): string => label('bd.meter.multRange', '×{min}–{max}', { min: r[0], max: r[1] });
-    if (this.mode === 'base') {
-      if (next === null) m.kind = 'megaMix';
-      else m.feature = t === GROOVE.bonusAt ? 'jj' : t === GROOVE.superAt ? 'mm' : null;
-    } else if (this.mode === 'bonus') {
-      if (next === null) m.kind = 'megaMix';
-      else {
-        m.tag = range(GROOVE.bonus.wildMult);
-        m.upgradeAt = v >= 50 ? GROOVE.superAt : null;
-      }
-    } else if (next === null) m.kind = 'max';
-    else {
-      m.sticky = this.homes.size < MAX_HOMES;
-      m.tag = m.sticky ? null : range(GROOVE.super.wildMult);
-    }
-    return m;
+    this.heat = look.heat;
+    rig.notches.badges.forEach((b, i) => {
+      const n = look.notches[i];
+      b.configure(n.state, n.armed, n.solid, n.pulse);
+    });
+    this.chip.set(look.chip);
   }
 
   // ======================================================================= frame

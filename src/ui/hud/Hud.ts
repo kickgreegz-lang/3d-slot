@@ -86,8 +86,6 @@ export class Hud implements GameModule {
   private shownI18n = '';
   private captionMax = 520;
   private replayMax = 520;
-  /** compact: the free-spin counter replaces the bet readout */
-  private fsInBetSlot = false;
   private autoIconStop = false;
   private readonly offs: Array<() => void> = [];
 
@@ -272,7 +270,6 @@ export class Hud implements GameModule {
     this.buy.position.set(bb.x, bb.y);
 
     const fsHex = P.fs.mode === 'hex';
-    this.fsInBetSlot = !fsHex;
     this.fs.configure({
       mode: P.fs.mode,
       radius: P.fs.r,
@@ -395,8 +392,7 @@ export class Hud implements GameModule {
 
     this.balance.visible = !replay;
     this.balance.setValue(s.balanceText, animate && prev.balanceText !== s.balanceText && s.balance > prev.balance);
-    const betSlotFree = this.fsInBetSlot && fs;
-    this.bet.visible = !replay && !betSlotFree;
+    this.bet.visible = !replay;
     this.bet.setValue(s.betText, animate && prev.betText !== s.betText);
     this.replay.setShown(replay);
     const info = replay ? (s.replayInfoText ?? '') : '';
@@ -413,8 +409,8 @@ export class Hud implements GameModule {
     }
     this.status.setExtras([s.rtpText, s.netPositionText, s.sessionTimeText]);
 
-    this.betDown.setShown(!replay && !betSlotFree, animate);
-    this.betUp.setShown(!replay && !betSlotFree, animate);
+    this.betDown.setShown(!replay, animate);
+    this.betUp.setShown(!replay, animate);
     this.betDown.setEnabled(s.betDownEnabled);
     this.betUp.setEnabled(s.betUpEnabled);
 
@@ -434,8 +430,9 @@ export class Hud implements GameModule {
     this.buy.setShown(s.buyAllowed && !replay && !fs, animate);
     this.buy.setEnabled(idle && !fs);
 
-    const fsText = s.freeSpins ? t('hud.fsOf', { current: s.freeSpins.current, total: s.freeSpins.total }) : null;
-    this.fs.setCount(fsText);
+    // The FreeSpins presenter owns the free-spins counter plate (punch, retrigger fly-in);
+    // a HUD badge would duplicate it, so the badge stays hidden.
+    this.fs.setCount(null);
     this.win.setLabel(fs ? t('totalWin') : t('win'));
     this.win.setStatic(s.winText, s.win > 0);
   }

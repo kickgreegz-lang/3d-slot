@@ -416,16 +416,34 @@ Each drop still resolves before the next one starts. A 40 or 60 crossing inside 
 
 ## 9. Mega Mix: sticky wilds
 
-1. **Pinned.** A sticky wild never falls, never explodes and never falls out between spins. It renders on the sticky layer above normal symbols.
-2. **Spin start (fs).** Normal symbols fall out *behind* the stickies, and the new board drops in behind them into non-pinned cells only. A pinned cell's drop is skipped (its `reveal` entry is `W`).
-3. **Tumble rule with pins (CR-4).** Per reel, the survivors that are not pinned keep their order, `combined = newSymbols[reel] ++ survivors`, and `combined` fills the **non-pinned** rows top to bottom. Pinned rows keep their W. Refills fall behind pinned wilds (drawn under them). The math must build boards with the same rule, and `newSymbols[reel].length` must equal the number of exploded non-pinned cells in that reel.
-4. **In a win.**
-   - The wild plays `win` → `win_loop` with the cluster.
-   - At the cluster's explode burst it absorbs a thin energy wisp from each exploding neighbour (80 ms, no orb to the meter).
-   - It then plays `mult_up` when its multiplier grew. The new value comes from the next `wild:sticky` (CR-1). The runtime swaps text and badge tier at the `mult_swap` event.
-   - SFX `sticky_mult_up`; mascot cue `spotUpgrade` (Croak's throat-pouch pump, as the ART_BIBLE acting brief says).
-5. **Cap ×25:** at 25 the badge switches to the `t5` flame tier and `mult_up` becomes a "maxed" shimmer with no number change.
-6. **Feature end:** in the outro, the clamps release (`sticky_unlock`, 9 f) and the stickies fade with the board dimmer.
+The model is the math's ([M-4], [M-5], [M-10]; rules in `mock/games/bass-drop/README.md`): **stickiness is per home cell, across spins**. Within a spin a sticky wild is an ordinary wild. Nothing is pinned during tumbles, and the tumble rule has no exception.
+
+### 9.1 Homes
+
+- A `wild:drop` wild with `sticky:true` makes its target cell a **home** for the rest of the feature (the mock allows 5). The FE keeps a registry keyed by home cell → multiplier. `wild:sticky` replaces it with the book's list after every free-spin reveal.
+- The home's tile gets its **home marker**: a gold rim plus corner clamp brackets (section 5). The marker stays for the whole feature, including while the wild is away from home, so the player always sees where it will come back.
+- A drop with `sticky:false` in Mega Mix (registry full) is a one-shot ×2..×10 wild: skin `mult`, no clamps, no home.
+
+### 9.2 Within a spin
+
+1. **Landing.** `drop_impact` → `sticky_lock` (12 f): the clamps snap in at f6 (`lock_snap`), and the home marker fades in over 200 ms. Then `sticky_idle`.
+2. **In a win.** The wild plays `win` → `win_loop` with its cluster; its badge value counts into the cluster label's `×N` like any multiplier wild (section 7 step 6).
+3. **+1 preview.** A sticky wild that is part of a cluster also pops a teal `+1` off its badge (Titan One 36·k px, rises 30·k px over 400 ms, 150 ms after the cluster label lands). The badge keeps its old value: the book confirms the new one at the next reveal. The FE knows which board W is a sticky because it tags the wild's view with its home on landing and the tag travels with the view through tumbles. With no tag (resume mid-spin), there is no pop.
+4. **Explode.** The wild is in `explodingSymbols`: it explodes with its cluster and its orb flies to the meter like any other. On skin `sticky` the `explode` clip springs the clamps open first (f0–f2), so it reads "released", not "lost".
+5. **Falling.** If cells under it explode, it falls with the refill like any symbol (standard web-sdk rule). The clamps stay on and its home marker stays where it is.
+
+### 9.3 Spin start and return (every later Mega Mix spin)
+
+1. **Fall-out.** With the CR-10 hold set: a W standing on its own home stays in place (`sticky_idle`) while everything else falls out, including sticky wilds that left home. Without it (the current Board, acceptable at P0): everything falls out.
+2. **Drop-in.** The reveal board holds `W×m` at every home. With the hold set, held cells are skipped. Otherwise the homes drop in with the board like any symbol.
+3. **Return** (`wild:sticky`, right after the reveal). A home whose W was not held gets its **return**: a gold ring flash on the home tile, `appear` (9 f) if it did not drop in, then `sticky_lock` (12 f). The returns are staggered 90 ms in ascending `(reel, row)` order.
+4. **Multiplier growth.** For every home whose multiplier is higher than in the previous registry: `mult_up` (12 f; text and badge tier swap at `mult_swap` f4), SFX `sticky_mult_up`, and mascot cue `spotUpgrade` (Croak's throat-pouch pump, as the ART_BIBLE acting brief says). Staggered 120 ms, total capped at 600 ms (normal; turbo and super turbo play them together).
+5. `wild:sticky` resolves when the last return or `mult_up` settles. With nothing to change, it resolves at once.
+
+### 9.4 Cap and feature end
+
+- **Cap ×25:** at 25 the badge switches to the `t5` flame tier; `mult_up` becomes a "maxed" shimmer with no number change, and there is no `+1` preview.
+- **Feature end:** in the outro the clamps release (`sticky_unlock`, 9 f). The home markers and the wilds fade with the board dimmer.
 
 Badge tiers (the value is live text in slot `txt_mult`):
 
@@ -450,7 +468,7 @@ The Juke Jam ranges (×2..×5) therefore always read teal or lime; Mega Mix clim
 | 1,800 | Wipe (existing `Wipe`, 620 ms) in the feature colour (Juke Jam gold, Mega Mix pink) |
 | 2,420 | Feature intro `in` |
 
-A bought feature ([M-7]) skips straight to the wipe, with the meter already in the feature skin.
+A bought feature ([M-7]) plays exactly like a natural one: the mock's buy books start with a real base spin whose meter earns the bought feature, so the whole sequence above plays. Only a book that starts directly with `featureTrigger` skips to the wipe, with the meter already in the feature skin.
 
 ### 10.2 Feature intro (`ui_feature_intro`)
 
@@ -461,8 +479,8 @@ A bought feature ([M-7]) skips straight to the wipe, with the meter already in t
 ### 10.3 Free spin loop
 
 - `updateFreeSpin` → the FS plate counts `3 / 8` with a punch (existing `fsPunch` 260).
-- Every spin: fall-out (keeps stickies in Mega Mix) → reveal → `wild:sticky` (Mega Mix) → presenting loop → `setWin`.
-- **The meter does not drain.** Drops carry multipliers (Juke Jam) or stick (Mega Mix).
+- Every spin: fall-out (Mega Mix: homes hold with CR-10) → reveal → `wild:sticky` (Mega Mix: returns and `mult_up`, section 9.3) → presenting loop → `setWin` → `setTotalWin`.
+- **The meter does not drain between free spins.** Drops carry multipliers (Juke Jam) or create homes (Mega Mix).
 
 ### 10.4 Upgrade (`feature:upgrade`, Juke Jam → Mega Mix)
 
@@ -471,7 +489,7 @@ A bought feature ([M-7]) skips straight to the wipe, with the meter already in t
 - hold;
 - `out`.
 
-At the same time: the meter skin → `megamix`, the music crossfades to the `megamix` stem on the next bar, the FS plate retitles and its total jumps (+4). Mascots play cue `featureUpgrade` (Croak `fs_trigger`, Gumbo `win_big`). The Juke Jam wilds on the board are not converted; they leave with the next fall-out.
+At the same time: the meter drains to 0 and its skin → `megamix` (the math restarts the meter for Mega Mix, [M-2]), the music crossfades to the `megamix` stem on the next bar, the FS plate retitles and its total jumps (+4; the next `updateFreeSpin.total` already includes it). Mascots play cue `featureUpgrade` (Croak `fs_trigger`, Gumbo `win_big`). The Juke Jam wilds on the board are not converted; they leave with the next fall-out. Mega Mix starts with an empty home registry.
 
 ### 10.5 Outro (`freeSpinEnd`)
 
@@ -497,9 +515,9 @@ Shown once after load (not in replay), over the dealt, dimmed board. It is the D
 
 | Card | Art slot (illustration, no text) | Title (live) | Body (live, caps) |
 |---|---|---|---|
-| Left | The Groove Meter with a W popping out of the cone | GROOVE METER | EVERY 10 CONNECTIONS DROPS A WILD |
+| Left | The Groove Meter with a W popping out of the cone | GROOVE METER | EVERY 10 CONNECTED SYMBOLS DROP WILDS ON THE BOARD |
 | Centre (lowered, logo above) | A glowing jukebox with multiplier wilds | JUKE JAM | CONNECT 40 SYMBOLS IN ONE SPIN FOR 8 FREE SPINS WITH MULTIPLIER WILDS |
-| Right | A crowned speaker stack with clamped wilds | MEGA MIX | CONNECT 60 FOR 10 FREE SPINS WITH STICKY WILDS UP TO ×25 |
+| Right | A crowned speaker stack with clamped wilds | MEGA MIX | CONNECT 60 FOR 10 FREE SPINS WITH STICKY MULTIPLIER WILDS THAT GROW UP TO ×25 |
 
 - **Footer:** `WIN UP TO {maxWinX}×` (live, from the bet-mode table), then **PRESS TO CONTINUE** (pulsing, 1 Hz).
 - **Rig:** `ui_intro_cards`. `in` 27 f (cards drop in 4 f apart, settling from ±4° with `card_land` events), `loop`, `press_loop` (track 1), `out` 12 f.
@@ -563,7 +581,7 @@ All numbers are design px. The same values are in [layout.json](layout.json) (th
 | Feature plate | (1514, 300, 344, 110) | Free games only |
 | Gumbo | (0, 557, 434, 496), feet (217, 1053) | His left forearm rests on the lower cabinet top (y ≈ 540), so the boom shoves him |
 | Croak | (1560, 430, 360, 630), feet (1740, 1060) | Behind the booth |
-| DJ booth | (1436, 640, 230, 300) | Turntable crate with the drop button, left of Croak, touching the frame post |
+| DJ booth | (1436, 640, 230, 300) | Turntable crate with the drop button, left of Croak, touching the frame post. The spin hex (r 140 at (1747, 800)) covers the booth's right edge below y ≈ 690, so the drop button sits on the deck's top-left (x < 1600, y < 690) |
 | Tumble plate | (960, 961) scale 0.9 | On the sill |
 | HUD | current LANDSCAPE.hud; win (960, 1030) | |
 | Overlay centre | (960, 531) | Grid centre |
@@ -582,12 +600,12 @@ All numbers are design px. The same values are in [layout.json](layout.json) (th
 | Gumbo / Croak | (0, 150, 400, 430) feet (200, 580) / (680, 150, 400, 430) feet (880, 580); both stand behind the beam, flanking the speaker |
 | DJ booth | (730, 380, 210, 140), on the beam in front of Croak |
 | Tumble plate | (540, 1434) scale 1.0 |
-| HUD (re-flowed; touch targets 150) | win (540, 1500) · bonus buy (130, 1650) · autoplay (330, 1690) · **spin (540, 1665) size 250** · turbo (750, 1690) · menu (950, 1650) · bet − (715, 1850) · bet value (848, 1842) · bet + (980, 1850) · balance (40, 1880, left-aligned) |
+| HUD (re-flowed; touch targets 150) | win (540, 1500) · bonus buy (130, 1650) · autoplay (330, 1690) · **spin (540, 1665) size 250** · turbo (750, 1690) · menu (950, 1650) · bet − (715, 1856) · bet value (848, 1834) · bet + (980, 1856) · balance (40, 1834, left-aligned). Balance/bet y are label baselines and the 48 px value hangs below, so the labels sit at 1834 to keep the values inside 1920 (checked in the running build) |
 | Overlay centre / apex | (540, 990) / y ≥ 160 |
 
 ### 15.3 Tablet 1920×1920
 
-The landscape composition moves down by **+420**, as the current TABLET does: grid (578, 569), frame (491, 492), meter (248, 738), logo (1472, 460), feature plate (1514, 720), Gumbo (0, 977), Croak (1560, 850), booth (1436, 1060), tumble plate (960, 1381), centre (960, 951). The HUD is the current `TABLET.hud` with win (960, 1480).
+The landscape composition moves down by **+420**, as the current TABLET does: grid (578, 569), frame (491, 492), meter (248, 738), logo (1472, 460), feature plate (1514, 720), Gumbo (0, 977), Croak (1560, 850), booth (1436, 1060), tumble plate (960, 1381), centre (960, 951). The HUD is the current `TABLET.hud` with win (960, 1480). Wild arc apex y ≥ 300 (never binding: the computed apex is ≈ 415).
 
 ### 15.4 Compact 960×540 (popouts, small landscape phones)
 
@@ -599,7 +617,7 @@ The landscape composition moves down by **+420**, as the current TABLET does: gr
 | Groove Meter | centre (100, 168), Ø 170; no cabinets, no horns |
 | Meter chip = feature plate | (15, 262, 170, 40) |
 | Mascots / booth | **off** (as in Swamp Funk compact) |
-| HUD | current `COMPACT.hud`, unchanged |
+| HUD | current `COMPACT.hud`, unchanged: spin (828, 270) size 170 · autoplay (770, 144) · turbo (886, 144) · menu (770, 408) · bonus buy (886, 408) · bet − (728, 502) · bet value (828, 488) · bet + (928, 502) · balance (828, 26) · win (828, 74) |
 | Centre / apex | (449, 265) / y ≥ 12 |
 
 ### 15.5 Screens
@@ -684,7 +702,8 @@ Reused: `spin_start`, `fall_out`, `land_*`, `win_small`, `win_cluster`, `explode
 **Model.**
 - Gameplay durations go through `s()`: normal ×1, turbo ÷2, super turbo ÷3.
 - `stagger()` zeroes staggers in turbo and super turbo.
-- **Hit-stops are off in turbo and super turbo.**
+- **Hit-stops are off in turbo and super turbo.** This needs CR-11: today `Board.tumble` calls `clock.hitStop(TIMING.explode.hitStop)` (100 ms, real time) in every profile, which would add 100 ms to every turbo/super-turbo tumble step.
+- Times below are wall-clock times. In normal speed they include the hit-stops (which freeze the game clock).
 - Bass-drop **floors** (below) keep the signature beat readable.
 - UI screens (intro, buy, big-win count) are **not** speed-scaled.
 
@@ -702,7 +721,7 @@ All Bass Drop constants live in one registered table (lab-tunable), section 18.2
 | Cluster present (`winInfo` resolves) | 1,000 | 500 | 333 | dim 170 ∥ outline 340 ∥ links ≤ 320; pop 130 + win ≤ 900; label 250 + 700 hold | [RM] |
 | Extra cluster in the same `winInfo` | +120 | +0 | +0 | `clusterStagger` | |
 | Wild-multiplier label sum | +600 | +300 | +0 | Flights skipped in super turbo | |
-| Explode (squeeze + burst + hit-stop) | 360 | 130 | 87 | 80 + 180 + 100 (hit-stop off in turbo) | [RM] |
+| Explode (squeeze + burst + hit-stop) | 360 | 130 | 87 | 80 + 180 + 100 (hit-stop off in turbo, CR-11; +100 each until then) | [RM] |
 | Orb pop-out | 90 | 45 | 30 | | |
 | Orb flight | 520 | 260 | 173 | | [RM] |
 | Orb spread (cap) | 300 | 0 (±10% flight) | 0 (≤ 6 comets) | | [RM] |
@@ -710,15 +729,15 @@ All Bass Drop constants live in one registered table (lab-tunable), section 18.2
 | Threshold burst, minor / major | 500 / 900 | 250 / 450 | 167 / 300 | Runs during the refill | |
 | Pre-refill delay | 90 | 45 | 30 | `tumble.preRefillDelay` | |
 | Refill: typical / worst | 800 / 950 | 235 / 300 | 157 / 200 | g = 9,000·k; stagger 50 × 5 + 20 × 5; land 150 | [RM] |
-| **Tumble step** (explode + refill; orbs parallel) | ≈ 1,250 | ≈ 410 | ≈ 275 | Orbs land before the refill ends in every profile | [RM] |
-| Bass drop charge | 500 | 250 | **170 (floor 160)** | Croak `bass_drop_charge` 15 f | |
+| **Tumble step** (explode + refill; orbs parallel) | ≈ 1,250 | ≈ 410 | ≈ 275 | The last orb lands before the refill ends in every profile (normal ≤ 990, turbo ≤ 371, super ≤ 230); counter rolls run on without holding the step (section 6.3) | [RM] |
+| Bass drop charge | 500 | 250 | **167 (floor 160)** | Croak `bass_drop_charge` 15 f | |
 | Chained charge | 200 | 100 | 67 (floor 60) | `charge_chained` 6 f; the 160 ms floor applies only to the first charge of a step | |
 | Boom hit-stop | 60 | 0 | 0 | | |
 | Wild launch stagger | 110 | 55 | 37 | | |
 | Wild flight | 640 | 320 | 213 | | |
 | Impact hit-stop | 40 | 0 | 0 | | |
 | Settle after last contact | 300 | 150 | 100 | | |
-| **Bass drop, 1 / 3 wilds** | **1,480 / 1,700** | **740 / 850** | **495 / 570** | | |
+| **Bass drop, 1 / 3 wilds** | **1,580 / 1,880** | **740 / 850** | **493 / 567** | charge + 40 launch delay + (n − 1) × stagger + flight + settle; normal adds the boom hit-stop 60 + 40 per impact (game-clock totals 1,480 / 1,700, section 8.1) | |
 | Multiplier slam / sticky lock | 180 / 400 | 90 / 200 | 60 / 133 | | |
 | Feature trigger (hold → wipe start) | 1,800 | 900 | 600 | Pumps on the beat in normal; turbo/super pumps at 300 / 200 ms spacing | |
 | Wipe | 620 | 310 | 207 | `FS_TIMING.wipe` | |
@@ -735,7 +754,9 @@ Typical round totals (normal / turbo / super), excluding RGS latency:
 |---|---|---|---|
 | Loss | 1.5 s | 0.4 s | 0.26 s |
 | One cluster, no drop | 3.7 s | 1.3 s | 0.9 s |
-| Three tumbles + two drops (+ small-win count) | 11.8 s | 4.9 s | 3.3 s |
+| Three tumbles + two one-wild drops (+ small-win count) | 12.0 s | 4.9 s | 3.3 s |
+
+Until CR-11 lands, add 0.1 s per tumble step in turbo and super turbo (for example 5.2 s / 3.6 s for the last row).
 
 `minimumRoundDuration` is honoured by the flow, as today.
 

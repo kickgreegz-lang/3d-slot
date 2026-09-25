@@ -94,6 +94,14 @@ export interface SpotBand {
 export interface GameFeatures {
   /** heat-tier multiplier spots (board/SpotGrid numbers, spots:update); tiles are always drawn */
   multiplierSpots: boolean;
+  /**
+   * Cluster wins with meta.wildMult > 1: 'auto' (default) = WinPresenter shows the xN badge and
+   * counts winWithoutMult -> win by itself; 'external' = a game module drives it with
+   * 'win:labelMult' events (WinPresenter falls back to 'auto' after a safety timeout).
+   */
+  wildMultSum?: 'auto' | 'external';
+  /** bonus-buy hex opens the DOM buy dialog ('dom', default) or a game module's own screen ('game'). */
+  buyScreen?: 'dom' | 'game';
 }
 
 /** Deterministic idle board before the first spin (flow/attract.ts). */

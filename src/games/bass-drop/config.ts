@@ -27,6 +27,10 @@ export const GRID: GridSpec = {
 export const FEATURES: GameFeatures = {
   /** no multiplier spots: the board keeps its plain (tier 0) tiles */
   multiplierSpots: false,
+  /** the Bass Drop module flies the wild badges into the cluster label (DESIGN.md §7 step 6) */
+  wildMultSum: 'external',
+  /** 2-card canvas buy screen (screens/BuyScreen.ts, DESIGN.md §13) */
+  buyScreen: 'game',
 };
 
 const royal = (id: string, glyph: string, label: string, color: number, shade: number): SymbolDef => ({

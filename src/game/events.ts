@@ -1,4 +1,5 @@
 import type { GameSceneEvents } from '@game/events';
+import type { Container } from 'pixi.js';
 import type { ClusterWin, GameType, Position } from '../book/types';
 import type { WinTierKey } from '../config/game';
 import type { LayoutSpec } from '../config/layout';
@@ -27,7 +28,15 @@ export type MascotCue =
   | 'winBig'
   | 'celebrate'
   | 'fsTrigger'
-  | 'fsEnd';
+  | 'fsEnd'
+  // Groove / Bass Drop cues (DESIGN bass-drop §16, CR-3); games without them never emit them
+  | 'meterHeat'
+  | 'meterThreshold'
+  | 'bassDropCharge'
+  | 'bassDrop'
+  | 'wildLand'
+  | 'featureLock'
+  | 'featureUpgrade';
 
 export type SfxId =
   | 'spin_start'
@@ -57,7 +66,35 @@ export type SfxId =
   | 'fs_outro'
   | 'ui_click'
   | 'ui_bet_up'
-  | 'ui_bet_down';
+  | 'ui_bet_down'
+  // Bass Drop (DESIGN bass-drop §17, CR-5)
+  | 'link_connect'
+  | 'orb_launch'
+  | 'orb_absorb'
+  | 'meter_threshold'
+  | 'meter_lock_bonus'
+  | 'meter_lock_super'
+  | 'meter_heat'
+  | 'meter_drain'
+  | 'meter_lap'
+  | 'bass_charge'
+  | 'bass_boom'
+  | 'wild_launch'
+  | 'wild_whoosh'
+  | 'wild_impact'
+  | 'symbol_crush'
+  | 'wild_mult'
+  | 'sticky_lock'
+  | 'sticky_mult_up'
+  | 'feature_upgrade'
+  | 'intro_card'
+  | 'buy_open'
+  | 'buy_select'
+  | 'buy_confirm'
+  | 'button_slam'
+  | 'cooler_slam'
+  | 'mic_drop'
+  | 'dj_scratch';
 
 export type BoardTransformStyle = 'drop' | 'impact' | 'morph' | 'set';
 
@@ -87,6 +124,35 @@ export type CoreGameEvents = {
    *   'set'    instant, no fanfare (resume / replay).
    */
   'board:transform': { cells: Array<Position & { id: string }>; style: BoardTransformStyle };
+  /**
+   * Hang (display) or remove (null) a decoration `key` on the symbol view at a padded cell
+   * (multiplier badges, sticky clamps, tags). It follows that VIEW - through tumble falls,
+   * squash and win pops - not the cell. The Board detaches it (removeFromParent, never
+   * destroys it) when the view is recycled after an explode or a fall-out; owners check
+   * `display.parent` or re-attach. Synchronous: fire with ctx.game.emit.
+   */
+  'board:decorate': { reel: number; row: number; key: string; display: Container | null };
+  /** Grid container dips `px` design px (x k) and springs back (wild impacts, booms). */
+  'board:thump': { px: number };
+  /**
+   * Board-wide reaction wave: every visible symbol hops (sy ~0.95) with an onset delay of
+   * `perPxMs` x its distance (design px) from (x, y), capped at `capMs`. power 0..1.
+   */
+  'board:react': { x: number; y: number; perPxMs: number; capMs: number; power?: number };
+  /** Dim every visible symbol except `cells` (tint), or restore all (cells null). */
+  'board:focus': { cells: Position[] | null; tint?: number };
+  /**
+   * Hold set for the NEXT fall-out (CR-10b): these padded cells stay in place while the
+   * rest falls out, if they still show `id`; the next reveal skips their drop-in when its
+   * id matches. Cleared after that reveal (or with an empty list).
+   */
+  'board:hold': { cells: Array<Position & { id: string }> };
+  /**
+   * Emitted BY the Board (not the flow) during 'board:tumble', at the explode-burst frame
+   * (explode start + TIMING.explode.anticipateDuration): the exploding positions whose
+   * burst is happening now. Orbs, link snaps and count pops sync to it.
+   */
+  'board:burst': { positions: Position[] };
 
   /** Multiplier spots changed (animate only cells where value differs). */
   'spots:update': { grid: number[][]; previous: number[][] };
@@ -101,6 +167,12 @@ export type CoreGameEvents = {
   'win:total': { amount: number };
   /** Final round win (counter must end exactly here). */
   'win:final': { amount: number };
+  /**
+   * Multiplier-sum driver for a cluster label at `overlay` (games with FEATURES.wildMultSum
+   * 'external'): shows / bumps the label's xN badge to `mult` with a punch; `final` then
+   * counts the value from meta.winWithoutMult to win and slams. Synchronous.
+   */
+  'win:labelMult': { overlay: Position; mult: number; final?: boolean };
   /** Big-win celebration; resolves after dismiss / auto-close. */
   'bigwin:show': { amount: number; tier: WinTierKey };
 

@@ -1,4 +1,11 @@
 import type { GameStrings } from '../../i18n';
+import { STRINGS as CONNECT } from './connect/strings';
+import { STRINGS as DROP } from './drop/strings';
+import { STRINGS as METER } from './meter/strings';
+import { STRINGS as SCREENS } from './screens/strings';
+
+/** Feature-module copy (each track owns its strings.ts); the game table below wins on clashes. */
+const PARTS: GameStrings[] = [METER, DROP, CONNECT, SCREENS];
 
 /**
  * SWAMP FUNK: BASS DROP copy merged over the engine tables: symbol names, the Groove
@@ -6,7 +13,7 @@ import type { GameStrings } from '../../i18n';
  * overridden here that also have an engine social override (rules.buy.body, buy.desc)
  * get their own social version below.
  */
-export const GAME_STRINGS: GameStrings = {
+const BASE_STRINGS: GameStrings = {
   en: {
     'sym.H1': 'Golden Boombox',
     'sym.H2': 'Vinyl Record',
@@ -60,4 +67,9 @@ export const GAME_STRINGS: GameStrings = {
     'buy.desc.bonus': 'Juke Jam is instantly triggered at the start of the round.',
     'buy.desc.super': 'Mega Mix is instantly triggered at the start of the round.',
   },
+};
+
+export const GAME_STRINGS: GameStrings = {
+  en: Object.assign({}, ...PARTS.map((p) => p.en), BASE_STRINGS.en),
+  social: Object.assign({}, ...PARTS.map((p) => p.social ?? {}), BASE_STRINGS.social ?? {}),
 };

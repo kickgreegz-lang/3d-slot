@@ -1,9 +1,9 @@
 import { gsap } from 'gsap';
 import { Container, Rectangle, Sprite, type Texture } from 'pixi.js';
-import type { GameType } from '../book/types';
-import type { LayoutKind, LayoutSpec } from '../config/layout';
-import { clock } from '../core/clock';
-import type { GameContext, GameModule } from '../game/context';
+import type { GameType } from '../../../book/types';
+import type { LayoutKind, LayoutSpec } from '../../../config/layout';
+import { clock } from '../../../core/clock';
+import type { GameContext, GameModule } from '../../../game/context';
 import { BgFx } from './background/BgFx';
 import { paintScene } from './background/paint';
 import { BASE_PALETTE, type Composition, FS_PALETTE, composeFor } from './background/theme';

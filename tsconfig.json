@@ -15,7 +15,11 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "allowImportingTsExtensions": false,
-    "useDefineForClassFields": true
+    "useDefineForClassFields": true,
+    "paths": {
+      "@game/*": ["./src/games/swamp-funk/*"]
+    }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["src/games/bass-drop"]
 }

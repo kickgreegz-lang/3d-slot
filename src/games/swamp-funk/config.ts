@@ -1,18 +1,19 @@
+import type { BetModeDef } from '../../flow/modes';
+import type { AttractSpec, GameFeatures, GridSpec, SpotBand, SymbolDef, WinTier } from '../../config/game';
+
 /**
- * Game-wide static configuration: grid geometry, symbol registry, win tiers,
- * multiplier-spot heat bands. Everything here is data — no Pixi imports — so the
- * math/logic team and the art pipeline can edit it without touching rendering.
+ * SWAMP FUNK — static game configuration: grid geometry, symbol registry, win tiers,
+ * multiplier-spot heat bands, bet modes, feature flags. Everything here is data (no Pixi
+ * imports) so the math/logic team and the art pipeline can edit it without touching
+ * rendering. Engine modules read it through the `src/config/game.ts` shim (`@game/config`);
+ * the generic types, helpers and the padded-row convention live there.
  *
- * COORDINATE CONVENTION (matches Stake math-sdk books):
- *   - Board arrays are [reel][row].
- *   - Symbol boards are PADDED: 7 rows per reel, row 0 and row 6 are off-screen
- *     padding symbols; visible rows are 1..5. Positions in winInfo / tumbleBoard /
- *     freeSpinTrigger use padded rows.
- *   - gridMultipliers (updateGrid) are UNPADDED: [reel][visibleRow 0..4].
- *   Use `toSpotRow(paddedRow)` / `toPaddedRow(visibleRow)` at the boundary.
+ * Board: 7 reels x 5 rows, padded to 7 rows per reel (row 0 and row 6 are off-screen
+ * padding symbols; visible rows are 1..5). gridMultipliers (updateGrid) are UNPADDED
+ * [reel][visibleRow 0..4].
  */
 
-export const GRID = {
+export const GRID: GridSpec = {
   reels: 7,
   rows: 5,
   paddedRows: 7,
@@ -20,46 +21,13 @@ export const GRID = {
   firstVisibleRow: 1,
   /** last visible padded row index */
   lastVisibleRow: 5,
-} as const;
+};
 
-export const toSpotRow = (paddedRow: number): number => paddedRow - GRID.firstVisibleRow;
-export const toPaddedRow = (visibleRow: number): number => visibleRow + GRID.firstVisibleRow;
-export const isVisibleRow = (paddedRow: number): boolean =>
-  paddedRow >= GRID.firstVisibleRow && paddedRow <= GRID.lastVisibleRow;
-
-export type SymbolKind = 'royal' | 'high' | 'wild' | 'scatter' | 'special';
-
-/** How heavy a symbol "feels" when it lands — drives squash, bounce, shake, SFX. */
-export type LandWeight = 'light' | 'medium' | 'heavy' | 'special';
-
-export interface SymbolDef {
-  id: string;
-  kind: SymbolKind;
-  /** Display name used in paytable (localised later). */
-  label: string;
-  /** Primary hue of the symbol (used by placeholder art, glows, particles, cluster labels). */
-  color: number;
-  /** Darker companion hue for particles/shadows. */
-  shade: number;
-  /** Content scale inside the 150px cell (royals ~0.85, highs ~0.96, specials ~1.12). */
-  cellScale: number;
-  /** Resting rotation in degrees (specials are tilted to break grid monotony). */
-  restAngle: number;
-  landWeight: LandWeight;
-  /** Royal glyph for vector royals (placeholder + production royals are both vector). */
-  glyph?: string;
-  /**
-   * Art binding. Keys resolve through the asset manifest.
-   * - `spine` present  => SymbolView borrows a pooled Spine instance for land/win/anticipation/explode.
-   * - otherwise        => procedural GSAP/shader animation on the static texture.
-   */
-  art: {
-    static: string;
-    blur?: string;
-    glow?: string;
-    spine?: { skeleton: string; atlas: string; skin?: string };
-  };
-}
+/** Optional engine features this game uses. */
+export const FEATURES: GameFeatures = {
+  /** heat-tier multiplier spots under the symbols (updateGrid events) */
+  multiplierSpots: true,
+};
 
 const royal = (
   id: string,
@@ -122,37 +90,23 @@ export const SYMBOLS: Record<string, SymbolDef> = {
   },
 };
 
-export const SYMBOL_IDS = Object.keys(SYMBOLS);
-
-export const getSymbolDef = (id: string): SymbolDef => {
-  const def = SYMBOLS[id];
-  if (!def) throw new Error(`Unknown symbol id "${id}"`);
-  return def;
-};
-
 /**
  * Win tiers in multiples of the bet (math-sdk config.py): winLevel from setWin maps here too.
  * level >= BIG triggers the big-win sequence.
  */
-export const WIN_TIERS = [
+export const WIN_TIERS: readonly WinTier[] = [
   { key: 'big', minX: 15, label: 'BIG WIN' },
   { key: 'super', minX: 30, label: 'SUPER WIN' },
   { key: 'mega', minX: 50, label: 'MEGA WIN' },
   { key: 'epic', minX: 100, label: 'EPIC WIN' },
   { key: 'max', minX: Number.POSITIVE_INFINITY, label: 'MAX WIN' },
-] as const;
-export type WinTierKey = (typeof WIN_TIERS)[number]['key'];
+];
 
 /**
  * Multiplier-spot heat bands. The math decides whether values grow additively
  * (+1, math-sdk sample) or by doubling (reference game) — the front-end renders
  * any integer through these thresholds. value 0 = no spot, 1 = marked (no number).
  */
-export interface SpotBand {
-  tier: 0 | 1 | 2 | 3 | 4 | 5;
-  /** inclusive minimum value for this band */
-  min: number;
-}
 export const SPOT_BANDS_DOUBLING: SpotBand[] = [
   { tier: 0, min: 0 },
   { tier: 1, min: 1 },
@@ -172,13 +126,25 @@ export const SPOT_BANDS_ADDITIVE: SpotBand[] = [
 /** Active band table — the fixture books are additive (math-sdk sample). */
 export const SPOT_BANDS: SpotBand[] = SPOT_BANDS_ADDITIVE;
 
-export const spotTier = (value: number, bands: SpotBand[] = SPOT_BANDS): SpotBand['tier'] => {
-  let tier: SpotBand['tier'] = 0;
-  for (const b of bands) if (value >= b.min) tier = b.tier;
-  return tier;
+/**
+ * Bet modes of the math package. Keys must match the math-sdk bet modes (sent verbatim to
+ * /wallet/play); an RGS-provided costMultiplier overrides the local cost (flow/modes.ts).
+ * TODO(math): RTP values are placeholders until the 7x5 math is final.
+ */
+export const BET_MODES: Record<string, BetModeDef> = {
+  BASE: { key: 'BASE', cost: 1, buy: false, rtp: 0.962, maxWinX: 5000 },
+  BONUS: { key: 'BONUS', cost: 100, buy: true, rtp: 0.962, maxWinX: 5000 },
 };
 
-/** Book amounts (winInfo.totalWin, setWin.amount, ...) are bet multiples x100. */
-export const BOOK_AMOUNT_SCALE = 100;
-/** RGS API money is integer micro-units. */
-export const API_MONEY_SCALE = 1_000_000;
+/**
+ * Deterministic idle board shown before the first spin (flow/attract.ts): premium-heavy
+ * pool, no two orthogonal neighbours alike, one wild and one scatter as "specials"
+ * teasers at fixed padded cells ('reel,row').
+ */
+export const ATTRACT: AttractSpec = {
+  pool: ['H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'L5', 'H1', 'H2', 'H3', 'H4'],
+  specials: { '1,2': 'W', '5,4': 'S' },
+};
+
+/** DEV lab scenarios (src/dev/scenarios.ts) name Swamp Funk's fixture keys: no aliases needed. */
+export const DEV_FIXTURE_ALIASES: Record<string, string> = {};

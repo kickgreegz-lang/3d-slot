@@ -15,7 +15,7 @@ Sources of truth in the repo:
 
 | Concern | File |
 |---|---|
-| Symbol ids, kinds, `restAngle`, `cellScale`, win tiers, spot bands | `src/config/game.ts` |
+| Symbol ids, kinds, `restAngle`, `cellScale`, win tiers, spot bands | the game's `src/games/<game>/config.ts` (engine view: `src/config/game.ts`) |
 | Feel constants (ms, px, px/s²) | `src/core/timing.ts` (`TIMING`) plus each module's table registered with `registerTiming` (`TIMING_SECTIONS`: board, symbol, HUD, presentation, FX, audio, scene). **Every section is tunable live in `?dev=lab`** and exported from there |
 | Scene events, `MascotCue`, `SfxId` | `src/game/events.ts` |
 | Spine runtime binding | `src/symbols/SpinePool.ts` (`SPINE_EVENT`, `SPINE_ANIM` name aliases, per-pair mixes), `src/symbols/SymbolRig.ts`, `src/symbols/symbolTiming.ts` |
@@ -43,7 +43,7 @@ Research background: [research/stack-final.md § animationContract](research/sta
 
 The math paytable id **is** the art id. There is no lookup table to drift.
 
-| `src/config/game.ts` id | Label (SWAMP FUNK) | Static texture key (`art.static`) | Spine skeleton | Baked-frame prefix | Animated by |
+| `src/games/swamp-funk/config.ts` id | Label (SWAMP FUNK) | Static texture key (`art.static`) | Spine skeleton | Baked-frame prefix | Animated by |
 |---|---|---|---|---|---|
 | `H1` | Golden Boombox | `sym_H1` (+ `_blur`, `_glow`) | `sym_H1` | `H1_` | Spine |
 | `H2` | Vinyl Record | `sym_H2` | `sym_H2` | `H2_` | Spine |

@@ -11,6 +11,7 @@ Band model (matches the 2D art bible and src/mascots/toon.ts):
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 
@@ -24,7 +25,7 @@ SPECULAR = "#FFFFFF"
 GOLD = {"lit": "#FFC629", "mid": "#E2861A", "deep": "#9A4A0C", "light": "#FFF0A0"}
 RUNTIME_MULTIPLIERS = (0.42, 0.70, 1.00)  # deep, mid, lit (src/mascots/toon.ts header)
 
-# Default kind -> cellScale when src/config/game.ts cannot be parsed.
+# Default kind -> cellScale when src/games/<GAME>/config.ts cannot be parsed.
 KIND_CELL_SCALE = {"royal": 0.86, "high": 0.96, "wild": 1.02, "scatter": 1.12, "special": 1.06, "prop": 0.90}
 
 
@@ -113,8 +114,8 @@ def symbol_colors(info: dict | None, bible: dict) -> dict:
 
 
 def cell_scale(sym: str, kind: str | None, repo: Path = REPO) -> float:
-    """cellScale for a symbol id from src/config/game.ts (read-only regex parse)."""
-    src = repo / "src" / "config" / "game.ts"
+    """cellScale for a symbol id from src/games/<GAME>/config.ts (GAME env, default swamp-funk; regex parse)."""
+    src = repo / "src" / "games" / (os.environ.get("GAME") or "swamp-funk") / "config.ts"
     try:
         text = src.read_text()
         m = re.search(rf"\b{re.escape(sym)}:\s*\{{[^}}]*?cellScale:\s*([0-9.]+)", text, re.S)

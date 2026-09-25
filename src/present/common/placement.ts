@@ -28,7 +28,13 @@ export interface Placement {
   overlayMaxWidth: number;
 }
 
+/** Derived placements, with the game layout's `present` overrides on top. */
 export const placementFor = (L: LayoutSpec): Placement => {
+  const p = derivedPlacement(L);
+  return L.present ? { ...p, ...L.present } : p;
+};
+
+const derivedPlacement = (L: LayoutSpec): Placement => {
   const g = gridSize(L);
   const gridCx = L.grid.x + g.w / 2;
   const sillY = L.frame.y + L.frame.h - L.frameParts.sill / 2;

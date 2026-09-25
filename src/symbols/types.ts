@@ -3,7 +3,7 @@ import type { LandWeight } from '../config/game';
 
 /**
  * SymbolView contract used by the Board. One SymbolView per board slot
- * (7 reels x 7 padded rows) plus a pool for tumble refills.
+ * (GRID.reels x GRID.paddedRows) plus a pool for tumble refills.
  *
  * Display structure (implementation detail, but relied on for layering):
  *   view (Container)  — positioned by the Board at the cell CENTRE; Board tweens view.y for drops

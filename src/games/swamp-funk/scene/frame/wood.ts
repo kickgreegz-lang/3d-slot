@@ -1,5 +1,5 @@
 import { Container, FillGradient, Graphics } from 'pixi.js';
-import type { Rect } from '../../config/layout';
+import type { Rect } from '../../../../config/layout';
 import { rng } from '../background/paint';
 
 /**

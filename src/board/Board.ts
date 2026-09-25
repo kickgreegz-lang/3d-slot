@@ -1,12 +1,12 @@
 import { gsap } from 'gsap';
 import { Container, Graphics } from 'pixi.js';
 import type { ClusterWin, Position } from '../book/types';
-import { GRID, type LandWeight, SYMBOLS, getSymbolDef, isVisibleRow } from '../config/game';
+import { FEATURES, GRID, type LandWeight, SYMBOLS, getSymbolDef, isVisibleRow } from '../config/game';
 import type { LayoutSpec } from '../config/layout';
 import { clock } from '../core/clock';
 import { TIMING, fallTime, followSpeed, s, sUi, speedScale, stagger } from '../core/timing';
 import type { GameContext, GameModule } from '../game/context';
-import type { SfxId } from '../game/events';
+import type { BoardTransformStyle, SfxId } from '../game/events';
 import { createSymbolView } from '../symbols/createSymbolView';
 import type { SymbolView } from '../symbols/types';
 import { AnticipationBeam } from './AnticipationBeam';
@@ -20,9 +20,9 @@ import { SpotGrid } from './SpotGrid';
  * cluster win presentation (dim / elevate / neon outline), explode + SDK-exact
  * tumble refill, multiplier-spot tiles, idle life.
  *
- * Owns 7 reels x 7 padded rows of SymbolViews (rows 0 and 6 sit one pitch
- * outside the visible grid, hidden by the board mask) plus a spare pool, so no
- * view is ever created or destroyed during play. `boardIds` mirrors the book
+ * Owns GRID.reels x GRID.paddedRows SymbolViews (the padding rows above and below
+ * the visible grid sit one pitch outside it, hidden by the board mask) plus a spare
+ * pool, so no view is ever created or destroyed during play. `boardIds` mirrors the book
  * exactly; a DEV assertion checks views <-> model after every tumble.
  *
  * Every scene handler returns a promise that resolves when its motion is done
@@ -43,11 +43,12 @@ const LAND_SFX: Record<LandWeight, SfxId> = {
 };
 const SCATTER_SFX: SfxId[] = ['scatter_land_1', 'scatter_land_2', 'scatter_land_3'];
 /** Spare views for tumble refills (exploded views are recycled first). */
-const POOL_SPARES = 14;
+const POOL_SPARES = Math.max(14, GRID.reels * 2);
 /** Symbol z-order: lower/right cells above upper/left (extrusion falls lower-right). */
-const zOf = (reel: number, row: number): number => row * 10 + reel;
-const Z_BEAM = 1000;
-const Z_OUTLINE = 1100;
+const Z_ROW = Math.max(10, GRID.reels);
+const zOf = (reel: number, row: number): number => row * Z_ROW + reel;
+const Z_BEAM = Math.max(1000, (GRID.paddedRows + 1) * Z_ROW);
+const Z_OUTLINE = Z_BEAM + 100;
 /** Safety gap (ms) between a column's fall-out end and its drop-in start. */
 const PIPELINE_MARGIN = 50;
 const isScatter = (id: string): boolean => getSymbolDef(id).kind === 'scatter';
@@ -133,7 +134,8 @@ export class Board implements GameModule {
       g.on('board:showWins', ({ wins }) => this.showWins(wins)),
       g.on('board:tumble', ({ exploding, newSymbols }) => this.tumble(exploding, newSymbols)),
       g.on('board:set', ({ board }) => this.setBoard(board)),
-      g.on('spots:update', ({ grid }) => this.spots.update(grid)),
+      g.on('board:transform', ({ cells, style }) => this.transform(cells, style)),
+      g.on('spots:update', ({ grid }) => (FEATURES.multiplierSpots ? this.spots.update(grid) : undefined)),
       g.on('spots:reset', ({ grid }) => this.spots.reset(grid)),
       g.on('fs:trigger', ({ positions }) => this.celebrate(positions)),
       g.on('mode:change', ({ gameType }) => {
@@ -287,7 +289,7 @@ export class Board implements GameModule {
       const colStagger = stagger(D.columnStagger);
       const rowStagger = stagger(D.rowStagger);
       const hold = TIMING.anticipation.holdPerColumn;
-      const visRows = GRID.lastVisibleRow - GRID.firstVisibleRow; // 4 row-steps between row 5 and row 1
+      const visRows = GRID.lastVisibleRow - GRID.firstVisibleRow; // row-steps between the bottom and top visible rows
       const lastImpact = (start: number) => start + visRows * rowStagger + T;
 
       // ---- column schedule (ms, unscaled; anticipation columns wait) -------
@@ -622,6 +624,139 @@ export class Board implements GameModule {
   }
 
   // =========================================================================
+  // transform: replace symbols in place (wild drops, upgrades, sticky restores)
+  // =========================================================================
+
+  private async transform(cells: Array<Position & { id: string }>, style: BoardTransformStyle): Promise<void> {
+    const seen = new Set<string>();
+    const todo = cells.filter((c) => {
+      const k = `${c.reel},${c.row}`;
+      if (seen.has(k) || !this.slots[c.reel]?.[c.row] || this.boardIds[c.reel][c.row] === c.id) return false;
+      seen.add(k);
+      return true;
+    });
+    if (!todo.length) return;
+    const gen = this.gen;
+    this.busy++;
+    try {
+      if (style === 'set') {
+        for (const c of todo) {
+          const sv = this.slots[c.reel][c.row];
+          gsap.killTweensOf(this.cellOf(sv));
+          sv.reset();
+          sv.setSymbol(c.id);
+          this.put(sv, c.reel, c.row);
+          this.boardIds[c.reel][c.row] = c.id;
+        }
+        return;
+      }
+      const jobs = todo.map(async (c, i) => {
+        const delay = i * stagger(BOARD_TIMING.transformStagger);
+        if (delay > 0) await clock.wait(delay);
+        if (gen !== this.gen) return;
+        if (style === 'morph') await this.morphCell(c);
+        else if (style === 'impact') await this.impactCell(c, gen);
+        else await this.dropCell(c, gen);
+      });
+      await Promise.all(jobs);
+      if (gen !== this.gen) return;
+      this.hidePadding();
+      this.assertConsistent('transform');
+    } finally {
+      this.done();
+    }
+  }
+
+  /** Swap in place: sparkle burst + a land squash on the new symbol. */
+  private async morphCell(c: Position & { id: string }): Promise<void> {
+    const sv = this.slots[c.reel][c.row];
+    const def = getSymbolDef(c.id);
+    const p = slotPos(this.ctx.layout, c.reel, c.row);
+    sv.reset();
+    sv.setSymbol(c.id);
+    this.boardIds[c.reel][c.row] = c.id;
+    this.ctx.game.broadcast('fx:burst', { kind: 'sparkle', x: p.x, y: p.y, color: def.color, count: 18, power: 0.8 });
+    this.ctx.game.broadcast('fx:shake', { trauma: BOARD_TIMING.transformTrauma * 0.6 });
+    this.sfx(LAND_SFX[def.landWeight]);
+    await sv.land({ velocity: 2400, silent: true });
+  }
+
+  /**
+   * Crush + place: the old symbol explodes now; anticipateDuration later (when a caller's
+   * flying proxy makes contact) the new one takes the cell with a heavy impact squash.
+   */
+  private async impactCell(c: Position & { id: string }, gen: number): Promise<void> {
+    const old = this.slots[c.reel][c.row];
+    const def = getSymbolDef(c.id);
+    this.unelevate(old);
+    this.dim(old, false, false);
+    const burst = old.explode();
+    await clock.wait(TIMING.explode.anticipateDuration);
+    if (gen !== this.gen) return;
+    const sv = this.acquire(c.id);
+    this.put(sv, c.reel, c.row);
+    sv.view.zIndex = zOf(c.reel, c.row);
+    this.slots[c.reel][c.row] = sv;
+    this.boardIds[c.reel][c.row] = c.id;
+    const L = this.ctx.layout;
+    const p = slotPos(L, c.reel, c.row);
+    this.ctx.game.broadcast('fx:shake', { trauma: BOARD_TIMING.transformTrauma });
+    this.ctx.game.broadcast('fx:burst', { kind: 'dust', x: p.x, y: p.y + L.cell * 0.4, color: def.color, power: 1 });
+    this.sfx(LAND_SFX[def.landWeight]);
+    await Promise.all([burst, sv.land({ velocity: BOARD_TIMING.transformImpactVelocity, silent: true })]);
+    this.release(old);
+  }
+
+  /**
+   * Drop in from above the grid: the new symbol falls (gravity, blur) into its cell and
+   * smashes the old one, which bursts on impact and returns to the pool.
+   */
+  private async dropCell(c: Position & { id: string }, gen: number): Promise<void> {
+    const old = this.slots[c.reel][c.row];
+    const def = getSymbolDef(c.id);
+    const sv = this.acquire(c.id);
+    const L = this.ctx.layout;
+    const g = TIMING.drop.gravity;
+    const from = GRID.firstVisibleRow - 1 - BOARD_TIMING.transformDropCells;
+    const T = fallTime((c.row - from) * pitchOf(L), g, TIMING.drop.minFall);
+    const E = TIMING.explode;
+    this.put(sv, c.reel, from);
+    sv.view.zIndex = Z_BEAM - 1;
+    const tl = this.timeline();
+    this.tweenRow(tl, sv, c.row, s(T), 'power1.in', 0);
+    const tBlur = (BOARD_TIMING.blurSpeed * 1e6) / g;
+    if (T - BOARD_TIMING.blurOffLead - tBlur > 16) {
+      tl.call(() => sv.setBlur(true), [], s(tBlur));
+      tl.call(() => sv.setBlur(false), [], s(T - BOARD_TIMING.blurOffLead));
+    }
+    let burst: Promise<void> = Promise.resolve();
+    let land: Promise<void> = Promise.resolve();
+    tl.call(() => {
+      this.unelevate(old);
+      this.dim(old, false, false);
+      burst = old.explode();
+    }, [], s(Math.max(0, T - E.anticipateDuration)));
+    tl.call(() => {
+      const p = slotPos(this.ctx.layout, c.reel, c.row);
+      sv.setBlur(false);
+      land = sv.land({ velocity: (g * T) / 1000, silent: true });
+      this.ctx.game.broadcast('fx:shake', { trauma: BOARD_TIMING.transformTrauma });
+      this.ctx.game.broadcast('fx:burst', { kind: 'dust', x: p.x, y: p.y + L.cell * 0.4, color: def.color, power: 0.9 });
+      this.sfx(LAND_SFX[def.landWeight]);
+    }, [], s(T));
+    await this.play(tl);
+    await Promise.all([burst, land]);
+    if (gen !== this.gen) {
+      this.release(sv);
+      return;
+    }
+    this.release(old);
+    this.slots[c.reel][c.row] = sv;
+    this.boardIds[c.reel][c.row] = c.id;
+    sv.view.zIndex = zOf(c.reel, c.row);
+  }
+
+  // =========================================================================
   // instant set
   // =========================================================================
 
@@ -688,11 +823,12 @@ export class Board implements GameModule {
     );
   }
 
-  /** Padding rows (0 and 6) exist only to slide into view; hidden at rest. */
+  /** Padding rows (above / below the visible grid) exist only to slide into view; hidden at rest. */
   private hidePadding(): void {
     for (const col of this.slots) {
-      col[0].view.visible = false;
-      col[GRID.paddedRows - 1].view.visible = false;
+      col.forEach((sv, row) => {
+        if (!isVisibleRow(row)) sv.view.visible = false;
+      });
     }
   }
 

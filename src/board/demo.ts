@@ -1,3 +1,5 @@
+import { devGameEnv, foldGameEvent, isGameEvent, playGameEvent } from '../book/gameEvents';
+import { createRoundPlayback } from '../book/handlers';
 import type { Book, ClusterWin, Position, RawSymbol } from '../book/types';
 import { GRID, getSymbolDef } from '../config/game';
 import { type SpeedProfile, getSpeedProfile, setSpeedProfile } from '../core/timing';
@@ -15,8 +17,8 @@ import { planTumble } from './model';
  *     by the math on the post-tumble board);
  *   - free-spin trigger positions must hold scatters.
  *
- *   const b = await (await fetch('/mock/books/base_fixtures.json')).json();
- *   await __boardDemo(__slot.ctx, b.tumble_chain, { from: 0, speed: 'normal' });
+ *   const b = await __slot.fixtures();
+ *   await __boardDemo(__slot.ctx, b.base.tumble_chain, { from: 0, speed: 'normal' });
  */
 export interface BoardDemoOptions {
   /** first event index to animate; earlier events are applied instantly (board:set / spots:reset) */
@@ -85,8 +87,10 @@ export const playBoardBook = async (ctx: GameContext, book: Book, opts: BoardDem
   const from = Math.max(0, opts.from ?? 0);
   const to = Math.min(events.length - 1, opts.to ?? events.length - 1);
 
-  // ---- fast-forward: rebuild board + spot state up to `from` ---------------
-  let grid: number[][] = emptyGrid();
+  // ---- fast-forward: rebuild board + spot/game state up to `from` ----------
+  // (game events — Swamp Funk updateGrid, ... — fold/play through the game's book module)
+  const state = createRoundPlayback();
+  state.grid = emptyGrid();
   let ids: string[][] | null = null;
   let gameType: string | null = null;
   for (let i = 0; i < from; i++) {
@@ -96,22 +100,29 @@ export const playBoardBook = async (ctx: GameContext, book: Book, opts: BoardDem
       gameType = e.gameType;
     } else if (e.type === 'tumbleBoard' && ids) {
       ids = planTumble(ids, e.explodingSymbols, names(e.newSymbols)).next;
-    } else if (e.type === 'updateGrid') {
-      grid = e.gridMultipliers;
+    } else {
+      foldGameEvent(state, e);
     }
   }
   if (gameType === 'freegame') await emit('mode:change', { gameType: 'freegame' });
   if (ids) await emit('board:set', { board: ids });
-  await emit('spots:reset', { grid: from > 0 ? grid : null });
+  await emit('spots:reset', { grid: from > 0 ? state.grid : null });
+  state.gameType = gameType === 'freegame' ? 'freegame' : 'basegame';
+  const env = devGameEnv(emit, state);
 
   // ---- play ---------------------------------------------------------------
   for (let i = from; i <= to; i++) {
     const e = events[i];
     const where = `book ${book.id} event #${e.index} ${e.type}`;
+    if (isGameEvent(e)) {
+      await playGameEvent(e, env);
+      continue;
+    }
     switch (e.type) {
       case 'reveal': {
         if (e.gameType !== gameType) {
           gameType = e.gameType;
+          state.gameType = e.gameType;
           await emit('mode:change', { gameType: e.gameType });
         }
         await emit('round:start', { profile });
@@ -123,10 +134,6 @@ export const playBoardBook = async (ctx: GameContext, book: Book, opts: BoardDem
       case 'winInfo':
         verifyWins(e.wins, where);
         await emit('board:showWins', { wins: e.wins, totalWin: e.totalWin });
-        break;
-      case 'updateGrid':
-        await emit('spots:update', { grid: e.gridMultipliers, previous: grid });
-        grid = e.gridMultipliers;
         break;
       case 'tumbleBoard':
         await emit('board:tumble', { exploding: e.explodingSymbols, newSymbols: names(e.newSymbols) });

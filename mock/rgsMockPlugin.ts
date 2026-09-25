@@ -6,7 +6,8 @@ import type { Plugin } from 'vite';
 /**
  * DEV-ONLY mock Stake Engine RGS, mounted by the Vite dev server at `/__rgs`.
  * Implements the exact wire shapes of the live RGS (money = integer API units,
- * round.state = book events) on top of the generated 7x5 fixture books:
+ * round.state = book events) on top of the active game's generated fixture books
+ * (mock/games/<GAME>/books):
  *
  *   POST /wallet/authenticate {sessionID, language}     -> {balance, config, round, meta}
  *   POST /wallet/play         {sessionID, amount, mode} -> {balance, round}
@@ -15,14 +16,20 @@ import type { Plugin } from 'vite';
  *   POST /bet/event           {sessionID, event}        -> {event}
  *   GET  /bet/replay/{game}/{version}/{mode}/{event}    -> {payoutMultiplier, costMultiplier, state}
  *   POST /__mock/reset        {sessionID}               -> {} (drop the session; dev tooling)
+ *   GET  /__mock/fixtures                               -> {<set>: {<scenario>: book}} (dev/fixtures.ts)
  *
  * Mock-only query parameters (the game client forwards them from the page URL in DEV):
  *   play:         book=<fixture key | book id>  bookMode=base|bonus
  *   authenticate: currency=<code>  jurisdiction=disabledTurbo,minimumRoundDuration:3000,...
  *
- * Book choice: BASE picks a random book from books_base_200.json, BONUS from
- * books_bonus_100.json; `book` forces a fixture (base_fixtures.json / bonus_fixtures.json
- * keys, or any book id found in the fixture files or pools).
+ * Book files (every one optional — a game still being generated boots on what exists):
+ *   books_<pool>_*.json   arrays of books, concatenated per pool (e.g. books_base_200.json)
+ *   <set>_fixtures.json   {scenario: book} (e.g. base_fixtures.json, bonus_fixtures.json)
+ *   dev_fixture.json      one hand-written book (or a {scenario: book} map), fixture set 'base'
+ * Bet modes come from mock/games/<GAME>/mock.json ({betModes: {MODE: {costMultiplier, pool}}},
+ * default BASE x1 -> base, BONUS x100 -> bonus). A round draws a random book from its pool,
+ * falling back to that pool's fixtures, then the base pool, then the base fixtures;
+ * `book` forces a fixture (scenario key, or any book id found in the fixture files or pools).
  * Sessions live in memory (per sessionID), so reloading mid-bonus exercises resume.
  */
 
@@ -57,7 +64,8 @@ const BET_LEVELS = [
   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30,
   35, 40, 50, 60, 70, 80, 90, 100,
 ].map((v) => Math.round(v * API));
-const BET_MODES: Record<string, { costMultiplier: number; pool: 'base' | 'bonus' }> = {
+type BetModes = Record<string, { costMultiplier: number; pool: string }>;
+const DEFAULT_BET_MODES: BetModes = {
   BASE: { costMultiplier: 1, pool: 'base' },
   BONUS: { costMultiplier: 100, pool: 'bonus' },
 };
@@ -76,49 +84,100 @@ const JURISDICTION_DEFAULTS: Record<string, boolean | number> = {
   minimumRoundDuration: 0,
 };
 
+const isBook = (v: unknown): v is MockBook =>
+  typeof v === 'object' && v !== null && Array.isArray((v as { events?: unknown }).events);
+
 class BookStore {
   private cache: {
-    fixtures: Record<'base' | 'bonus', Record<string, MockBook>>;
-    pools: Record<'base' | 'bonus', MockBook[]>;
+    fixtures: Record<string, Record<string, MockBook>>;
+    pools: Record<string, MockBook[]>;
   } | null = null;
+
+  /** file names + mtimes of the last load: books regenerated while the server runs are picked up */
+  private signature = '';
 
   constructor(private readonly dir: string) {}
 
+  /** Every file is optional: a missing folder, file or unreadable JSON is an empty set. */
   private load() {
-    if (this.cache) return this.cache;
-    const read = <T>(file: string): T => JSON.parse(fs.readFileSync(path.join(this.dir, file), 'utf8')) as T;
-    this.cache = {
-      fixtures: {
-        base: read<Record<string, MockBook>>('base_fixtures.json'),
-        bonus: read<Record<string, MockBook>>('bonus_fixtures.json'),
-      },
-      pools: {
-        base: read<MockBook[]>('books_base_200.json'),
-        bonus: read<MockBook[]>('books_bonus_100.json'),
-      },
+    const files = fs.existsSync(this.dir) ? fs.readdirSync(this.dir).filter((f) => f.endsWith('.json')).sort() : [];
+    const signature = files.map((f) => `${f}:${fs.statSync(path.join(this.dir, f)).mtimeMs}`).join('|');
+    if (this.cache && signature === this.signature) return this.cache;
+    this.signature = signature;
+    const fixtures: Record<string, Record<string, MockBook>> = { base: {}, bonus: {} };
+    const pools: Record<string, MockBook[]> = {};
+    const read = (file: string): unknown => {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(this.dir, file), 'utf8'));
+      } catch {
+        return null; // half-written by a generator run: skipped until it changes again
+      }
     };
+    for (const file of files) {
+      const pool = /^books_([a-z0-9]+)(?:_.*)?\.json$/i.exec(file)?.[1]?.toLowerCase();
+      const set = /^([a-z0-9]+)_fixtures\.json$/i.exec(file)?.[1]?.toLowerCase();
+      if (pool) {
+        const list = read(file);
+        if (Array.isArray(list)) (pools[pool] ??= []).push(...list.filter(isBook));
+      } else if (set) {
+        const map = read(file);
+        if (map && typeof map === 'object') fixtures[set] = { ...fixtures[set], ...(map as Record<string, MockBook>) };
+      } else if (file === 'dev_fixture.json') {
+        const v = read(file);
+        if (isBook(v)) fixtures.base.dev_fixture = v;
+        else if (v && typeof v === 'object') Object.assign(fixtures.base, v as Record<string, MockBook>);
+      }
+    }
+    this.cache = { fixtures, pools };
     return this.cache;
   }
 
+  /** Fixture books by set (GET /__mock/fixtures). */
+  fixtureSets(): Record<string, Record<string, MockBook>> {
+    return this.load().fixtures;
+  }
+
   /** Forced fixture key / id, searched in the requested pool first. */
-  find(key: string, pool: 'base' | 'bonus'): MockBook | null {
+  find(key: string, pool: string): MockBook | null {
     const { fixtures, pools } = this.load();
-    const order: Array<'base' | 'bonus'> = pool === 'base' ? ['base', 'bonus'] : ['bonus', 'base'];
-    for (const p of order) if (fixtures[p][key]) return fixtures[p][key];
+    const order = [pool, ...Object.keys({ ...fixtures, ...pools }).filter((p) => p !== pool)];
+    for (const p of order) if (fixtures[p]?.[key]) return fixtures[p][key];
     const id = Number(key);
     if (!Number.isInteger(id)) return null;
     for (const p of order) {
-      const hit = pools[p].find((b) => b.id === id) ?? Object.values(fixtures[p]).find((b) => b.id === id);
+      const hit = pools[p]?.find((b) => b.id === id) ?? Object.values(fixtures[p] ?? {}).find((b) => b.id === id);
       if (hit) return hit;
     }
     return null;
   }
 
-  random(pool: 'base' | 'bonus'): MockBook {
-    const list = this.load().pools[pool];
-    return list[Math.floor(Math.random() * list.length)];
+  random(pool: string): MockBook | null {
+    const { fixtures, pools } = this.load();
+    const candidates = [pools[pool], Object.values(fixtures[pool] ?? {}), pools.base, Object.values(fixtures.base)];
+    const list = candidates.find((l) => l && l.length > 0);
+    return list ? list[Math.floor(Math.random() * list.length)] : null;
   }
 }
+
+/** mock/games/<GAME>/mock.json + src/games/<GAME>/meta.json (both optional). */
+const readGameSettings = (root: string, game: string): { betModes: BetModes; gameID: string } => {
+  const readJson = (file: string): Record<string, unknown> => {
+    try {
+      const v: unknown = JSON.parse(fs.readFileSync(file, 'utf8'));
+      return v && typeof v === 'object' ? (v as Record<string, unknown>) : {};
+    } catch {
+      return {};
+    }
+  };
+  const mock = readJson(path.resolve(root, 'mock/games', game, 'mock.json'));
+  const meta = readJson(path.resolve(root, 'src/games', game, 'meta.json'));
+  const modes = mock.betModes && typeof mock.betModes === 'object' ? (mock.betModes as BetModes) : DEFAULT_BET_MODES;
+  const betModes: BetModes = {};
+  for (const [k, m] of Object.entries(modes)) {
+    betModes[k.toUpperCase()] = { costMultiplier: Number(m.costMultiplier) || 1, pool: String(m.pool ?? 'base').toLowerCase() };
+  }
+  return { betModes, gameID: typeof meta.rgsGameId === 'string' ? meta.rgsGameId : game };
+};
 
 class HttpError extends Error {
   constructor(
@@ -172,13 +231,18 @@ const parseJurisdiction = (spec: string | null): Record<string, boolean | number
 export interface RgsMockOptions {
   /** mount point (default '/__rgs') */
   base?: string;
-  /** fixture folder (default <root>/mock/books) */
+  /** game folder name (src/games/<game>, mock/games/<game>; default 'swamp-funk') */
+  game?: string;
+  /** fixture folder (default <root>/mock/games/<game>/books) */
   booksDir?: string;
 }
 
 export const rgsMockPlugin = (opts: RgsMockOptions = {}): Plugin => {
   const mount = opts.base ?? '/__rgs';
+  const game = opts.game ?? 'swamp-funk';
   let books: BookStore | null = null;
+  let BET_MODES: BetModes = DEFAULT_BET_MODES;
+  let gameID = game;
   const sessions = new Map<string, Session>();
   let nextBetId = 1000;
 
@@ -206,7 +270,7 @@ export const rgsMockPlugin = (opts: RgsMockOptions = {}): Plugin => {
       return {
         balance: balance(s),
         config: {
-          gameID: 'swamp-funk-7x5',
+          gameID,
           minBet: BET_LEVELS[0],
           maxBet: BET_LEVELS[BET_LEVELS.length - 1],
           stepBet: 10_000,
@@ -233,11 +297,14 @@ export const rgsMockPlugin = (opts: RgsMockOptions = {}): Plugin => {
       const cost = Math.round(amount * info.costMultiplier);
       if (s.balance < cost) throw new HttpError(400, 'ERR_IPB', 'Insufficient player balance.');
 
-      const pool = q.get('bookMode') === 'bonus' ? 'bonus' : q.get('bookMode') === 'base' ? 'base' : info.pool;
+      const bookMode = q.get('bookMode')?.toLowerCase();
+      const pool = bookMode || info.pool;
       const forced = q.get('book');
       const store = books as BookStore;
       const book = forced ? store.find(forced, pool) : store.random(pool);
-      if (!book) throw new HttpError(400, 'ERR_VAL', `Mock: unknown fixture "${forced}".`);
+      if (!book) {
+        throw new HttpError(400, 'ERR_VAL', forced ? `Mock: unknown fixture "${forced}".` : `Mock: no books for "${pool}" in mock/games/${game}/books.`);
+      }
 
       const payout = Math.round((amount * book.payoutMultiplier) / 100);
       s.balance -= cost;
@@ -279,6 +346,8 @@ export const rgsMockPlugin = (opts: RgsMockOptions = {}): Plugin => {
       else sessions.clear();
       return {};
     },
+
+    'GET /__mock/fixtures': () => (books as BookStore).fixtureSets(),
   };
 
   const replay = (pathname: string): unknown => {
@@ -295,7 +364,8 @@ export const rgsMockPlugin = (opts: RgsMockOptions = {}): Plugin => {
     name: 'stake-rgs-mock',
     apply: 'serve',
     configResolved(config) {
-      books = new BookStore(opts.booksDir ?? path.resolve(config.root, 'mock/books'));
+      books = new BookStore(opts.booksDir ?? path.resolve(config.root, 'mock/games', game, 'books'));
+      ({ betModes: BET_MODES, gameID } = readGameSettings(config.root, game));
     },
     configureServer(server) {
       server.middlewares.use(mount, (req, res) => {

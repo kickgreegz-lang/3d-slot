@@ -17,7 +17,9 @@
  * <out>/index.html (sheets, videos, motion graphs with hover read-out, event timelines).
  *
  * Scenario spec: `name` or `name:SYMBOL` (sets opts.id) or `bigWin:mega` (sets opts.tiers).
- * Names come from src/dev/scenarios.ts (`__slot.scenarios()`).
+ * Names come from src/dev/scenarios.ts (`__slot.scenarios()`). A scenario the running game does
+ * not have (e.g. 'spots' on a game without multiplier spots) is reported as 'skipped'; pass
+ * --scenarios for another game's symbols (the defaults inspect Swamp Funk's S).
  * Exit code: 0 when every scenario finished without page errors, 1 otherwise.
  */
 import { execFileSync, spawn } from 'node:child_process';
@@ -64,6 +66,8 @@ const DEFAULT_SCENARIOS = [
 ];
 
 const TIER_KEYS = new Set(['big', 'super', 'mega', 'epic', 'max']);
+/** thrown when the running game has no such scenario */
+class SkipScenario extends Error {}
 const parseSpec = (s) => {
   const [name, arg] = s.split(':');
   const opts = {};
@@ -136,10 +140,11 @@ for (const spec of specs) {
         s.speed(profile);
         for (let i = 0; i < settle; i++) s.step(1000 / 60);
         const def = s.scenarios().find((d) => d.name === name);
-        return { label: def?.label ?? null, group: def?.group ?? null };
+        return { known: !!def, label: def?.label ?? null, group: def?.group ?? null };
       },
       { profile, settle, name: spec.name },
     );
+    if (!meta.known) throw new SkipScenario();
     r.label = meta.label ?? spec.name;
     r.probe = await page.evaluate((sp) => window.__slot.motion.start({ scenario: sp.name, opts: sp.opts }), spec);
     // inspector scenarios: crop every frame to the inspector card so the symbol fills the tile
@@ -206,7 +211,8 @@ for (const spec of specs) {
     if (rv.error) r.errors.push(`scenario: ${rv.error}`);
     r.status = rv.error ? 'error' : doneAt < 0 ? 'timeout' : r.errors.length ? 'pageerror' : 'ok';
   } catch (err) {
-    r.errors.push(String(err?.message ?? err));
+    if (err instanceof SkipScenario) r.status = 'skipped';
+    else r.errors.push(String(err?.message ?? err));
   } finally {
     await page?.close().catch(() => {});
   }
@@ -242,7 +248,7 @@ for (const spec of specs) {
 await browser.close();
 
 console.log(`\nreview: ${path.join(outDir, 'index.html')}`);
-process.exit(results.every((r) => r.status === 'ok') ? 0 : 1);
+process.exit(results.every((r) => r.status === 'ok' || r.status === 'skipped') ? 0 : 1);
 
 // ---------------------------------------------------------------------------
 // helpers

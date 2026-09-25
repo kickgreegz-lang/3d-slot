@@ -24,7 +24,7 @@
  *   runtime's physics kick applied (default +-36 = SpineRig's 26 x the max land multiplier 1.38
  *   for a `special` weight at max velocity; --kick overrides). The report also gives the land
  *   growth at the RUNTIME content fit (SymbolRig.fit scales content to cellScale of the cell;
- *   cellScale from src/config/game.ts for sym_<ID>, else the art bible cellFill, or --cell-scale).
+ *   cellScale from src/games/<GAME>/config.ts for sym_<ID>, else the art bible cellFill, or --cell-scale).
  * --kind auto: sym_W / sym_S -> special, other sym_H* -> high, sym_L* -> royal (nothing
  *   required), anything else -> special (strictest). Exit 0 = pass (warnings allowed unless
  *   --strict), 1 = contract failure, 2 = usage / unreadable input.
@@ -363,7 +363,7 @@ if (data) {
   };
   const setupSnap = sample(null, 0);
   // rest silhouette (non-fx slots) and the runtime content fit: SymbolRig.fit() scales EVERY
-  // symbol so its content fills def.cellScale of the cell (src/config/game.ts; art bible cellFill),
+  // symbol so its content fills def.cellScale of the cell (src/games/<GAME>/config.ts; art bible cellFill),
   // whatever size it was authored at on the 360 canvas.
   const restSk = new spine.Skeleton(data);
   restSk.setupPose();
@@ -374,9 +374,11 @@ if (data) {
   let cellScaleFrom = '--cell-scale';
   if (cellScale === null) {
     try {
-      const game = fs.readFileSync(path.join(REPO, 'src/config/game.ts'), 'utf8');
+      // the active game's registry (GAME env var, default swamp-funk)
+      const configRel = `src/games/${process.env.GAME || 'swamp-funk'}/config.ts`;
+      const game = fs.readFileSync(path.join(REPO, configRel), 'utf8');
       const m = game.match(new RegExp(`id:\\s*'${symId}'[^}]*?cellScale:\\s*([0-9.]+)`));
-      if (m) [cellScale, cellScaleFrom] = [Number(m[1]), `src/config/game.ts ${symId}`];
+      if (m) [cellScale, cellScaleFrom] = [Number(m[1]), `${configRel} ${symId}`];
     } catch {
       /* no runtime source */
     }

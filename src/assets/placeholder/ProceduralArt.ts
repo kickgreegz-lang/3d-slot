@@ -1,28 +1,21 @@
 import type { Renderer, Texture } from 'pixi.js';
+import { SYMBOL_BUILDERS } from '@game/art';
 import { SYMBOLS, type SymbolDef } from '../../config/game';
 import type { ParticleKey, SymbolVariant } from '../art';
 import { PARTICLE_KEYS, buildParticle } from './particles';
-import { buildBoombox, buildCrawfish, buildHotSauce, buildVinyl } from './symbolsHigh';
 import { buildRoyal } from './symbolsRoyal';
-import { buildMic, buildWild } from './symbolsSpecial';
 import { makeBlur, makeGlow } from './variants';
 
 /** Symbol canvas in design px (360 px @2x — matches the production pipeline). */
 export const SYMBOL_CANVAS = 180;
 
-type Builder = (r: Renderer, size: number, def: SymbolDef) => Texture;
+/** Bakes one symbol's static placeholder on the SYMBOL_CANVAS (design px). */
+export type SymbolBuilder = (r: Renderer, size: number, def: SymbolDef) => Texture;
 
-/** Swamp Funk placeholder builders by symbol id; royals are generic. */
-const BUILDERS: Record<string, Builder> = {
-  H1: (r, s) => buildBoombox(r, s),
-  H2: (r, s) => buildVinyl(r, s),
-  H3: (r, s) => buildCrawfish(r, s),
-  H4: (r, s) => buildHotSauce(r, s),
-  W: (r, s) => buildWild(r, s),
-  S: (r, s) => buildMic(r, s),
-};
+/** The game's placeholder builders by symbol id (src/games/<GAME>/art.ts); royals are generic. */
+const BUILDERS: Record<string, SymbolBuilder> = SYMBOL_BUILDERS;
 
-const royal: Builder = (r, s, def) => buildRoyal(r, def.glyph ?? def.id, def.color, s, def.cellScale, def.restAngle);
+const royal: SymbolBuilder = (r, s, def) => buildRoyal(r, def.glyph ?? def.id, def.color, s, def.cellScale, def.restAngle);
 
 /**
  * High-quality procedural placeholder art (cel style bible), baked once to cached

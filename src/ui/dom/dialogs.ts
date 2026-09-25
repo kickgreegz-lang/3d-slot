@@ -100,39 +100,68 @@ export const autoplayDialog = (opts: {
   );
 };
 
-/** BONUS BUY confirmation (required for any mode costing more than 2x). */
-export const buyDialog = (opts: {
+/** One bought feature offered by the buy confirm. */
+export interface BuyOption {
+  /** display name (shown on the chooser when there is more than one option) */
+  name: string;
+  desc: string;
   costText: string;
   costX: number;
-  onConfirm: () => void;
+}
+
+/**
+ * BONUS BUY confirmation (required for any mode costing more than 2x). With several buy
+ * modes (e.g. Bass Drop BONUS + SUPER) a chooser row picks the feature; the cost card and
+ * description follow the choice and confirm buys the chosen one.
+ */
+export const buyDialog = (opts: {
+  options: BuyOption[];
+  selected?: number;
+  onConfirm: (index: number) => void;
   onCancel: () => void;
-}): HTMLElement =>
-  h(
+}): HTMLElement => {
+  let index = Math.max(0, Math.min(opts.options.length - 1, opts.selected ?? 0));
+  const desc = h('p.by-desc', null, opts.options[index].desc);
+  const value = h('span.v', null, opts.options[index].costText);
+  const multiple = h('span.x', null, t('buy.multiple', { x: opts.options[index].costX }));
+  const choose = (i: number): void => {
+    index = i;
+    const o = opts.options[i];
+    desc.textContent = o.desc;
+    value.textContent = o.costText;
+    multiple.textContent = t('buy.multiple', { x: o.costX });
+    seg?.querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+  };
+  const seg =
+    opts.options.length > 1
+      ? h(
+          'div.ui-seg.by-choice',
+          { role: 'group', 'aria-label': t('buy.title') },
+          opts.options.map((o, i) => {
+            const b = h('button', { type: 'button', 'aria-pressed': String(i === index) }, o.name);
+            b.addEventListener('click', () => choose(i));
+            return b;
+          }),
+        )
+      : null;
+  return h(
     'div.ui-panel.is-dialog',
     null,
     h(
       'div.dl-body',
       null,
-      h(
-        'div.by-hero',
-        null,
-        svg(SVG_ICONS.buy, 'by-icon'),
-        h('div', null, h('h2.by-title', null, t('buy.title')), h('p.by-desc', null, t('buy.desc'))),
-      ),
-      h(
-        'div.by-cost.ui-card',
-        null,
-        h('span.k', null, t('buy.costLabel')),
-        h('span', null, h('span.v', null, opts.costText), h('span.x', null, t('buy.multiple', { x: opts.costX }))),
-      ),
+      h('div.by-hero', null, svg(SVG_ICONS.buy, 'by-icon'), h('div', null, h('h2.by-title', null, t('buy.title')), desc)),
+      seg,
+      h('div.by-cost.ui-card', null, h('span.k', null, t('buy.costLabel')), h('span', null, value, multiple)),
     ),
     h(
       'div.dl-foot',
       null,
       h('button.ui-btn.ghost', { type: 'button', onclick: opts.onCancel }, t('cancel')),
-      h('button.ui-btn.accent', { type: 'button', onclick: opts.onConfirm }, t('buy.confirm')),
+      h('button.ui-btn.accent', { type: 'button', onclick: () => opts.onConfirm(index) }, t('buy.confirm')),
     ),
   );
+};
 
 /** Blocking error (hud:message kind 'error'). */
 export const errorDialog = (opts: { text: string; onOk: () => void; onReload: () => void }): HTMLElement =>

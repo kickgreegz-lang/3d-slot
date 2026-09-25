@@ -565,7 +565,7 @@ export class FlowController {
   }
 
   private newPlayback(): RoundPlayback {
-    return createRoundPlayback(this.sceneGameType, this.sceneBoard);
+    return createRoundPlayback(this.sceneGameType, this.sceneBoard, this.activeMode);
   }
 
   private beginRound(): void {

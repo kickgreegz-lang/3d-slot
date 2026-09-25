@@ -13,6 +13,7 @@ All arrays are float32 in [0, 1] unless noted; images are straight (un-premultip
 """
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -244,9 +245,14 @@ def bleed(rgb: np.ndarray, keep: np.ndarray) -> np.ndarray:
 # ----------------------------------------------------------------------------- canvas fit
 
 
+def game_config_path() -> Path:
+    """The active game's symbol registry: src/games/<GAME>/config.ts (GAME env var, default swamp-funk)."""
+    return REPO / "src" / "games" / (os.environ.get("GAME") or "swamp-funk") / "config.ts"
+
+
 def symbol_targets() -> dict:
-    """{id: {cellScale, restAngle, kind}} parsed from src/config/game.ts (the runtime truth)."""
-    src = (REPO / "src" / "config" / "game.ts").read_text(encoding="utf-8")
+    """{id: {cellScale, restAngle, kind}} parsed from src/games/<GAME>/config.ts (the runtime truth)."""
+    src = game_config_path().read_text(encoding="utf-8")
     out = {}
     royal_scale = re.search(r"kind:\s*'royal'[\s\S]*?cellScale:\s*([\d.]+)", src)
     for m in re.finditer(r"(\w+):\s*royal\('(\w+)'", src):
@@ -262,7 +268,7 @@ def content_px_for(symbol: str | None = None, kind: str | None = None) -> int:
     if symbol:
         t = symbol_targets().get(symbol)
         if not t:
-            raise ValueError(f"unknown symbol {symbol} (src/config/game.ts SYMBOLS)")
+            raise ValueError(f"unknown symbol {symbol} ({game_config_path().relative_to(REPO)} SYMBOLS)")
         return int(round(t["cellScale"] * CELL_2X))
     mid = {"royal": 0.86, "high": 0.96, "special": 1.07, "wild": 1.02, "scatter": 1.12}
     if kind not in mid:

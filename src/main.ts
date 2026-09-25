@@ -6,7 +6,7 @@ import { PixiPlugin } from 'gsap/PixiPlugin';
 import * as PIXI from 'pixi.js';
 import { createArt } from './assets/loader';
 import { loadFonts } from './assets/fonts';
-import { Board } from './board/Board';
+import { createModules } from '@game/modules';
 import { clock } from './core/clock';
 import { installDevHooks } from './dev/hooks';
 import { detectTier, TIER_BUDGETS } from './env/tier';
@@ -14,21 +14,11 @@ import { parseUrl } from './env/url';
 import { configureI18n } from './i18n';
 import { createMoney } from './money/format';
 import { FlowController } from './flow/controller';
-import { Fx } from './fx/Fx';
 import { type GameContext, type GameModule, createEmitters } from './game/context';
-import { LANDSCAPE } from './config/layout';
-import { Mascots } from './mascots/Mascots';
-import { BigWin } from './present/BigWin';
-import { FreeSpins } from './present/FreeSpins';
-import { WinPresenter } from './present/WinPresenter';
+import { LAYOUTS } from './config/layout';
 import { createApp } from './render/app';
 import { createLayers } from './render/layers';
 import { LayoutManager } from './render/layout';
-import { Background } from './scene/Background';
-import { Frame } from './scene/Frame';
-import { Sound } from './audio/Sound';
-import { Hud } from './ui/hud/Hud';
-import { DomUi } from './ui/dom/DomUi';
 
 gsap.registerPlugin(CustomEase, CustomBounce, CustomWiggle, PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
@@ -52,26 +42,15 @@ const boot = async (): Promise<void> => {
     budget: TIER_BUDGETS[tier],
     params,
     money: createMoney(params.currency, params.social),
-    layout: LANDSCAPE,
+    layout: LAYOUTS.landscape,
     scale: 1,
   };
 
   const layout = new LayoutManager(ctx, tier === 'low' ? 1.5 : 2);
   layout.update(true);
 
-  const modules: GameModule[] = [
-    new Background(ctx),
-    new Frame(ctx),
-    new Board(ctx),
-    new WinPresenter(ctx),
-    new Fx(ctx),
-    new Mascots(ctx),
-    new FreeSpins(ctx),
-    new BigWin(ctx),
-    new Hud(ctx),
-    new DomUi(ctx),
-    new Sound(ctx),
-  ];
+  // the active game's modules (src/games/<GAME>/modules.ts, resolved through @game)
+  const modules: GameModule[] = createModules(ctx);
   for (const m of modules) await m.init?.();
   layout.update(true);
 

@@ -1,5 +1,7 @@
 /**
- * English strings (the reference table — other languages fall back to it key by key).
+ * English ENGINE strings (the reference table — other languages fall back to it key by key).
+ * Game-specific copy (symbol names, feature rules, specials) lives in src/games/<GAME>/i18n.ts
+ * and is merged over this table by i18n/index.ts.
  * Placeholders use {name}; t(key, vars) fills them. Numbers/money are formatted by the
  * caller (ctx.money) before they reach t().
  */
@@ -60,31 +62,16 @@ export const EN: Record<string, string> = {
   'paytable.pending': 'Pay values are supplied by the certified math model of this game version.',
   'paytable.wild.title': 'WILD',
   'paytable.wild.desc': 'Substitutes for all paying symbols and can be part of any cluster. Wilds do not form clusters on their own.',
-  'paytable.scatter.title': 'SCATTER',
-  'paytable.scatter.desc': '{min} or more Scatters anywhere on the grid trigger Free Spins. Scatters do not form clusters.',
   'paytable.spots.desc':
     'Every exploding winning symbol marks its spot. Further explosions on a marked spot raise its multiplier. Multipliers under a winning cluster are added together and applied to that cluster win.',
   'paytable.spots.marked': 'MARKED',
   'paytable.kind.high': 'HIGH',
   'paytable.kind.royal': 'LOW',
 
-  // ── symbols (fallback: SYMBOLS[id].label) ─────────────────────────────
-  'sym.H1': 'Golden Boombox',
-  'sym.H2': 'Vinyl Record',
-  'sym.H3': 'Crawfish',
-  'sym.H4': 'Hot Sauce',
-  'sym.L1': 'Ace',
-  'sym.L2': 'King',
-  'sym.L3': 'Queen',
-  'sym.L4': 'Jack',
-  'sym.L5': 'Ten',
-  'sym.W': 'Wild',
-  'sym.S': 'Golden Mic',
-
   // ── rules ──────────────────────────────────────────────────────────────
   'rules.overview.title': 'OVERVIEW',
   'rules.overview.body':
-    '{title} is played on a grid of 7 reels and 5 rows. Wins are awarded for clusters of identical symbols. All wins are multiplied by the bet.',
+    '{title} is played on a grid of {reels} reels and {rows} rows. Wins are awarded for clusters of identical symbols. All wins are multiplied by the bet.',
   'rules.cluster.title': 'CLUSTER PAYS',
   'rules.cluster.body':
     'A cluster is 5 or more identical symbols connected horizontally or vertically. Diagonal connections do not count. Only the highest win per cluster is paid. Simultaneous wins on different clusters are added together.',
@@ -97,14 +84,6 @@ export const EN: Record<string, string> = {
   'rules.spots.reset':
     'Spots are cleared at the end of every base game round and stay in place for the whole Free Spins feature.',
   'rules.wild.title': 'WILD',
-  'rules.wild.body': 'The Wild substitutes for all paying symbols. It does not substitute for Scatters.',
-  'rules.fs.title': 'FREE SPINS',
-  'rules.fs.body':
-    'Landing {min} or more Scatters anywhere on the grid triggers Free Spins. The number of Free Spins awarded depends on the number of Scatters:',
-  'rules.fs.row': '{n} Scatters',
-  'rules.fs.award': '{spins} Free Spins',
-  'rules.fs.retrigger':
-    'During the feature, {min} or more Scatters award additional Free Spins. Free Spins are played at the bet of the triggering round.',
   'rules.buy.title': 'BONUS BUY',
   'rules.buy.body':
     'The Free Spins feature can be bought from the base game for {cost}× the current bet. It starts with {spins} Free Spins and plays exactly like a naturally triggered feature.',

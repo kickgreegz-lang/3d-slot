@@ -3,7 +3,9 @@
 This is a premium, animation-first video slot for **Stake Engine**, produced with an AI-driven pipeline that Claude controls end to end. Humans step in at the points where they add something AI cannot.
 
 - **Working theme:** "SWAMP FUNK", a neon bayou juke joint with Gumbo the gator bouncer and Baron Croak the bullfrog DJ. It is a placeholder you can swap.
-- **Game:** a 7×5 cluster-pays tumble game with multiplier spots.
+- **Games:** one shared engine, one folder per game (`src/games/<id>/`, picked with `GAME=<id>`):
+  - `swamp-funk` (default): a 7×5 cluster-pays tumble game with multiplier spots;
+  - `bass-drop` — **Swamp Funk: Bass Drop**: a 6×6 cluster tumble with a Groove Meter (Wilds every 10 connected symbols, Juke Jam at 40, Mega Mix at 60). Design: [games/bass-drop/](games/bass-drop/README.md).
 - **Front end:** Vite + TypeScript + PixiJS 8.21 + three 0.186 + spine-pixi-v8 4.3.13 + GSAP 3.15.
 
 ## Start here
@@ -16,6 +18,8 @@ This is a premium, animation-first video slot for **Stake Engine**, produced wit
 | Know the exact names, frames, events and feel constants the art must hit | **[ANIMATION_CONTRACT.md](ANIMATION_CONTRACT.md)** |
 | Keep the look consistent and non-sloppy | **[ART_BIBLE.md](ART_BIBLE.md)** + [`art/bible/artbible.json`](../art/bible/artbible.json) + [`art/bible/prompts/`](../art/bible/prompts/README.md) |
 | Pass Stake Engine approval | **[STAKE_ENGINE.md](STAKE_ENGINE.md)** |
+| Add or change a game (engine vs game folder, `GAME=`, per-game builds) | [Multi-game engine](#3-multi-game-engine) below + the root [README](../README.md#multi-game-layout) |
+| Build Bass Drop's features (meter, bass drop, Juke Jam, Mega Mix) | **[games/bass-drop/](games/bass-drop/README.md)** (DESIGN, ANIMATION_SET, layout.json) |
 | Wire up the MCP servers | **[MCP_SETUP.md](MCP_SETUP.md)** + [`.mcp.json.example`](../.mcp.json.example) |
 | Check licences and provenance | [`licenses/allowlist.json`](../licenses/allowlist.json), [`licenses/denylist.json`](../licenses/denylist.json), [`art/manifest.schema.json`](../art/manifest.schema.json) |
 | See the raw research and its sources | [research/](research/README.md) |
@@ -86,7 +90,7 @@ flowchart LR
 12. big-win / free-spins overlays;
 13. DOM modals.
 
-**Layout spaces:**
+**Layout spaces** (per game, `src/games/<id>/layout.ts`):
 - landscape 1920×1080;
 - portrait 1080×1920;
 - tablet 1920×1920;
@@ -102,9 +106,31 @@ flowchart LR
 - `tools/capture/shot.mjs` (`pnpm capture`);
 - `tools/qa/animation-review.mjs` (`pnpm qa:review`);
 - `tools/qa/approval.mjs` (`pnpm qa:approval`);
-- the mock RGS with 7x5 fixture books (`mock/`).
+- the mock RGS with each game's fixture books (`mock/games/<id>/`).
 
 Architecture decisions and their evidence: [research/frontend-decisions.md](research/frontend-decisions.md).
+
+### 3. Multi-game engine
+
+```
+ GAME=<id> ─► vite.config.ts: @game -> src/games/<id>/ · __GAME_ID__ · <title> · mock/games/<id>/ · dist/<id>/
+              tsconfig.json (@game = swamp-funk) · tsconfig.bass-drop.json (@game = bass-drop)
+
+ engine (src/**)                         shims                      game (src/games/<id>/)
+ board · symbols · flow · book · ...  ─► config/game.ts      ─► @game/config    GRID · SYMBOLS · WIN_TIERS · SPOT_BANDS · FEATURES · BET_MODES · ATTRACT
+                                         config/layout.ts    ─► @game/layout    LAYOUTS (4 LayoutSpecs, HUD anchors included)
+                                         ui/dom/gameInfo.ts  ─► @game/gameInfo  modes · paytable specials · feature rule sections
+ main.ts                             ─────────────────────► @game/modules   createModules(ctx)
+ book/handlers.ts + book/gameEvents  ─────────────────────► @game/book      GameBookEvent · gameBookHandlers · foldGameEvent · restoreGameScene
+ game/events.ts (GameEvents = Core & …) ──────────────────► @game/events    GameSceneEvents
+ i18n/index.ts                       ─────────────────────► @game/i18n      GAME_STRINGS (merged over the engine tables)
+ assets/placeholder/ProceduralArt    ─────────────────────► @game/art       SYMBOL_BUILDERS · ART_MANIFEST
+```
+
+- **What stays generic:** every module reads the grid from `GRID` (reels, rows, padded rows) and the cell/pitch from the layout, so any cluster grid works (7×5 and 6×6 today). Multiplier spots are an engine feature switched on per game (`FEATURES.multiplierSpots`; the tiles are always drawn).
+- **Game book events** (Swamp Funk `updateGrid`; Bass Drop `meterUpdate`, `wildDrop`, `stickyWilds`, `featureTrigger`, `featureUpgrade`) are played by the game's handlers through a small `GameEventEnv` (`emit`, `state`, `hudChanged`, `setGameType`), which the flow and the DEV scene players share. `board:transform` (`drop` / `impact` / `morph` / `set`) is the core way for a game to replace symbols in place.
+- **Per game, not shared:** bet modes and costs, the mock RGS settings (`mock/games/<id>/mock.json`) and books, localStorage keys, the page title, the dependency-optimizer cache (`node_modules/.vite/<id>`), the build folder.
+- The pipeline tools that read the symbol registry (`tools/matte`, `tools/blender/slotbl/palette.py`, `tools/spine/validate.mjs`) read `src/games/$GAME/config.ts` (default swamp-funk).
 
 ## Decisions waiting on you
 

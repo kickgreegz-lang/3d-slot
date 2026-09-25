@@ -2,11 +2,11 @@
 /**
  * Stake Engine approval smoke tests against the PRODUCTION build (`vite preview`).
  *
- * USAGE:
- *   npx vite build
+ * USAGE (GAME / --game picks the game: default swamp-funk; its build is dist/<game>/):
+ *   npx vite build                                         # GAME=bass-drop npx vite build for another game
  *   npx vite preview --port 4173 --strictPort &            # or pass --serve to let this script start/stop it
  *   node tools/qa/approval.mjs --url http://localhost:4173/ \
- *        [--out screenshots/approval] [--dist dist] [--rgs rgs.approval.test] \
+ *        [--game swamp-funk] [--out screenshots/approval] [--dist dist/<game>] [--rgs rgs.approval.test] \
  *        [--serve --port 4173] [--settle-ms 4000] [--spin first|all|none] [--spin-ms 9000] \
  *        [--viewports 1200x675,375x667] [--strict-gpu] [--allow-url "<regex>"] [--no-mock-rgs]
  *
@@ -21,8 +21,9 @@
  *   4. ZERO console messages (any level), zero pageerrors, zero failed / >=400 requests.
  *      SwiftShader "GL Driver Message" / "GPU stall" lines are Chromium-generated and are reported
  *      as `gpuNoise` without failing (pass --strict-gpu to fail on them too).
- * The RGS (https://<rgs>/wallet/*, /bet/*) is answered by an in-process mock built on
- * mock/books fixtures (same wire shapes as mock/rgsMockPlugin.ts), so no real RGS is needed.
+ * The RGS (https://<rgs>/wallet/*, /bet/*) is answered by an in-process mock built on the
+ * game's mock/games/<game>/books fixtures (same wire shapes as mock/rgsMockPlugin.ts), so no
+ * real RGS is needed.
  */
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -35,7 +36,8 @@ const args = parseArgs();
 const port = Number(args.port ?? 4173);
 const baseUrl = args.url ?? `http://localhost:${port}/`;
 const outDir = path.resolve(args.out ?? 'screenshots/approval');
-const distDir = path.resolve(args.dist ?? path.join(REPO, 'dist'));
+const game = args.game ?? process.env.GAME ?? 'swamp-funk';
+const distDir = path.resolve(args.dist ?? path.join(REPO, 'dist', game));
 const rgsHost = args.rgs ?? 'rgs.approval.test';
 const settleMs = Number(args['settle-ms'] ?? 4000);
 const spinMode = args.spin ?? 'first';
@@ -116,6 +118,8 @@ if (args.serve === 'true') {
     cwd: REPO,
     stdio: 'ignore',
     detached: true,
+    // vite.config.ts serves dist/<GAME>
+    env: { ...process.env, GAME: game, VITE_CONFIG_NATIVE_IGNORE_WARNING: 'true' },
   });
   const deadline = Date.now() + 30_000;
   for (;;) {
@@ -147,8 +151,18 @@ const stopServer = () => {
 // ---------------------------------------------------------------------------
 
 const API = 1_000_000;
-const fixtures = JSON.parse(fs.readFileSync(path.join(REPO, 'mock/books/base_fixtures.json'), 'utf8'));
-const SPIN_BOOK = fixtures.small_win_1_tumble ?? Object.values(fixtures)[0];
+/** The game's spin book: base_fixtures.json small_win_1_tumble (or its first entry), else dev_fixture.json. */
+const loadSpinBook = () => {
+  const dir = path.join(REPO, 'mock/games', game, 'books');
+  const read = (f) => (fs.existsSync(path.join(dir, f)) ? JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')) : null);
+  const fixtures = read('base_fixtures.json');
+  const fromFixtures = fixtures ? (fixtures.small_win_1_tumble ?? Object.values(fixtures)[0]) : null;
+  const dev = read('dev_fixture.json');
+  const book = fromFixtures ?? (dev && Array.isArray(dev.events) ? dev : dev ? Object.values(dev)[0] : null);
+  if (!book) throw new Error(`approval: no base fixture in ${path.relative(REPO, dir)}`);
+  return book;
+};
+const SPIN_BOOK = loadSpinBook();
 const JURISDICTION = {
   socialCasino: false,
   disabledFullscreen: false,

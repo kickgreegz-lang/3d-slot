@@ -1,4 +1,4 @@
-import { spotTier } from '../config/game';
+import { GAME_META, spotTier } from '../config/game';
 import { clock } from '../core/clock';
 import { TIMING, s } from '../core/timing';
 import type { GameContext, GameModule } from '../game/context';
@@ -6,7 +6,7 @@ import type { GameEvents, SfxId } from '../game/events';
 import { AudioEngine, type PlayOpts } from './engine';
 
 /** localStorage key + encoding of the player's sound choice — shared with ui/dom/DomUi ('on' | 'off'). */
-const PREF_KEY = 'swampfunk.sound';
+const PREF_KEY = `${GAME_META.storagePrefix}.sound`;
 /** Music dips under scene-level fanfares even if the presenter emits no sfx (same values as the sfx rules). */
 const SCENE_DUCK = { bigwin: { db: -6, hold: 1.8 }, fsTrigger: { db: -6, hold: 2.4 } } as const;
 

@@ -8,13 +8,13 @@ import {
   Sprite,
   type Texture,
 } from 'pixi.js';
-import { mix } from '../assets/placeholder/palette';
-import type { LayoutSpec, Rect } from '../config/layout';
-import { clock } from '../core/clock';
-import type { GameContext, GameModule } from '../game/context';
+import { mix } from '../../../assets/placeholder/palette';
+import type { LayoutSpec, Rect } from '../../../config/layout';
+import { clock } from '../../../core/clock';
+import type { GameContext, GameModule } from '../../../game/context';
 import { buildLogo } from './frame/logo';
 import { WOOD, nail, plank, ropeWrap, sillPart } from './frame/wood';
-import { registerTiming } from '../core/timing';
+import { registerTiming } from '../../../core/timing';
 
 /**
  * Reel frame (owns ctx.layers.panel, ctx.layers.frame, ctx.layers.logo):
@@ -22,7 +22,8 @@ import { registerTiming } from '../core/timing';
  *    sheen top-left, beam shadow + neon spill along the top edge;
  *  - weathered cypress frame (posts, beam, sill) in the foreground cel style with
  *    rope wraps and a thin neon tube under the beam (subtle pulse);
- *  - "SWAMP FUNK" logo on the beam with a shine sweep every few seconds.
+ *  - the word-mark logo (default "SWAMP FUNK"; FrameOptions.logoText) in layout.logo with a
+ *    shine sweep every few seconds.
  * Wood and logo are baked at the current display resolution (the app runs without
  * MSAA) and re-baked on 'layout:change'. Production art (env keys panel /
  * frame_post / frame_beam / frame_sill / logo) replaces the procedural parts.
@@ -71,6 +72,11 @@ const geometry = (L: LayoutSpec): FrameGeom => {
   };
 };
 
+export interface FrameOptions {
+  /** procedural word-mark text (first word lime, the rest neon bands); production art key `logo` wins */
+  logoText?: string;
+}
+
 export class Frame implements GameModule {
   private panel = new Container({ label: 'panelArt' });
   private frame = new Container({ label: 'frameArt' });
@@ -90,7 +96,10 @@ export class Frame implements GameModule {
   private t = 0;
   private key = '';
 
-  constructor(private ctx: GameContext) {
+  constructor(
+    private ctx: GameContext,
+    private readonly opts: FrameOptions = {},
+  ) {
     ctx.game.on('layout:change', ({ layout }) => this.layout(layout));
     ctx.game.on('mode:change', ({ gameType }) => {
       gsap.killTweensOf(this.heat);
@@ -324,7 +333,7 @@ export class Frame implements GameModule {
   private buildLogo(L: LayoutSpec): void {
     const prod = this.ctx.art.env('logo');
     if (!this.logoTex && !prod) {
-      this.logoTex = buildLogo(this.ctx.app.renderer).texture;
+      this.logoTex = buildLogo(this.ctx.app.renderer, this.opts.logoText).texture;
     }
     const tex = prod ?? this.logoTex;
     if (!tex) return;

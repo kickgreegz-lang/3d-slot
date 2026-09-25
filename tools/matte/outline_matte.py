@@ -10,7 +10,7 @@ Steps (tools/matte/README.md has the rationale):
      the seal radius closing outline gaps is chosen automatically (--seal N to force);
   3. soft edge: alpha unmixed along the ink->key line, edge colour = ink (zero spill),
      despill within a few px of the edge, 1 px alpha erosion, colour bleed under alpha 0;
-  4. fit: content max side (or --fit height) scaled to cellScale x 300 px (src/config/game.ts)
+  4. fit: content max side (or --fit height) scaled to cellScale x 300 px (src/games/$GAME/config.ts)
      and centred on the 360x360 @2x canvas; premultiplied Lanczos, never upscaled; straight alpha out;
   5. QA gates: halo (zero key-tinted edge pixels on black and white) and canvas/pivot. Any failure
      exits 1 (use --no-strict to keep the output anyway).
@@ -50,7 +50,7 @@ def main(argv=None) -> int:
     ap.add_argument("dst", help="output RGBA PNG (canvas-fitted unless --no-fit)")
     ap.add_argument("--key", default="auto", help="RRGGBB, or 'auto' (border median). Use the prompt's KEY_HEX")
     size = ap.add_mutually_exclusive_group()
-    size.add_argument("--symbol", help="symbol id: content = cellScale x 300 px from src/config/game.ts")
+    size.add_argument("--symbol", help="symbol id: content = cellScale x 300 px from src/games/$GAME/config.ts")
     size.add_argument("--kind", choices=["royal", "high", "special", "wild", "scatter"], help="bible cellFill midpoint")
     size.add_argument("--content-px", type=int, help="explicit content size on the canvas")
     ap.add_argument("--fit", choices=["max", "height"], default="max",

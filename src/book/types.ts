@@ -1,8 +1,14 @@
+import type { GameBookEvent } from '@game/book';
+
 /**
- * Stake Engine book format for the 7x5 cluster/tumble game (math-sdk 0_0_cluster
- * adapted to 5 rows). A "book" is one round: an ordered list of events that the
- * front-end plays back. Amounts inside books are BET MULTIPLES x100
+ * Stake Engine book format for the cluster/tumble games (math-sdk 0_0_cluster
+ * adapted to the game's GRID). A "book" is one round: an ordered list of events that
+ * the front-end plays back. Amounts inside books are BET MULTIPLES x100
  * (e.g. 130 = 1.3x bet). See config/game.ts for the padded-row convention.
+ *
+ * CoreBookEvent is what every game shares (reveal, wins, tumbles, free spins, ...);
+ * the active game adds its own events (`GameBookEvent` in src/games/<GAME>/book.ts,
+ * e.g. Swamp Funk's updateGrid, Bass Drop's meterUpdate / wildDrop).
  */
 
 export interface RawSymbol {
@@ -14,7 +20,7 @@ export interface RawSymbol {
   value?: number;
 }
 
-/** Padded position: row 0..6, visible rows 1..5. */
+/** Padded position: row 0..GRID.paddedRows-1, visible rows GRID.firstVisibleRow..lastVisibleRow. */
 export interface Position {
   reel: number;
   row: number;
@@ -25,7 +31,7 @@ export type GameType = 'basegame' | 'freegame';
 export interface RevealEvent {
   index: number;
   type: 'reveal';
-  /** [reel][paddedRow] — 7 x 7 */
+  /** [reel][paddedRow] — GRID.reels x GRID.paddedRows */
   board: RawSymbol[][];
   paddingPositions?: number[];
   gameType: GameType;
@@ -45,6 +51,8 @@ export interface ClusterWin {
     winWithoutMult: number;
     /** where the cluster win label should be shown */
     overlay: Position;
+    /** sum of the wild multipliers inside the cluster (games with multiplier wilds; absent otherwise) */
+    wildMult?: number;
   };
 }
 
@@ -67,13 +75,6 @@ export interface TumbleBoardEvent {
   /** per reel, new symbols entering from the top; index 0 is the TOP-most */
   newSymbols: RawSymbol[][];
   explodingSymbols: Position[];
-}
-
-export interface UpdateGridEvent {
-  index: number;
-  type: 'updateGrid';
-  /** UNPADDED [reel][visibleRow] multiplier-spot values */
-  gridMultipliers: number[][];
 }
 
 export interface SetWinEvent {
@@ -135,12 +136,11 @@ export interface WincapEvent {
   amount?: number;
 }
 
-export type BookEvent =
+export type CoreBookEvent =
   | RevealEvent
   | WinInfoEvent
   | UpdateTumbleWinEvent
   | TumbleBoardEvent
-  | UpdateGridEvent
   | SetWinEvent
   | SetTotalWinEvent
   | FreeSpinTriggerEvent
@@ -151,6 +151,9 @@ export type BookEvent =
   | FinalWinEvent
   | WincapEvent;
 
+export type BookEvent = CoreBookEvent | GameBookEvent;
+
+export type CoreBookEventType = CoreBookEvent['type'];
 export type BookEventType = BookEvent['type'];
 export type BookEventOf<T extends BookEventType> = Extract<BookEvent, { type: T }>;
 

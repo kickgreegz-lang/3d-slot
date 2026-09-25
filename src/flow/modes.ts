@@ -1,12 +1,12 @@
+import { BET_MODES } from '../config/game';
 import type { RgsBetModeInfo } from '../rgs/types';
 
 /**
  * Bet modes of the math package. Mode keys must match the math-sdk bet modes
  * (they are sent verbatim to /wallet/play). The live RGS currently returns
- * `config.betModes: {}`, so the local table is the source of truth and any
- * `costMultiplier` the RGS does send overrides it.
- *
- * TODO(math): RTP values are placeholders until the 7x5 math is final.
+ * `config.betModes: {}`, so the local table — the active game's `BET_MODES`
+ * (src/games/<GAME>/config.ts) — is the source of truth and any `costMultiplier`
+ * the RGS does send overrides it.
  */
 export interface BetModeDef {
   key: string;
@@ -21,11 +21,6 @@ export interface BetModeDef {
 }
 
 export const BASE_MODE = 'BASE';
-
-export const BET_MODES: Record<string, BetModeDef> = {
-  BASE: { key: 'BASE', cost: 1, buy: false, rtp: 0.962, maxWinX: 5000 },
-  BONUS: { key: 'BONUS', cost: 100, buy: true, rtp: 0.962, maxWinX: 5000 },
-};
 
 /** Merge the RGS-provided betModes (if any) over the local table. */
 export const resolveBetModes = (rgs: Record<string, RgsBetModeInfo> | undefined): Record<string, BetModeDef> => {

@@ -102,7 +102,7 @@ def main(argv=None) -> int:
     ap.add_argument("--out-dir", help="default: next to the input")
     ap.add_argument("--name", help="output stem (default: input stem) -> <name>_blur.png, <name>_glow.png")
     g = ap.add_mutually_exclusive_group()
-    g.add_argument("--symbol", help="read restAngle from src/config/game.ts")
+    g.add_argument("--symbol", help="read restAngle from src/games/$GAME/config.ts")
     g.add_argument("--rest-angle", type=float, help="degrees (runtime rotation; negative = counter-clockwise)")
     ap.add_argument("--only", choices=["blur", "glow"], help="write just one variant")
     ap.add_argument("--blur-mode", choices=["runtime", "box"], default="runtime")

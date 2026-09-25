@@ -161,10 +161,8 @@ export const EN_SOCIAL: Record<string, string> = {
   'paytable.symbols': 'SYMBOL WINS',
   'paytable.pending': 'Win values are supplied by the certified math model of this game version.',
   'rules.overview.body':
-    '{title} is played on a grid of 7 reels and 5 rows. Wins are awarded for clusters of identical symbols. All wins are multiplied by the play amount.',
+    '{title} is played on a grid of {reels} reels and {rows} rows. Wins are awarded for clusters of identical symbols. All wins are multiplied by the play amount.',
   'rules.cluster.title': 'CLUSTER WINS',
-  'rules.fs.retrigger':
-    'During the feature, {min} or more Scatters award additional Free Spins. Free Spins use the play amount of the triggering round.',
   'rules.maxWin.body':
     'The maximum win is {maxWin}× the play amount per round in every game mode. When it is reached, the round ends immediately and the maximum win is awarded.',
   'guide.menu.desc': 'Opens the win table, the game rules, this guide and the settings.',

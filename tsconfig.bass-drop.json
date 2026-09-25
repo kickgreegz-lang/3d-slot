@@ -1,0 +1,11 @@
+{
+  "$comment": "Type-checks the engine against the bass-drop game (@game -> src/games/bass-drop). tsconfig.json does the same for swamp-funk; each excludes the other game's folder (a game's scene events only exist while it is @game; files a game imports from another game are still checked). `pnpm typecheck` runs both.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@game/*": ["./src/games/bass-drop/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["src/games/swamp-funk"]
+}

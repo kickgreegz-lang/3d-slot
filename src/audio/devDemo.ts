@@ -1,3 +1,4 @@
+import { GRID } from '../config/game';
 import type { SfxId } from '../game/events';
 import type { AudioEngine, PlayOpts } from './engine';
 import { createGraph, rng } from './graph';
@@ -132,8 +133,8 @@ export const installAudioDemo = (engine: AudioEngine): void => {
       };
       at(0.5, 'spin_start');
       at(0.55, 'fall_out');
-      for (let reel = 0; reel < 7; reel++) {
-        for (let row = 0; row < 5; row++) {
+      for (let reel = 0; reel < GRID.reels; reel++) {
+        for (let row = 0; row < GRID.rows; row++) {
           const w = (['land_light', 'land_medium', 'land_heavy'] as const)[(reel + row) % 3] ?? 'land_light';
           at(0.9 + reel * 0.06 + row * 0.025, w);
         }

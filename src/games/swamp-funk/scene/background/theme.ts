@@ -1,4 +1,4 @@
-import type { LayoutKind, LayoutSpec, Rect } from '../../config/layout';
+import type { LayoutKind, LayoutSpec, Rect } from '../../../../config/layout';
 
 /**
  * Neon bayou juke joint — palettes and per-layout compositions.

@@ -1,5 +1,6 @@
-import { EN } from './en';
-import { EN_SOCIAL, findRestricted, socialize } from './social';
+import { GAME_STRINGS } from '@game/i18n';
+import { EN as ENGINE_EN } from './en';
+import { EN_SOCIAL as ENGINE_EN_SOCIAL, findRestricted, socialize } from './social';
 
 /**
  * i18n + Stake social-casino (stake.us) wording. Every user-visible string goes
@@ -10,7 +11,19 @@ import { EN_SOCIAL, findRestricted, socialize } from './social';
  *
  * Only English ships today. Add a language by registering its table here; the
  * lang param has already been normalised by env/url.ts ('br' -> 'pt', ...).
+ *
+ * The active game (src/games/<GAME>/i18n.ts) adds its own copy — symbol names, feature
+ * rules — merged over the engine tables (a game key wins over an engine key).
  */
+
+/** Per-game copy: `en` (reference) and optional hand-tuned `social` overrides. */
+export interface GameStrings {
+  en: Record<string, string>;
+  social?: Record<string, string>;
+}
+
+const EN: Record<string, string> = { ...ENGINE_EN, ...GAME_STRINGS.en };
+const EN_SOCIAL: Record<string, string> = { ...ENGINE_EN_SOCIAL, ...GAME_STRINGS.social };
 const TABLES: Record<string, Record<string, string>> = {
   en: EN,
 };

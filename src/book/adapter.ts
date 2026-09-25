@@ -37,7 +37,13 @@ const normWin = (w: Loose): ClusterWin => {
     clusterSize: num(w.clusterSize, positions.length),
     win,
     positions,
-    meta: { globalMult, clusterMult, winWithoutMult: wwm, overlay: overlay ?? { reel: 0, row: GRID.firstVisibleRow } },
+    meta: {
+      globalMult,
+      clusterMult,
+      winWithoutMult: wwm,
+      overlay: overlay ?? { reel: 0, row: GRID.firstVisibleRow },
+      ...(typeof meta.wildMult === 'number' ? { wildMult: meta.wildMult } : {}),
+    },
   };
 };
 

@@ -1,7 +1,7 @@
-import { SYMBOLS } from '../../config/game';
+import { FEATURES, GRID, SYMBOLS } from '../../config/game';
 import type { SpeedProfile } from '../../core/timing';
 import { t } from '../../i18n';
-import { GAME_INFO } from './gameInfo';
+import { GAME_INFO, type TextRef, buyModes } from './gameInfo';
 import { h, svg } from './h';
 import { type HudStateExt, allowedSpeeds } from '../state';
 import { SVG_ICONS } from './svgIcons';
@@ -26,6 +26,12 @@ const symName = (id: string): string => {
   const k = `sym.${id}`;
   const s = t(k);
   return s === k ? (SYMBOLS[id]?.label ?? id) : s;
+};
+/** Resolve a game-info text reference (keyVars are i18n keys, translated first). */
+const tr = (ref: TextRef): string => {
+  const vars: Record<string, string | number> = { ...ref.vars };
+  for (const [k, key] of Object.entries(ref.keyVars ?? {})) vars[k] = t(key);
+  return t(ref.key, vars);
 };
 const fmtX = (v: number): string => `×${Number.isInteger(v) ? v : v.toFixed(2).replace(/0$/, '')}`;
 const h2 = (text: string): HTMLElement => h('h2.ui-h2', null, text);
@@ -85,6 +91,33 @@ export const paytablePage = (deps: PageDeps): HTMLElement => {
     return el;
   };
 
+  // multiplier-spot legend: only for games with the spots feature (board/SpotGrid)
+  const spots = FEATURES.multiplierSpots
+    ? [
+        h2(t('paytable.spots')),
+        p(t('paytable.spots.desc')),
+        h(
+          'div.pt-spots',
+          { 'aria-hidden': 'true' },
+          spot(
+            '',
+            'linear-gradient(#26375a,#1c2945)',
+            '#fff',
+            'inset 0 0 0 2px rgba(255,190,90,.55), 0 0 12px rgba(255,160,60,.35)',
+          ),
+          spot('x2', 'linear-gradient(#26375a,#1f2e4d)', '#a77a2c'),
+          spot('x4', 'linear-gradient(#2a2f4d,#6d190c)', '#e0501e'),
+          spot('x8', 'linear-gradient(#ae231f,#dc4812)', '#ffcc00', '0 0 10px rgba(255,90,30,.55)'),
+          spot(
+            'x16',
+            'linear-gradient(#c35221,#e0701f)',
+            '#ffe34a',
+            'inset 0 0 0 3px #ffc400, inset 0 -3px 0 3px #ffff9a, 0 0 14px rgba(255,126,32,.8)',
+          ),
+        ),
+      ]
+    : [];
+
   return h(
     'div.ui-page',
     null,
@@ -96,56 +129,34 @@ export const paytablePage = (deps: PageDeps): HTMLElement => {
     h(
       'div.pt-grid',
       null,
-      special('W', t('paytable.wild.title'), t('paytable.wild.desc')),
-      special('S', t('paytable.scatter.title'), t('paytable.scatter.desc', { min: GAME_INFO.scatterMin })),
+      GAME_INFO.specials.map((sp) => special(sp.id, tr(sp.title), tr(sp.desc))),
     ),
-    h2(t('paytable.spots')),
-    p(t('paytable.spots.desc')),
-    h(
-      'div.pt-spots',
-      { 'aria-hidden': 'true' },
-      spot(
-        '',
-        'linear-gradient(#26375a,#1c2945)',
-        '#fff',
-        'inset 0 0 0 2px rgba(255,190,90,.55), 0 0 12px rgba(255,160,60,.35)',
-      ),
-      spot('x2', 'linear-gradient(#26375a,#1f2e4d)', '#a77a2c'),
-      spot('x4', 'linear-gradient(#2a2f4d,#6d190c)', '#e0501e'),
-      spot('x8', 'linear-gradient(#ae231f,#dc4812)', '#ffcc00', '0 0 10px rgba(255,90,30,.55)'),
-      spot(
-        'x16',
-        'linear-gradient(#c35221,#e0701f)',
-        '#ffe34a',
-        'inset 0 0 0 3px #ffc400, inset 0 -3px 0 3px #ffff9a, 0 0 14px rgba(255,126,32,.8)',
-      ),
-    ),
+    ...spots,
   );
 };
 
 // ── RULES ─────────────────────────────────────────────────────────────────
 
 export const rulesPage = (): HTMLElement => {
-  const buy = GAME_INFO.modes.find((m) => m.cost > 1);
+  const buys = buyModes();
   const maxWin = Math.max(...GAME_INFO.modes.map((m) => m.maxWinX)).toLocaleString('en-US');
   const section = (key: string, ...body: Array<HTMLElement | null>): HTMLElement[] =>
     [h2(t(`rules.${key}.title`)), ...body].filter((x): x is HTMLElement => x !== null);
 
-  const fsTable = h(
-    'table.ui-table',
-    null,
+  const table = (rows: Array<{ label: TextRef; value: TextRef }>): HTMLElement =>
     h(
-      'tbody',
+      'table.ui-table',
       null,
-      GAME_INFO.freeSpinAwards.map((a) =>
-        h(
-          'tr',
-          null,
-          h('td', null, t('rules.fs.row', { n: a.scatters === 7 ? '7+' : a.scatters })),
-          h('td.num', null, t('rules.fs.award', { spins: a.spins })),
-        ),
+      h(
+        'tbody',
+        null,
+        rows.map((r) => h('tr', null, h('td', null, tr(r.label)), h('td.num', null, tr(r.value)))),
       ),
-    ),
+    );
+
+  // game feature sections (spots, wild, free spins, meters, ...) from the game's GAME_INFO
+  const features = GAME_INFO.featureRules.flatMap((sec) =>
+    section(sec.key, ...sec.blocks.map((b) => ('text' in b ? p(tr(b.text)) : table(b.table)))),
   );
 
   const modes = h(
@@ -182,18 +193,13 @@ export const rulesPage = (): HTMLElement => {
   return h(
     'div.ui-page',
     null,
-    section('overview', p(t('rules.overview.body', { title: GAME_INFO.title }))),
+    section('overview', p(t('rules.overview.body', { title: GAME_INFO.title, reels: GRID.reels, rows: GRID.rows }))),
     section('cluster', p(t('rules.cluster.body'))),
     section('tumble', p(t('rules.tumble.body'))),
-    section('spots', p(t('rules.spots.body', { maxSpot: GAME_INFO.maxSpot, spotReset: t('rules.spots.reset') }))),
-    section('wild', p(t('rules.wild.body'))),
-    section(
-      'fs',
-      p(t('rules.fs.body', { min: GAME_INFO.scatterMin })),
-      fsTable,
-      p(t('rules.fs.retrigger', { min: GAME_INFO.scatterMin })),
-    ),
-    buy ? section('buy', p(t('rules.buy.body', { cost: buy.cost, spins: buy.spins ?? '' }))) : [],
+    features,
+    buys.length
+      ? section('buy', ...buys.map((b) => p(t(b.buyBodyKey ?? 'rules.buy.body', { cost: b.cost, spins: b.spins ?? '' }))))
+      : [],
     section('maxWin', p(t('rules.maxWin.body', { maxWin }))),
     section('rtp', p(t('rules.rtp.body'))),
     section('modes', modes),

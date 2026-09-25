@@ -39,7 +39,7 @@ Formula rules:
 | **Extrusion** | Plum `#4B283D`, **6–10 design px** (12–20 px @2x) toward the **lower right**. | The outline wraps face and extrusion together. |
 | **Light** | Key light **top-left at 45°** on every asset, 2D and 3D. Cel shading: 1 flat base + 2 hard-edged shadow tones + 1 white specular streak. Shadows shift toward warm plum, never grey. | **No** rim light on foreground. **No** baked glow, bloom, blur or cast shadow; the engine adds them. |
 | **Camera** | Object symbols: one shared camera, frontal three-quarter, slight low angle. Royals: straight-on. Mascots: three-quarter, turned toward the reels. Background: wide, eye level. | A different perspective per symbol is the #1 slop tell after lighting. |
-| **Canvas / fill** | Masters at 2048² with straight alpha → fitted onto the **360×360 @2x canvas** (180 design px = 1.2× the cell), anchor 0.5, Lanczos down, never upscaled. Content height: royals **85–90%** of the cell, highs **95–100%**, specials **102–115%**. | Matches `cellScale` in `src/config/game.ts`. **Deliver upright.** The runtime applies `restAngle` (−6…−18°). For a negative tilt, ask for the key light "slightly more from above" so it still reads top-left after rotation. |
+| **Canvas / fill** | Masters at 2048² with straight alpha → fitted onto the **360×360 @2x canvas** (180 design px = 1.2× the cell), anchor 0.5, Lanczos down, never upscaled. Content height: royals **85–90%** of the cell, highs **95–100%**, specials **102–115%**. | Matches `cellScale` in `src/games/swamp-funk/config.ts`. **Deliver upright.** The runtime applies `restAngle` (−6…−18°). For a negative tilt, ask for the key light "slightly more from above" so it still reads top-left after rotation. |
 
 ## 4. Palette (roles)
 
@@ -72,7 +72,7 @@ The multiplier-spot heat tiers (T0–T5) are drawn in code: see `artbible.json �
 
 ## 6. Symbol briefs
 
-Ids and tilts come from `src/config/game.ts`. Rig parts follow the [animation contract](ANIMATION_CONTRACT.md#2-spine-symbol-skeletons-43-json).
+Ids and tilts come from `src/games/swamp-funk/config.ts`. Rig parts follow the [animation contract](ANIMATION_CONTRACT.md#2-spine-symbol-skeletons-43-json).
 
 | Id | Subject | Tilt | Brief | Rig parts (Spine) |
 |---|---|---|---|---|

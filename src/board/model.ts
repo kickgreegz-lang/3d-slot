@@ -12,13 +12,13 @@ export type Board = string[][];
 
 export const cloneBoard = (b: Board): Board => b.map((reel) => [...reel]);
 
-/** Centre of a PADDED slot (row 0 and 6 sit one pitch outside the visible grid). */
+/** Centre of a PADDED slot (padding rows sit one pitch outside the visible grid). */
 export const slotPos = (L: LayoutSpec, reel: number, paddedRow: number): { x: number; y: number } =>
   cellCenter(L, reel, paddedRow - GRID.firstVisibleRow);
 
 export const pitchOf = (L: LayoutSpec): number => L.cell + L.gap;
 
-/** Outer rectangle of the 7x5 visible grid (tile edges). */
+/** Outer rectangle of the GRID.reels x GRID.rows visible grid (tile edges). */
 export const gridRect = (L: LayoutSpec): Rect => {
   const p = pitchOf(L);
   return { x: L.grid.x, y: L.grid.y, w: GRID.reels * p - L.gap, h: GRID.rows * p - L.gap };
@@ -44,7 +44,7 @@ export interface TumblePlan {
 
 /**
  * Per reel: combined = [...newSymbols[reel] (index 0 = top-most), ...survivors of
- * the 7 padded slots in order]; new padded row i = combined[i]. New symbols start
+ * the GRID.paddedRows padded slots in order]; new padded row i = combined[i]. New symbols start
  * stacked directly above row 0 (row k - n), so the whole stack above a hole moves
  * as one — identical to the Stake SDK's tumbleBoardInit/SlideDown.
  */
@@ -83,9 +83,9 @@ export const planTumble = (board: Board, exploding: Position[], newSymbols: stri
 // ---------------------------------------------------------------------------
 
 export interface LatticePt {
-  /** lattice column 0..7 (left seam of reel i) */
+  /** lattice column 0..GRID.reels (left seam of reel i) */
   i: number;
-  /** lattice row 0..5 (top seam of visible row j) */
+  /** lattice row 0..GRID.rows (top seam of visible row j) */
   j: number;
 }
 

@@ -1,22 +1,23 @@
 import { gsap } from 'gsap';
+import { GAME_META } from '../../config/game';
 import type { SpeedProfile } from '../../core/timing';
 import type { GameContext, GameModule } from '../../game/context';
 import { safeText, t } from '../../i18n';
 import { uiBus } from '../bus';
 import { type HudStateExt, allowedSpeeds } from '../state';
 import { type AutoplayChoice, autoplayDialog, buyDialog, errorDialog } from './dialogs';
-import { buyMode, GAME_INFO } from './gameInfo';
+import { buyMode, buyModes } from './gameInfo';
 import { clear, h, svg } from './h';
 import { type ModalHandle, ModalStack } from './Modal';
 import { MENU_PAGES, type MenuPage, type PageDeps, guidePage, paytablePage, rulesPage, settingsPage } from './pages';
 import { SVG_ICONS } from './svgIcons';
 import './ui.css';
 
-/** Per-viewer conveniences only (never game state) — every access guarded. */
+/** Per-viewer conveniences only (never game state) — every access guarded; prefixed per game. */
 const STORE_KEYS = {
-  sound: 'swampfunk.sound',
-  skipIntro: 'swampfunk.skipIntro',
-  autoplay: 'swampfunk.autoplay',
+  sound: `${GAME_META.storagePrefix}.sound`,
+  skipIntro: `${GAME_META.storagePrefix}.skipIntro`,
+  autoplay: `${GAME_META.storagePrefix}.autoplay`,
 } as const;
 const store = {
   get(k: string): string | null {
@@ -301,14 +302,21 @@ export class DomUi implements GameModule {
 
   private openBuy(mode: string): void {
     const s = this.state;
-    const info = buyMode(mode) ?? GAME_INFO.modes.find((m) => m.cost > 1);
-    if (!info || this.dialog?.isOpen || s.replay || !s.buyAllowed) return;
+    const modes = buyModes();
+    if (!modes.length || this.dialog?.isOpen || s.replay || !s.buyAllowed) return;
+    const asked = buyMode(mode);
+    const selected = Math.max(0, modes.findIndex((m) => m.mode === asked?.mode));
     const panel = buyDialog({
-      costText: this.ctx.money.format(s.bet * info.cost),
-      costX: info.cost,
-      onConfirm: () => {
+      options: modes.map((m) => ({
+        name: t(m.nameKey),
+        desc: t(m.buyDescKey ?? 'buy.desc'),
+        costText: this.ctx.money.format(s.bet * m.cost),
+        costX: m.cost,
+      })),
+      selected,
+      onConfirm: (i) => {
         this.dialog?.close();
-        this.ctx.ui.broadcast('ui:buy', { mode: info.mode });
+        this.ctx.ui.broadcast('ui:buy', { mode: modes[i].mode });
       },
       onCancel: () => this.dialog?.close(),
     });

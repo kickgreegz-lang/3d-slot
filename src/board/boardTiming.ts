@@ -39,4 +39,12 @@ export const BOARD_TIMING = registerTiming('board', {
   explodeTraumaBase: 0.12,
   explodeTraumaPerSymbol: 0.035,
   explodeTraumaMax: 0.55,
+  /** board:transform 'drop': the new symbol starts this many cells above the top visible row. */
+  transformDropCells: 2.5,
+  /** board:transform: gap between cells of one transform (reading order). */
+  transformStagger: 140,
+  /** board:transform: camera trauma per landed / morphed symbol. */
+  transformTrauma: 0.28,
+  /** board:transform 'impact': landing speed fed to the symbol's squash spring (design px / s). */
+  transformImpactVelocity: 5200,
 } as const);

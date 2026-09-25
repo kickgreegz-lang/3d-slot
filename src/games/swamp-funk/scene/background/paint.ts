@@ -1,5 +1,5 @@
 import { BlurFilter, Container, FillGradient, Graphics, Sprite, type Texture } from 'pixi.js';
-import type { Rect } from '../../config/layout';
+import type { Rect } from '../../../../config/layout';
 import type { Composition, ScenePalette, Swag } from './theme';
 
 /**

@@ -1,12 +1,13 @@
-import { GRID } from '../config/game';
+import { ATTRACT, GRID } from '../config/game';
 
 /**
- * Deterministic idle board shown before the first spin: premium-heavy, no two
- * orthogonal neighbours alike (so it can never read as an unpaid cluster), one
- * wild and one scatter as "specials" teasers. [reel][paddedRow], 7 x 7.
+ * Deterministic idle board shown before the first spin: drawn from the game's
+ * ATTRACT pool with no two orthogonal neighbours alike (so it can never read as an
+ * unpaid cluster), plus the game's fixed "specials" teasers (wild, scatter, ...).
+ * [reel][paddedRow], GRID.reels x GRID.paddedRows.
  */
-const POOL = ['H1', 'H2', 'H3', 'H4', 'L1', 'L2', 'L3', 'L4', 'L5', 'H1', 'H2', 'H3', 'H4'];
-const SPECIALS: Record<string, string> = { '1,2': 'W', '5,4': 'S' };
+const POOL = ATTRACT.pool;
+const SPECIALS = ATTRACT.specials;
 
 export const attractBoard = (seed = 7): string[][] => {
   let s = seed >>> 0;

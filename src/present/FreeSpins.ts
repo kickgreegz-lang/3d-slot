@@ -2,6 +2,7 @@ import { gsap } from 'gsap';
 import { BitmapText, Container } from 'pixi.js';
 import type { Position } from '../book/types';
 import { FONTS } from '../assets/fonts';
+import { toSpotRow } from '../config/game';
 import { cellCenter, type LayoutSpec } from '../config/layout';
 import { clock } from '../core/clock';
 import { registerTiming, s, stagger, TIMING } from '../core/timing';
@@ -229,7 +230,7 @@ export class FreeSpins implements GameModule {
     ctx.game.broadcast('mascot:cue', { cue: 'fsTrigger', intensity: 1 });
     ctx.game.broadcast('fx:shake', { trauma: 0.45 });
     positions.forEach((p, i) => {
-      const c = cellCenter(L, p.reel, p.row - 1);
+      const c = cellCenter(L, p.reel, toSpotRow(p.row));
       gsap.delayedCall(s(i * stagger(FS_TIMING.scatterStagger)), () => {
         ctx.game.broadcast('fx:burst', { kind: 'scatter', x: c.x, y: c.y, color: 0xffd54a });
         ctx.game.broadcast('fx:shake', { trauma: 0.22 });

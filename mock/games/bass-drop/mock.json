@@ -1,0 +1,8 @@
+{
+  "$comment": "Mock RGS settings for this game (mock/rgsMockPlugin.ts). betModes: RGS mode key -> cost multiple and the book set it draws from (books_<pool>_*.json, then <pool>_fixtures.json, then the base pool / base fixtures).",
+  "betModes": {
+    "BASE": { "costMultiplier": 1, "pool": "base" },
+    "BONUS": { "costMultiplier": 100, "pool": "bonus" },
+    "SUPER": { "costMultiplier": 300, "pool": "super" }
+  }
+}

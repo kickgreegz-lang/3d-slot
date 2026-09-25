@@ -1,8 +1,9 @@
 import type { EnvArtKey, ParticleKey, SymbolVariant } from './art';
 
 /**
- * PRODUCTION art manifest — filled by the art pipeline (Higgsfield -> matte ->
- * AssetPack). Everything listed here is loaded by `createArt()`; every key that is
+ * PRODUCTION art manifest types. Each game fills its own `ART_MANIFEST` in
+ * src/games/<GAME>/art.ts (art pipeline: Higgsfield -> matte -> AssetPack), re-exported
+ * below. Everything listed there is loaded by `createArt()`; every key that is
  * NOT listed falls back to the procedural placeholder provider, per key.
  *
  * Rules (Stake Engine approval):
@@ -50,9 +51,5 @@ export interface ArtManifest {
   spine: ManifestSpine[];
 }
 
-export const ART_MANIFEST: ArtManifest = {
-  symbols: [],
-  env: [],
-  particles: [],
-  spine: [],
-};
+/** The active game's production manifest (src/games/<GAME>/art.ts). */
+export { ART_MANIFEST } from '@game/art';

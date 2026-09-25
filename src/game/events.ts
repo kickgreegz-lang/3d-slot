@@ -1,3 +1,4 @@
+import type { GameSceneEvents } from '@game/events';
 import type { ClusterWin, GameType, Position } from '../book/types';
 import type { WinTierKey } from '../config/game';
 import type { LayoutSpec } from '../config/layout';
@@ -9,9 +10,12 @@ import type { SpeedProfile } from '../core/timing';
  * Book handlers `await game.broadcastAsync(...)`, so every subscriber that
  * returns a promise holds the round until its animation finishes.
  *
- * Symbol boards are symbol-id strings, [reel][paddedRow] (7x7). Positions are
- * PADDED rows. Multiplier grids are UNPADDED [reel][visibleRow] (7x5).
- * Amounts are book units: bet multiple x100.
+ * Symbol boards are symbol-id strings, [reel][paddedRow] (GRID.reels x GRID.paddedRows).
+ * Positions are PADDED rows. Multiplier grids are UNPADDED [reel][visibleRow]
+ * (GRID.reels x GRID.rows). Amounts are book units: bet multiple x100.
+ *
+ * `CoreGameEvents` are shared by every game; the active game adds its own scene events
+ * (`GameSceneEvents` in src/games/<GAME>/events.ts) for its feature modules.
  */
 export type MascotCue =
   | 'idle'
@@ -55,7 +59,9 @@ export type SfxId =
   | 'ui_bet_up'
   | 'ui_bet_down';
 
-export type GameEvents = {
+export type BoardTransformStyle = 'drop' | 'impact' | 'morph' | 'set';
+
+export type CoreGameEvents = {
   /** Spin pressed and accepted: old board falls out, mascots react. */
   'round:start': { profile: SpeedProfile };
   /** Round presentation complete (all events played). */
@@ -69,6 +75,18 @@ export type GameEvents = {
   'board:tumble': { exploding: Position[]; newSymbols: string[][] };
   /** Instantly set a board without animation (resume/replay start, dev). */
   'board:set': { board: string[][] };
+  /**
+   * Replace symbols in place (wild drops, symbol upgrades, sticky restores); resolves when
+   * settled. Cells already showing the id are left alone (so a follow-up transform is a
+   * cheap reconcile). Styles:
+   *   'drop'   the new symbol falls into the cell from above the grid and smashes the old one;
+   *   'impact' the old symbol is crushed NOW; TIMING.explode.anticipateDuration (s()-scaled)
+   *            later the new one is placed with a heavy impact squash (a caller flying its own
+   *            proxy calls this at contact - anticipateDuration and hides the proxy then);
+   *   'morph'  swap in place with a sparkle pop;
+   *   'set'    instant, no fanfare (resume / replay).
+   */
+  'board:transform': { cells: Array<Position & { id: string }>; style: BoardTransformStyle };
 
   /** Multiplier spots changed (animate only cells where value differs). */
   'spots:update': { grid: number[][]; previous: number[][] };
@@ -112,6 +130,11 @@ export type GameEvents = {
 
   'layout:change': { layout: LayoutSpec; scale: number };
 };
+
+export type GameEvents = CoreGameEvents & GameSceneEvents;
+
+/** Awaitable scene broadcast (ctx.game.broadcastAsync, or a DEV player's logged emitter). */
+export type SceneEmit = <K extends keyof GameEvents>(type: K, payload: GameEvents[K]) => Promise<void>;
 
 /** UI -> flow commands (HUD and DOM menus emit these). */
 export type UiEvents = {

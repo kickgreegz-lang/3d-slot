@@ -1,64 +1,13 @@
+import type { LayoutKind, LayoutSpec } from '../../config/layout';
+
 /**
- * Design spaces and element placement. All numbers are DESIGN PIXELS inside the
- * chosen design space; the root game container is contain-scaled to the canvas,
- * the background is cover-scaled (see render/layout.ts).
+ * SWAMP FUNK design spaces (7x5 grid). Types, breakpoints (pickLayout) and cell helpers
+ * are engine-side in src/config/layout.ts, which re-exports these specs.
  *
  * Landscape numbers are measured from the reference (x*1.01266, y*1.01266+3.8).
- * Breakpoints follow the Stake web-sdk createLayout: aspect >= 1.3 landscape,
- * <= 0.8 portrait, otherwise tablet; plus a "compact" space for popouts
- * (400x225, 800x450) and small landscape phones where legibility needs bigger UI.
+ * Portrait / compact HUD anchors are the collision-free placements the HUD used to keep
+ * as local overrides (ui/hud/hudLayout.ts PORTRAIT_FIX / COMPACT_FIX), now owned here.
  */
-
-export type LayoutKind = 'landscape' | 'portrait' | 'tablet' | 'compact';
-
-export interface Rect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-export interface Pt {
-  x: number;
-  y: number;
-}
-
-export interface LayoutSpec {
-  kind: LayoutKind;
-  width: number;
-  height: number;
-  /** Symbol cell size and gap; pitch = cell + gap. */
-  cell: number;
-  gap: number;
-  /** Top-left of the 7x5 visible grid (outer tile edges). */
-  grid: Pt;
-  /** Glass panel behind the grid (grid + padding). */
-  panel: Rect;
-  /** Outer bounds of the wooden frame (posts/beam/sill are drawn inside this). */
-  frame: Rect;
-  frameParts: { post: number; beam: number; sill: number };
-  logo: Rect;
-  /** Mascot slots (feet anchored at bottom-centre of the rect). null => no mascots in this layout. */
-  mascots: { left: Rect; right: Rect } | null;
-  hud: {
-    spin: Pt & { size: number; tilt: number };
-    autoplay: Pt;
-    turbo: Pt;
-    menu: Pt;
-    bonusBuy: Pt;
-    betMinus: Pt;
-    betPlus: Pt;
-    betValue: Pt;
-    balance: Pt;
-    win: Pt;
-    /** small hex button diameter */
-    smallButton: number;
-    /** base font size for HUD values */
-    valueFont: number;
-    labelFont: number;
-  };
-  /** Where big-win / free-spin overlays centre. */
-  center: Pt;
-}
 
 export const LANDSCAPE: LayoutSpec = {
   kind: 'landscape',
@@ -110,16 +59,16 @@ export const PORTRAIT: LayoutSpec = {
     right: { x: 630, y: 150, w: 420, h: 450 },
   },
   hud: {
-    spin: { x: 540, y: 1620, size: 260, tilt: 0 },
-    autoplay: { x: 300, y: 1640 },
-    turbo: { x: 780, y: 1640 },
-    menu: { x: 110, y: 1800 },
-    bonusBuy: { x: 150, y: 1450 },
-    betMinus: { x: 700, y: 1820 },
-    betPlus: { x: 980, y: 1820 },
-    betValue: { x: 840, y: 1810 },
-    balance: { x: 60, y: 1880 },
-    win: { x: 540, y: 1420 },
+    spin: { x: 540, y: 1636, size: 260, tilt: 0 },
+    autoplay: { x: 300, y: 1636 },
+    turbo: { x: 780, y: 1636 },
+    menu: { x: 950, y: 1636 },
+    bonusBuy: { x: 130, y: 1636 },
+    betMinus: { x: 640, y: 1848 },
+    betPlus: { x: 1010, y: 1848 },
+    betValue: { x: 825, y: 1826 },
+    balance: { x: 60, y: 1826 },
+    win: { x: 540, y: 1432 },
     smallButton: 150,
     valueFont: 48,
     labelFont: 32,
@@ -170,16 +119,16 @@ export const COMPACT: LayoutSpec = {
   logo: { x: 188, y: 0, w: 320, h: 44 },
   mascots: null,
   hud: {
-    spin: { x: 830, y: 280, size: 170, tilt: 0 },
-    autoplay: { x: 760, y: 150 },
-    turbo: { x: 900, y: 150 },
-    menu: { x: 760, y: 420 },
-    bonusBuy: { x: 900, y: 420 },
-    betMinus: { x: 740, y: 500 },
-    betPlus: { x: 920, y: 500 },
-    betValue: { x: 830, y: 495 },
-    balance: { x: 710, y: 40 },
-    win: { x: 830, y: 80 },
+    spin: { x: 828, y: 270, size: 170, tilt: 0 },
+    autoplay: { x: 770, y: 144 },
+    turbo: { x: 886, y: 144 },
+    menu: { x: 770, y: 408 },
+    bonusBuy: { x: 886, y: 408 },
+    betMinus: { x: 728, y: 502 },
+    betPlus: { x: 928, y: 502 },
+    betValue: { x: 828, y: 488 },
+    balance: { x: 828, y: 26 },
+    win: { x: 828, y: 74 },
     smallButton: 84,
     valueFont: 30,
     labelFont: 22,
@@ -193,24 +142,3 @@ export const LAYOUTS: Record<LayoutKind, LayoutSpec> = {
   tablet: TABLET,
   compact: COMPACT,
 };
-
-export const pickLayout = (cssWidth: number, cssHeight: number): LayoutSpec => {
-  const ar = cssWidth / Math.max(1, cssHeight);
-  if (ar >= 1.3) return Math.min(cssWidth, cssHeight) <= 480 ? COMPACT : LANDSCAPE;
-  if (ar <= 0.8) return PORTRAIT;
-  return TABLET;
-};
-
-/** Centre of a visible cell (reel 0..6, visibleRow 0..4) in design px. */
-export const cellCenter = (L: LayoutSpec, reel: number, visibleRow: number): Pt => {
-  const pitch = L.cell + L.gap;
-  return {
-    x: L.grid.x + L.cell / 2 + reel * pitch,
-    y: L.grid.y + L.cell / 2 + visibleRow * pitch,
-  };
-};
-
-export const gridSize = (L: LayoutSpec, reels = 7, rows = 5): { w: number; h: number } => ({
-  w: reels * L.cell + (reels - 1) * L.gap,
-  h: rows * L.cell + (rows - 1) * L.gap,
-});

@@ -1,8 +1,8 @@
 import { Container, Rectangle, type Renderer, type Texture } from 'pixi.js';
-import { FONTS } from '../../assets/fonts';
-import { streak } from '../../assets/placeholder/cel';
-import { chunkyText } from '../../assets/placeholder/chunky';
-import { INK, Light } from '../../assets/placeholder/palette';
+import { FONTS } from '../../../../assets/fonts';
+import { streak } from '../../../../assets/placeholder/cel';
+import { chunkyText } from '../../../../assets/placeholder/chunky';
+import { INK, Light } from '../../../../assets/placeholder/palette';
 
 /**
  * "SWAMP FUNK" word-mark in the title face: chunky letters with a thin top-left

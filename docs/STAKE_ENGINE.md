@@ -28,7 +28,7 @@ Related: [STACK](STACK.md) · [PIPELINE § phase 8](PIPELINE.md#phase-8-qa-packa
 - [ ] **Unique, original assets.** No web-sdk samples, no Stake/Kick branding, **no child-like characters**.
 - [ ] **Jurisdiction flags enforced.** The web-sdk stores them but enforces none.
 
-Automated in this repo: `tools/qa/approval.mjs` (dist URL grep, the 7 viewports, request-host allowlist, zero console/pageerror/failed requests) and `mock/rgsMockPlugin.ts` + `mock/books/*` (a local RGS with 7x5 fixture books).
+Automated in this repo: `tools/qa/approval.mjs` (dist URL grep, the 7 viewports, request-host allowlist, zero console/pageerror/failed requests) and `mock/rgsMockPlugin.ts` + `mock/games/<game>/books/*` (a local RGS with each game's fixture books). Each game builds to its own self-contained `dist/<game>/`; upload the contents of that folder.
 
 ---
 
@@ -165,7 +165,7 @@ Do currency math in integers: `winRaw = betRaw * bookAmount / 100`. The repo enc
 
 Required: **1200×675, 1024×576, 800×450 (Popout L), 400×225 (Popout S), 425×812, 375×667, 320×568.** The checklist covers Desktop, Mobile and Popout S/M.
 
-- The repo uses four design spaces (`src/config/layout.ts`): landscape 1920×1080, portrait 1080×1920, tablet 1920×1920, and **compact 960×540** for popouts and small landscape.
+- The repo uses four design spaces per game (`src/games/<game>/layout.ts`, engine view `src/config/layout.ts`): landscape 1920×1080, portrait 1080×1920, tablet 1920×1920, and **compact 960×540** for popouts and small landscape.
 - In compact, **3D mascots are off** and the HUD collapses to a right column, so popups stay legible.
 - Touch targets are ≥ 150 design px in portrait (44 CSS px at 320×568).
 

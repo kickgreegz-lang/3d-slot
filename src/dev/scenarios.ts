@@ -1,5 +1,5 @@
 import type { Book, GameType } from '../book/types';
-import { SYMBOLS, WIN_TIERS, type WinTierKey } from '../config/game';
+import { DEV_FIXTURE_ALIASES, FEATURES, GRID, SYMBOLS, WIN_TIERS, type WinTierKey } from '../config/game';
 import { cellCenter } from '../config/layout';
 import { clock } from '../core/clock';
 import { getSpeedProfile, TIMING } from '../core/timing';
@@ -99,7 +99,8 @@ export const BURST_KINDS: Array<GameEvents['fx:burst']['kind']> = [
   'scatter',
 ];
 
-const BOARD_PROBE: ProbeTarget = { reel: 3, row: 5 };
+/** bottom row, middle reel (the last cell to land in a reveal column) */
+const BOARD_PROBE: ProbeTarget = { reel: Math.floor(GRID.reels / 2), row: GRID.lastVisibleRow };
 
 const wait = (ms: number): Promise<void> => clock.wait(ms);
 
@@ -116,15 +117,22 @@ const prepare = async (
   player?.sync(gameType, null);
 };
 
+/**
+ * A named fixture of the active game (mock/games/<GAME>/books). Scenario keys are Swamp
+ * Funk's; other games map them with DEV_FIXTURE_ALIASES (their config.ts), and a missing
+ * fixture (math still being generated) falls back to the first base fixture, so every board
+ * scenario still runs.
+ */
 const book = (env: ScenarioEnv, set: 'base' | 'bonus', key: string): Book => {
-  const b = env.books[set][key];
-  if (!b) throw new Error(`Missing fixture ${set}/${key}`);
+  const k = DEV_FIXTURE_ALIASES[key] ?? key;
+  const b = env.books[set]?.[k] ?? env.books.base[k] ?? Object.values(env.books.base)[0];
+  if (!b) throw new Error(`Missing fixture ${set}/${key} (and no base fixture to fall back to)`);
   return b;
 };
 
 const names = (b: Book, nth = 0): string[][] => findEvent(b, 'reveal', nth).board.map((r) => r.map((s) => s.name));
 
-export const SCENARIOS: ScenarioDef[] = [
+const ALL_SCENARIOS: ScenarioDef[] = [
   {
     name: 'spin',
     label: 'Spin + drop',
@@ -147,7 +155,7 @@ export const SCENARIOS: ScenarioDef[] = [
     name: 'anticipation',
     label: 'Anticipation',
     group: 'board',
-    probe: () => ({ reel: 6, row: 5 }),
+    probe: () => ({ reel: GRID.reels - 1, row: GRID.lastVisibleRow }),
     run: async (env) => {
       const b = book(env, 'base', 'fs_trigger');
       await prepare(env, null, 'basegame');
@@ -161,7 +169,7 @@ export const SCENARIOS: ScenarioDef[] = [
     name: 'clusterWin',
     label: 'Cluster win',
     group: 'board',
-    probe: () => ({ reel: 2, row: 4 }),
+    probe: () => ({ reel: Math.min(2, GRID.reels - 1), row: Math.min(4, GRID.lastVisibleRow) }),
     run: async (env) => {
       const b = book(env, 'base', 'tumble_chain');
       await prepare(env, null, 'basegame', names(b));
@@ -256,7 +264,7 @@ export const SCENARIOS: ScenarioDef[] = [
     run: async (env, opts) => {
       const colors = Object.values(SYMBOLS).map((d) => d.color);
       for (const [i, kind] of (opts.kinds ?? BURST_KINDS).entries()) {
-        const p = cellCenter(env.ctx.layout, i % 7, 1 + (i % 3));
+        const p = cellCenter(env.ctx.layout, i % GRID.reels, 1 + (i % 3));
         await env.emit('fx:burst', { kind, x: p.x, y: p.y, color: colors[i % colors.length], power: 1 });
         await wait(PACE.burstGap);
       }
@@ -337,6 +345,9 @@ export const SCENARIOS: ScenarioDef[] = [
     },
   },
 ];
+
+/** Scenarios of the active game (the spots showcase needs the multiplier-spots feature). */
+export const SCENARIOS: ScenarioDef[] = ALL_SCENARIOS.filter((d) => d.name !== 'spots' || FEATURES.multiplierSpots);
 
 export const getScenario = (name: string): ScenarioDef => {
   const def = SCENARIOS.find((d) => d.name === name);

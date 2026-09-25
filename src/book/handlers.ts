@@ -2,9 +2,19 @@ import { BOOK_AMOUNT_SCALE, WIN_TIERS, type WinTierKey } from '../config/game';
 import { clock } from '../core/clock';
 import { TIMING, speedScale } from '../core/timing';
 import type { GameContext } from '../game/context';
+import type { GameRoundState } from '@game/book';
 import { boardIds } from './adapter';
-import type { BookEventHandlerMap } from './player';
-import type { BookEvent, GameType, Position, RevealEvent } from './types';
+import {
+  GAME_EVENT_TYPES,
+  type GameEventEnv,
+  createGameRoundState,
+  foldGameEvent,
+  isGameEvent,
+  playGameEvent,
+  restoreGameScene,
+} from './gameEvents';
+import type { BookEventHandler, BookEventHandlerMap } from './player';
+import type { BookEvent, BookEventOf, CoreBookEventType, GameType, Position, RevealEvent } from './types';
 
 /**
  * Book event -> scene choreography. Each handler awaits `ctx.game.broadcastAsync`
@@ -13,8 +23,6 @@ import type { BookEvent, GameType, Position, RevealEvent } from './types';
  *   reveal          -> [mode:change] board:reveal
  *   winInfo         -> board:showWins            (winners stay visible, highlighted)
  *   updateTumbleWin -> win:tumble
- *   updateGrid      -> spots:update | spots:reset (plays while the exploding winners are
- *                      still on screen: math emits it between winInfo and tumbleBoard)
  *   tumbleBoard     -> board:tumble              (explode + gravity refill)
  *   setWin          -> win:set + HUD count-up, or bigwin:show when >= BIG (15x)
  *   setTotalWin     -> win:total
@@ -24,6 +32,9 @@ import type { BookEvent, GameType, Position, RevealEvent } from './types';
  *   freeSpinEnd     -> [bigwin:show] fs:end + mode:change basegame
  *   finalWin        -> win:final
  *   wincap          -> mascot 'celebrate' + HUD count-up to the cap; later tiers become 'max'
+ *
+ *   <game events>   -> the active game's handlers (src/games/<GAME>/book.ts via
+ *                      book/gameEvents.ts), e.g. Swamp Funk updateGrid -> spots:update
  *
  * Mascot reactions / SFX are derived by the scene modules from these events (only the
  * wincap cue is emitted here: no scene event conveys a mid-bonus cap).
@@ -38,6 +49,8 @@ export interface FreeSpinsState {
 /** Mutable per-round presentation state (also rebuilt from history on resume). */
 export interface RoundPlayback {
   gameType: GameType;
+  /** bet mode of the round ('BASE', or the bought feature's mode) */
+  betMode: string;
   /** ids [reel][paddedRow] of the board currently on screen */
   board: string[][] | null;
   /** last multiplier grid (unpadded) or null while no spots are shown */
@@ -53,6 +66,8 @@ export interface RoundPlayback {
   wincap: boolean;
   /** win value shown by the HUD (API units) */
   hudWin: number;
+  /** the active game's per-round extras (src/games/<GAME>/book.ts) */
+  game: GameRoundState;
 }
 
 export interface PlaybackHooks {
@@ -69,8 +84,13 @@ export interface BookContext {
   hooks: PlaybackHooks;
 }
 
-export const createRoundPlayback = (gameType: GameType = 'basegame', board: string[][] | null = null): RoundPlayback => ({
+export const createRoundPlayback = (
+  gameType: GameType = 'basegame',
+  board: string[][] | null = null,
+  betMode = 'BASE',
+): RoundPlayback => ({
   gameType,
+  betMode,
   board,
   grid: null,
   roundTotal: 0,
@@ -80,6 +100,7 @@ export const createRoundPlayback = (gameType: GameType = 'basegame', board: stri
   globalMult: 1,
   wincap: false,
   hudWin: 0,
+  game: createGameRoundState(),
 });
 
 /** WIN_TIERS key for a bet multiple (null below BIG). A capped win is always 'max'. */
@@ -97,9 +118,6 @@ export const applyTumble = (board: string[][], exploding: readonly Position[], n
     const next = [...(newSymbols[r] ?? []), ...reel.filter((_, row) => !gone.has(row))];
     return next.length > reel.length ? next.slice(next.length - reel.length) : next;
   });
-
-const sameGrid = (a: number[][], b: number[][]): boolean =>
-  a.length === b.length && a.every((col, r) => col.length === b[r].length && col.every((v, i) => v === b[r][i]));
 
 const copyGrid = (g: number[][]): number[][] => g.map((col) => [...col]);
 
@@ -140,7 +158,9 @@ const setGameType = async (c: BookContext, gameType: GameType): Promise<void> =>
   await Promise.all(tasks);
 };
 
-export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
+type CoreHandlerMap = { [K in CoreBookEventType]: BookEventHandler<BookEventOf<K>, BookContext> };
+
+const coreHandlers: CoreHandlerMap = {
   reveal: async (e, c) => {
     const { ctx, state } = c;
     state.spinStartTotal = state.roundTotal;
@@ -159,19 +179,6 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
   updateTumbleWin: async (e, c) => {
     c.state.spinWin = e.amount;
     await c.ctx.game.broadcastAsync('win:tumble', { amount: e.amount });
-  },
-
-  updateGrid: async (e, c) => {
-    const { ctx, state } = c;
-    const grid = copyGrid(e.gridMultipliers);
-    const previous = state.grid;
-    state.grid = grid;
-    if (!previous) {
-      await ctx.game.broadcastAsync('spots:reset', { grid });
-      return;
-    }
-    if (sameGrid(previous, grid)) return;
-    await ctx.game.broadcastAsync('spots:update', { grid, previous });
   },
 
   tumbleBoard: async (e, c) => {
@@ -223,7 +230,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
   },
 
   updateGlobalMult: async (e, c) => {
-    // Current 7x5 math never emits this (multipliers live in the spot grid). Kept as
+    // Current math never emits this (Swamp Funk multipliers live in the spot grid). Kept as
     // state so labels/resume stay correct if the math adds a global multiplier.
     c.state.globalMult = e.globalMult;
   },
@@ -258,6 +265,27 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookContext> = {
   },
 };
 
+/** The game's handlers see the round through a GameEventEnv (same shape the DEV players use). */
+const gameEnv = (c: BookContext): GameEventEnv => ({
+  emit: (type, payload) => c.ctx.game.broadcastAsync(type, payload),
+  state: c.state,
+  hudChanged: () => c.hooks.onHudChange?.(c.state),
+  setGameType: (gameType) => setGameType(c, gameType),
+});
+
+const gameHandler = async (e: BookEvent, c: BookContext): Promise<void> => {
+  if (isGameEvent(e)) await playGameEvent(e, gameEnv(c));
+};
+
+/**
+ * Core handlers + one entry per game event type (all routed through gameHandler). An event
+ * type in neither still has no handler, so the player throws on it in DEV.
+ */
+export const bookEventHandlerMap = {
+  ...Object.fromEntries(GAME_EVENT_TYPES.map((type) => [type, gameHandler])),
+  ...coreHandlers,
+} as BookEventHandlerMap<BookContext>;
+
 /**
  * Fold already-played events into a playback state WITHOUT presenting them
  * (resume mid-bonus: the web-sdk "createBonusSnapshot" equivalent).
@@ -273,9 +301,6 @@ export const foldHistory = (state: RoundPlayback, events: readonly BookEvent[], 
         break;
       case 'tumbleBoard':
         if (state.board) state.board = applyTumble(state.board, e.explodingSymbols, boardIds(e.newSymbols));
-        break;
-      case 'updateGrid':
-        state.grid = copyGrid(e.gridMultipliers);
         break;
       case 'updateTumbleWin':
         state.spinWin = e.amount;
@@ -305,6 +330,8 @@ export const foldHistory = (state: RoundPlayback, events: readonly BookEvent[], 
       default:
         break;
     }
+    // the game folds its own events (and may react to core ones, e.g. reset extras on freeSpinEnd)
+    foldGameEvent(state, e);
   }
   state.hudWin = money.fromBook(state.roundTotal);
   return state;
@@ -318,4 +345,5 @@ export const restoreScene = async (ctx: GameContext, state: RoundPlayback): Prom
   if (state.freeSpins) tasks.push(ctx.game.broadcastAsync('fs:update', { ...state.freeSpins }));
   if (state.roundTotal > 0) tasks.push(ctx.game.broadcastAsync('win:total', { amount: state.roundTotal }));
   await Promise.all(tasks);
+  await restoreGameScene({ emit: (type, payload) => ctx.game.broadcastAsync(type, payload), state });
 };

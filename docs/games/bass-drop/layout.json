@@ -1,0 +1,252 @@
+{
+  "$comment": "Machine-readable copy of docs/games/bass-drop/DESIGN.md section 15 (layouts). Design pixels per design space; rects are {x,y,w,h} top-left. The implementation copies these into the bass-drop LayoutSpec; if the two disagree, DESIGN.md section 15 wins and this file is fixed in the same PR. wireframes/*.svg are rendered from this file.",
+  "game": "bass-drop",
+  "grid": { "reels": 6, "rows": 6, "paddedRows": 8, "firstVisibleRow": 1, "lastVisibleRow": 6 },
+  "meterGeometry": {
+    "$comment": "Angles in degrees, clockwise from 12 o'clock. Value v (0..60) maps to angle = startDeg + sweepDeg * min(v,60)/60. Every radius here is a fraction of R = ringOuterD/2, so every space scales the same drawing: rim band R*rimInner..R, LED band R*ledInner..R*ledOuter, woofer cone R*counterR..R*ledInner, counter disc radius R*counterR, notch badge centres on radius R*notchRadius with badge radius R*notchR.",
+    "startDeg": -150,
+    "sweepDeg": 300,
+    "ticks": 60,
+    "notches": [10, 20, 30, 40, 50, 60],
+    "rimInner": 0.875,
+    "ledOuter": 0.85,
+    "ledInner": 0.7,
+    "counterR": 0.525,
+    "notchRadius": 0.94,
+    "notchR": 0.15
+  },
+  "spaces": {
+    "landscape": {
+      "size": [1920, 1080],
+      "cell": 124,
+      "gap": 4,
+      "grid": { "x": 578, "y": 149, "w": 764, "h": 764 },
+      "panel": { "x": 566, "y": 137, "w": 788, "h": 788 },
+      "frame": { "x": 491, "y": 72, "w": 938, "h": 922 },
+      "frameParts": { "post": 50, "beam": 66, "sill": 65 },
+      "frameHorns": [
+        { "x": 452, "y": 30, "w": 116, "h": 100 },
+        { "x": 1352, "y": 30, "w": 116, "h": 100 }
+      ],
+      "logo": { "x": 1472, "y": 40, "w": 428, "h": 236 },
+      "meter": { "cx": 248, "cy": 318, "ringOuterD": 320 },
+      "cabinet": { "x": 72, "y": 112, "w": 352, "h": 420 },
+      "lowerCabinet": { "x": 96, "y": 532, "w": 304, "h": 320 },
+      "meterChip": { "x": 112, "y": 478, "w": 272, "h": 56 },
+      "fsPlate": { "x": 1514, "y": 300, "w": 344, "h": 110 },
+      "mascots": {
+        "gumbo": {
+          "x": 0,
+          "y": 557,
+          "w": 434,
+          "h": 496,
+          "feet": { "x": 217, "y": 1053 }
+        },
+        "croak": {
+          "x": 1560,
+          "y": 430,
+          "w": 360,
+          "h": 630,
+          "feet": { "x": 1740, "y": 1060 }
+        },
+        "booth": { "x": 1436, "y": 640, "w": 230, "h": 300 }
+      },
+      "tumblePlate": { "x": 960, "y": 961, "scale": 0.9 },
+      "hud": {
+        "$comment": "Current LANDSCAPE.hud (src/config/layout.ts) unchanged except win.x.",
+        "spin": { "x": 1747, "y": 800, "size": 250, "tilt": 20 },
+        "autoplay": { "x": 1770, "y": 636 },
+        "turbo": { "x": 1841, "y": 662 },
+        "menu": { "x": 166, "y": 712 },
+        "bonusBuy": { "x": 150, "y": 846 },
+        "betMinus": { "x": 1529, "y": 1009 },
+        "betPlus": { "x": 1854, "y": 1009 },
+        "betValue": { "x": 1692, "y": 1000 },
+        "balance": { "x": 46, "y": 1000 },
+        "win": { "x": 960, "y": 1030 },
+        "smallButton": 72
+      },
+      "center": { "x": 960, "y": 531 },
+      "wildApexMinY": 24,
+      "intro": {
+        "logo": { "x": 760, "y": 96, "w": 400, "h": 270 },
+        "cards": [
+          { "x": 160, "y": 190, "w": 480, "h": 580 },
+          { "x": 720, "y": 400, "w": 480, "h": 580 },
+          { "x": 1280, "y": 190, "w": 480, "h": 580 }
+        ],
+        "press": { "x": 960, "y": 1034 }
+      },
+      "buy": {
+        "title": { "x": 960, "y": 150 },
+        "cards": [
+          { "x": 400, "y": 230, "w": 500, "h": 640 },
+          { "x": 1020, "y": 230, "w": 500, "h": 640 }
+        ],
+        "confirmCard": { "x": 710, "y": 200, "w": 500, "h": 640 },
+        "confirmButtons": { "x": 960, "y": 940 },
+        "close": { "x": 1580, "y": 190 }
+      }
+    },
+    "portrait": {
+      "size": [1080, 1920],
+      "cell": 132,
+      "gap": 4,
+      "grid": { "x": 134, "y": 584, "w": 812, "h": 812 },
+      "panel": { "x": 122, "y": 572, "w": 836, "h": 836 },
+      "frame": { "x": 88, "y": 520, "w": 904, "h": 940 },
+      "frameParts": { "post": 34, "beam": 52, "sill": 52 },
+      "frameHorns": [
+        { "x": 58, "y": 486, "w": 92, "h": 80 },
+        { "x": 930, "y": 486, "w": 92, "h": 80 }
+      ],
+      "logo": { "x": 240, "y": 40, "w": 600, "h": 110 },
+      "meter": { "cx": 540, "cy": 340, "ringOuterD": 300 },
+      "cabinet": { "x": 380, "y": 176, "w": 320, "h": 360 },
+      "lowerCabinet": null,
+      "meterChip": { "x": 390, "y": 522, "w": 300, "h": 48 },
+      "fsPlate": "meterChip",
+      "mascots": {
+        "gumbo": {
+          "x": 0,
+          "y": 150,
+          "w": 400,
+          "h": 430,
+          "feet": { "x": 200, "y": 580 }
+        },
+        "croak": {
+          "x": 680,
+          "y": 150,
+          "w": 400,
+          "h": 430,
+          "feet": { "x": 880, "y": 580 }
+        },
+        "booth": { "x": 730, "y": 380, "w": 210, "h": 140 }
+      },
+      "tumblePlate": { "x": 540, "y": 1434, "scale": 1.0 },
+      "hud": {
+        "$comment": "Portrait HUD re-flowed for the taller 6x6 grid (band 1460..1920). Touch targets 150; bonus buy ~200.",
+        "spin": { "x": 540, "y": 1665, "size": 250, "tilt": 0 },
+        "autoplay": { "x": 330, "y": 1690 },
+        "turbo": { "x": 750, "y": 1690 },
+        "menu": { "x": 950, "y": 1650 },
+        "bonusBuy": { "x": 130, "y": 1650 },
+        "betMinus": { "x": 715, "y": 1850 },
+        "betPlus": { "x": 980, "y": 1850 },
+        "betValue": { "x": 848, "y": 1842 },
+        "balance": { "x": 40, "y": 1880 },
+        "win": { "x": 540, "y": 1500 },
+        "smallButton": 150
+      },
+      "center": { "x": 540, "y": 990 },
+      "wildApexMinY": 160,
+      "intro": {
+        "logo": { "x": 240, "y": 90, "w": 600, "h": 250 },
+        "cards": [
+          { "x": 100, "y": 380, "w": 880, "h": 440 },
+          { "x": 100, "y": 860, "w": 880, "h": 440 },
+          { "x": 100, "y": 1340, "w": 880, "h": 440 }
+        ],
+        "press": { "x": 540, "y": 1850 }
+      },
+      "buy": {
+        "title": { "x": 540, "y": 220 },
+        "cards": [
+          { "x": 140, "y": 300, "w": 800, "h": 640 },
+          { "x": 140, "y": 1000, "w": 800, "h": 640 }
+        ],
+        "confirmCard": { "x": 140, "y": 520, "w": 800, "h": 640 },
+        "confirmButtons": { "x": 540, "y": 1290 },
+        "close": { "x": 980, "y": 200 }
+      }
+    },
+    "tablet": {
+      "$comment": "Landscape composition moved down by 420 (as the current TABLET does); HUD = current TABLET.hud with win.x 960. Intro/buy = landscape + 420.",
+      "size": [1920, 1920],
+      "offsetFromLandscape": { "x": 0, "y": 420 },
+      "cell": 124,
+      "gap": 4,
+      "grid": { "x": 578, "y": 569, "w": 764, "h": 764 },
+      "panel": { "x": 566, "y": 557, "w": 788, "h": 788 },
+      "frame": { "x": 491, "y": 492, "w": 938, "h": 922 },
+      "frameParts": { "post": 50, "beam": 66, "sill": 65 },
+      "frameHorns": [
+        { "x": 452, "y": 450, "w": 116, "h": 100 },
+        { "x": 1352, "y": 450, "w": 116, "h": 100 }
+      ],
+      "logo": { "x": 1472, "y": 460, "w": 428, "h": 236 },
+      "meter": { "cx": 248, "cy": 738, "ringOuterD": 320 },
+      "cabinet": { "x": 72, "y": 532, "w": 352, "h": 420 },
+      "lowerCabinet": { "x": 96, "y": 952, "w": 304, "h": 320 },
+      "meterChip": { "x": 112, "y": 898, "w": 272, "h": 56 },
+      "fsPlate": { "x": 1514, "y": 720, "w": 344, "h": 110 },
+      "mascots": {
+        "gumbo": {
+          "x": 0,
+          "y": 977,
+          "w": 434,
+          "h": 496,
+          "feet": { "x": 217, "y": 1473 }
+        },
+        "croak": {
+          "x": 1560,
+          "y": 850,
+          "w": 360,
+          "h": 630,
+          "feet": { "x": 1740, "y": 1480 }
+        },
+        "booth": { "x": 1436, "y": 1060, "w": 230, "h": 300 }
+      },
+      "tumblePlate": { "x": 960, "y": 1381, "scale": 0.9 },
+      "hud": {
+        "spin": { "x": 1747, "y": 1220, "size": 250, "tilt": 20 },
+        "autoplay": { "x": 1770, "y": 1056 },
+        "turbo": { "x": 1841, "y": 1082 },
+        "menu": { "x": 166, "y": 1132 },
+        "bonusBuy": { "x": 150, "y": 1266 },
+        "betMinus": { "x": 1529, "y": 1560 },
+        "betPlus": { "x": 1854, "y": 1560 },
+        "betValue": { "x": 1692, "y": 1551 },
+        "balance": { "x": 46, "y": 1551 },
+        "win": { "x": 960, "y": 1480 },
+        "smallButton": 72
+      },
+      "center": { "x": 960, "y": 951 },
+      "wildApexMinY": 300
+    },
+    "compact": {
+      "$comment": "Popouts / small landscape phones. No mascots, no booth, no lower cabinet, no horns. HUD = current COMPACT.hud unchanged. Intro/buy = landscape scaled 0.5 about the origin.",
+      "size": [960, 540],
+      "cell": 72,
+      "gap": 3,
+      "grid": { "x": 226, "y": 42, "w": 447, "h": 447 },
+      "panel": { "x": 218, "y": 34, "w": 463, "h": 463 },
+      "frame": { "x": 198, "y": 8, "w": 503, "h": 517 },
+      "frameParts": { "post": 20, "beam": 26, "sill": 28 },
+      "frameHorns": null,
+      "logo": { "x": 331, "y": 0, "w": 236, "h": 40 },
+      "meter": { "cx": 100, "cy": 168, "ringOuterD": 170 },
+      "cabinet": null,
+      "lowerCabinet": null,
+      "meterChip": { "x": 15, "y": 262, "w": 170, "h": 40 },
+      "fsPlate": "meterChip",
+      "mascots": null,
+      "tumblePlate": { "x": 449, "y": 511, "scale": 0.6 },
+      "hud": {
+        "spin": { "x": 830, "y": 280, "size": 170, "tilt": 0 },
+        "autoplay": { "x": 760, "y": 150 },
+        "turbo": { "x": 900, "y": 150 },
+        "menu": { "x": 760, "y": 420 },
+        "bonusBuy": { "x": 900, "y": 420 },
+        "betMinus": { "x": 740, "y": 500 },
+        "betPlus": { "x": 920, "y": 500 },
+        "betValue": { "x": 830, "y": 495 },
+        "balance": { "x": 710, "y": 40 },
+        "win": { "x": 830, "y": 80 },
+        "smallButton": 84
+      },
+      "center": { "x": 449, "y": 265 },
+      "wildApexMinY": 12
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { SYMBOLS, SYMBOL_IDS } from '../../config/game';
+import { GRID, SYMBOLS, SYMBOL_IDS } from '../../config/game';
 import { cellCenter } from '../../config/layout';
 import type { GameContext } from '../../game/context';
 import type { ParticleKey } from '../art';
@@ -9,7 +9,7 @@ import { PARTICLE_KEYS } from './particles';
 /**
  * DEV ONLY — art review sheet for automated visual QA (the Board may be a stub).
  *   window.__artDemo(__slot.ctx)            every symbol (static / blur / glow) + particles
- *   window.__artDemo(__slot.ctx, 'board')   a plausible 7x5 board of statics on the panel
+ *   window.__artDemo(__slot.ctx, 'board')   a plausible board of statics on the panel (GRID size)
  *   window.__artDemo(__slot.ctx, 'zoom')    statics at ~1.7x on the panel colours (detail review)
  *   window.__artDemo(__slot.ctx, 'off')     remove
  */
@@ -114,11 +114,17 @@ const BOARD = [
   ['L4', 'S', 'L5', 'L3', 'H3', 'L2', 'L3'],
 ];
 
+/** BOARD tiled over the game's grid; ids the game does not have fall back to its own symbols. */
+const demoId = (r: number, c: number): string => {
+  const id = BOARD[r % BOARD.length][c % BOARD[0].length];
+  return SYMBOLS[id] ? id : SYMBOL_IDS[(r * GRID.reels + c) % SYMBOL_IDS.length];
+};
+
 const board = (ctx: GameContext): Container => {
   const { art, layout: L } = ctx;
   const root = new Container({ label: 'artDemoBoard' });
-  for (let r = 0; r < 5; r++) {
-    for (let c = 0; c < 7; c++) {
+  for (let r = 0; r < GRID.rows; r++) {
+    for (let c = 0; c < GRID.reels; c++) {
       const p = cellCenter(L, c, r);
       root.addChild(
         new Graphics()
@@ -128,9 +134,9 @@ const board = (ctx: GameContext): Container => {
       );
     }
   }
-  for (let r = 0; r < 5; r++) {
-    for (let c = 0; c < 7; c++) {
-      const id = BOARD[r][c];
+  for (let r = 0; r < GRID.rows; r++) {
+    for (let c = 0; c < GRID.reels; c++) {
+      const id = demoId(r, c);
       const p = cellCenter(L, c, r);
       const s = new Sprite(art.symbol(id));
       s.anchor.set(0.5);

@@ -1,8 +1,8 @@
 import { type Graphics, GraphicsPath, type Renderer, type Texture } from 'pixi.js';
-import { SYMBOLS } from '../../config/game';
-import { CelCanvas, at, shape, sparkle, streak } from './cel';
-import { GOLD, INK, Light, OUTLINE, PLUM, WHITE, mix } from './palette';
-import { blob, capsule, roundedPoly } from './shapes';
+import { SYMBOLS } from '../config';
+import { CelCanvas, at, shape, sparkle, streak } from '../../../assets/placeholder/cel';
+import { GOLD, INK, Light, OUTLINE, PLUM, WHITE, mix } from '../../../assets/placeholder/palette';
+import { blob, capsule, roundedPoly } from '../../../assets/placeholder/shapes';
 
 /**
  * High-pay placeholders (Swamp Funk): H1 Golden Boombox, H2 Vinyl Record,

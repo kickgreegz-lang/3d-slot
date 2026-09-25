@@ -1,5 +1,5 @@
 {
-  "$comment": "Machine-readable style lock for the working theme SWAMP FUNK. Every generation prompt is rendered from art/bible/prompts/*.txt using these values; see docs/ART_BIBLE.md for the human-readable version and rationale. Symbol ids match src/config/game.ts. Values marked 'calibrate' are starting thresholds, to be tuned on the approved paintover pack.",
+  "$comment": "Machine-readable style lock for the working theme SWAMP FUNK. Every generation prompt is rendered from art/bible/prompts/*.txt using these values; see docs/ART_BIBLE.md for the human-readable version and rationale. Symbol ids match src/games/swamp-funk/config.ts. Values marked 'calibrate' are starting thresholds, to be tuned on the approved paintover pack.",
   "version": "0.1.0",
   "updated": "2026-09-24",
   "theme": {
@@ -82,7 +82,7 @@
     { "id": "ui_buy_accent", "hex": "#F828C8", "group": "ui", "role": "The ONLY saturated UI accent: bonus-buy button." }
   ],
   "heatTiers": {
-    "$comment": "Multiplier-spot tile skins, drawn in code (src/config/game.ts SPOT_BANDS decides which tier a value gets). Measured on the reference; SWAMP FUNK reskin proposal: lily pads under glass, teal -> lime -> orange -> gold.",
+    "$comment": "Multiplier-spot tile skins, drawn in code (src/games/swamp-funk/config.ts SPOT_BANDS decides which tier a value gets). Measured on the reference; SWAMP FUNK reskin proposal: lily pads under glass, teal -> lime -> orange -> gold.",
     "T0": { "fill": "#1F2E4D", "note": "no spot" },
     "T1": { "note": "marked, teal/gold payframe glow, no number" },
     "T2": { "text": ["#67400D", "#833206"], "note": "dim number" },
@@ -130,10 +130,10 @@
     "masterAlpha": "straight",
     "downsample": "Lanczos; never upscale masters",
     "deliverUpright": true,
-    "rotationNote": "The runtime rotates each symbol by restAngle (src/config/game.ts). Deliver art upright. For negative restAngle (counter-clockwise tilt) ask for the key light a little more from above (by about |restAngle|) so it still reads top-left after rotation."
+    "rotationNote": "The runtime rotates each symbol by restAngle (src/games/swamp-funk/config.ts). Deliver art upright. For negative restAngle (counter-clockwise tilt) ask for the key light a little more from above (by about |restAngle|) so it still reads top-left after rotation."
   },
   "cellFill": {
-    "$comment": "Content height as % of the 150 px cell; matches src/config/game.ts cellScale.",
+    "$comment": "Content height as % of the 150 px cell; matches src/games/swamp-funk/config.ts cellScale.",
     "royal": { "pct": [85, 90], "cellScale": 0.86, "at2xContentPx": [255, 270] },
     "high": { "pct": [95, 100], "cellScale": [0.95, 0.97], "at2xContentPx": [288, 300] },
     "special": { "pct": [102, 115], "cellScale": [1.02, 1.12], "at2xContentPx": [306, 345] },

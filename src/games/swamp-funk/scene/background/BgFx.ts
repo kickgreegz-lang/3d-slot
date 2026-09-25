@@ -1,6 +1,6 @@
 import { Container, Particle, ParticleContainer, Rectangle, type Renderer, Sprite, type Texture } from 'pixi.js';
-import { mix } from '../../assets/placeholder/palette';
-import type { GameContext } from '../../game/context';
+import { mix } from '../../../../assets/placeholder/palette';
+import type { GameContext } from '../../../../game/context';
 import { type Bulb, bulbsOf, glowSprite, paintCone, paintSignLit, rng } from './paint';
 import type { Composition, ScenePalette } from './theme';
 

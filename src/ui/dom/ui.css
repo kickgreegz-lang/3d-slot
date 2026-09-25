@@ -717,6 +717,14 @@
   margin: 6px 0 0;
   color: #cfd3e4;
 }
+/* several buy modes: chooser row between the hero and the cost card */
+.by-choice {
+  display: flex;
+  margin-top: 16px;
+}
+.by-choice button {
+  flex: 1;
+}
 .by-cost {
   display: flex;
   align-items: baseline;

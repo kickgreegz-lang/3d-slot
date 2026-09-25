@@ -6,11 +6,10 @@ import type { WinMode } from './WinDisplay';
 /**
  * Concrete HUD placement per design space, derived from ctx.layout.hud.
  *
- * Landscape and tablet use the frozen layout numbers as-is (reference-measured).
- * Portrait and compact apply LOCAL overrides because several frozen anchors
- * collide there (portrait: menu vs balance vs bet row; compact: balance vs win vs
- * autoplay row). The overrides are listed in the UI module's contractRequests so
- * they can move into config/layout.ts, after which PORTRAIT_FIX / COMPACT_FIX go.
+ * Every anchor comes from the game's layout (src/games/<GAME>/layout.ts). Landscape and
+ * tablet use them as-is (reference-measured); portrait and compact differ only in the
+ * derived sizes below (radii, touch targets, label modes). The portrait / compact anchors
+ * were local PORTRAIT_FIX / COMPACT_FIX overrides here until the layouts took them over.
  *
  * Conventions: button x/y = hex centre; LabeledValue y = label baseline (value
  * hangs below); win 'row' y = centre line, 'stack' y = label baseline.
@@ -43,40 +42,14 @@ const SMALL_TILT = 20;
 
 export const smallTilt = (P: HudPlacement, x: number): number => (x < P.mirrorX ? -SMALL_TILT : SMALL_TILT);
 
-const PORTRAIT_FIX = {
-  win: { x: 540, y: 1432 },
-  spin: { x: 540, y: 1636 },
-  bonusBuy: { x: 130, y: 1636 },
-  autoplay: { x: 300, y: 1636 },
-  turbo: { x: 780, y: 1636 },
-  menu: { x: 950, y: 1636 },
-  balance: { x: 60, y: 1826 },
-  betValue: { x: 825, y: 1826 },
-  betMinus: { x: 640, y: 1848 },
-  betPlus: { x: 1010, y: 1848 },
-} as const;
-
-const COMPACT_FIX = {
-  balance: { x: 828, y: 26 },
-  win: { x: 828, y: 74 },
-  autoplay: { x: 770, y: 144 },
-  turbo: { x: 886, y: 144 },
-  spin: { x: 828, y: 270 },
-  menu: { x: 770, y: 408 },
-  bonusBuy: { x: 886, y: 408 },
-  betValue: { x: 828, y: 488 },
-  betMinus: { x: 728, y: 502 },
-  betPlus: { x: 928, y: 502 },
-} as const;
-
 export const resolveHudLayout = (L: LayoutSpec): HudPlacement => {
   const h = L.hud;
   switch (L.kind) {
     case 'portrait': {
-      const f = PORTRAIT_FIX;
+      const f = h;
       const r = 58;
       return {
-        spin: { ...f.spin, r: h.spin.size * 0.56, tilt: h.spin.tilt, hit: h.spin.size * 0.56 },
+        spin: { x: f.spin.x, y: f.spin.y, r: h.spin.size * 0.56, tilt: h.spin.tilt, hit: h.spin.size * 0.56 },
         autoplay: f.autoplay,
         turbo: f.turbo,
         menu: f.menu,
@@ -96,10 +69,10 @@ export const resolveHudLayout = (L: LayoutSpec): HudPlacement => {
       };
     }
     case 'compact': {
-      const f = COMPACT_FIX;
+      const f = h;
       const r = 30;
       return {
-        spin: { ...f.spin, r: 80, tilt: h.spin.tilt, hit: 84 },
+        spin: { x: f.spin.x, y: f.spin.y, r: 80, tilt: h.spin.tilt, hit: 84 },
         autoplay: f.autoplay,
         turbo: f.turbo,
         menu: f.menu,

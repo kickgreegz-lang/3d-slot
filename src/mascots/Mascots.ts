@@ -2,6 +2,7 @@ import type { Camera, DataTexture, Material, Mesh, Scene, WebGLRenderer } from '
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import type { Position } from '../book/types';
+import { GRID, toPaddedRow, toSpotRow } from '../config/game';
 import { cellCenter, type LayoutSpec, type Pt } from '../config/layout';
 import { clock } from '../core/clock';
 import { s, TIMING } from '../core/timing';
@@ -139,7 +140,7 @@ export class Mascots implements GameModule {
     const slots = L.mascots;
     this.enabled = slots !== null;
     const pixelScale = this.ctx.scale * this.ctx.app.renderer.resolution;
-    const centre = cellCenter(L, 3, 2);
+    const centre = cellCenter(L, (GRID.reels - 1) / 2, (GRID.rows - 1) / 2);
     const faceOf = (r: { x: number; y: number; w: number; h: number }): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h * 0.35 });
     // a slot whose floor line falls inside the frame beam (portrait) stands ON the beam's top
     const beamTop = L.frame.y;
@@ -199,7 +200,7 @@ export class Mascots implements GameModule {
         this.releaseHeld();
         const reels = anticipation.map((a, i) => (a > 0 ? i : -1)).filter((i) => i >= 0);
         if (!reels.length) return;
-        this.lookAtCells([{ reel: reels[0], row: 3 }], 3);
+        this.lookAtCells([{ reel: reels[0], row: toPaddedRow(Math.floor((GRID.rows - 1) / 2)) }], 3);
         this.onCue('anticipation');
         this.anticipationLeft = s(reels.length * TIMING.anticipation.holdPerColumn + REACT.anticipationTail);
       }),
@@ -299,7 +300,7 @@ export class Mascots implements GameModule {
     let x = 0;
     let y = 0;
     for (const p of positions) {
-      const c = cellCenter(L, p.reel, Math.max(0, Math.min(4, p.row - 1)));
+      const c = cellCenter(L, p.reel, Math.max(0, Math.min(GRID.rows - 1, toSpotRow(p.row))));
       x += c.x;
       y += c.y;
     }

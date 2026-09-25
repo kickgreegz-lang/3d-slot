@@ -1,7 +1,7 @@
 import { gsap } from 'gsap';
 import { BitmapText, Container, Sprite } from 'pixi.js';
 import type { ClusterWin } from '../book/types';
-import { SYMBOLS } from '../config/game';
+import { SYMBOLS, toSpotRow } from '../config/game';
 import { cellCenter, gridSize, type LayoutSpec } from '../config/layout';
 import { followSpeed, registerTiming, s, stagger, TIMING } from '../core/timing';
 import { glowTexture } from '../fx/textures';
@@ -148,7 +148,7 @@ export class WinPresenter implements GameModule {
 
     // position: overlay cell, clamped inside the grid so wide labels never clip the frame
     const ov = w.meta?.overlay ?? w.positions[0];
-    const c = cellCenter(L, ov.reel, ov.row - 1);
+    const c = cellCenter(L, ov.reel, toSpotRow(ov.row));
     const g = gridSize(L);
     const half = lab.value.width / 2 + 10 * k;
     const x = Math.min(Math.max(c.x, L.grid.x + half), L.grid.x + g.w - half);

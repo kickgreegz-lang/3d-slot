@@ -4,12 +4,12 @@
 |---|---|
 | `outline_matte.py` | Key-colour + closed-black-outline matte → despill → 1 px erode → seal → fit on the **360×360 @2x** canvas → QA gates → provenance |
 | `variants.py` | `<name>_blur.png` (vertical motion blur in screen space) and `<name>_glow.png` (soft white silhouette) on the same canvas |
-| `mattelib.py` | The algorithms and metrics (IoU, halo, canvas report, `src/config/game.ts` targets) |
+| `mattelib.py` | The algorithms and metrics (IoU, halo, canvas report, `src/games/$GAME/config.ts` targets, default swamp-funk) |
 | `make_synthetic.py` | Test art: cel-shaded, outlined, extruded object with an enclosed key hole, 4× supersampled AA, exact ground-truth alpha; `--slop` adds a cast shadow + glow, `--gap` breaks the outline |
 | `rembg_matte.sh` | Guarded optional model path: only `birefnet-general(-lite)` (the allowlist 'birefnet-rembg' models), always `-m … -dc`; never rembg's default BRIA RMBG-2.0 (denylisted) |
 
 ```bash
-# raw generation -> AssetPack input (content = cellScale x 300 px from src/config/game.ts: H1 291, S 336, royals 258)
+# raw generation -> AssetPack input (content = cellScale x 300 px from src/games/$GAME/config.ts: H1 291, S 336, royals 258)
 tools/.venv/bin/python tools/matte/outline_matte.py art/_raw/sym_H1/v03/raw.png "build/pack/symbols{tps}/sym_H1.png" \
   --symbol H1 --key 00FF00 --emit-master art/source/symbols/H1/master_2048.png --parent-id sym_h1.raw.v03 --manifest art/manifest.json
 tools/.venv/bin/python tools/matte/variants.py "build/pack/symbols{tps}/sym_H1.png" --symbol H1 --parent-id <matte row id>

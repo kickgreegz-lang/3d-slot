@@ -1,10 +1,10 @@
 import { Container, GraphicsPath, type Renderer, type Texture } from 'pixi.js';
-import { SYMBOLS } from '../../config/game';
-import { FONTS } from '../fonts';
-import { CelCanvas, sparkle, streak } from './cel';
-import { chunkyText, inkBox } from './chunky';
-import { GOLD, INK, LINE, Light, OUTLINE, PLUM, WHITE, mix } from './palette';
-import { roundedPoly, seal } from './shapes';
+import { SYMBOLS } from '../config';
+import { FONTS } from '../../../assets/fonts';
+import { CelCanvas, sparkle, streak } from '../../../assets/placeholder/cel';
+import { chunkyText, inkBox } from '../../../assets/placeholder/chunky';
+import { GOLD, INK, LINE, Light, OUTLINE, PLUM, WHITE, mix } from '../../../assets/placeholder/palette';
+import { roundedPoly, seal } from '../../../assets/placeholder/shapes';
 
 /**
  * Specials: W (turquoise neon-badge starburst with a hot-pink ribbon and the word

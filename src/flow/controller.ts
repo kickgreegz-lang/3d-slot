@@ -273,10 +273,19 @@ export class FlowController {
     }
   }
 
-  /** Slam-stop / skip: the rest of this round plays at slam speed (restored at round end). */
-  private slam(): void {
+  /**
+   * A slam-stop would do something: the round is running, the jurisdiction allows it, it
+   * was not used yet and the slam profile is faster than the current one (under
+   * disabledTurbo, or already at superTurbo, there is nothing to speed up).
+   */
+  private get canSlam(): boolean {
     const busy = this.state === 'spinning' || this.state === 'presenting' || this.state === 'resume';
-    if (!busy || this.slammed || !this.jur.slamStopAllowed) return;
+    return busy && this.jur.slamStopAllowed && !this.slammed && this.jur.slamProfile !== getSpeedProfile();
+  }
+
+  /** Slam-stop / skip: the rest of this round (and what is already moving) plays at slam speed until round end. */
+  private slam(): void {
+    if (!this.canSlam) return;
     this.slammed = true;
     setSpeedProfile(this.jur.slamProfile);
     this.broadcastState();
@@ -817,7 +826,7 @@ export class FlowController {
     const r = this.replay;
     const idle = this.state === 'idle';
     const busy = this.state === 'spinning' || this.state === 'presenting' || this.state === 'resume';
-    const canSlam = busy && this.jur.slamStopAllowed && !this.slammed;
+    const canSlam = this.canSlam;
     const flags = this.jur.flags;
     const mode = this.modes[this.activeMode] ?? this.modes[BASE_MODE];
     const secs = Math.floor(this.sessionWatch.elapsedMs / 1000);
@@ -857,6 +866,7 @@ export class FlowController {
       slamStopAllowed: this.jur.slamStopAllowed,
       spacebarAllowed: this.jur.spacebarAllowed,
       fullscreenAllowed: this.jur.fullscreenAllowed,
+      turboProfiles: this.jur.profiles,
       soundEnabled: this.soundEnabled,
       netPositionText:
         flags.displayNetPosition && !replayMode ? `${this.netPosition > 0 ? '+' : ''}${fmt(this.netPosition)}` : null,

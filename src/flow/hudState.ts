@@ -1,3 +1,4 @@
+import type { SpeedProfile } from '../core/timing';
 import type { HudState } from '../game/events';
 
 /** Flow FSM states (critic.md): the controller only moves along TRANSITIONS. */
@@ -36,6 +37,8 @@ export interface FlowHudState extends HudState {
   slamStopAllowed: boolean;
   spacebarAllowed: boolean;
   fullscreenAllowed: boolean;
+  /** player-selectable speed profiles, in ui:turbo cycle order (jurisdiction) */
+  turboProfiles: SpeedProfile[];
   soundEnabled: boolean;
   /** jurisdiction displays (null = hidden) */
   netPositionText: string | null;

@@ -5,7 +5,7 @@ import { Container, Point, Sprite, type Texture } from 'pixi.js';
 import type { SpineRef } from '../assets/art';
 import { type LandWeight, type SymbolDef, getSymbolDef } from '../config/game';
 import { clock } from '../core/clock';
-import { TIMING, s, sUi, speedScale } from '../core/timing';
+import { TIMING, followSpeed, s, sUi, speedScale } from '../core/timing';
 import type { GameEvents, SfxId } from '../game/events';
 import type { GameContext } from '../game/context';
 import { measureContent } from './contentBounds';
@@ -551,15 +551,17 @@ export class SymbolRig implements SymbolView {
     this.dimTween?.kill();
     this.dimTween = null;
     if (animate) {
-      this.dimTween = gsap.to(this.dim, {
-        t: target,
-        duration: s(TIMING.win.dimDuration),
-        ease: 'power2.out',
-        onUpdate: () => this.applyDim(),
-        onComplete: () => {
-          this.dimTween = null;
-        },
-      });
+      this.dimTween = followSpeed(
+        gsap.to(this.dim, {
+          t: target,
+          duration: s(TIMING.win.dimDuration),
+          ease: 'power2.out',
+          onUpdate: () => this.applyDim(),
+          onComplete: () => {
+            this.dimTween = null;
+          },
+        }),
+      );
     } else {
       this.dim.t = target;
       this.applyDim();
@@ -684,8 +686,9 @@ export class SymbolRig implements SymbolView {
     for (const r of list) r();
   }
 
+  /** Action animations (all s()-timed): killed by interrupt(), retimed by a mid-round speed change. */
   private track<A extends gsap.core.Animation>(a: A): A {
-    this.anims.push(a);
+    this.anims.push(followSpeed(a));
     return a;
   }
 

@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
 import { type Ticker, UPDATE_PRIORITY } from 'pixi.js';
-import { s } from './timing';
+import { followSpeed, s } from './timing';
 
 type TickFn = (dtSeconds: number) => void;
 
@@ -61,10 +61,10 @@ class Clock {
     this.freezeLeftMs = Math.max(this.freezeLeftMs, ms);
   }
 
-  /** Speed-profile-scaled wait driven by the game clock (deterministic). */
+  /** Speed-profile-scaled wait driven by the game clock (deterministic); a slam-stop shortens it. */
   wait(ms: number): Promise<void> {
     return new Promise((resolve) => {
-      gsap.delayedCall(s(ms), resolve);
+      followSpeed(gsap.delayedCall(s(ms), resolve));
     });
   }
 

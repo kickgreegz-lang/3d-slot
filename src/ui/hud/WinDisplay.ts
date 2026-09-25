@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
 import { BlurFilter, Container, Graphics, Sprite, type Text, Texture } from 'pixi.js';
-import { sUi } from '../../core/timing';
+import { followSpeed, sUi } from '../../core/timing';
 import type { GameContext } from '../../game/context';
 import { bakeCentered } from './geometry';
 import { HUD_TIMING } from './hudTiming';
@@ -92,7 +92,10 @@ export class WinDisplay extends Container {
     this.setShown(show);
   }
 
-  /** Roll from -> to (API units) over durationMs of UI time. */
+  /**
+   * Roll from -> to (API units) over durationMs. The flow sends a speed-scaled duration
+   * (a round's count-up), so a slam-stop mid-count retimes it like the gameplay tweens.
+   */
   countTo(from: number, to: number, durationMs: number, format: (v: number) => string): Promise<void> {
     this.format = format;
     this.tween?.kill();
@@ -122,13 +125,15 @@ export class WinDisplay extends Container {
         },
         onInterrupt: resolve,
       });
-      this.tween = tl;
-      gsap.to(this.body.scale, {
-        x: HUD_TIMING.countGrowScale,
-        y: HUD_TIMING.countGrowScale,
-        duration: sUi(durationMs),
-        ease: 'power1.in',
-      });
+      this.tween = followSpeed(tl);
+      followSpeed(
+        gsap.to(this.body.scale, {
+          x: HUD_TIMING.countGrowScale,
+          y: HUD_TIMING.countGrowScale,
+          duration: sUi(durationMs),
+          ease: 'power1.in',
+        }),
+      );
     });
   }
 

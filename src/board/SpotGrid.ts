@@ -4,7 +4,7 @@ import { FONTS } from '../assets/fonts';
 import type { Position } from '../book/types';
 import { GRID, SPOT_BANDS, isVisibleRow, spotTier, toSpotRow } from '../config/game';
 import { type LayoutSpec, cellCenter } from '../config/layout';
-import { TIMING, s, sUi, stagger } from '../core/timing';
+import { TIMING, followSpeed, s, sUi, stagger } from '../core/timing';
 import type { GameContext } from '../game/context';
 import { BOARD_TIMING } from './boardTiming';
 import { type SpotTier, overlayTexture, tileTexture } from './tileArt';
@@ -334,7 +334,7 @@ export class SpotGrid {
   private animateCell(c: SpotCell, from: number, to: number, delayMs: number): Promise<void> {
     this.kill(c);
     c.value = to;
-    const tl = gsap.timeline({ delay: s(delayMs) });
+    const tl = followSpeed(gsap.timeline({ delay: s(delayMs) }));
     c.tl = tl;
     const p = { x: c.tile.x, y: c.tile.y };
     let at = 0;

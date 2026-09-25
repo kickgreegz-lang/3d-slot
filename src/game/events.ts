@@ -167,6 +167,8 @@ export interface HudState {
   slamStopAllowed?: boolean;
   spacebarAllowed?: boolean;
   fullscreenAllowed?: boolean;
+  /** player-selectable speed profiles, in ui:turbo cycle order (disabledTurbo / disabledSuperTurbo) */
+  turboProfiles?: SpeedProfile[];
   soundEnabled?: boolean;
   /** jurisdiction displays (null = hidden) */
   netPositionText?: string | null;

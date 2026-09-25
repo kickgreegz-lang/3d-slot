@@ -3,7 +3,7 @@ import { BitmapText, Container, Sprite } from 'pixi.js';
 import type { ClusterWin } from '../book/types';
 import { SYMBOLS } from '../config/game';
 import { cellCenter, gridSize, type LayoutSpec } from '../config/layout';
-import { registerTiming, s, stagger, TIMING } from '../core/timing';
+import { followSpeed, registerTiming, s, stagger, TIMING } from '../core/timing';
 import { glowTexture } from '../fx/textures';
 import { lighten } from '../fx/util';
 import type { GameContext, GameModule } from '../game/context';
@@ -159,7 +159,7 @@ export class WinPresenter implements GameModule {
     lab.glow.alpha = 0;
 
     return new Promise((resolve) => {
-      const tl = gsap.timeline({ delay: s(delayMs) });
+      const tl = followSpeed(gsap.timeline({ delay: s(delayMs) }));
       tl.to(lab.scale, { x: 1, y: 1, duration: s(T.clusterLabelIn), ease: 'back.out(2)' }, 0);
       tl.to(lab, { rotation: 0, duration: s(T.clusterLabelIn * 1.4), ease: 'elastic.out(1, 0.5)' }, 0);
       tl.to(lab.glow, { alpha: 1, duration: s(T.clusterLabelIn * 0.5), ease: 'power1.out' }, 0);
@@ -215,13 +215,15 @@ export class WinPresenter implements GameModule {
       );
     }
     this.plateTweens.push(
-      gsap.to(this.plateCount, {
-        v: amount,
-        duration: s(P.plateCount),
-        ease: 'power2.out',
-        onUpdate: () => this.renderPlate(this.plateCount.v),
-        onComplete: () => this.renderPlate(amount),
-      }),
+      followSpeed(
+        gsap.to(this.plateCount, {
+          v: amount,
+          duration: s(P.plateCount),
+          ease: 'power2.out',
+          onUpdate: () => this.renderPlate(this.plateCount.v),
+          onComplete: () => this.renderPlate(amount),
+        }),
+      ),
     );
     if (amount > prev) {
       this.ctx.game.broadcast('fx:burst', {

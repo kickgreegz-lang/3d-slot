@@ -98,7 +98,7 @@ Upload the CONTENTS of dist/.
 - book/adapter.ts: normalises legacy floats (winWithoutMult, payoutMultiplier).
 - book/player.ts: for-await over events, ctx.bookEvents = the whole array; a missing handler throws in DEV.
 - core/emitter.ts: broadcast (fire-and-forget) and broadcastAsync (Promise.all).
-- core/clock.ts: single RAF plus gameTL.
+- core/clock.ts: single RAF plus gameTL. *(As built: no gameTL — gameplay durations go through `s()` and running animations register with `followSpeed()` so speed-profile changes rescale them; see src/core/{clock,timing}.ts.)*
 - core/timing.ts: speed profiles.
 - render/{app.ts, layout.ts, layers.ts}
 - scene/: Background, BgFx, Panel, TileGrid (heat tiers + numbers), Board (SymbolView pool), TumbleBoard, Anticipation, WinPresenter (dim/pop/cluster labels), BigWin, FreeSpins (intro, counter, outro), Transition, Mascots3D, Particles

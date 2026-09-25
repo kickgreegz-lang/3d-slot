@@ -2,7 +2,7 @@ import { gsap } from 'gsap';
 import { Container, Graphics, Sprite } from 'pixi.js';
 import type { Position } from '../book/types';
 import type { LayoutSpec } from '../config/layout';
-import { s } from '../core/timing';
+import { followSpeed, s } from '../core/timing';
 import type { GameContext } from '../game/context';
 import { BOARD_TIMING } from './boardTiming';
 import { type LatticePt, pitchOf, traceCluster } from './model';
@@ -100,12 +100,12 @@ export class ClusterOutlines {
             yoyo: true,
             repeat: -1,
           });
-          item.tweens.push(pulse);
+          item.tweens.push(followSpeed(pulse));
           resolve();
         },
         onInterrupt: () => resolve(),
       });
-      item.tweens.push(draw);
+      item.tweens.push(followSpeed(draw));
       for (const h of heads) item.tweens.push(gsap.to(h, { alpha: 1, duration: s(60) }));
     });
   }

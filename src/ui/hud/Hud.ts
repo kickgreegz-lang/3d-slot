@@ -205,8 +205,14 @@ export class Hud implements GameModule {
   private onSpinTap(): void {
     const s = this.state;
     if (s.autoplayRemaining !== null) this.ctx.ui.broadcast('ui:autoplay', null);
-    else if (s.isSpinning) this.ctx.ui.broadcast('ui:skip', undefined);
-    else if (s.spinEnabled) this.ctx.ui.broadcast('ui:spin', undefined);
+    else if (s.isSpinning) {
+      if (this.skipAllowed) this.ctx.ui.broadcast('ui:skip', undefined);
+    } else if (s.spinEnabled) this.ctx.ui.broadcast('ui:spin', undefined);
+  }
+
+  /** A running round may be skipped (never under jurisdiction disabledSlamstop). */
+  private get skipAllowed(): boolean {
+    return this.state.isSpinning && this.state.slamStopAllowed !== false;
   }
 
   /**
@@ -221,7 +227,13 @@ export class Hud implements GameModule {
     const el = document.activeElement;
     if (el instanceof HTMLElement && el !== document.body && el.closest('#ui-root')) return;
     e.preventDefault();
-    if (e.repeat || !this.spin.isEnabled) return;
+    if (e.repeat) return;
+    if (!this.spin.isEnabled) {
+      // nothing left to slam (STOP hidden), but an open big-win / free-spin overlay still
+      // takes the key as its skip tap (the overlay sits above the HUD, so taps reach it directly)
+      if (this.skipAllowed) this.ctx.ui.broadcast('ui:skip', undefined);
+      return;
+    }
     this.spin.pressVisual();
     this.ctx.game.broadcast('sfx', { id: 'ui_click' });
     this.onSpinTap();
@@ -376,7 +388,9 @@ export class Hud implements GameModule {
     const fs = s.freeSpins !== null;
     const idle = s.spinEnabled && !s.isSpinning && !auto;
 
-    const mode: SpinMode = auto ? 'autoplay' : s.isSpinning ? 'spinning' : s.spinEnabled ? 'idle' : 'disabled';
+    // round running: STOP only while pressing it can still slam (flow spinEnabled = canSlam)
+    const stop = s.spinEnabled && s.slamStopAllowed !== false;
+    const mode: SpinMode = auto ? 'autoplay' : s.isSpinning ? (stop ? 'spinning' : 'disabled') : s.spinEnabled ? 'idle' : 'disabled';
     this.spin.setMode(mode, s.autoplayRemaining);
 
     this.balance.visible = !replay;

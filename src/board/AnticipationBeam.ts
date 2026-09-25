@@ -3,7 +3,7 @@ import { Container, Sprite } from 'pixi.js';
 import { GRID } from '../config/game';
 import type { LayoutSpec } from '../config/layout';
 import { clock } from '../core/clock';
-import { TIMING, s } from '../core/timing';
+import { TIMING, followSpeed, s } from '../core/timing';
 import { BOARD_TIMING } from './boardTiming';
 import { gridRect, mulberry32, slotPos } from './model';
 import { beamTexture } from './tileArt';
@@ -65,13 +65,15 @@ export class AnticipationBeam {
     gsap.to(this.view, { alpha: 1, duration: s(TIMING.anticipation.introDuration), ease: 'power2.out' });
     this.pulse?.kill();
     this.beam.alpha = 0.55;
-    this.pulse = gsap.to(this.beam, {
-      alpha: 0.9,
-      duration: s(TIMING.anticipation.pulsePeriod / 2),
-      ease: 'sine.inOut',
-      yoyo: true,
-      repeat: -1,
-    });
+    this.pulse = followSpeed(
+      gsap.to(this.beam, {
+        alpha: 0.9,
+        duration: s(TIMING.anticipation.pulsePeriod / 2),
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+      }),
+    );
     if (!this.offUpdate) this.offUpdate = clock.onUpdate((dt) => this.tick(dt));
   }
 

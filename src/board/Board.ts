@@ -4,7 +4,7 @@ import type { ClusterWin, Position } from '../book/types';
 import { GRID, type LandWeight, SYMBOLS, getSymbolDef, isVisibleRow } from '../config/game';
 import type { LayoutSpec } from '../config/layout';
 import { clock } from '../core/clock';
-import { TIMING, fallTime, s, sUi, speedScale, stagger } from '../core/timing';
+import { TIMING, fallTime, followSpeed, s, sUi, speedScale, stagger } from '../core/timing';
 import type { GameContext, GameModule } from '../game/context';
 import type { SfxId } from '../game/events';
 import { createSymbolView } from '../symbols/createSymbolView';
@@ -27,7 +27,8 @@ import { SpotGrid } from './SpotGrid';
  *
  * Every scene handler returns a promise that resolves when its motion is done
  * (the flow awaits `broadcastAsync`). All motion runs on GSAP via core/clock
- * (hit-stop + deterministic stepping); durations come from TIMING via s().
+ * (hit-stop + deterministic stepping); durations come from TIMING via s(), and
+ * running timelines follow a mid-round speed change (slam-stop) via followSpeed().
  *
  * Views are positioned in CELL units (reel, fractional padded row) and drawn
  * from the current layout, so a layout change mid-animation (device rotation)
@@ -82,7 +83,7 @@ export class Board implements GameModule {
   private tumblesSinceReveal = 0;
   private fallOutPromise: Promise<void> | null = null;
   private fallOutTl: gsap.core.Timeline | null = null;
-  /** per column: fall-out timeline time (s, speed fixed when built) when its old symbols are gone */
+  /** per column: fall-out timeline time (local s, as built) when its old symbols are gone */
   private fallOutClear: number[] = [];
   /** per column: bumped when the drop-in takes the column over, so a late fall-out never touches it */
   private readonly colEpoch: number[] = new Array<number>(GRID.reels).fill(0);
@@ -230,7 +231,7 @@ export class Board implements GameModule {
             sv.view.visible = false;
           }, [], s(end));
         }
-        // timeline seconds as built: a later speed change (slam / turbo) does not rescale this timeline
+        // local timeline seconds as built: a later speed change retimes the timeline (timeScale), not these
         this.fallOutClear.push(s(clear));
       }
       tl.call(firstClear, [], this.fallOutClear[0]);
@@ -246,13 +247,15 @@ export class Board implements GameModule {
 
   /**
    * ms from now until `reel`'s old symbols are gone (0 when no fall-out is running), in the
-   * reveal's unscaled ms for the CURRENT profile: the remaining fall-out time is measured in
-   * the fall-out timeline's own seconds (a slam / turbo switch may have changed the profile).
+   * reveal's unscaled ms for the CURRENT profile: the rest of the fall-out is measured in the
+   * fall-out timeline's local seconds and its timeScale (a slam / turbo switch retimes it),
+   * which gives real seconds; s() in the reveal divides by speedScale() again.
    */
   private columnClearIn(reel: number): number {
     const tl = this.fallOutTl;
     if (!tl) return 0;
-    return Math.max(0, (this.fallOutClear[reel] - tl.time()) * 1000 * speedScale() + PIPELINE_MARGIN);
+    const realSec = (this.fallOutClear[reel] - tl.time()) / tl.timeScale();
+    return Math.max(0, realSec * 1000 * speedScale() + PIPELINE_MARGIN);
   }
 
   /** The drop-in takes `reel` over: a fall-out still running must not move or hide its views. */
@@ -521,6 +524,7 @@ export class Board implements GameModule {
         });
         this.sfx('explode', { volume: Math.min(1, 0.7 + n * 0.03) });
       });
+      followSpeed(impact);
       await Promise.all(bursts);
       if (gen !== this.gen) {
         impact.kill();
@@ -758,8 +762,9 @@ export class Board implements GameModule {
     this.pool.push(sv);
   }
 
+  /** A board timeline: tracked for kill, retimed by a mid-round speed change. */
   private timeline(): gsap.core.Timeline {
-    const tl = gsap.timeline();
+    const tl = followSpeed(gsap.timeline());
     this.timelines.add(tl);
     return tl;
   }

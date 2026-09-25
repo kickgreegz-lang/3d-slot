@@ -6,9 +6,10 @@
  * Units: ms for durations (converted to seconds at the GSAP boundary with `s()`),
  * design px and design px/s² for physics.
  *
- * Speed profiles: turbo/superTurbo do NOT duplicate values — they scale the
- * gameplay timeline (clock.gameTL.timeScale) and zero out staggers via
- * `stagger()`. Jurisdiction flags may forbid turbo (flow/jurisdiction.ts).
+ * Speed profiles: turbo/superTurbo do NOT duplicate values — `s()` divides every
+ * gameplay duration by the profile's scale and `stagger()` zeroes staggers. A change
+ * while animations run (slam-stop) retimes the ones registered with `followSpeed()`.
+ * Jurisdiction flags may forbid turbo (flow/jurisdiction.ts).
  */
 
 export type SpeedProfile = 'normal' | 'turbo' | 'superTurbo';
@@ -177,8 +178,44 @@ export const s = (ms: number): number => ms / 1000 / SPEED_SCALE[currentProfile]
 export const sUi = (ms: number): number => ms / 1000;
 /** Current speed multiplier (for Spine timeScale / three mixer timeScale). */
 export const speedScale = (): number => SPEED_SCALE[currentProfile];
+
+type SpeedChange = (fromScale: number, toScale: number) => void;
+const speedListeners = new Set<SpeedChange>();
+/** Called with the old and new speedScale() whenever the profile changes (slam-stop, turbo mid-round). */
+export const onSpeedChange = (fn: SpeedChange): (() => void) => {
+  speedListeners.add(fn);
+  return () => void speedListeners.delete(fn);
+};
+
+/**
+ * s() only sizes animations built AFTER a profile change. Gameplay animations that must
+ * follow a change while they run (a slam-stop mid-reveal) register here and are retimed
+ * in place: timeScale *= to / from (a pending delay shrinks too). Register ROOT
+ * animations only (a child already follows its timeline). Finished or killed ones
+ * (no parent any more) drop out.
+ */
+const followers = new Set<gsap.core.Animation>();
+let pruneAt = 256;
+const pruneFollowers = (): void => {
+  for (const a of followers) if (!a.parent) followers.delete(a);
+};
+export const followSpeed = <A extends gsap.core.Animation>(a: A): A => {
+  if (followers.size >= pruneAt) {
+    pruneFollowers();
+    pruneAt = Math.max(256, followers.size * 2);
+  }
+  followers.add(a);
+  return a;
+};
+
 export const setSpeedProfile = (p: SpeedProfile): void => {
+  const from = SPEED_SCALE[currentProfile];
+  const to = SPEED_SCALE[p];
   currentProfile = p;
+  pruneFollowers();
+  if (to === from) return;
+  for (const a of followers) a.timeScale((a.timeScale() * to) / from);
+  for (const fn of speedListeners) fn(from, to);
 };
 export const getSpeedProfile = (): SpeedProfile => currentProfile;
 export const isTurbo = (): boolean => currentProfile !== 'normal';

@@ -324,7 +324,7 @@ A pill under the meter (portrait and compact: on the frame beam). Content is liv
 | Juke Jam, ≥ 60 | `MEGA MIX!` in pink (the upgrade plays after this spin) |
 | Mega Mix | `NEXT DROP` + threshold + W icons; while the home registry has room ([M-10]) the icons carry the clamp glyph (sticky), otherwise the plain ×-badge |
 | Mega Mix, ≥ 60 | `MAX` in pink + the number of homes (`5 STICKY`), no threshold |
-| Portrait / compact, free spins | Two lines: `JUKE JAM 3/8` over the next drop. The FS plate is merged into the chip: the plate grows to 1.55 × the chip height around the same centre and each line's text fills 74% of its half, so the portrait text stays ≥ 34 design px (≈ 10 CSS px on a 320 px wide phone) |
+| Portrait / compact, free spins | Two lines: `JUKE JAM 3/8` over the next drop. The FS plate is merged into the chip: the plate grows to 1.55 × the chip height around the same centre and each line's text fills 74% of its half, so the portrait captions stay at ≈ 34 design px (≈ 10 CSS px on a 320 px wide phone) |
 
 The chip punches (scale 1.12, 200 ms, `back.out(3)`) when its content changes.
 
@@ -594,7 +594,7 @@ All numbers are design px. The same values are in [layout.json](layout.json) (th
 | Horns | (58, 486, 92, 80) · (930, 486, 92, 80) |
 | Logo | (240, 40, 600, 110) |
 | Groove Meter | centre **(540, 340)**, Ø 300; cabinet (380, 176, 320, 360), base hidden by the beam |
-| Meter chip = feature plate | (370, 504, 340, 60), on the beam. In free spins the plate grows to 1.55 × the height (≈ 488–580) for two lines, text ≥ 34 px (≈ 10 CSS px on a 320 px wide phone) |
+| Meter chip = feature plate | (370, 504, 340, 60), on the beam. In free spins the plate grows to 1.55 × the height (≈ 488–580) for two lines; captions measure 33–35 design px, digits 31 (≈ 10 / 9 CSS px on a 320 px wide phone; they were ≈ 22 px) |
 | Gumbo / Croak | (0, 150, 400, 430) feet (200, 580) / (680, 150, 400, 430) feet (880, 580); both stand behind the beam, flanking the speaker |
 | DJ booth | (730, 380, 210, 140), on the beam in front of Croak |
 | Tumble plate | (540, 1434) scale 1.0 |

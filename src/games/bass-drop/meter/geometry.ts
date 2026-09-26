@@ -81,7 +81,7 @@ export const METER_LOOK = registerTiming('bassDropMeter', {
    * chip text: caption size as a fraction of a line's height (one line = the chip rect height);
    * the merged FS plate (portrait / compact) grows the plate to chipFsPlate x the rect height
    * and splits it into two lines whose text fills chipFsText of each line (DESIGN §6.8: the
-   * portrait chip text stays >= 34 design px, ~10 CSS px on a 320 px wide phone)
+   * portrait chip captions stay at ~34 design px, ~10 CSS px on a 320 px wide phone)
    */
   chipText: 0.58,
   chipFsPlate: 1.55,

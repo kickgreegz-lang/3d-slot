@@ -117,14 +117,14 @@ export class Chip {
       this.fsTitle.style.fontSize = lineH * text;
       this.fsNum.text = label('hud.fsOf', '{current}/{total}', { current: m.fs.current, total: m.fs.total });
       this.fsNum.style.fontSize = lineH * text * 0.9;
-      this.flow(this.fsLine, [this.fsTitle, this.fsNum], lineH * 0.22, w * 0.86);
+      this.flow(this.fsLine, [this.fsTitle, this.fsNum], lineH * 0.22, w - plateH * 0.5);
       this.fsLine.y = -plateH * 0.24;
     }
 
     // --- next-drop line
     const cap = lineH * text;
     const numPx = cap * 0.93;
-    const iconPx = cap * 1.3;
+    const iconPx = cap * (two ? 1.12 : 1.3);
     const parts: Container[] = [];
     for (const t of [this.caption, this.num, this.tag, this.upNum, this.upLabel, this.extra]) t.visible = false;
     for (const i of this.icons) i.visible = false;
@@ -197,7 +197,8 @@ export class Chip {
         l.style.fontSize = cap;
       }
     }
-    this.flow(this.dropLine, parts, lineH * 0.12, two ? w * 0.9 : w - h * 0.9);
+    // keep clear of the plate's slanted ends (the taller two-line plate has wider ones)
+    this.flow(this.dropLine, parts, lineH * 0.12, two ? w - plateH * 0.5 : w - h * 0.9);
     this.dropLine.y = two ? plateH * 0.24 : 0;
   }
 

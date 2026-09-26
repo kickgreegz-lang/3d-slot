@@ -71,7 +71,7 @@ export class BassDrop implements GameModule {
     this.fx = new DropFx(ctx, this.art);
     this.registry = new WildRegistry(ctx, this.art, this.fx);
     this.sticky = new StickyDirector(ctx, this.fx, this.registry);
-    this.sums = new MultSumDirector(ctx, this.art, this.fx, this.registry);
+    this.sums = new MultSumDirector(ctx, this.art, this.registry);
 
     ctx.layers.tiles.addChild(this.registry.markerLayer);
     ctx.layers.board.addChild(this.targets);
@@ -183,6 +183,7 @@ export class BassDrop implements GameModule {
     const spin = BASS_DROP_TIMING.drop.reticleSpin;
     for (const r of this.reticles) if (r.busy) r.spin(dt, spin);
     this.fx.update(dt);
+    this.sums.update(dt);
     this.registry.heartbeat(clock.time * 1000);
   }
 

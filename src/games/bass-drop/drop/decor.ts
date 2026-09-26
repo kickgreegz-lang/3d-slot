@@ -65,7 +65,7 @@ export class MultBadge extends Container {
     this.value = mult;
     const tier = multTier(mult).tier;
     this.text.text = label('bd.drop.mult', '×{n}', { n: mult });
-    const w = PLATE_SIZE[tier].w * LOOK.badgeTextFit;
+    const w = PLATE_SIZE[tier].w * PLATE_SIZE[tier].inner;
     this.text.scale.set(1);
     const tw = this.text.width;
     this.text.scale.set(tw > w ? w / tw : 1);

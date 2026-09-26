@@ -4,6 +4,7 @@ import { FONTS } from '../../../assets/fonts';
 import type { Rect } from '../../../config/layout';
 import type { GameContext } from '../../../game/context';
 import { GodRays } from '../../../fx/filters/GodRays';
+import { reducedMotion } from '../../../fx/motion';
 import { glowTexture } from '../../../fx/textures';
 import { CYAN, type GlyphPalette, type GlyphStyle } from '../../../present/common/glyphs';
 import { Plate } from '../../../present/common/Plate';
@@ -293,15 +294,16 @@ class IntroCard {
   }
 
   /** Idle life of the illustration (orbs drift into the woofer, wilds breathe); t in seconds. */
-  tickArt(t: number): void {
-    this.orbs.forEach((o, i) => {
+  tickArt(t: number, still: boolean): void {
+    for (let i = 0; i < this.orbs.length; i++) {
+      const o = this.orbs[i];
       const u = (t * 0.6 + i * 0.33) % 1;
       o.alpha = Math.sin(u * Math.PI) * 0.9;
       o.scale.set(this.orbBase[i] * (1 - u * 0.5));
-    });
-    this.wilds.forEach((w, i) => {
-      w.y = this.wildBaseY[i] + Math.sin(t * 2.6 + i * 1.7) * 4;
-    });
+    }
+    for (let i = 0; i < this.wilds.length; i++) {
+      this.wilds[i].y = this.wildBaseY[i] + (still ? 0 : Math.sin(t * 2.6 + i * 1.7) * 4);
+    }
   }
 
 }
@@ -413,6 +415,7 @@ export class IntroCards {
     const I = SCREENS_TIMING.introCards;
     const k = this.rects?.k ?? 1;
     const sec = (ms: number): number => ms / 1000;
+    const still = reducedMotion();
     this.buildTitles(titleRes);
     this.view.visible = true;
     this.view.alpha = 1;
@@ -424,8 +427,9 @@ export class IntroCards {
       const at = sec(i * I.cardStagger);
       const m = c.motion;
       m.alpha = 0;
-      m.y = -I.dropFrom * k;
-      m.rotation = ((I.settle[i] ?? 0) * Math.PI) / 180;
+      // reduced motion: a short straight drop, no tilt
+      m.y = -I.dropFrom * k * (still ? 0.25 : 1);
+      m.rotation = still ? 0 : ((I.settle[i] ?? 0) * Math.PI) / 180;
       m.scale.set(1);
       c.bob.y = 0;
       c.setShine(-1);
@@ -499,13 +503,15 @@ export class IntroCards {
     const k = this.rects?.k ?? 1;
     this.t += dt;
     const period = I.loop / 1000;
-    this.cards.forEach((c, i) => {
-      c.bob.y = Math.sin(((this.t / period) * 2 + i * 0.66) * Math.PI) * I.bob * k;
+    const still = reducedMotion();
+    for (let i = 0; i < this.cards.length; i++) {
+      const c = this.cards[i];
+      c.bob.y = still ? 0 : Math.sin(((this.t / period) * 2 + i * 0.66) * Math.PI) * I.bob * k;
       // one sweep per card per loop, staggered
       const u = ((this.t / period + i * 0.22) % 1) * 1.8 - 0.3;
       c.setShine(u);
-      c.tickArt(this.t);
-    });
+      c.tickArt(this.t, still);
+    }
   }
 
   /** Destroy the per-show titles and hide. */

@@ -124,20 +124,21 @@ class BuyCard {
     this.wild.rotation = this.skin === 'megamix' ? 0.12 : -0.1;
     this.glow.tint = this.skin === 'megamix' ? PINK : TEAL;
     this.glow.width = this.glow.height = box * 1.6;
-    // text lines
+    // text lines (wide portrait cards read from further away: type x 1.15)
+    const tk = w / h > 1.1 ? k * 1.15 : k;
     this.titleY = top + 365 * k;
     if (this.title) this.title.y = this.titleY;
-    this.spins.style.fontSize = Math.round(40 * k);
+    this.spins.style.fontSize = Math.round(40 * tk);
     this.spins.y = top + 428 * k;
-    this.price.style.fontSize = Math.round(50 * k);
+    this.price.style.fontSize = Math.round(50 * tk);
     this.price.y = top + 482 * k;
-    this.costX.style.fontSize = Math.round(28 * k);
+    this.costX.style.fontSize = Math.round(28 * tk);
     this.costX.y = top + 524 * k;
-    this.insufficient.style.fontSize = Math.round(30 * k);
+    this.insufficient.style.fontSize = Math.round(30 * tk);
     this.insufficient.y = top + 524 * k;
     this.button.relayout(Math.round(250 * k), Math.round(76 * k), res);
     this.button.y = top + 582 * k;
-    this.costCaption.style.fontSize = Math.round(34 * k);
+    this.costCaption.style.fontSize = Math.round(34 * tk);
     this.costCaption.y = top + 474 * k;
     this.bigPrice.style.fontSize = Math.round(88 * k);
     this.bigPrice.y = top + 540 * k;
@@ -182,7 +183,7 @@ class BuyCard {
     this.title?.destroy();
     const style: GlyphStyle = {
       ...TYPE,
-      size: Math.round(72 * this.k),
+      size: Math.round(72 * this.k * (this.w / this.h > 1.1 ? 1.12 : 1)),
       palette: this.skin === 'megamix' ? HOT_PINK : JAM_GOLD,
       outline: 0.075,
       tracking: 0.03,
@@ -287,6 +288,8 @@ export class BuyCards {
   }
 
   layout(rects: BuyRects, res: number): void {
+    // a running in / select / back ends at its targets first (they are absolute positions)
+    this.tl?.progress(1);
     this.rects = rects;
     const k = rects.k;
     rects.cards.forEach((r, i) => this.cards[i].layout(r, k, res));

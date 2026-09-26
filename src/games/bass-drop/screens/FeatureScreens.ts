@@ -79,6 +79,8 @@ export class FeatureScreens implements GameModule {
   private sparkT = 0;
   private sparks = false;
   private rnd = mulberry32(0xb0d5);
+  /** set by destroy(): running sequences stop at their next step */
+  private dead = false;
 
   constructor(private readonly ctx: GameContext) {
     this.stage = new OverlayStage(ctx, 'featureScreens');
@@ -133,6 +135,7 @@ export class FeatureScreens implements GameModule {
   }
 
   destroy(): void {
+    this.dead = true;
     for (const off of this.offs) off();
     this.offs = [];
     for (const done of [...this.pending]) done();
@@ -277,6 +280,7 @@ export class FeatureScreens implements GameModule {
       );
       await this.wait(T.feature.triggerTotal);
       cue.kill();
+      if (this.dead) return;
     } else {
       // [M-7] the round starts with featureTrigger: no meter overload, straight to the wipe
       ctx.game.broadcast('mascot:cue', { cue: 'fsTrigger', intensity: 1, look });
@@ -284,6 +288,7 @@ export class FeatureScreens implements GameModule {
     ctx.game.broadcast('sfx', { id: 'fs_intro' });
     this.stage.open({ dim: S.trigger.stageDim, fadeIn: s(300), liftMascots: true, liftFx: true });
     await this.wipe.coverIn(visibleDesignRect(ctx), SKINS[skin], s(S.trigger.wipe));
+    if (this.dead) return;
     // behind the curtain: the grid un-dims, Mega Mix switches the music variant
     this.dimBoard(0, 0);
     if (p.feature === 'super') ctx.game.broadcast('music:stem', { stem: 'megamix' });
@@ -298,10 +303,12 @@ export class FeatureScreens implements GameModule {
     banner.playIn(s, (e) => this.onBannerEvent(e, 'intro'));
     this.sparks = true;
     await this.waitStart();
+    if (this.dead) return;
     this.sparks = false;
     banner.hidePress();
     banner.playOut(s(F.out));
     await this.wait(F.out);
+    if (this.dead) return;
     banner.clear();
     this.handOff();
   }
@@ -396,11 +403,14 @@ export class FeatureScreens implements GameModule {
     up.setup(this.res(), addFs);
     up.playIn(s, (e) => this.onUpgradeEvent(e, addFs));
     await this.wait(U.in);
+    if (this.dead) return;
     // hold (a tap skips it), then out: 2,200 ms in all
     const hold = T.feature.upgrade - U.in - U.out;
     await this.holdOrTap(hold);
+    if (this.dead) return;
     up.playOut(s(U.out));
     await this.wait(U.out);
+    if (this.dead) return;
     up.clear();
     await this.stage.close(s(160));
     releaseTitlesIfIdle(ctx);
@@ -473,6 +483,7 @@ export class FeatureScreens implements GameModule {
     this.stage.onTap(null);
     ctx.game.broadcast('sfx', { id: 'fs_outro' });
     await this.wipe.coverIn(visibleDesignRect(ctx), SKINS[skin], s(S.trigger.wipe));
+    if (this.dead) return;
     const banner = this.banner;
     this.rnd = mulberry32(0x0e7d + (p.amount % 9973));
     banner.setup({ mode: 'outro', skin, res: this.res(), count: 0, bpm: BPM[feature] });
@@ -540,10 +551,12 @@ export class FeatureScreens implements GameModule {
       });
     });
 
+    if (this.dead) return;
     this.sparks = false;
     banner.hidePress();
     banner.playOut(s(O.out));
     await this.wait(O.out);
+    if (this.dead) return;
     banner.clear();
     this.handOff();
   }

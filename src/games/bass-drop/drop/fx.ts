@@ -16,7 +16,8 @@ const TAU = Math.PI * 2;
 
 /**
  * The drop's live effects (ANIMATION_SET §7.2), on a container attached to `winLayer` (above
- * the symbols and the frame): the impact dust crown + debris + shock ring (the P0 fallback of
+ * the symbols and the frame; the label-sum director owns a second, small instance on the
+ * overlay, above the cluster labels and the win-elevated symbols): the impact dust crown + debris + shock ring (the P0 fallback of
  * the `fx_wild_impact` flipbook), `fx_mult_spark`, `fx_lock_glint`, the home return ring
  * flash and the sticky "+1" preview. Its own particle system (a share of the tier budget),
  * advanced by the module's clock loop, so hit-stops freeze it.
@@ -40,8 +41,10 @@ export class DropFx {
   constructor(
     private readonly ctx: GameContext,
     art: DropArt,
+    /** share of the tier particle budget */
+    share: number = LOOK.particleShare,
   ) {
-    this.particles = new ParticleSystem(this.partHolder, Math.round(ctx.budget.maxParticles * LOOK.particleShare));
+    this.particles = new ParticleSystem(this.partHolder, Math.round(ctx.budget.maxParticles * share));
     this.smoke = ctx.art.particle('smoke');
     this.shard = ctx.art.particle('shard');
     this.spark = ctx.art.particle('spark');

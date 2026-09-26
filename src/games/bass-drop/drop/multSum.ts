@@ -12,7 +12,7 @@ import { GROOVE } from '../config';
 import { BASS_DROP_TIMING, multTier, physK } from '../timing';
 import type { DropArt } from './art';
 import { MultBadge } from './decor';
-import type { DropFx } from './fx';
+import { DropFx } from './fx';
 import { type Pt, p2in } from './geometry';
 import { DROP_LOOK as LOOK } from './look';
 import type { WildEntity, WildRegistry } from './registry';
@@ -48,13 +48,16 @@ export class MultSumDirector {
   private readonly waiting = new Set<() => void>();
   private readonly tmp = new Point();
   private readonly scratch: WildEntity[] = [];
+  /** arrival sparks + "+1" pops on the overlay: above the labels and the win-elevated symbols */
+  private readonly fx: DropFx;
 
   constructor(
     private readonly ctx: GameContext,
     private readonly art: DropArt,
-    private readonly fx: DropFx,
     private readonly registry: WildRegistry,
   ) {
+    this.fx = new DropFx(ctx, art, LOOK.labelParticleShare);
+    this.view.addChild(this.fx.view);
     const font = ensureValueFont(ctx.app.renderer, ctx.money);
     this.measureValue = new BitmapText({ text: '', style: { fontFamily: font, fontSize: 60 }, anchor: 0.5 });
     this.measureBadge = new BitmapText({ text: '', style: { fontFamily: font, fontSize: 40 }, anchor: 0.5 });
@@ -209,6 +212,7 @@ export class MultSumDirector {
   /** board:set / round start: flights stop, every waiting sum resolves (no final: the label is gone). */
   abort(): void {
     this.sched.kill();
+    this.fx.clear();
     for (const c of this.clones) {
       c.visible = false;
       c.owner = null;
@@ -220,8 +224,13 @@ export class MultSumDirector {
     for (const c of this.clones) if (c.owner) c.fit(L.cell, false);
   }
 
+  update(dt: number): void {
+    this.fx.update(dt);
+  }
+
   destroy(): void {
     this.abort();
+    this.fx.destroy();
     this.measureValue.destroy();
     this.measureBadge.destroy();
     this.view.destroy({ children: true });

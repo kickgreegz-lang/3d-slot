@@ -17,8 +17,6 @@ export const DROP_LOOK = {
   /** digit cap height 30% of the cell (DESIGN §0); BitmapText size = cap / capRatio */
   badgeCap: 0.3,
   capRatio: 0.72,
-  /** the value never exceeds this share of its plate's width */
-  badgeTextFit: 0.84,
   badgeZ: 20,
   /** win-time badge punch + sticky idle heartbeat (sticky_idle: 1.0 -> 1.04 at f0 and f30 of 60) */
   heartbeat: 1.04,
@@ -73,8 +71,9 @@ export const DROP_LOOK = {
   cloneLift: 0.9,
   cloneEndScale: 0.72,
 
-  /** particle budget share of the tier (dust, debris, sparks) */
+  /** particle budget share of the tier (dust, debris, sparks) / of the label-sum sparks */
   particleShare: 0.2,
+  labelParticleShare: 0.05,
 } as const;
 
 /** Frame counts of the W rig clips the procedural placeholders mirror (30 fps, ANIMATION_SET §2.6). */

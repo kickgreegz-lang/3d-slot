@@ -2,6 +2,7 @@ import { gsap } from 'gsap';
 import { BitmapText, Container, Sprite } from 'pixi.js';
 import { followSpeed } from '../../../core/timing';
 import { GodRays } from '../../../fx/filters/GodRays';
+import { reducedMotion } from '../../../fx/motion';
 import { glowTexture } from '../../../fx/textures';
 import { CYAN, type GlyphStyle } from '../../../present/common/glyphs';
 import { label } from '../../../present/common/text';
@@ -197,7 +198,8 @@ export class FeatureBanner {
     tl.to(this.glow, { alpha: 0.55, duration: ms(400) }, 0);
     // emblem drops and slams (squash sy 0.8), springs back
     const ey = P.emblemY;
-    this.emblemHolder.y = ey - 520;
+    // reduced motion: the emblem fades in place (no screen-space drop)
+    this.emblemHolder.y = reducedMotion() ? ey : ey - 520;
     this.emblemHolder.alpha = 0;
     this.emblemHolder.scale.set(1);
     tl.to(this.emblemHolder, { alpha: 1, duration: hit * 0.3 }, 0);

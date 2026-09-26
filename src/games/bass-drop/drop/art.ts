@@ -26,13 +26,16 @@ const OUTLINE = 3.2;
 export const MULT_FONT = 'bd-drop-mult';
 export const PLUS_FONT = 'bd-drop-plus';
 
-/** Badge plate size per tier (ref units): the plate widens with the digit count it carries. */
-export const PLATE_SIZE: Record<number, { w: number; h: number }> = {
-  1: { w: 60, h: 38 },
-  2: { w: 64, h: 38 },
-  3: { w: 66, h: 40 },
-  4: { w: 78, h: 44 },
-  5: { w: 80, h: 46 },
+/**
+ * Badge plate size per tier (ref units): the plate widens with the digit count it carries.
+ * `inner`: share of the width the value may use (bursts lose their spikes).
+ */
+export const PLATE_SIZE: Record<number, { w: number; h: number; inner: number }> = {
+  1: { w: 62, h: 40, inner: 0.8 },
+  2: { w: 66, h: 40, inner: 0.74 },
+  3: { w: 68, h: 42, inner: 0.76 },
+  4: { w: 82, h: 46, inner: 0.66 },
+  5: { w: 84, h: 48, inner: 0.66 },
 };
 
 type Shape = (g: Graphics, ox: number, oy: number, s: number) => Graphics;
@@ -230,7 +233,7 @@ const trailTexture = (): Texture => {
     const core = Math.exp(-((v / 0.08) ** 2));
     for (let x = 0; x < w; x++) {
       const u = (x + 0.5) / w;
-      const a = Math.min(1, (beam * 0.75 + core * 0.6) * u ** 1.4);
+      const a = Math.min(1, (beam * 0.85 + core * 0.7) * u ** 0.85);
       const i = (y * w + x) * 4;
       img.data[i] = 255;
       img.data[i + 1] = 255;
@@ -308,8 +311,8 @@ const installFonts = (renderer: Renderer): void => {
       fontFamily: FONTS.royal,
       fontSize: 80,
       fill: 0xffffff,
-      stroke: { color: INK, width: 11, join: 'round' },
-      dropShadow: { color: PLUM, alpha: 1, blur: 0, distance: 5, angle: Math.atan2(0.83, 0.56) },
+      stroke: { color: INK, width: 8, join: 'round' },
+      dropShadow: { color: PLUM, alpha: 1, blur: 0, distance: 4, angle: Math.atan2(0.83, 0.56) },
     },
   });
   BitmapFont.install({

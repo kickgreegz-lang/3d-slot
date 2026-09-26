@@ -52,7 +52,7 @@ PART_KEYS = {"name", "slot", "attachment", "image", "bbox", "z", "bone", "parent
 SIDES = ("L", "R")
 BIPED_REQUIRED = ["hips", "chest", "neck", "head", "head_top"] + [
     f"{n}_{s}" for s in SIDES for n in ("shoulder", "elbow", "wrist", "hand", "hip", "knee", "ankle", "toe")]
-DEFAULT_INHERIT = {"neck": "noScale", "upper_arm_L": "noScale", "upper_arm_R": "noScale"}
+DEFAULT_INHERIT = {"neck": "noScale"}  # never on IK chains: spine-core 2-bone IK assumes normal inheritance
 
 
 def _biped_specs(lm: dict, ik_feet: bool, ik_hands: list[str], hand_parent: str) -> list[dict]:
@@ -556,10 +556,12 @@ class CharacterBuilder:
                          "properties": {"y": {"offset": rnd(cl.y - R / k, 3), "to": {"rotate": {"offset": -R, "max": R, "scale": rnd(k, 5)}}}},
                          "mixRotate": rnd(float(lh["mix"]), 3)})
             lp = look.get("pupils")
+            pupils = [b for b in self.bone_order if re.match(r"^face_pupil_[LR]$", b)]
             if lp is None:
-                pupils = [b for b in self.bone_order if re.match(r"^face_pupil_[LR]$", b)]
                 lp = {"bones": pupils} if pupils else None
-            if lp:
+            elif "bones" not in lp:
+                lp = dict(lp, bones=pupils)
+            if lp and lp["bones"]:
                 lp = dict({"per_100": 4.0, "max": [7.0, 5.0], "mix": 1.0}, **lp)
                 for b in lp["bones"]:
                     if b not in self.bones:
@@ -648,6 +650,9 @@ class CharacterBuilder:
         drag_default = self.rig.get("drag")
         anims, reports = {}, {}
         order = [c for c in spec_clips if c in clips] + sorted(c for c in clips if c not in spec_clips)
+        if "idle" in order:           # idle first: one-shots start and end on its first frame
+            order.remove("idle")
+            order.insert(0, "idle")
         for name in order:
             spec = dict(clips[name] or {})
             exp = spec_clips.get(name) or {}
@@ -660,7 +665,8 @@ class CharacterBuilder:
             F = int(spec.get("frames", exp.get("frames", 0)))
             if win and F and not (win[0] <= F <= win[1]):
                 raise RigError(f"clips.{name}: {F} frames outside the contract window {win[0]}-{win[1]}")
-            if "drag" not in spec and drag_default is not None:
+            track = int(spec.get("track", exp.get("track", 0)))
+            if "drag" not in spec and drag_default is not None and track == 0:
                 spec["drag"] = {k: v for k, v in drag_default.items() if k != "chains"} or None
             events = list(spec.get("events") or [])
             have = {(int(e.get("at", 0)), str(e.get("name")), e.get("string")) for e in events}
@@ -680,9 +686,13 @@ class CharacterBuilder:
                 a, rep = acting.build_clip(name, spec, rig, expect=exp)
             except (acting.ActingError, ValueError) as e:
                 raise RigError(str(e)) from None
+            if name == "idle":
+                rig.rest_extra = dict(rep["frame0"])
             anims[name] = a.to_json()
+            rep.pop("frame0", None)
             reports[name] = rep
-        self.report.stats["clips"] = reports
+        self.report.stats["clips"] = {n: reports[n] for n in [c for c in spec_clips if c in reports] + sorted(c for c in reports if c not in spec_clips)}
+        anims = {n: anims[n] for n in self.report.stats["clips"]}
         return anims
 
     # ---------------------------------------------------------------- proportions (from part bboxes)

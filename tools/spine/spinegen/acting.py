@@ -154,6 +154,7 @@ class ActingRig:
     poses: dict[str, Pose] = field(default_factory=dict)
     stance: str | None = None
     drag_chains: list[list[str]] = field(default_factory=list)
+    rest_extra: dict = field(default_factory=dict)     # idle's frame-0 channels (one-shots start/end there)
 
     def children(self, bone: str) -> list[str]:
         return [b for b in self.order if self.bones[b].parent == bone]
@@ -478,7 +479,7 @@ def p_sway(sig: Sig, rig: ActingRig, spec: dict, where: str) -> None:
     """Sinusoidal sway of a bone or a chain; each link `lag` frames behind the previous one (a wave
     travelling down a tail or cable: overlapping action without physics)."""
     p = _defaults(spec, {"bone": None, "chain": None, "amount": 5.0, "cycles": 1, "lag": 0.0, "grow": 1.0,
-                         "phase": 0.0, "channel": "rot", "at": 0, "frames": None}, where)
+                         "phase": 0.0, "channel": "rot", "at": 0, "frames": None, "zero_start": True}, where)
     chain = p["chain"] or ([p["bone"]] if p["bone"] else None)
     if not chain:
         raise ActingError(f"{where}: give `bone` or `chain`")
@@ -493,7 +494,10 @@ def p_sway(sig: Sig, rig: ActingRig, spec: dict, where: str) -> None:
         b = _bone(rig, b, where)
         lagf = float(p["lag"]) * i / rig.tempo
         ph = 2 * math.pi * (p["cycles"] * (sig.t - lagf) / sig.F + p["phase"])
-        sig.add(b, p["channel"], float(p["amount"]) * (float(p["grow"]) ** i) * np.sin(ph) * env)
+        wave = np.sin(ph)
+        if p["zero_start"]:        # start on the rest pose (periodic offsets keep a loop exact)
+            wave = wave - wave[0]
+        sig.add(b, p["channel"], float(p["amount"]) * (float(p["grow"]) ** i) * wave * env)
 
 
 def p_pulse(sig: Sig, rig: ActingRig, spec: dict, where: str) -> None:
@@ -597,6 +601,7 @@ def p_tremble(sig: Sig, rig: ActingRig, spec: dict, where: str) -> None:
     if sig.loop:
         c1, c2 = max(1, round(c1)), max(1, round(c2))
     v = 0.6 * np.sin(2 * math.pi * c1 * sig.t / sig.F) + 0.4 * np.sin(2 * math.pi * c2 * sig.t / sig.F + 1.3)
+    v = v - v[0]
     if p["frames"] is not None:
         u = _window(sig, float(p["at"]), float(p["frames"]))
         v = v * np.sin(np.pi * u) ** 2
@@ -768,6 +773,11 @@ def _drag(sig: Sig, rig: ActingRig, spec, where: str) -> None:
     p = _defaults(spec or {}, {"lag": 2.0, "gain": 0.5, "body": 0.5, "chains": None}, where)
     lag = float(p["lag"]) / rig.tempo
     chains = p["chains"] or rig.drag_chains
+    # one-shots: the lag residual fades out over the last frames so the clip still ends on its rest pose
+    fade = np.ones(sig.n)
+    if not sig.loop:
+        n_f = max(3.0, 2.5 * lag)
+        fade = 1.0 - ease_vec("sine_in_out", (sig.t - (sig.F - n_f)) / n_f)
     for chain in chains:
         for b in chain:
             _bone(rig, b, where)
@@ -778,13 +788,13 @@ def _drag(sig: Sig, rig: ActingRig, spec, where: str) -> None:
                 acc = acc + sig.ch.get((b, "rot"), 0.0)
             lagged = sig.shift(acc, lag)
             gain = float(p["gain"])
-            sig.add(chain[k], "rot", gain * (lagged - acc))
+            sig.add(chain[k], "rot", gain * (lagged - acc) * fade)
     if p["body"] and "hips" in rig.bones and "spine" in rig.bones:
         X = sig.ch.get(("hips", "x"))
         if X is not None and np.ptp(X) > 1e-6:
             L = max(rig.bones["spine"].length, 1.0) * 1.6
             d = sig.shift(X, lag) - X
-            sig.add("spine", "rot", -float(p["body"]) * np.degrees(d / L))
+            sig.add("spine", "rot", -float(p["body"]) * np.degrees(d / L) * fade)
 
 
 def _release(sig: Sig, rig: ActingRig, spec: dict, where: str, ik_mix: dict[str, np.ndarray]) -> None:
@@ -798,12 +808,13 @@ def _release(sig: Sig, rig: ActingRig, spec: dict, where: str, ik_mix: dict[str,
     bad = [x for x in chain if x in rig.phys]
     if bad:
         raise ActingError(f"{where}: the parent chain of '{b}' has physics bones ({', '.join(bad)}); FK cannot predict them")
+    end = min(sig.n - 1, int(round((at + float(p["frames"])) * RES)))
     for c, ik in rig.ik.items():
         if set(ik.bones) & set(chain):
             m = ik_mix.get(c)
-            mix = m[at * RES:] if m is not None else np.full(1, ik.mix)
+            mix = m[at * RES:end + 1] if m is not None else np.full(1, ik.mix)
             if np.max(mix) > 0.01:
-                raise ActingError(f"{where}: IK '{c}' drives the parent chain of '{b}' after frame {at}; key its mix to 0")
+                raise ActingError(f"{where}: IK '{c}' drives the parent chain of '{b}' during the fall (frames {at}-{at + int(p['frames'])}); key its mix to 0")
     bi = rig.bones[b]
     par = bi.parent
     i0 = at * RES
@@ -831,8 +842,15 @@ def _release(sig: Sig, rig: ActingRig, spec: dict, where: str, ik_mix: dict[str,
     sig.must.setdefault((b, "y"), set()).add(at)
     sig.must.setdefault((b, "rot"), set()).add(at)
     if p["slot"]:
-        end = min(sig.F, at + int(math.ceil(frames)))
-        sig.set_att(str(p["slot"]), end, None, where)
+        hide = min(sig.F, at + int(math.ceil(frames)))
+        sig.set_att(str(p["slot"]), hide, None, where)
+        # hidden: snap the prop back to its setup offsets one frame later (the clip still ends on rest)
+        back = hide + 1
+        if back <= sig.F:
+            for ch in ("x", "y", "rot"):
+                arr = sig.get(b, ch)
+                arr[back * RES:] = 0.0
+                sig.must.setdefault((b, ch), set()).update({hide, back})
 
 
 # ------------------------------------------------------------------------------------------
@@ -1010,6 +1028,7 @@ def _parse_keys(rig: ActingRig, spec, F: int, loop: bool, base: str, where: str,
     if not isinstance(raw, dict):
         raise ActingError(f"{where}: keys is a mapping {{frame: pose}}")
     keys: list[tuple[int, Pose, str]] = []
+    rest_refs: list[bool] = []
     for fr in sorted(raw, key=lambda k: int(k)):
         v = raw[fr]
         f = int(fr)
@@ -1025,7 +1044,12 @@ def _parse_keys(rig: ActingRig, spec, F: int, loop: bool, base: str, where: str,
         pose = parse_pose(rig, pose_spec, f"{where}.{f}", base if base != "none" else None) \
             if isinstance(pose_spec, dict) else resolve_pose(rig, str(pose_spec) if pose_spec is not None else "none", f"{where}.{f}")
         keys.append((f, pose, _check_ease(ease, f"{where}.{f}")))
+        rest_refs.append(pose_spec == "rest")
     rest = resolve_pose(rig, base, where)
+    if not loop and base == "rest" and rig.rest_extra:
+        # track-0 one-shots start and end on idle's first frame (mix-friendly return to the base loop)
+        rest.ch.update(rig.rest_extra)
+        keys = [(f, rest if spec_is_rest else pose, e) for (f, pose, e), spec_is_rest in zip(keys, rest_refs)]
     if not keys or keys[0][0] != 0:
         keys.insert(0, (0, rest, "linear"))
     if loop:
@@ -1096,12 +1120,13 @@ def build_clip(name: str, spec: dict, rig: ActingRig, expect: dict | None = None
                 raise ActingError(f"{ew}: frame {fr} outside 0..{F}")
             sig.events.append((fr, str(ev["name"]), {k: ev[k] for k in ("int", "float", "string") if k in ev}))
         anim = _emit(name, sig, rig, iks, track)
+        frame0 = {c: float(v[0]) for c, v in sig.ch.items()}
     finally:
         rig.tempo = saved_tempo
     report = {"frames": F, "loop": loop, "track": track,
               "keys": sum(len(tr.keys) for p in anim.bones.values() for tr in p.values()),
               "timelines": sum(len(p) for p in anim.bones.values()) + len(anim.slots) + len(anim.ik),
-              "events": [(f, n, pl.get("string")) for f, n, pl in sorted(sig.events)]}
+              "events": [(f, n, pl.get("string")) for f, n, pl in sorted(sig.events)], "frame0": frame0}
     return anim, report
 
 
@@ -1192,8 +1217,18 @@ def _emit(name: str, sig: Sig, rig: ActingRig, iks: dict[str, np.ndarray], track
             tr.key(fr, nm, None)
     for fr, nm, payload in sorted(sig.events, key=lambda e: (e[0], e[1])):
         a.event(fr, nm, **payload)
-    anchor = "hips" if "hips" in rig.bones else rig.order[0]
-    a.ensure_length(anchor)
+    if a.last_frame() < F:
+        if track == 0:
+            a.ensure_length("hips" if "hips" in rig.bones else rig.order[0])
+        else:
+            # never add a bone timeline to an overlay / face clip (it would override track 0):
+            # repeat the last key of one of its own timelines on the last frame
+            tracks = [tr for p in list(a.slots.values()) + list(a.bones.values()) for tr in p.values() if tr.keys]
+            if not tracks:
+                raise ActingError(f"clips.{name}: nothing keyed")
+            tr = tracks[0]
+            last = tr.keys[-1]
+            tr.key(F, last.value, None if tr.channels is None else "linear")
     return a
 
 

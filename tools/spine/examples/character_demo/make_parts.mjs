@@ -119,40 +119,40 @@ function hand(kind, w, dir, s, pal, { claws = false, pads = false, fingers = 4 }
   const ny = dx; // perpendicular
   const at = (a, b) => [w[0] + dx * a + nx * b, w[1] + dy * a + ny * b];
   let g = '';
-  const palm = capsule(at(0, 0), at(s * 0.95, 0), s * 0.46, s * 0.5);
+  const palm = capsule(at(s * 0.05, 0), at(s * 0.55, 0), s * 0.42, s * 0.46);
   const finger = (base, ang, len, wid) => {
     const c = Math.cos(ang);
     const sn = Math.sin(ang);
-    const fd = [dx * c - nx * sn, dy * c - ny * sn];
+    const fd = [dx * c + nx * sn, dy * c + ny * sn]; // positive angle turns toward the +n side (fingers fan out)
     const tip = [base[0] + fd[0] * len, base[1] + fd[1] * len];
-    let f = cel(capsule(base, tip, wid, wid * 0.85), pal, { d1: 3, d2: 7, out: 6 });
+    let f = cel(capsule(base, tip, wid, wid * 0.85), pal, { d1: 2, d2: 4, out: 6 });
     if (claws) f += fill(capsule(tip, [tip[0] + fd[0] * wid * 1.2, tip[1] + fd[1] * wid * 1.2], wid * 0.45, 1.5), '#F4EBD0') + line(capsule(tip, [tip[0] + fd[0] * wid * 1.2, tip[1] + fd[1] * wid * 1.2], wid * 0.45, 1.5), 3);
     if (pads) f += fill(ell(tip[0], tip[1], wid * 0.95, wid * 0.95), pal.base) + line(ell(tip[0], tip[1], wid * 0.95, wid * 0.95), 5);
     return f;
   };
   const spread = (i, n, a) => (n === 1 ? 0 : -a + (2 * a * i) / (n - 1));
   if (kind === 'open' || kind === 'lean' || kind === 'press') {
-    const a = kind === 'open' ? 0.32 : kind === 'press' ? 0.42 : 0.08;
-    const len = kind === 'lean' ? s * 0.95 : s * 0.8;
-    for (let i = 0; i < fingers; i++) g += finger(at(s * 0.85, spread(i, fingers, s * 0.32)), spread(i, fingers, a), len, s * 0.16);
+    const a = kind === 'open' ? 0.3 : kind === 'press' ? 0.42 : 0.06;
+    const len = kind === 'lean' ? s * 0.85 : s * 0.8;
+    for (let i = 0; i < fingers; i++) g += finger(at(s * 0.7, spread(i, fingers, s * 0.3)), spread(i, fingers, a), len, s * 0.19);
     g += cel(palm, pal, { d1: 4, d2: 10, out: 7 });
-    g += finger(at(s * 0.35, s * 0.42), 1.1, s * 0.55, s * 0.17); // thumb
+    g += finger(at(s * 0.32, s * 0.36), kind === 'lean' ? 0.5 : 1.0, s * 0.45, s * 0.2); // thumb
   } else if (kind === 'fist' || kind === 'point' || kind === 'fader' || kind === 'scratch') {
-    const fist = capsule(at(0, 0), at(s * 0.85, 0), s * 0.5, s * 0.58);
-    if (kind === 'point') g += finger(at(s * 0.95, -s * 0.28), -0.05, s * 1.05, s * 0.17);
-    if (kind === 'scratch') for (let i = 0; i < fingers; i++) g += finger(at(s * 0.9, spread(i, fingers, s * 0.3)), 0.9 + spread(i, fingers, 0.2), s * 0.45, s * 0.16);
+    const fist = capsule(at(s * 0.05, 0), at(s * 0.6, 0), s * 0.46, s * 0.52);
+    if (kind === 'point') g += finger(at(s * 0.8, -s * 0.22), -0.05, s * 0.95, s * 0.19);
+    if (kind === 'scratch') for (let i = 0; i < fingers; i++) g += finger(at(s * 0.8, spread(i, fingers, s * 0.3)), 0.9 + spread(i, fingers, 0.2), s * 0.42, s * 0.19);
     g += cel(fist, pal, { d1: 4, d2: 10, out: 7 });
     for (let i = 1; i < 4; i++) {
-      const k = at(s * 1.05, -s * 0.45 + i * s * 0.26);
-      const k2 = at(s * 0.7, -s * 0.45 + i * s * 0.26);
+      const k = at(s * 1.02, -s * 0.42 + i * s * 0.22);
+      const k2 = at(s * 0.74, -s * 0.42 + i * s * 0.22);
       g += line(`M ${P([k2, k]).join(' L ')}`, 4);
     }
     if (kind === 'fader') {
-      const knob = at(s * 1.25, s * 0.05);
+      const knob = at(s * 1.18, s * 0.05);
       g += cel(capsule([knob[0] - 14, knob[1]], [knob[0] + 14, knob[1]], 9, 9), { base: '#E8E8E8', shade: '#9A9AA8', deep: '#5A5A68' }, { d1: 2, d2: 5, out: 5 });
-      g += finger(at(s * 0.95, -s * 0.2), 0.35, s * 0.5, s * 0.17);
+      g += finger(at(s * 0.9, -s * 0.2), 0.35, s * 0.5, s * 0.19);
     }
-    g += finger(at(s * 0.4, s * 0.45), 1.3, s * 0.45, s * 0.18); // thumb over the fist
+    g += finger(at(s * 0.4, s * 0.42), 1.3, s * 0.42, s * 0.2); // thumb over the fist
   }
   return g;
 }
@@ -242,11 +242,11 @@ const GUMBO = (() => {
     ...['open', 'half', 'closed', 'wide'].map((v) => ({ slot: 'eye_R', attachment: v, z: 19, bone: 'face_eye_R', parent: 'head', joint: [506, 156], svg: () => eye(506, 156, 25, 21, v) })),
     { slot: 'pupil_L', z: 20, bone: 'face_pupil_L', parent: 'face_eye_L', joint: [567, 151], svg: () => fill(ell(567, 151, 4.5, 12), INK) + fill(ell(565, 146, 1.6, 2.5), SPEC) },
     { slot: 'pupil_R', z: 21, bone: 'face_pupil_R', parent: 'face_eye_R', joint: [508, 157], svg: () => fill(ell(508, 157, 5.5, 15), INK) + fill(ell(506, 151, 2, 3), SPEC) },
-    { slot: 'brow_L', z: 22, bone: 'face_brow_L', parent: 'head', joint: [566, 132], svg: () => cel('M 540 138 C 548 120 584 116 596 130 C 588 136 560 138 540 138 Z', skinD, { d1: 2, d2: 5, out: 6 }) },
-    { slot: 'brow_R', z: 23, bone: 'face_brow_R', parent: 'head', joint: [506, 136], svg: () => cel('M 474 144 C 482 122 526 114 542 132 C 532 140 498 144 474 144 Z', skinD, { d1: 2, d2: 5, out: 6 }) },
+    { slot: 'brow_L', z: 22, bone: 'face_brow_L', parent: 'head', joint: [566, 132], svg: () => cel('M 542 140 C 550 127 582 124 594 134 C 586 139 560 141 542 140 Z', skinD, { d1: 2, d2: 5, out: 6 }) },
+    { slot: 'brow_R', z: 23, bone: 'face_brow_R', parent: 'head', joint: [506, 136], svg: () => cel('M 476 146 C 484 130 524 124 540 136 C 530 143 498 146 476 146 Z', skinD, { d1: 2, d2: 5, out: 6 }) },
     ...Object.keys(mouths).map((v) => ({ slot: 'mouth', attachment: v, z: 24, bone: 'head', svg: () => mouths[v] })),
     { slot: 'toothpick', z: 25, bone: 'phys_toothpick', svg: () => cel(capsule([470, 290], [556, 322], 5, 4), { base: '#F2DDA0', shade: '#C9A864', deep: '#8A6A34' }, { d1: 1, d2: 3, out: 4 }) },
-    { slot: 'jowl', z: 26, bone: 'phys_jowl_1', svg: () => cel('M 424 304 C 444 320 482 332 518 330 C 508 346 470 352 442 344 C 424 336 414 320 424 304 Z', skin, { d1: 3, d2: 8, out: 6 }) },
+    { slot: 'jowl', z: 26, bone: 'phys_jowl_1', svg: () => cel('M 424 304 C 444 318 482 326 516 324 C 506 336 470 340 442 334 C 424 328 414 318 424 304 Z', skin, { d1: 3, d2: 8, out: 6 }) },
     { slot: 'thigh_R', z: 27, svg: () => cel(capsule(L.hip_R, L.knee_R, 60, 48), skin, { d1: 6, d2: 16, spec: 'M 336 690 C 340 720 348 750 356 770' }) },
     { slot: 'shin_R', z: 28, svg: () => cel(capsule(L.knee_R, L.ankle_R, 46, 35), skin, { d1: 5, d2: 13 }) },
     { slot: 'foot_R', z: 29, svg: () => cel('M 340 932 C 330 952 318 974 322 986 L 470 988 C 484 984 480 968 466 960 C 432 948 400 936 380 928 Z', skin, { d1: 4, d2: 11 }) + [0, 1, 2].map((i) => fill(capsule([462 - i * 17, 982], [477 - i * 17, 990], 6, 2), '#F4EBD0')).join('') },

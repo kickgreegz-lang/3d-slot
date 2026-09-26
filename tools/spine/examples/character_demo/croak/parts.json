@@ -144,10 +144,10 @@
    "slot": "hand_R",
    "attachment": "open",
    "bbox": [
-    208,
-    743,
-    79,
-    146
+    187,
+    749,
+    102,
+    135
    ],
    "z": 3,
    "bone": "hand_R"
@@ -156,40 +156,40 @@
    "slot": "hand_R",
    "attachment": "point",
    "bbox": [
-    204,
-    741,
-    85,
-    170
+    183,
+    746,
+    103,
+    153
    ]
   },
   {
    "slot": "hand_R",
    "attachment": "fist",
    "bbox": [
-    204,
-    741,
-    85,
-    127
+    183,
+    746,
+    103,
+    104
    ]
   },
   {
    "slot": "hand_R",
    "attachment": "scratch",
    "bbox": [
-    204,
-    741,
-    88,
-    129
+    183,
+    746,
+    103,
+    114
    ]
   },
   {
    "slot": "hand_R",
    "attachment": "press",
    "bbox": [
-    208,
-    743,
-    79,
-    146
+    187,
+    749,
+    108,
+    135
    ]
   },
   {
@@ -631,10 +631,10 @@
    "slot": "hand_L",
    "attachment": "open",
    "bbox": [
-    393,
-    754,
-    83,
-    154
+    371,
+    759,
+    107,
+    144
    ],
    "z": 30,
    "bone": "hand_L"
@@ -643,30 +643,30 @@
    "slot": "hand_L",
    "attachment": "point",
    "bbox": [
-    389,
-    751,
-    90,
-    181
+    366,
+    757,
+    110,
+    161
    ]
   },
   {
    "slot": "hand_L",
    "attachment": "fist",
    "bbox": [
-    389,
-    751,
-    90,
-    135
+    366,
+    757,
+    110,
+    110
    ]
   },
   {
    "slot": "hand_L",
    "attachment": "fader",
    "bbox": [
-    389,
-    751,
-    90,
-    146
+    366,
+    757,
+    110,
+    136
    ]
   },
   {

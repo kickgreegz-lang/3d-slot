@@ -3,7 +3,7 @@
  * Spine 4.3 symbol-skeleton contract validator (ANIMATION_CONTRACT sections 2-4), on the
  * OFFICIAL runtime @esotericsoftware/spine-core 4.3.13 — the same code the game ships.
  *
- *   node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind auto|high|special|royal|any]
+ *   node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind auto|high|special|royal|any|character]
  *        [--cell 300] [--kick 36] [--cell-scale <f>] [--report <out.json>] [--strict] [--quiet] [--help]
  *
  * Static checks (raw JSON): 4.3 header + unified root `constraints[]` in IK -> transform ->
@@ -26,13 +26,20 @@
  *   growth at the RUNTIME content fit (SymbolRig.fit scales content to cellScale of the cell;
  *   cellScale from src/games/<GAME>/config.ts for sym_<ID>, else the art bible cellFill, or --cell-scale).
  * --kind auto: sym_W / sym_S -> special, other sym_H* -> high, sym_L* -> royal (nothing
- *   required), anything else -> special (strictest). Exit 0 = pass (warnings allowed unless
- *   --strict), 1 = contract failure, 2 = usage / unreadable input.
+ *   required), chr_* -> character, anything else -> special (strictest). Exit 0 = pass (warnings
+ *   allowed unless --strict), 1 = contract failure, 2 = usage / unreadable input.
+ * --kind character (2D mascots, ANIMATION_SET 5 / 10 / 12): character budgets (80 bones, 40 slots,
+ *   2400 mesh vertices, 12 physics), biped + ctrl_look bones, look-at constraints, eye states and
+ *   per-rig attachment sets, exact clip lengths and event frames from contract.json characters.rigs,
+ *   loop seams, additive overlays with zero deltas at both ends, physics sanity (deflection,
+ *   settling), IK reach, adult proportions (head <= 27% of the height), one atlas page.
+ *   See tools/spine/validate-character.mjs.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as spine from '@esotericsoftware/spine-core';
+import { characterRuntime, characterStatic } from './validate-character.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../..');
@@ -86,12 +93,14 @@ const skelName = path.basename(jsonPath).replace(/\.json$/, '');
 let kind = opt('kind', 'auto');
 if (kind === 'auto') {
   const id = skelName.replace(/^sym_/, '');
-  kind = CONTRACT.symbolKinds[id] ?? 'special';
+  kind = /^chr_/.test(skelName) ? 'character' : (CONTRACT.symbolKinds[id] ?? 'special');
 }
-if (!['high', 'special', 'royal', 'any'].includes(kind)) {
-  console.error(`validate: --kind must be auto|high|special|royal|any`);
+if (!['high', 'special', 'royal', 'any', 'character'].includes(kind)) {
+  console.error(`validate: --kind must be auto|high|special|royal|any|character`);
   process.exit(2);
 }
+const isChar = kind === 'character';
+const BUD = isChar ? CONTRACT.characters.budgets : CONTRACT.budgets;
 
 // ---------------------------------------------------------------------- static JSON checks
 const sk = raw.skeleton ?? {};
@@ -105,17 +114,20 @@ for (const legacy of ['ik', 'transform', 'path', 'physics']) {
 const bones = raw.bones ?? [];
 const boneByName = new Map(bones.map((b) => [b.name, b]));
 const boneRe = new RegExp(CONTRACT.boneNames.pattern);
-for (const req of ['root', 'squash', 'body']) if (!boneByName.has(req)) err(`bone "${req}" missing (ANIMATION_CONTRACT 2.3)`);
-if (boneByName.get('squash')?.parent !== 'root') err('bone squash must be a child of root');
-if (boneByName.get('body')?.parent !== 'squash') err('bone body must be a child of squash');
-if (bones[0]?.name !== 'root') err('first bone must be root');
-for (const b of bones) {
-  if (!boneRe.test(b.name)) err(`bone "${b.name}": not snake_case`);
-  if (!CONTRACT.boneNames.fixed.includes(b.name) && !CONTRACT.boneNames.prefixes.some((p) => b.name.startsWith(p)))
-    warn(`bone "${b.name}": no contract prefix (${CONTRACT.boneNames.prefixes.join(' ')})`);
-  if (b.name.startsWith('fx_') && b.parent !== 'root') err(`bone "${b.name}": fx_* bones must be children of root`);
+if (isChar) characterStatic(raw, { CONTRACT, err, warn, info: (m) => info.push(m), skelName });
+else {
+  for (const req of ['root', 'squash', 'body']) if (!boneByName.has(req)) err(`bone "${req}" missing (ANIMATION_CONTRACT 2.3)`);
+  if (boneByName.get('squash')?.parent !== 'root') err('bone squash must be a child of root');
+  if (boneByName.get('body')?.parent !== 'squash') err('bone body must be a child of squash');
+  if (bones[0]?.name !== 'root') err('first bone must be root');
+  for (const b of bones) {
+    if (!boneRe.test(b.name)) err(`bone "${b.name}": not snake_case`);
+    if (!CONTRACT.boneNames.fixed.includes(b.name) && !CONTRACT.boneNames.prefixes.some((p) => b.name.startsWith(p)))
+      warn(`bone "${b.name}": no contract prefix (${CONTRACT.boneNames.prefixes.join(' ')})`);
+    if (b.name.startsWith('fx_') && b.parent !== 'root') err(`bone "${b.name}": fx_* bones must be children of root`);
+  }
 }
-if (bones.length > CONTRACT.budgets.bones) err(`budget: ${bones.length} bones > ${CONTRACT.budgets.bones}`);
+if (bones.length > BUD.bones) err(`budget: ${bones.length} bones > ${BUD.bones}`);
 
 const cons = raw.constraints ?? [];
 const order = ['ik', 'transform', 'path', 'physics', 'slider'];
@@ -131,7 +143,8 @@ for (const c of phys) {
   if (c.name !== c.bone) err(`physics "${c.name}": must have the same name as its bone "${c.bone}"`);
   if (!String(c.bone).startsWith('phys_')) err(`physics "${c.name}": bone must be phys_*`);
   const limit = c.limit ?? 5000;
-  if (limit < CONTRACT.physics.minLimit) err(`physics "${c.name}": limit ${limit} < ${CONTRACT.physics.minLimit} (drop speed would be clipped)`);
+  const minLimit = isChar ? CONTRACT.characters.physics.minLimit : CONTRACT.physics.minLimit;
+  if (limit < minLimit) err(`physics "${c.name}": limit ${limit} < ${minLimit} (drop speed would be clipped)`);
   const strength = c.strength ?? 100;
   const damping = c.damping ?? 0.85;
   const mass = c.mass ?? 1;
@@ -151,7 +164,7 @@ const physBones = bones.filter((b) => b.name.startsWith('phys_')).map((b) => b.n
 for (const b of physBones) if (!phys.some((c) => c.bone === b)) err(`bone "${b}" is phys_* but has no physics constraint`);
 
 const slots = raw.slots ?? [];
-if (slots.length > CONTRACT.budgets.slots) err(`budget: ${slots.length} slots > ${CONTRACT.budgets.slots}`);
+if (slots.length > BUD.slots) err(`budget: ${slots.length} slots > ${BUD.slots}`);
 for (const s of slots) {
   if ((s.blend ?? 'normal') !== 'normal' && !String(s.bone).startsWith('fx_'))
     err(`slot "${s.name}": blend "${s.blend}" only allowed on fx_* slots`);
@@ -170,7 +183,7 @@ for (const skin of raw.skins ?? []) {
       if (extRe.test(p) || extRe.test(name)) err(`${where}: region name "${p}" has a file extension`);
       if (type === 'region' || type === 'mesh' || type === 'linkedmesh') {
         if (!regionPaths.has(p)) regionPaths.set(p, { w: Math.max(1, Math.round(a.width ?? 32)), h: Math.max(1, Math.round(a.height ?? 32)) });
-        if (/^sym_/.test(skelName) && !p.startsWith(`${skelName}/`)) warn(`${where}: path "${p}" is not under "${skelName}/"`);
+        if (/^(sym|chr)_/.test(skelName) && !p.startsWith(`${skelName}/`)) warn(`${where}: path "${p}" is not under "${skelName}/"`);
       }
       if (type === 'mesh') {
         const nv = a.uvs.length / 2;
@@ -203,7 +216,7 @@ for (const skin of raw.skins ?? []) {
     }
   }
 }
-if (meshVerts > CONTRACT.budgets.meshVertices) err(`budget: ${meshVerts} mesh vertices > ${CONTRACT.budgets.meshVertices}`);
+if (meshVerts > BUD.meshVertices) err(`budget: ${meshVerts} mesh vertices > ${BUD.meshVertices}`);
 
 // curve arity
 const BONE_CH = { rotate: 1, translate: 2, translatex: 1, translatey: 1, scale: 2, scalex: 1, scaley: 1, shear: 2, shearx: 1, sheary: 1 };
@@ -282,7 +295,11 @@ try {
 
 const report = { file: jsonPath, kind, spine: sk.spine, errors, warnings, info, animations: {} };
 
-if (data) {
+if (data && isChar) {
+  if (data.constraints.length !== cons.length) err(`${cons.length} constraints in JSON but ${data.constraints.length} loaded`);
+  info.push(`loaded: ${data.bones.length} bones, ${data.slots.length} slots, ${data.constraints.length} constraints, ${meshVerts} mesh vertices, ${data.animations.length} animations`);
+  characterRuntime(data, { spine, CONTRACT, FPS, err, warn, info: (m) => info.push(m), report, raw, atlas, atlasPath, skelName });
+} else if (data) {
   // constraint drop check: every JSON constraint must exist after parsing
   if (data.constraints.length !== cons.length) err(`${cons.length} constraints in JSON but ${data.constraints.length} loaded`);
   info.push(`loaded: ${data.bones.length} bones, ${data.slots.length} slots, ${data.constraints.length} constraints, ${meshVerts} mesh vertices, ${data.animations.length} animations`);
@@ -553,9 +570,16 @@ if (reportPath) {
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 }
 if (!quiet || !ok) {
-  const lines = [`validate ${jsonPath}  (kind ${kind}, spine ${sk.spine}, cell ${cell}, land kick ±${kick})`];
+  const lines = [isChar ? `validate ${jsonPath}  (kind character, spine ${sk.spine})` : `validate ${jsonPath}  (kind ${kind}, spine ${sk.spine}, cell ${cell}, land kick ±${kick})`];
   for (const i of info) lines.push(`  info  ${i}`);
-  for (const [n, r] of Object.entries(report.animations)) {
+  if (isChar) {
+    for (const [n, r] of Object.entries(report.animations)) {
+      const ev = r.events.map((e) => `${e.name}@${e.frame}${e.string ? `(${e.string})` : ''}`).join(' ');
+      const ph = Object.entries(r.physics ?? {}).sort((a, b) => b[1].rot - a[1].rot)[0];
+      lines.push(`  clip  ${n.padEnd(17)} ${String(r.frames).padStart(5)} f ${r.loop ? 'loop' : '    '} t${r.track}${r.seam !== undefined ? ` seam ${r.seam}` : ''}${r.endVsIdle !== undefined ? ` end~idle ${r.endVsIdle}` : ''}${ph ? `  spring ${ph[0]} ${ph[1].rot}°/${ph[1].move}u` : ''}${ev ? `  events ${ev}` : ''}`);
+    }
+  }
+  for (const [n, r] of isChar ? [] : Object.entries(report.animations)) {
     const ev = r.events.map((e) => `${e.name}@${e.frame}${e.string ? `(${e.string})` : ''}`).join(' ');
     const e = r.maxExtent;
     const sq = r.squash ? `  squash sy ${r.squash.sy} sx ${r.squash.sx} @${r.squash.frame}` : '';

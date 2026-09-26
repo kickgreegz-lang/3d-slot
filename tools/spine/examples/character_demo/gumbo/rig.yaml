@@ -1,0 +1,240 @@
+# Gumbo (chr_gumbo): heavyset adult alligator bouncer, faces screen-right, near side = his R.
+# DEMO rig on procedural placeholder parts (make_parts.mjs); the production rig is the same file
+# pointed at the split Higgsfield part sheets (tools/spine/README.md, "Character parts contract").
+# Coordinates: canvas image space (868x992 @2x, y down), root = feet point (bottom centre).
+# Pose values are facing-normalised: rot + = counter-clockwise for a right-facing character,
+# x + = forward (toward the reels), y + = up. Keyframes are never typed: clips = poses + presets.
+kind: character
+skeleton: chr_gumbo
+parts: parts.json
+facing: right
+near: R
+tempo: 0.92                  # ANIMATION_SET 5.1: weight lands late, holds are longer (drag lag / settles scale by 1/tempo)
+template: biped              # landmarks in parts.json -> root/hips/spine/chest/neck/head/jaw + arms + legs + ik + ctrl_look
+ik: {feet: true, hands: [L]} # feet planted; the far hand leans on the cabinet (ik_hand_L, mix keyed per clip)
+
+bones:
+  - {name: phys_tail_1, parent: hips, joint: [352, 646], tip: [262, 700]}
+  - {name: phys_tail_2, parent: phys_tail_1, joint: [262, 700], tip: [196, 780]}
+  - {name: phys_tail_3, parent: phys_tail_2, joint: [196, 780], tip: [138, 866]}
+  - {name: phys_tail_4, parent: phys_tail_3, joint: [138, 866], tip: [90, 946]}
+  - {name: phys_belly, parent: spine, joint: [500, 668], tip: [500, 700]}
+  - {name: phys_chain_1, parent: chest, joint: [466, 352], tip: [468, 412]}
+  - {name: phys_chain_2, parent: phys_chain_1, joint: [468, 412], tip: [470, 450]}
+  - {name: phys_chain_3, parent: phys_chain_2, joint: [470, 450], tip: [470, 474]}
+  - {name: toothpick, parent: head, joint: [474, 291], tip: [556, 322]}
+  - {name: phys_toothpick, parent: toothpick, joint: [474, 291], tip: [556, 322]}
+  - {name: phys_jowl_1, parent: jaw, joint: [468, 318], tip: [470, 346]}
+  - {name: fx_sweat, parent: root, joint: [540, 150]}
+
+slots:
+  fx_sweat: {bone: fx_sweat, blend: additive}   # empty: the runtime attaches the code-drawn sweat (bored / heat)
+
+meshes:
+  torso: {type: trace, spacing: 56, weights: {mode: vertical, stops: [[chest, 380], [spine, 520], [hips, 650]]}}
+  tank_top: {type: trace, spacing: 44, pad: 8, weights: {mode: vertical, stops: [[chest, 380], [spine, 520], [hips, 650]]}}
+  belly: {type: grid, cols: 3, rows: 2, weights: {mode: vertical, stops: [[spine, 626], [phys_belly, 700]]}}
+  tail: {type: grid, cols: 2, rows: 8, weights: {mode: idw, bones: [hips, phys_tail_1, phys_tail_2, phys_tail_3, phys_tail_4]}}
+  chain: {type: grid, cols: 3, rows: 4, weights: {mode: idw, bones: [chest, phys_chain_1, phys_chain_2, phys_chain_3]}}
+  jaw: {type: grid, cols: 4, rows: 2, weights: {mode: idw, bones: [jaw, head], max: 2}}
+  jowl: {type: grid, cols: 3, rows: 2, weights: {mode: vertical, stops: [[jaw, 306], [phys_jowl_1, 346]]}}
+
+physics:                       # contract presets: tail/chain floppy, belly/jowl default, toothpick stiff; limit 6000 (characters never fall)
+  - {bone: phys_tail_1, preset: floppy, rotate: 1, inertia: 0.5}
+  - {bone: phys_tail_2, preset: floppy, rotate: 1, inertia: 0.5}
+  - {bone: phys_tail_3, preset: floppy, rotate: 1, inertia: 0.5}
+  - {bone: phys_tail_4, preset: floppy, rotate: 1, inertia: 0.5}
+  - {bone: phys_belly, preset: default, x: 0.5, y: 0.6, rotate: 0, inertia: 0.5}
+  - {bone: phys_chain_1, preset: floppy, rotate: 1, inertia: 0.5}
+  - {bone: phys_chain_2, preset: floppy, rotate: 1, inertia: 0.5}
+  - {bone: phys_chain_3, preset: floppy, rotate: 1, inertia: 0.5}
+  - {bone: phys_toothpick, preset: stiff, rotate: 1, inertia: 0.5}
+  - {bone: phys_jowl_1, preset: default, x: 0.35, y: 0.5, rotate: 0, inertia: 0.5}
+
+look:                           # ctrl_look is the runtime aim target (track 3); head tilt + pupils follow it
+  head: {mix: 0.6, deg_per_100: 5, max: 12}
+  pupils: {per_100: 3, max: [6, 5]}
+
+face: {hide_pupils: [half, closed]}   # half/closed eye art carries its own pupil
+drag: {lag: 2, gain: 0.45, body: 0.5} # overlapping action on every body clip (lag / tempo)
+
+stance: stance
+poses:
+  stance:                       # the in-game base pose every body clip starts and ends on
+    base: none
+    hips: {y: -8}
+    spine: {rot: -2}
+    chest: {rot: 3}
+    head: {rot: -3}
+    upper_arm_R: {rot: 4}
+    forearm_R: {rot: 10}
+    hand_L: {rot: 35}           # the leaning hand hangs over the cabinet edge
+    place: {ik_hand_L: [300, 482]}   # far forearm resting on the cabinet top behind him (slack for hunches)
+    ik: {ik_hand_L: 1}
+    attach: {hand_L: lean, hand_R: open, mouth: closed_pick, eyes: open}
+  # --- bass_drop
+  brace: {hips: {y: -30}, spine: {rot: -10}, chest: {rot: -9, sy: 1.03}, neck: {rot: -5}, head: {rot: -12}, upper_arm_R: {rot: -8}, forearm_R: {rot: 48}, attach: {hand_R: fist, hand_L: fist}}
+  brace_deep: {base: brace, hips: {y: -36}, spine: {rot: -12}, chest: {rot: -10}, head: {rot: -15}}
+  blown: {hips: {x: -24, y: -6}, spine: {rot: 9}, chest: {rot: 9}, neck: {rot: 4}, head: {rot: 10}, jaw: {rot: -8}, upper_arm_R: {rot: -30}, forearm_R: {rot: 20}, attach: {hand_R: open, hand_L: lean}}
+  blown_peak: {base: blown, spine: {rot: 12}, chest: {rot: 11}, head: {rot: 14}, upper_arm_R: {rot: -42}}
+  recover_over: {hips: {x: 5, y: -12}, spine: {rot: -4}, chest: {rot: -2}, head: {rot: -6}}
+  # --- react_small (fist pump)
+  pump_load: {hips: {y: -18}, spine: {rot: -4}, chest: {rot: -4}, head: {rot: -6}, upper_arm_R: {rot: 30}, forearm_R: {rot: 105}, attach: {hand_R: fist}}
+  pump_up: {hips: {y: -2}, spine: {rot: 3}, chest: {rot: 6}, head: {rot: 8}, jaw: {rot: -6}, upper_arm_R: {rot: 150}, forearm_R: {rot: 22}, hand_R: {rot: -10}, attach: {hand_R: fist, mouth: grin}}
+  pump_mid: {base: pump_up, hips: {y: -12}, head: {rot: 2}, upper_arm_R: {rot: 118}, forearm_R: {rot: 70}}
+  # --- react_point / fs_end
+  point_cock: {hips: {y: -12}, upper_arm_R: {rot: 60}, forearm_R: {rot: 70}, head: {rot: 2}, attach: {hand_R: fist}}
+  point_up: {hips: {y: -6}, spine: {rot: 3}, chest: {rot: 5}, head: {rot: 12}, look: [-40, 420], upper_arm_R: {rot: 168}, forearm_R: {rot: 6}, hand_R: {rot: -6}, attach: {hand_R: point}}
+  salute_up: {head: {rot: -6}, reach: {hand_R: [512, 176]}, hand_R: {rot: -60}, attach: {hand_R: point}}
+  salute_out: {head: {rot: 4}, chest: {rot: 5}, upper_arm_R: {rot: 128}, forearm_R: {rot: 12}, hand_R: {rot: -30}, attach: {hand_R: point, mouth: grin}}
+  # --- idle_bored
+  yawn_in: {chest: {rot: 5, sx: 1.03}, neck: {rot: 5}, head: {rot: 8}, jaw: {rot: -10}}
+  yawn: {hips: {y: -4}, spine: {rot: 4}, chest: {rot: 7, sx: 1.05}, neck: {rot: 8}, head: {rot: 16}, jaw: {rot: -28}, upper_arm_R: {rot: 26}, forearm_R: {rot: 40}}
+  inspect: {head: {rot: -9}, neck: {rot: -3}, look: [120, -140], reach: {hand_R: [560, 330]}, hand_R: {rot: 70}, attach: {hand_R: open}}
+  glance: {head: {rot: 6}, chest: {rot: 5}, look: [-420, 260]}
+  # --- anticipation / meter_heat
+  lean_in: {hips: {x: 8, y: -12}, spine: {rot: -5}, chest: {rot: -5, sx: 1.025, sy: 1.02}, neck: {rot: -2}, head: {rot: -2}, look: [320, -40], upper_arm_R: {rot: 12}, forearm_R: {rot: 40}, attach: {hand_R: fist}}
+  heat: {chest: {rot: 5}, neck: {rot: 5}, head: {rot: 10}, look: [-60, 360], upper_arm_R: {rot: 34}, forearm_R: {rot: 96}, attach: {hand_R: fist}}
+  # --- win_big / fs_trigger (cooler slams)
+  wind_up: {hips: {y: -2}, spine: {rot: 6}, chest: {rot: 8, sx: 1.03}, head: {rot: 10}, jaw: {rot: -10}, upper_arm_R: {rot: 168}, forearm_R: {rot: 50}, ik: {ik_hand_L: 0.6}, attach: {hand_R: fist}}
+  wind_top: {base: wind_up, spine: {rot: 9}, chest: {rot: 10}, upper_arm_R: {rot: 186}, forearm_R: {rot: 62}}
+  slam: {hips: {x: 30, y: -54}, spine: {rot: -32}, chest: {rot: -16}, neck: {rot: -4}, head: {rot: -12}, reach: {hand_R: [630, 722]}, hand_R: {rot: -34}, upper_arm_L: {rot: 30}, forearm_L: {rot: 30}, ik: {ik_hand_L: 0}, attach: {hand_R: fist, hand_L: fist}}
+  slam_squash: {base: slam, hips: {x: 30, y: -60}, spine: {rot: -34}, head: {rot: -14}}
+  roar_up: {hips: {y: -6}, spine: {rot: 6}, chest: {rot: 10, sx: 1.04}, neck: {rot: 6}, head: {rot: 18}, jaw: {rot: -30}, upper_arm_R: {rot: 110}, forearm_R: {rot: 60}, upper_arm_L: {rot: 60}, forearm_L: {rot: 70}, ik: {ik_hand_L: 0}, attach: {hand_R: fist, hand_L: fist, mouth: roar}}
+  fs_gather: {hips: {y: -30}, spine: {rot: -9}, chest: {rot: -8}, head: {rot: -10}, upper_arm_R: {rot: -14}, forearm_R: {rot: 20}, upper_arm_L: {rot: -20}, forearm_L: {rot: 16}, ik: {ik_hand_L: 0}, attach: {hand_R: fist, hand_L: fist}}
+  fs_windup: {hips: {y: -2}, spine: {rot: 8}, chest: {rot: 9, sx: 1.04}, neck: {rot: 4}, head: {rot: 14}, jaw: {rot: -12}, upper_arm_R: {rot: 175}, forearm_R: {rot: 32}, upper_arm_L: {rot: 158}, forearm_L: {rot: 30}, ik: {ik_hand_L: 0}, attach: {hand_R: fist, hand_L: fist}}
+  fs_windup_top: {base: fs_windup, spine: {rot: 11}, chest: {rot: 11}, upper_arm_R: {rot: 186}, upper_arm_L: {rot: 170}}
+  fs_slam: {hips: {x: 32, y: -56}, spine: {rot: -34}, chest: {rot: -18}, neck: {rot: -4}, head: {rot: -13}, reach: {hand_R: [622, 722], hand_L: [684, 718]}, hand_R: {rot: -28}, hand_L: {rot: -28}, ik: {ik_hand_L: 0}, attach: {hand_R: fist, hand_L: fist}}
+  fs_slam_squash: {base: fs_slam, hips: {x: 32, y: -62}, spine: {rot: -36}, head: {rot: -15}}
+  fs_roar: {hips: {y: -6}, spine: {rot: 7}, chest: {rot: 11, sx: 1.05}, neck: {rot: 6}, head: {rot: 20}, jaw: {rot: -32}, upper_arm_R: {rot: 150}, forearm_R: {rot: 30}, upper_arm_L: {rot: 130}, forearm_L: {rot: 20}, ik: {ik_hand_L: 0}, attach: {hand_R: fist, hand_L: fist, mouth: roar}}
+  # --- celebrate
+  party: {upper_arm_R: {rot: 150}, forearm_R: {rot: 34}, chest: {rot: 4}, head: {rot: 4}, attach: {hand_R: fist, mouth: grin}}
+  # --- wild_land_react (additive overlay: deltas from the setup pose)
+  flinch: {base: none, hips: {y: -4}, chest: {rot: -3, sx: 0.98}, neck: {rot: -2}, head: {y: -6, rot: -3}}
+
+clips:
+  idle:                          # 168 f loop: breathing twice, slow weight shift, tail swish, toothpick flick at f96
+    layers:
+      - {preset: breathe, cycles: 2, amount: 0.03, belly: phys_belly}
+      - {preset: weight_shift, amount: 13, dip: 5, cycles: 1, counter: 2.0}
+      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3, phys_tail_4], amount: 4, cycles: 2, lag: 5, grow: 1.3}
+      - {preset: sway, bone: head, amount: 2.2, cycles: 1, phase: 0.25}
+      - {preset: flick, bone: toothpick, at: 96, amount: 22, frames: 16}
+      - {preset: blink, at: [40, 128]}
+  idle_bored:                    # yawn (open f40-f70), inspects claws, glances at the stack
+    keys:
+      30: {pose: yawn_in, ease: sine_in_out}
+      44: {pose: yawn, ease: sine_in_out}
+      68: {pose: yawn, ease: linear}
+      80: {pose: rest, ease: sine_in_out}
+      96: {pose: inspect, ease: sine_in_out}
+      132: {pose: inspect, ease: linear}
+      146: {pose: glance, ease: sine_in_out}
+      164: {pose: glance, ease: linear}
+    swap:
+      mouth: {40: open, 70: closed_pick}
+      eyes: {32: half, 44: closed, 66: half, 78: open, 100: half, 130: open}
+      hand_R: {112: fist, 118: open}
+    layers:
+      - {preset: breathe, cycles: 2, amount: 0.018, belly: phys_belly}
+      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3, phys_tail_4], amount: 2.5, cycles: 2, lag: 5, grow: 1.3}
+      - {preset: flick, bone: hand_R, at: 114, amount: 14, frames: 10}
+  anticipation:                  # leans toward the reels, holds breath
+    keys: {0: lean_in, 36: lean_in}
+    layers:
+      - {preset: tremble, bone: head, amount: 0.5, hz: 6}
+      - {preset: tremble, bone: forearm_R, amount: 1.2, hz: 5}
+      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3, phys_tail_4], amount: 1.5, cycles: 1, lag: 3}
+  meter_heat:                    # looks up at the meter (ctrl_look keyed), cracks knuckles at f12 and f30
+    keys: {0: heat, 48: heat}
+    layers:
+      - {preset: flick, bone: forearm_R, at: 12, amount: -12, frames: 10, windup: 0.4}
+      - {preset: flick, bone: forearm_R, at: 30, amount: -12, frames: 10, windup: 0.4}
+      - {preset: flick, bone: chest, at: 12, amount: -2, frames: 8}
+      - {preset: flick, bone: chest, at: 30, amount: -2, frames: 8}
+      - {preset: breathe, cycles: 1, amount: 0.015, belly: phys_belly}
+  react_small:                   # fist pump f10-f25, grin
+    keys:
+      7: {pose: pump_load, ease: sine_in_out}
+      11: {pose: pump_up, ease: expo_out}
+      17: {pose: pump_mid, ease: sine_in_out}
+      21: {pose: pump_up, ease: expo_out}
+      27: {pose: pump_mid, ease: sine_in_out}
+      45: {pose: rest, ease: sine_in_out}
+    swap: {mouth: {8: grin, 40: closed_pick}, eyes: {11: wide, 24: open}}
+  react_point:                   # points at the meter at f8, nod
+    keys:
+      5: {pose: point_cock, ease: sine_in_out}
+      8: {pose: point_up, ease: expo_out}
+      20: {pose: point_up, ease: linear}
+      30: {pose: rest, ease: sine_in_out}
+    layers: [{preset: nod, at: 12, count: 1, every: 10, amount: 6, bob: 3}]
+  bass_drop:                     # f0-f14 brace, f15 hit = the boom: hips pushed back 24 units f15-f18, recover by f36
+    keys:
+      8: {pose: brace, ease: sine_in_out}
+      14: {pose: brace_deep, ease: hold_out}
+      15: {pose: blown, ease: expo_out}
+      18: {pose: blown_peak, ease: sine_out}
+      27: {pose: recover_over, ease: sine_in_out}
+      36: {pose: rest, ease: sine_in_out}
+    swap: {eyes: {3: half, 15: wide, 28: open}, mouth: {15: open, 30: closed_pick}}
+    layers:
+      - {preset: flick, bone: toothpick, at: 15, amount: 170, frames: 18, cycles: 1.2, windup: 0.05}
+  wild_land_react:               # track 1 additive flinch: head dips 6 units f1, blink
+    track: 1
+    keys:
+      1: {pose: flinch, ease: expo_out}
+      12: {pose: none, ease: sine_in_out}
+    swap: {eyes: {1: closed, 4: open}}
+  win_big:                       # slams the cooler lid at f24 with the right fist, lid bounces, roar
+    drag: {lag: 1, gain: 0.3, body: 0.4}   # the fist must land on the lid: less wrist lag on the downswing
+    keys:
+      10: {pose: wind_up, ease: sine_in_out}
+      18: {pose: wind_top, ease: sine_in_out}
+      24: {pose: slam, ease: expo_in}
+      26: {pose: slam_squash, ease: expo_out}
+      36: {pose: roar_up, ease: sine_in_out}
+      50: {pose: roar_up, ease: linear}
+      60: {pose: rest, ease: sine_in_out}
+    swap: {mouth: {6: open, 30: roar, 52: closed_pick}, eyes: {18: half, 24: wide, 44: open}}
+    layers:
+      - {preset: jolt, bone: cooler_lid, at: 24, y: -8, attack: 1, hold: 1, recover: 12, overshoot: 0.8}
+      - {preset: flick, bone: cooler_lid, at: 26, amount: 5, frames: 12}
+      - {preset: pulse, bone: cooler, at: 24, amount: -0.07, attack: 1, release: 7, axes: along}
+      - {preset: tremble, bone: head, amount: 1.4, hz: 9, at: 36, frames: 16}
+  celebrate:                     # 4 beats @100 BPM: shoulder bounce, tail wags on beats, chain swings
+    keys: {0: party, 72: party}
+    layers:
+      - {preset: nod, every: 18, amount: 6, bob: 9, chest: 0.4}
+      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3, phys_tail_4], amount: 9, cycles: 2, lag: 3, grow: 1.2}
+      - {preset: sway, bone: upper_arm_R, amount: 9, cycles: 4, phase: 0.1}
+      - {preset: sway, bone: hips, channel: x, amount: 6, cycles: 2}
+  fs_trigger:                    # wind-up f0-f30, two-fisted slam at f36 (= feature-trigger pump 3), roar hold, return
+    drag: {lag: 1, gain: 0.3, body: 0.4}
+    keys:
+      12: {pose: fs_gather, ease: sine_in_out}
+      28: {pose: fs_windup, ease: sine_in_out}
+      32: {pose: fs_windup_top, ease: sine_in_out}
+      36: {pose: fs_slam, ease: expo_in}
+      38: {pose: fs_slam_squash, ease: expo_out}
+      48: {pose: fs_roar, ease: sine_in_out}
+      62: {pose: fs_roar, ease: linear}
+      75: {pose: rest, ease: sine_in_out}
+    swap: {mouth: {24: open, 40: roar, 66: closed_pick}, eyes: {30: half, 36: wide, 64: open}}
+    layers:
+      - {preset: jolt, bone: cooler_lid, at: 36, y: -10, attack: 1, hold: 1, recover: 12, overshoot: 0.9}
+      - {preset: flick, bone: cooler_lid, at: 38, amount: -6, frames: 12}
+      - {preset: pulse, bone: cooler, at: 36, amount: -0.09, attack: 1, release: 8, axes: along}
+      - {preset: tremble, bone: head, amount: 1.6, hz: 9, at: 48, frames: 16}
+  fs_end:                        # nod + two-finger salute
+    keys:
+      12: {pose: salute_up, ease: sine_in_out}
+      20: {pose: salute_up, ease: linear}
+      26: {pose: salute_out, ease: expo_out}
+      38: {pose: salute_out, ease: linear}
+      54: {pose: rest, ease: sine_in_out}
+    swap: {mouth: {24: grin, 46: closed_pick}}
+    layers: [{preset: nod, at: 4, count: 1, every: 14, amount: 7, bob: 4}]
+  blink:                         # track 2: closed f1-f3
+    track: 2
+    layers: [{preset: blink, at: 0, soft: false}]

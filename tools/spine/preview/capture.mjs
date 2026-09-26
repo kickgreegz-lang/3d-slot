@@ -8,6 +8,15 @@
  *   node tools/spine/preview/capture.mjs --skel public/assets/spine/demo/sym_demo.json \
  *        --atlas public/assets/spine/demo/sym_demo.atlas --out <dir> \
  *        [--scenarios land,win,explode,idle,anticipation,appear,blur] [--kick -27] [--size 420] [--tile 224]
+ *   node tools/spine/preview/capture.mjs --skel build/spine/chr_gumbo.json --atlas build/spine/chr_gumbo.atlas \
+ *        --out <dir> [--scenarios idle,bass_drop,fs_trigger | all] [--size 560] [--tile 200] [--every N]
+ *
+ * 2D characters (chr_*, ANIMATION_SET 5): any clip name is a scenario and plays with its contract loop
+ * flag and track (tools/spine/contract.json characters): body clips on track 0 (one-shots, then 12
+ * frames of idle hand-off), overlays additive on track 1 over idle, blink on track 2 over idle. Extra
+ * scenarios: charge_drop (bass_drop_charge -> bass_drop, mix 0), look (idle while the runtime sweeps
+ * ctrl_look around a circle, track 3), win_celebrate (win_big -> celebrate). `all` = every clip. The
+ * sheet plots hips dx/dy, head rotation, chest scale and the springs; the pink cross is ctrl_look.
  *
  * Scenarios: land = runtime-like reel stop (blur while falling, inheritance off; at contact
  * setPositionInheritance(0, 0.6) + physicsTranslate(0, kick) + land -> idle, ANIMATION_CONTRACT 5);
@@ -36,7 +45,9 @@ const out = path.resolve(args.out ?? path.join(REPO, 'build/spine/preview', path
 const size = Number(args.size ?? 420);
 const tile = Number(args.tile ?? 224);
 const kick = Number(args.kick ?? -27);
-const scenarios = (args.scenarios ?? 'land,win,explode,idle,anticipation').split(',').filter(Boolean);
+const CONTRACT = JSON.parse(fs.readFileSync(path.join(REPO, 'tools/spine/contract.json'), 'utf8'));
+const isChar = args.mode === 'character' || (args.mode !== 'symbol' && /^chr_/.test(path.basename(skel)));
+let scenarios = (args.scenarios ?? (isChar ? 'idle,bass_drop,fs_trigger' : 'land,win,explode,idle,anticipation')).split(',').filter(Boolean);
 for (const [name, v] of [['size', size], ['tile', tile], ['kick', kick]]) {
   if (!Number.isFinite(v) || (name !== 'kick' && v <= 0)) {
     console.error(`capture: --${name} must be a number`);
@@ -64,6 +75,11 @@ const urlFor = (file) => {
 const skelUrl = urlFor(skel);
 const atlasUrl = urlFor(atlas);
 const server = await startServer({ port: Number(args.port ?? 0), extraRoots });
+// characters: portrait canvas (the figure is ~0.6-0.9 as wide as tall)
+const vw = isChar ? Math.round(size * 0.78) : size;
+const vh = size;
+const tileW = tile;
+const tileH = Math.round((tile * vh) / vw);
 
 const SCEN = {
   land: { frames: 34, every: 1, setup: `__spinePreview.drop({ from: 220, frames: 6, kick: ${kick} })` },
@@ -89,13 +105,13 @@ try {
 }
 const trace = { skeleton: path.relative(REPO, skel), atlas: path.relative(REPO, atlas), kick, scenarios: {} };
 try {
-  const page = await browser.newPage({ viewport: { width: size + 40, height: size + 40 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: vw + 40, height: vh + 40 }, deviceScaleFactor: 1 });
   const pageErrors = [];
   page.on('pageerror', (e) => pageErrors.push(e.message));
   page.on('console', (m) => {
     if (m.type() === 'error') pageErrors.push(m.text());
   });
-  const url = `${server.url}/tools/spine/preview/index.html?capture=1&size=${size}&kick=${kick}&skel=${encodeURIComponent(skelUrl)}&atlas=${encodeURIComponent(atlasUrl)}`;
+  const url = `${server.url}/tools/spine/preview/index.html?capture=1&size=${size}&w=${vw}&h=${vh}&kick=${kick}${isChar ? '&mode=character' : ''}&skel=${encodeURIComponent(skelUrl)}&atlas=${encodeURIComponent(atlasUrl)}`;
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForFunction(() => window.__spinePreview?.ready === true, null, { timeout: 60_000 }).catch(() => {});
   const ready = await page.evaluate(() => window.__spinePreview?.ready === true);
@@ -105,6 +121,31 @@ try {
   console.log(`capture: ${info.skeleton} (spine ${info.version}) ${info.animations.map((a) => `${a.name}:${a.frames}f`).join(' ')}`);
   const canvas = page.locator('canvas');
   fs.mkdirSync(out, { recursive: true });
+  if (isChar) {
+    const rig = CONTRACT.characters?.rigs?.[info.skeleton.split('/').pop().replace(/\.(json|skel)$/, '')] ?? {};
+    const rule = (n) => ({ ...(CONTRACT.characters?.clips?.[n] ?? {}), ...(rig.clips?.[n] ?? {}) });
+    const has = (n) => info.animations.some((a) => a.name === n);
+    const len = (n) => info.animations.find((a) => a.name === n)?.frames ?? 0;
+    const every = (f) => Number(args.every ?? Math.max(1, Math.round(f / 24)));
+    for (const a of info.animations) {
+      const r = rule(a.name);
+      const f = Math.round(a.frames);
+      if (r.track === 1) SCEN[a.name] = { frames: f + 8, every: 1, setup: `__spinePreview.play('idle', true); __spinePreview.play('${a.name}', false, 1, true)`, needs: ['idle', a.name] };
+      else if (r.track === 2) SCEN[a.name] = { frames: f + 4, every: 1, setup: `__spinePreview.play('idle', true); __spinePreview.play('${a.name}', false, 2)`, needs: ['idle', a.name] };
+      else if (r.loop) SCEN[a.name] = { frames: f, every: every(f), setup: `__spinePreview.play('${a.name}', true)`, needs: [a.name] };
+      else SCEN[a.name] = { frames: f + 12, every: every(f + 12), setup: `__spinePreview.play('${a.name}', false); __spinePreview.queue('idle', true, 0)`, needs: [a.name, 'idle'] };
+    }
+    if (has('bass_drop_charge') && has('bass_drop')) {
+      const f = Math.round(len('bass_drop_charge') + len('bass_drop')) + 10;
+      SCEN.charge_drop = { frames: f, every: every(f), setup: `__spinePreview.play('bass_drop_charge', false); __spinePreview.queue('bass_drop', false, 0); __spinePreview.queue('idle', true, 0)`, needs: ['bass_drop_charge', 'bass_drop', 'idle'] };
+    }
+    SCEN.look = { frames: 96, every: 4, setup: `__spinePreview.play('idle', true)`, needs: ['idle'], drive: (f) => `__spinePreview.look(${(300 * Math.cos((2 * Math.PI * f) / 96)).toFixed(1)}, ${(220 * Math.sin((2 * Math.PI * f) / 96)).toFixed(1)})` };
+    if (has('win_big') && has('celebrate')) {
+      const f = Math.round(len('win_big') + 36);
+      SCEN.win_celebrate = { frames: f, every: every(f), setup: `__spinePreview.play('win_big', false); __spinePreview.queue('celebrate', true, 0)`, needs: ['win_big', 'celebrate'] };
+    }
+    if (scenarios.includes('all')) scenarios = [...info.animations.map((a) => a.name), 'charge_drop', 'look', 'win_celebrate'].filter((n) => SCEN[n]);
+  }
 
   for (const name of scenarios) {
     const sc = SCEN[name];
@@ -122,6 +163,7 @@ try {
     const shots = [];
     const probes = [];
     for (let f = 0; f < sc.frames; f++) {
+      if (sc.drive) await page.evaluate(sc.drive(f));
       // two 60 Hz physics steps per 30 fps frame (same as the runtime at 60 fps)
       const p = await page.evaluate(() => {
         const a = window.__spinePreview.step(1 / 60);
@@ -138,7 +180,7 @@ try {
     }
     trace.scenarios[name] = probes;
     const sheet = path.join(out, `${name}.png`);
-    await contactSheet(browser, shots, probes, sheet, { title: `${path.basename(skel)} · ${name} · kick ${kick}`, tile });
+    await contactSheet(browser, shots, probes, sheet, { title: `${path.basename(skel)} · ${name}${isChar ? '' : ` · kick ${kick}`}`, tileW, tileH, isChar });
     console.log(`capture: ${name}: ${shots.length} frames -> ${path.relative(process.cwd(), sheet)}`);
   }
   if (pageErrors.length) {
@@ -156,7 +198,8 @@ try {
 process.exit(failed ? 1 : 0);
 
 // ---------------------------------------------------------------------------- contact sheet
-async function contactSheet(browser, shots, probes, file, { title, tile }) {
+async function contactSheet(browser, shots, probes, file, { title, tileW, tileH, isChar = false }) {
+  const tile = tileW;
   const cols = Math.min(8, Math.max(4, Math.ceil(Math.sqrt(shots.length * 1.6))));
   const W = cols * (tile + 6) + 12;
   const figs = shots
@@ -179,9 +222,22 @@ async function contactSheet(browser, shots, probes, file, { title, tile }) {
     series.push(`<polyline fill="none" stroke="${color}" stroke-width="2" points="${pts.map(([x, v]) => `${x.toFixed(1)},${ys(Math.max(lo, Math.min(hi, v))).toFixed(1)}`).join(' ')}"/>`);
     series.push(`<text x="${PW - 240}" y="${16 + series.length * 7}" fill="${color}">${label}</text>`);
   };
-  add('squash sy (0.8..1.3)', '#ffd54a', (p) => p.squashSY, 0.8, 1.3);
-  add('body scale (0.8..1.3)', '#35f2e0', (p) => p.bodyS, 0.8, 1.3);
-  const physNames = Object.keys(probes[0]?.phys ?? {});
+  if (isChar) {
+    add('hips dy (-60..20)', '#ffd54a', (p) => p.hipsDY, -60, 20);
+    add('hips dx (-40..40)', '#ffa040', (p) => p.hipsDX, -40, 40);
+    add('head rot (-30..30°)', '#35f2e0', (p) => p.headRot, -30, 30);
+    add('chest scale (0.95..1.1)', '#ffffff', (p) => p.chestS, 0.95, 1.1);
+  } else {
+    add('squash sy (0.8..1.3)', '#ffd54a', (p) => p.squashSY, 0.8, 1.3);
+    add('body scale (0.8..1.3)', '#35f2e0', (p) => p.bodyS, 0.8, 1.3);
+  }
+  let physNames = Object.keys(probes[0]?.phys ?? {});
+  if (isChar) {
+    // one curve per spring chain: its tip (phys_tail_4, phys_chain_3, ...), at most 4
+    const tips = new Map();
+    for (const n of physNames) tips.set(n.replace(/_\d+$/, ''), n);
+    physNames = [...tips.values()].slice(0, 4);
+  }
   const colors = ['#ff5a9e', '#9a7bff', '#7dff8a', '#ff8a3a'];
   physNames.forEach((nm, i) => {
     const rot = probes[0].phys[nm].mode === 'rotate';
@@ -195,7 +251,7 @@ async function contactSheet(browser, shots, probes, file, { title, tile }) {
   const plot = `<svg width="${PW}" height="${PH}" style="background:#1a0b33;display:block;margin:6px 0">${ticks}${evMarks}${series.join('')}</svg>`;
   const page = await browser.newPage({ viewport: { width: W, height: 300 } });
   await page.setContent(`<style>body{margin:0;background:#111;padding:6px;font:11px monospace;color:#ddd}h1{font:600 13px monospace;margin:0 0 4px}
-    .g{display:grid;grid-template-columns:repeat(${cols},${tile}px);gap:6px}figure{margin:0}img{width:${tile}px;height:${tile}px;display:block}
+    .g{display:grid;grid-template-columns:repeat(${cols},${tile}px);gap:6px}figure{margin:0}img{width:${tile}px;height:${tileH}px;display:block}
     figcaption{padding:1px 0}b{color:#ffd54a;font-weight:600}svg text{font:11px monospace}</style>
     <h1>${title.replace(/</g, '&lt;')}</h1>${plot}<div class="g">${figs}</div>`);
   await page.screenshot({ path: file, fullPage: true });

@@ -443,15 +443,23 @@ class Master:
     def explain(self, piece: Piece, tol: float = 0.12) -> None:
         """Claim the unclaimed master pixels this piece covers and matches (colour within tol)."""
         A = scale_m(self.fr) @ piece.A
-        h, w = self.claim.shape
-        wp = warp_prem(piece.prem, A, (0, 0, w, h))
+        H, W = self.claim.shape
+        h, w = piece.alpha.shape
+        q = apply(A, [[0, 0], [w, 0], [0, h], [w, h]])
+        X0, Y0 = max(0, int(math.floor(q[:, 0].min())) - 2), max(0, int(math.floor(q[:, 1].min())) - 2)
+        X1, Y1 = min(W, int(math.ceil(q[:, 0].max())) + 2), min(H, int(math.ceil(q[:, 1].max())) + 2)
+        if X1 <= X0 or Y1 <= Y0:
+            return
+        wp = warp_prem(piece.prem, A, (X0, Y0, X1 - X0, Y1 - Y0))
+        fine = self.fine[Y0:Y1, X0:X1]
         a = wp[..., 3] > 0.5
         rgb = np.where(a[..., None], wp[..., :3] / np.maximum(wp[..., 3:4], 1e-4), 0)
-        mrgb = np.where(self.fine[..., 3:4] > 1e-4, self.fine[..., :3] / np.maximum(self.fine[..., 3:4], 1e-4), 0)
-        ok = a & (self.fine[..., 3] > 0.5) & (np.abs(rgb - mrgb).max(-1) < tol)
-        ok = ndi.binary_erosion(ok, iterations=1) | (ok & (self.fine[..., 3] > 0.5) & (np.abs(rgb - mrgb).max(-1) < tol / 2))
-        free = ~np.isfinite(self.claim)
-        self.claim[ok & free] = piece.z if piece.z is not None else 0
+        mrgb = np.where(fine[..., 3:4] > 1e-4, fine[..., :3] / np.maximum(fine[..., 3:4], 1e-4), 0)
+        diff = np.abs(rgb - mrgb).max(-1)
+        ok = a & (fine[..., 3] > 0.5) & (diff < tol)
+        ok = ndi.binary_erosion(ok, iterations=1) | (ok & (diff < tol / 2))
+        claim = self.claim[Y0:Y1, X0:X1]
+        claim[ok & ~np.isfinite(claim)] = piece.z if piece.z is not None else 0
 
     def master_box(self, piece: Piece) -> tuple[float, float, float, float]:
         x0, y0, x1, y1 = piece.content_box()
@@ -472,9 +480,11 @@ def _template(piece: Piece, s: float, gray: bool = False) -> tuple[np.ndarray, n
 
 
 def _explained(master_level: np.ndarray, pieces: list[Piece], s: float, f: float, blur: float = 1.0) -> float:
-    """Master area (px) the pieces explain at sheet scale s: for each piece, the best blurred colour NCC
-    over positions where it lies inside the master silhouette (every piece does, hidden parts included:
-    they sit behind something opaque), weighted ncc^2 x its area."""
+    """Master area (px) the pieces explain at sheet scale s. Per piece: the best blurred colour NCC over
+    positions where it lies inside the master silhouette (every piece does, hidden parts included: they
+    sit behind something opaque); there, the template pixels whose colour agrees with the master
+    (max channel difference < 0.12), weighted by ncc^2. Counting agreeing pixels (not the template's
+    area) keeps a too-large template with a mediocre correlation from winning."""
     img = ndi.gaussian_filter(master_level[..., :3], (blur, blur, 0))
     ma = (master_level[..., 3] > 0.5).astype(np.float64)
     ones = np.ones(img.shape[:2], np.float32)
@@ -487,8 +497,12 @@ def _explained(master_level: np.ndarray, pieces: list[Piece], s: float, f: float
         ncc, _ = masked_ncc(img, ones, T, M, min_cover=0.9)
         ncc[_corr(ma, M.astype(np.float64)) / max(1.0, float(M.sum())) < 0.97] = -1
         v = float(ncc.max())
-        if v > 0:
-            tot += v * v * float(M.sum()) / (f * f)
+        if v <= 0:
+            continue
+        iy, ix = np.unravel_index(int(np.argmax(ncc)), ncc.shape)
+        d = np.abs(img[iy:iy + T.shape[0], ix:ix + T.shape[1]] - T).max(-1)
+        agree = np.count_nonzero((M > 0.5) & (d < 0.12))
+        tot += v * v * agree / (f * f)
     return tot
 
 
@@ -603,7 +617,7 @@ class Features:
         # keypoints are pixel-centre (index) coordinates: continuous = index + 0.5 on both sides
         A = scale_m(1 / fr) @ trans_m(0.5, 0.5) @ A @ trans_m(-0.5, -0.5)
         d = decompose(A)
-        ok = n_in >= 8 and n_in >= 0.2 * len(good)
+        ok = n_in >= 8 and n_in >= 0.2 * len(good) and 0.05 < d["scale"] < 20
         if scale is not None and abs(d["scale"] / scale - 1) > tol:
             ok = False
         return {"A": A, "inliers": n_in, "matches": len(good), "scale": d["scale"], "rotation": d["rotation"], "ok": ok}
@@ -640,10 +654,11 @@ def _coarse_candidates(master: Master, piece: Piece, s: float, near, min_cover: 
     T, M, (fx, fy) = _template(piece, s * f)
     oy = ox = 0
     if near is not None:
+        # the piece CENTRE must fall within `radius` of the hint: top-left in [c - r - t/2, c + r - t/2]
         cx, cy, r = near[0] * f, near[1] * f, near[2] * f
         th, tw = T.shape[:2]
-        x0 = int(max(0, cx - r - tw)); x1 = int(min(img.shape[1], cx + r + tw))
-        y0 = int(max(0, cy - r - th)); y1 = int(min(img.shape[0], cy + r + th))
+        x0 = int(max(0, math.floor(cx - r - tw / 2))); x1 = int(min(img.shape[1], math.ceil(cx + r + tw / 2)))
+        y0 = int(max(0, math.floor(cy - r - th / 2))); y1 = int(min(img.shape[0], math.ceil(cy + r + th / 2)))
         img, V, K, ma, ox, oy = img[y0:y1, x0:x1], V[y0:y1, x0:x1], K[y0:y1, x0:x1], ma[y0:y1, x0:x1], x0, y0
     if T.shape[0] > img.shape[0] or T.shape[1] > img.shape[1]:
         raise SplitError(f"{piece.pid}: at scale {s:.3f} the piece is larger than the master search area")
@@ -789,7 +804,7 @@ def _refine(master: Master, piece: Piece, A0: np.ndarray, motion: str, max_rot: 
         cs = resize_gray(crop, g)
         Vs = resize_gray(Vc, g)
         best = None
-        steps = max(1, int(round(max_rot / 1.5)))
+        steps = max(1, int(round(max_rot / 1.5))) if min(th, tw) >= 40 else 0   # tiny pieces: no reliable angle
         for k in range(-steps, steps + 1):
             ang = 1.5 * k
             Rk, Tk = _render_template(piece, scale_m(g) @ L, ang)
@@ -887,11 +902,15 @@ def canvas_layer(piece: Piece, W: int, H: int) -> np.ndarray:
 
 
 def composite(pieces: list[Piece], W: int, H: int) -> np.ndarray:
-    """Premultiplied 'over' of the pieces in z order (back to front)."""
+    """Premultiplied 'over' of the pieces in z order (back to front), window by window."""
     acc = np.zeros((H, W, 4), np.float32)
     for p in sorted(pieces, key=lambda q: (q.z if q.z is not None else 0)):
-        L = canvas_layer(p, W, H)
-        acc = L + acc * (1 - L[..., 3:4])
+        x, y, w, h = p.box
+        sx0, sy0, sx1, sy1 = max(0, x), max(0, y), min(W, x + w), min(H, y + h)
+        if sx1 <= sx0 or sy1 <= sy0:
+            continue
+        L = p.img[sy0 - y:sy1 - y, sx0 - x:sx1 - x]
+        acc[sy0:sy1, sx0:sx1] = L + acc[sy0:sy1, sx0:sx1] * (1 - L[..., 3:4])
     return acc
 
 
@@ -962,11 +981,52 @@ def _ransac_circle(pts: np.ndarray, rmin: float, rmax: float, inside, iters: int
     return fit_circle(pts[best_in])
 
 
-def cap_joint(child_a: np.ndarray, parent_a: np.ndarray) -> dict:
+def _end_seed(C: np.ndarray, away=None, toward=None, back: float | None = None, axis=None):
+    """Seed for the cap search at one END of an elongated piece (principal axis): the end farther from
+    `away` (the piece's own child, e.g. the forearm for the upper arm), or nearer to `toward` (the parent,
+    for end pieces such as the hand); back=+1/-1 picks the end opposite the facing x direction (jaw
+    hinge). The seed sits one local half-width inside the extreme point. None when not applicable."""
+    ys, xs = np.nonzero(C)
+    if len(xs) < 20:
+        return None
+    pts = np.column_stack([xs + 0.5, ys + 0.5])
+    c = pts.mean(0)
+    cov = np.cov((pts - c).T)
+    ev, evec = np.linalg.eigh(cov)
+    if axis is not None:
+        axis = np.asarray(axis, float) / (np.linalg.norm(axis) or 1.0)
+    elif back is None and (ev[1] < 1.5 ** 2 * max(ev[0], 1e-9) or (away is None and toward is None)):
+        return None
+    else:
+        axis = evec[:, 1] if back is None else np.array([1.0, 0.0])
+    t = (pts - c) @ axis
+    dt = ndi.distance_transform_edt(np.pad(C, 1))[1:-1, 1:-1]
+    rmax = float(dt.max())
+    ends = []
+    for sign in (-1, 1):
+        te = t.max() if sign > 0 else t.min()
+        slab = np.abs(t - te) <= 2 * rmax
+        r_end = float(dt[ys[slab], xs[slab]].max()) if slab.any() else rmax
+        perp = (pts[slab] - c) - np.outer((pts[slab] - c) @ axis, axis)
+        off = perp.mean(0) if slab.any() else np.zeros(2)
+        ends.append(c + axis * (te - sign * r_end) + off)
+    if back is not None:
+        return ends[0] if back > 0 else ends[1]         # back=+1: facing right -> the smaller-x end
+    if away is not None:
+        d = [np.hypot(*(e - np.asarray(away))) for e in ends]
+        return ends[int(np.argmax(d))]
+    d = [np.hypot(*(e - np.asarray(toward))) for e in ends]
+    return ends[int(np.argmin(d))]
+
+
+def cap_joint(child_a: np.ndarray, parent_a: np.ndarray, away=None, toward=None, back: float | None = None,
+              parent_end=None, prefer: str | None = None) -> dict:
     """PIPELINE 3.1 step 5: joint = centroid of dilate(child) & parent, snapped to the round overlap cap.
-    Both alphas are full-canvas arrays. The cap is the circle (RANSAC) through the boundary of one piece
-    that lies inside the other: the child's own cap when its end lies inside the parent, else the
-    parent's cap inside the child; the better arc wins. Radius bounded by the child's half width."""
+    Both alphas are full-canvas arrays. The search is seeded at the attaching end of the child (see
+    _end_seed: away from its own child / toward its parent / the back of a jaw), else at the overlap
+    centroid; the cap is the circle (RANSAC) through the child's boundary near the seed (its own cap, even
+    where it pokes past the parent) or through the parent's boundary inside the child (the parent's cap);
+    the better arc wins. Radius bounded by the child's half width there."""
     C = child_a > 0.5
     P = parent_a > 0.5
     out = {"method": None}
@@ -982,60 +1042,93 @@ def cap_joint(child_a: np.ndarray, parent_a: np.ndarray) -> dict:
     cen = np.array([xs.mean() + 0.5, ys.mean() + 0.5])
     out.update({"method": "overlap-centroid", "joint": [round(float(cen[0]), 1), round(float(cen[1]), 1)],
                 "overlapPx": int(len(xs))})
-    dtc = ndi.distance_transform_edt(C)
-    near = ndi.binary_dilation(ov, iterations=24)
-    r_ref = float(dtc[near & C].max()) if (near & C).any() else float(dtc.max())
+    # parent_end: the joint is the PARENT's end toward the child (the neck's top for the head)
+    seed = _end_seed(P, toward=parent_end, axis=np.asarray(parent_end) - np.array(
+        [np.nonzero(P)[1].mean() + 0.5, np.nonzero(P)[0].mean() + 0.5])) if parent_end is not None else \
+        _end_seed(C, away=away, toward=toward, back=back)
+    if seed is not None:
+        sx, sy = int(seed[0]), int(seed[1])
+        if not (0 <= sx < C.shape[1] and 0 <= sy < C.shape[0] and C[sy, sx]):
+            # the seed must lie on the child: take the nearest pixel of the overlap
+            both = C & P
+            oy, ox = np.nonzero(both) if both.any() else (ys, xs)
+            d2 = (ox + 0.5 - seed[0]) ** 2 + (oy + 0.5 - seed[1]) ** 2
+            i = int(np.argmin(d2))
+            seed = np.array([ox[i] + 0.5, oy[i] + 0.5])
+        out.update({"method": "end-seed", "joint": [round(float(seed[0]), 1), round(float(seed[1]), 1)]})
+    else:
+        seed = cen
+    dtc = ndi.distance_transform_edt(np.pad(C, 1))[1:-1, 1:-1]
+    H, W = C.shape
+    yy, xx = np.ogrid[0:H, 0:W]
+    rmax = float(dtc.max())
+    near0 = (xx + 0.5 - seed[0]) ** 2 + (yy + 0.5 - seed[1]) ** 2 <= (1.5 * rmax) ** 2
+    r_ref = float(dtc[near0 & C].max()) if (near0 & C).any() else rmax
     if r_ref < 2:
         out["capFound"] = False
         return out
-    H, W = C.shape
+    near = (xx + 0.5 - seed[0]) ** 2 + (yy + 0.5 - seed[1]) ** 2 <= (1.7 * r_ref) ** 2
 
-    def on_child(x, y):
+    def on_child_near(x, y):
         ix, iy = int(x), int(y)
-        return 0 <= ix < W and 0 <= iy < H and bool(C[iy, ix])
+        return (0 <= ix < W and 0 <= iy < H and bool(C[iy, ix]) and
+                (x - seed[0]) ** 2 + (y - seed[1]) ** 2 <= (0.9 * r_ref) ** 2)
 
-    Pin = ndi.binary_erosion(P, iterations=2)
     Cin = ndi.binary_erosion(C, iterations=2)
     best = None
-    for k, (name, a, inside) in enumerate((("child-cap", C, Pin), ("parent-cap", P, Cin))):
-        by, bx = np.nonzero(_boundary(a) & inside & near)
+    for k, (name, pts_mask) in enumerate((("child-cap", _boundary(C) & near),
+                                           ("parent-cap", _boundary(P) & Cin & near))):
+        by, bx = np.nonzero(pts_mask)
         if len(bx) < 12:
             continue
         pts = np.column_stack([bx + 0.5, by + 0.5]).astype(np.float64)
-        fit = _ransac_circle(pts, 0.45 * r_ref, 1.9 * r_ref, on_child, seed=k)
+        fit = _ransac_circle(pts, 0.45 * r_ref, 1.9 * r_ref, on_child_near, seed=k)
         if fit is None:
             continue
         c, r, rms, span = fit
-        ok = span >= 100 and rms <= 0.06 * r + 0.75 and on_child(c[0], c[1])
+        ok = span >= 100 and rms <= 0.06 * r + 0.75 and on_child_near(c[0], c[1])
         q = span / 180.0 - rms / max(r, 1e-6) * 10
+        if prefer and not name.startswith(prefer):
+            continue                                     # e.g. the head pivots on the neck's cap, never its skull
         cand = {"method": name, "joint": [round(float(c[0]), 1), round(float(c[1]), 1)], "capRadius": round(r, 1),
                 "capRms": round(rms, 2), "capArcDeg": round(span, 1), "ok": bool(ok), "q": q}
         if ok and (best is None or q > best["q"]):
             best = cand
     if best is not None:
         best.pop("q")
-        best["overlapCentroid"] = out["joint"]
-        best["overlapPx"] = out["overlapPx"]
+        best.update({"overlapCentroid": [round(float(cen[0]), 1), round(float(cen[1]), 1)], "overlapPx": int(len(xs)),
+                     "seed": [round(float(seed[0]), 1), round(float(seed[1]), 1)]})
         return best
     out["capFound"] = False
     return out
 
 
-def joint_hole_test(child_a: np.ndarray, parent_a: np.ndarray, joint, deg: float = JOINT_TEST_DEG) -> dict:
-    """Rotate the child +-deg about the joint: pixels near the joint (within 0.9 x the limb's half width)
-    that the union covered at rest and leaves open after the rotation are holes (no overlap cap)."""
+def joint_hole_test(child_a: np.ndarray, parent_a: np.ndarray, joint, deg: float = JOINT_TEST_DEG,
+                    reach: float = 1.5) -> dict:
+    """PIPELINE 3.1 'no holes when a bone rotates +-35 deg'. Rotate the child about its joint. On the
+    PARENT side of the joint (behind it, opposite the child's axis) every pixel the parent + child covered
+    at rest, within reach x r of the joint, must stay covered: a round overlap cap centred on the joint
+    turns in place, while a limb cut off straight (or a joint off the cap centre) swings its corners out and
+    opens a notch. The limb's own side is excluded: swinging away there is the motion, not a hole.
+    r = the child's distance to its own edge at the joint (the cap radius for a proper cap)."""
     jx, jy = float(joint[0]), float(joint[1])
     H, W = child_a.shape
-    y0, y1 = int(max(0, jy - 48)), int(min(H, jy + 48))
-    x0, x1 = int(max(0, jx - 48)), int(min(W, jx + 48))
-    if y1 <= y0 or x1 <= x0:
+    ix, iy = int(jx), int(jy)
+    if not (0 <= ix < W and 0 <= iy < H):
         return {"radius": 0.0, "holesPx": None, "why": "joint off the canvas"}
-    dt = ndi.distance_transform_edt(child_a[max(0, y0 - 2):y1 + 2, max(0, x0 - 2):x1 + 2] > 0.5)
-    r = float(dt.max())
-    if r < 2:
-        return {"radius": r, "holesPx": None, "why": "joint not on the child"}
-    R = int(math.ceil(0.9 * r)) + 3
-    X0, Y0 = int(math.floor(jx)) - R, int(math.floor(jy)) - R
+    C = child_a > 0.5
+    if not C[iy, ix]:
+        return {"radius": 0.0, "holesPx": None, "why": "joint not on the child (no cap there)"}
+    ys, xs = np.nonzero(C)
+    y0, y1, x0, x1 = max(0, ys.min() - 2), min(H, ys.max() + 3), max(0, xs.min() - 2), min(W, xs.max() + 3)
+    r = float(ndi.distance_transform_edt(np.pad(C[y0:y1, x0:x1], 1))[iy - y0 + 1, ix - x0 + 1])
+    if r < 3:
+        return {"radius": round(r, 1), "holesPx": None, "why": "joint on the child's edge (no overlap cap)"}
+    u = np.array([xs.mean() + 0.5 - jx, ys.mean() + 0.5 - jy])
+    n = float(np.linalg.norm(u))
+    u = u / n if n > 1e-6 else np.array([0.0, 1.0])
+    R = int(math.ceil(reach * r)) + 3
+    X0, Y0 = ix - R, iy - R
     size = 2 * R + 1
 
     def win(a):
@@ -1045,22 +1138,24 @@ def joint_hole_test(child_a: np.ndarray, parent_a: np.ndarray, joint, deg: float
             o[sy0 - Y0:sy1 - Y0, sx0 - X0:sx1 - X0] = a[sy0:sy1, sx0:sx1]
         return o
 
-    C = win(child_a)
+    Cw = win(child_a)
     P = win(parent_a) > 0.5
     yy, xx = np.mgrid[0:size, 0:size]
     lx, ly = jx - X0, jy - Y0
-    region = (xx + 0.5 - lx) ** 2 + (yy + 0.5 - ly) ** 2 <= (0.9 * r) ** 2
-    rest = (P | (C > 0.5)) & region
+    dx, dy = xx + 0.5 - lx, yy + 0.5 - ly
+    region = (dx * dx + dy * dy <= (reach * r) ** 2) & (dx * u[0] + dy * u[1] < 0)
+    rest = (P | (Cw > 0.5)) & region
     holes = 0
     for d in (-deg, deg):
         Rm = rot_m(d, lx, ly)
         Rinv = np.linalg.inv(trans_m(-0.5, -0.5) @ Rm @ trans_m(0.5, 0.5))
         M = np.array([[Rinv[1, 1], Rinv[1, 0]], [Rinv[0, 1], Rinv[0, 0]]])
         off = np.array([Rinv[1, 2], Rinv[0, 2]])
-        rc = ndi.affine_transform(C, M, off, output_shape=C.shape, order=1, mode="constant", cval=0.0)
+        rc = ndi.affine_transform(Cw, M, off, output_shape=Cw.shape, order=1, mode="constant", cval=0.0)
         after = (P | (rc > 0.5)) & region
         holes = max(holes, int(np.count_nonzero(rest & ~after)))
-    return {"radius": round(r, 1), "holesPx": holes, "deg": deg}
+    return {"radius": round(r, 1), "holesPx": holes, "deg": deg, "reach": reach,
+            "regionPx": int(np.count_nonzero(region))}
 
 
 # ----------------------------------------------------------------------------- metrics
@@ -1082,17 +1177,29 @@ def ssim(a: np.ndarray, b: np.ndarray, mask: np.ndarray | None = None, sigma: fl
     return float(m.mean())
 
 
-def reassembly_metrics(rest_prem: np.ndarray, master_prem: np.ndarray) -> dict:
-    """SSIM (luminance composited on mid grey, over the union of both silhouettes + 4 px) and alpha IoU."""
+def reassembly_metrics(rest_prem: np.ndarray, master_prem: np.ndarray, display_sigma: float = 1.0) -> dict:
+    """Rest pose vs master (both in canvas space): SSIM of the luminance composited on mid grey, over the
+    union of both silhouettes + 4 px, and alpha IoU (> 0.5).
+    The gated `ssim` compares at display scale: both images get a Gaussian of `display_sigma` canvas px
+    first (the canvas is 2x the design size, so 1 px is half a display pixel). The master and the pieces
+    come through different resampling chains (master 2k -> canvas; sheet 4k -> canvas, plus each matte's
+    1 px erosion), whose kernel differences dominate a native-resolution SSIM without being a reassembly
+    error: the exact ground-truth composite scores ~0.96 native / ~0.99 at display scale against a
+    resampled master, and a 2 px misplacement still shows. `ssimNative` is reported too."""
     ar, am = rest_prem[..., 3], master_prem[..., 3]
     union = (ar > 1 / 255) | (am > 1 / 255)
     region = ndi.binary_dilation(union, iterations=4)
     la = luminance(rest_prem[..., :3] + 0.5 * (1 - ar[..., None]))
     lb = luminance(master_prem[..., :3] + 0.5 * (1 - am[..., None]))
-    s = ssim(la, lb, region)
+    s_native = ssim(la, lb, region)
+    if display_sigma > 0:
+        s = ssim(ndi.gaussian_filter(la, display_sigma), ndi.gaussian_filter(lb, display_sigma), region)
+    else:
+        s = s_native
     iou = ml.iou(ar, am)
     diff = np.abs(la - lb)
-    return {"ssim": round(s, 5), "alphaIoU": round(iou, 5), "meanAbsDiff": round(float(diff[region].mean()), 5),
+    return {"ssim": round(s, 5), "ssimNative": round(s_native, 5), "displaySigma": display_sigma,
+            "alphaIoU": round(iou, 5), "meanAbsDiff": round(float(diff[region].mean()), 5),
             "p99AbsDiff": round(float(np.percentile(diff[region], 99)), 4) if region.any() else 0.0,
             "gate": {"ssim": GATE_SSIM, "alphaIoU": GATE_IOU},
             "passed": bool(s > GATE_SSIM and iou > GATE_IOU)}

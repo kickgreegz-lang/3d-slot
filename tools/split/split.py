@@ -117,7 +117,8 @@ def load_defaults(path: Path | None, kind: str) -> dict:
 
 
 class Build:
-    def __init__(self, mapping_path: Path, out_dir: Path | None = None, log=print):
+    def __init__(self, mapping_path: Path, out_dir: Path | None = None, log=None):
+        log = log or (lambda *a: print(*a, file=sys.stderr))
         self.mp = Path(mapping_path)
         self.m = json.loads(self.mp.read_text(encoding="utf-8"))
         self.log = log
@@ -322,10 +323,13 @@ class Build:
                     rep["searchRegion"] = region
                 amb = rep.get("ambiguity", 0.0) if rep.get("init") == "ncc" else 0.0
                 need = max(sl.GATE_NCC, 0.85 - 0.1 * rnd)
-                weak = rep.get("visibleFrac", 1) < 0.35 and not hinted
+                weak = rep.get("visibleFrac", 1) < 0.35          # mostly hidden: image evidence is thin
+                # a piece whose parent exists but is not placed yet searched the whole master: only a clearly
+                # unique match counts (small features - pupils, nostrils - repeat across a face)
+                orphan = near is None and rnd > 0 and any(self.setup_piece(c) is not None for c in self._exact_parents(p))
                 accept = (rep.get("ok") and rep["ncc"] >= need and rep.get("conflict", 0) <= 0.15 and
-                          amb < (0.9 if rnd == 0 else 0.98 if near is not None else 0.9) and
-                          (not weak or (rep["ncc"] >= 0.9 and amb < 0.8)))
+                          amb < (0.9 if rnd == 0 else 0.98 if near is not None else 0.75 if orphan else 0.9) and
+                          (not weak or (rep["ncc"] >= (0.85 if hinted else 0.9) and amb < 0.8)))
                 p.reg = rep
                 last[p.pid] = (rep, p.A)
                 if not accept:
@@ -340,6 +344,8 @@ class Build:
             self._refine_scales()
             if not pending or (rnd > 0 and not progress):
                 break
+        self._twin_swaps(pending, last)
+        self._reassembly_refine(pending, last)
         # what never passed: keep the best attempt as an UNVERIFIED placement (the registration gate fails,
         # the previews still render) so the operator can confirm or correct it with a hint
         for p in pending:
@@ -355,6 +361,138 @@ class Build:
                                  f"visible {rep.get('visibleFrac', 0):.0%}), centre near canvas ({c[0]:.0f}, {c[1]:.0f}): check "
                                  f"landmarks.png / preview.png and confirm with place: {{near: [x, y]}} (or like / at)")
             self.log(f"  {p.pid:22s} UNVERIFIED ncc {rep.get('ncc', -1):.3f} vis {rep.get('visibleFrac', 0):.0%}")
+
+    def _twin_swaps(self, pending: list, last: dict) -> None:
+        """Left/right twins (thigh_L / thigh_R in identical shorts) correlate equally well at either place;
+        only occlusion tells them apart: the near twin is drawn over the far one. For each _L/_R pair,
+        composite both pieces in z order at the found positions and swapped, compare with the master over
+        their union (ignoring pixels a registered piece in front of both explains), keep the better."""
+        m = self.master
+        fr = m.fr
+        for slot in list(self.slots):
+            if not slot.endswith("_L"):
+                continue
+            a, b = self.setup_piece(slot), self.setup_piece(slot[:-2] + "_R")
+            if a is None or b is None or a.hidden or b.hidden:
+                continue
+            Aa = a.A if a.A is not None else last.get(a.pid, ({}, None))[1]
+            Ab = b.A if b.A is not None else last.get(b.pid, ({}, None))[1]
+            if Aa is None or Ab is None:
+                continue
+            ca = sl.apply(Aa, [[a.alpha.shape[1] / 2, a.alpha.shape[0] / 2]])[0]
+            cb = sl.apply(Ab, [[b.alpha.shape[1] / 2, b.alpha.shape[0] / 2]])[0]
+            if math.hypot(*(ca - cb)) < 4:
+                continue
+            swapped = (sl.trans_m(*(cb - ca)) @ Aa, sl.trans_m(*(ca - cb)) @ Ab)
+            H, W = m.claim.shape
+            zmax = max(a.z or 0, b.z or 0)
+            front = np.isfinite(m.claim) & (m.claim > zmax)
+            errs = []
+            for TA, TB in ((Aa, Ab), swapped):
+                acc = np.zeros((H, W, 4), np.float32)
+                for q, T in sorted(((a, TA), (b, TB)), key=lambda t: t[0].z or 0):
+                    L = sl.warp_prem(q.prem, sl.scale_m(fr) @ T, (0, 0, W, H))
+                    acc = L + acc * (1 - L[..., 3:4])
+                sel = (acc[..., 3] > 0.5) & ~front
+                if not sel.any():
+                    errs.append(1e9)
+                    continue
+                errs.append(float(np.abs(acc[..., :3][sel] - m.fine[..., :3][sel]).mean()) +
+                            float(np.count_nonzero(sel & (m.fine[..., 3] < 0.5))) / max(1, int(sel.sum())))
+            self.log(f"  twins {a.slot} / {b.slot}: error as found {errs[0]:.4f}, swapped {errs[1]:.4f}")
+            if errs[1] < 0.8 * errs[0]:
+                self.log(f"  twins {a.slot} / {b.slot}: swapped (error {errs[0]:.4f} -> {errs[1]:.4f})")
+                for q, T in ((a, swapped[0]), (b, swapped[1])):
+                    q.A = T
+                    q.reg = {**q.reg, "twinSwap": True, "verified": bool(q.reg.get("verified")) and q not in pending,
+                             "transform": sl.decompose(T)}
+                    if q.pid in last:
+                        last[q.pid] = (last[q.pid][0], T)
+                    self.warnings.append(f"{q.pid}: swapped with its twin (occlusion fits the master better): check it")
+
+    def _reassembly_refine(self, pending: list, last: dict) -> None:
+        """Aperture problem: a limb whose ends hide under other pieces correlates equally well anywhere
+        along its own axis. NCC never sees the master pixels a slid piece leaves unexplained; the composite
+        does. For every placed setup piece (front to back, two passes), try shifts along its axis (+-30% of
+        its length) and slightly across, with every other piece fixed, and keep the shift whose composite
+        best matches the master in that window (colour + alpha) when it improves the error by 10%."""
+        m = self.master
+        fr = m.fr * 0.5                                  # half the fine level: the slide is a coarse fix
+        mfine = sl.resize_gray(m.prem, fr)
+        H, W = mfine.shape[:2]
+        placed = {q.pid: (q.A if q.A is not None else last.get(q.pid, ({}, None))[1])
+                  for q in self.pieces if q.setup and not q.hidden}
+        placed = {k: v for k, v in placed.items() if v is not None}
+        def prone(q):
+            r = q.reg if q.A is not None else last.get(q.pid, ({}, None))[0]
+            twin = q.slot[:-2] + ("_R" if q.slot.endswith("_L") else "_L") if q.slot[-2:] in ("_L", "_R") else None
+            return q in pending or r.get("visibleFrac", 1) < 0.75 or twin in self.slots
+
+        order = sorted([q for q in self.pieces if q.pid in placed and prone(q)], key=lambda q: -(q.z or 0))
+        for p in order + order:                       # two passes: a fix can unlock its neighbour
+            if p.spec.get("place") not in (None, "auto"):
+                continue
+            A = scale_m_fine = sl.scale_m(fr) @ placed[p.pid]
+            h, w = p.alpha.shape
+            q4 = sl.apply(A, [[0, 0], [w, 0], [0, h], [w, h]])
+            L = float(max(np.ptp(q4[:, 0]), np.ptp(q4[:, 1])))
+            reach = int(0.3 * L) + 4
+            X0 = int(max(0, q4[:, 0].min() - reach)); X1 = int(min(W, q4[:, 0].max() + reach))
+            Y0 = int(max(0, q4[:, 1].min() - reach)); Y1 = int(min(H, q4[:, 1].max() + reach))
+            if X1 - X0 < 8 or Y1 - Y0 < 8:
+                continue
+            box = (X0, Y0, X1 - X0, Y1 - Y0)
+            back = np.zeros((Y1 - Y0, X1 - X0, 4), np.float32)
+            front = np.zeros_like(back)
+            for q in sorted([q for q in self.pieces if q.pid in placed and q is not p], key=lambda q: q.z or 0):
+                Lq = sl.warp_prem(q.prem, sl.scale_m(fr) @ placed[q.pid], box)
+                if (q.z or 0) < (p.z or 0):
+                    back = Lq + back * (1 - Lq[..., 3:4])
+                else:
+                    front = Lq + front * (1 - Lq[..., 3:4])
+            mw = mfine[Y0:Y1, X0:X1]
+            Lp = sl.warp_prem(p.prem, A, (X0 - reach, Y0 - reach, X1 - X0 + 2 * reach, Y1 - Y0 + 2 * reach))
+            ys, xs = np.nonzero(Lp[..., 3] > 0.5)
+            if len(xs) < 20:
+                continue
+            pts = np.column_stack([xs, ys]).astype(float)
+            ev, evec = np.linalg.eigh(np.cov((pts - pts.mean(0)).T))
+            ax, pe = evec[:, 1], evec[:, 0]
+            step = max(1.0, L / 60)
+
+            def err(dx, dy):
+                ix, iy = int(round(dx)), int(round(dy))
+                sub = Lp[reach - iy:reach - iy + (Y1 - Y0), reach - ix:reach - ix + (X1 - X0)]
+                comp = front + (sub + back * (1 - sub[..., 3:4])) * (1 - front[..., 3:4])
+                sel = (comp[..., 3] > 0.5) | (mw[..., 3] > 0.5)
+                if not sel.any():
+                    return 1e9
+                col = float(np.abs(comp[..., :3][sel] - mw[..., :3][sel]).mean())
+                amiss = float(np.count_nonzero(sel & ((comp[..., 3] > 0.5) != (mw[..., 3] > 0.5)))) / int(sel.sum())
+                return col + amiss
+
+            e0 = err(0, 0)
+            best = (e0, 0.0, 0.0)
+            for t in np.arange(-0.3 * L, 0.3 * L + 1e-6, step):
+                for u in (-2 * step, -step, 0.0, step, 2 * step):
+                    dx, dy = t * ax[0] + u * pe[0], t * ax[1] + u * pe[1]
+                    if abs(dx) > reach or abs(dy) > reach:
+                        continue
+                    e = err(dx, dy)
+                    if e < best[0]:
+                        best = (e, dx, dy)
+            if best[0] < 0.9 * e0 and math.hypot(best[1], best[2]) >= 1.0:
+                T = sl.scale_m(1 / fr) @ sl.trans_m(round(best[1]), round(best[2])) @ A
+                placed[p.pid] = T
+                if p.A is not None:
+                    p.A = T
+                elif p.pid in last:
+                    last[p.pid] = (last[p.pid][0], T)
+                tgt = p.reg if p.A is not None else last[p.pid][0]
+                tgt["reassemblyShift"] = [round(best[1] / fr, 1), round(best[2] / fr, 1)]
+                tgt["reassemblyError"] = [round(e0, 4), round(best[0], 4)]
+                self.log(f"  {p.pid:22s} slid {math.hypot(best[1], best[2]) / fr:.1f} master px by the reassembly "
+                         f"(window error {e0:.3f} -> {best[0]:.3f})")
 
     def _refine_scales(self) -> None:
         """Sheet scale from the accepted ECC fits of that sheet (the search grid is only ~2% fine)."""
@@ -473,7 +611,8 @@ class Build:
         if pl == "auto" or pl is None:
             if not p.setup:
                 ref = next(q for q in self.slots[p.slot] if q.setup)
-                return {"mode": "like", "like": ref.pid, "align": "joint" if p.slot.startswith("hand_") else "centre"}
+                align = "joint" if p.slot.startswith("hand_") else "back" if p.slot == "mouth" else "centre"
+                return {"mode": "like", "like": ref.pid, "align": align}
             return {"mode": "auto"}
         pl = dict(pl)
         if "like" in pl:
@@ -539,6 +678,8 @@ class Build:
     # ------------------------------------------------------------------ hints, variants
     def _align_point(self, p: sl.Piece, how: str) -> np.ndarray:
         x0, y0, x1, y1 = p.content_box()
+        if how in ("back", "front"):   # facing-aware: the mouth corner is at the back of the head
+            how = "left" if (how == "back") == (self.facing == "right") else "right"
         fx = {"left": 0.0, "right": 1.0}
         fy = {"top": 0.0, "bottom": 1.0}
         parts = how.replace("centre", "center").split("-")
@@ -580,8 +721,23 @@ class Build:
             s = self.sheet_scale[p.sheet]
             a = self._align_point(p, pl.get("anchor", "centre"))
             target = self._c2m(pl["at"])
-            p.A = sl.trans_m(*target) @ sl.rot_m(float(pl.get("rotate", 0))) @ sl.scale_m(s) @ sl.trans_m(-a[0], -a[1])
-            p.reg = {"method": "at", "ok": True, "transform": sl.decompose(p.A)}
+            A0 = sl.trans_m(*target) @ sl.rot_m(float(pl.get("rotate", 0))) @ sl.scale_m(s) @ sl.trans_m(-a[0], -a[1])
+            p.A = A0
+            p.reg = {"method": "at", "ok": True, "verified": True, "transform": sl.decompose(p.A)}
+            if pl.get("snap", True) and not p.hidden:
+                # an eyeballed point: snap to the visible master evidence when it clearly fits better nearby
+                self.master.use_z(p.z)
+                base = sl.confidence(self.master, p)
+                r = sl._refine(self.master, p, A0, p.spec.get("motion", self.m.get("motion", "affine")))
+                c0 = sl.apply(A0, [[p.alpha.shape[1] / 2, p.alpha.shape[0] / 2]])[0]
+                c1 = sl.apply(p.A, [[p.alpha.shape[1] / 2, p.alpha.shape[0] / 2]])[0]
+                moved = math.hypot(*(c1 - c0)) * self.M2C_scale
+                if r.get("ncc", -1) > base.get("ncc", -1) + 0.02 and moved <= float(pl.get("snapRadius", 10)):
+                    p.reg.update({"method": "at+snap", "snapped": round(moved, 2), "ncc": r["ncc"],
+                                  "transform": sl.decompose(p.A)})
+                else:
+                    p.A = A0
+                    p.reg["snapped"] = 0.0
             return True
         if pl["mode"] != "like":
             return False
@@ -664,15 +820,16 @@ class Build:
                 par = next((self.setup_piece(s) for s in partners if self.setup_piece(s)), None)
                 if c is None or par is None:
                     continue
-                cj = sl.cap_joint(A(c), A(par))
+                kw = self._seed_args(slot, A)
+                cj = sl.cap_joint(A(c), A(par), **kw)
                 if cj.get("joint") is None:
                     self.errors.append(f"{slot}: no joint with {par.slot} ({cj.get('why')})")
                     continue
                 c.joint = cj["joint"]
                 c.info.update({"jointWith": par.slot, **{k: v for k, v in cj.items() if k != "joint"}})
-                if cj.get("method") == "overlap-centroid":
+                if cj.get("method") in ("overlap-centroid", "end-seed"):
                     self.warnings.append(f"{slot}: no round overlap cap found at the joint with {par.slot} "
-                                         f"(overlap centroid used; ART_PLAN parts gate wants caps)")
+                                         f"({cj['method']} used; ART_PLAN parts gate wants caps): check landmarks.png")
                 self.landmarks[lm] = c.joint
                 self.lm_src[lm] = f"cap joint {slot} / {par.slot} ({cj.get('method')})"
                 self.pairs.append((c, par, c.joint))
@@ -730,6 +887,30 @@ class Build:
             return cj["joint"]
         raise SplitError(f"{p.pid}: joint/tip must be [x, y], cap, centre, relative, top/bottom/left/right or far (tip)")
 
+    def _seed_args(self, slot: str, A) -> dict:
+        """Where along a limb its joint cap is: away from the piece's own child, toward the parent for end
+        pieces, at the back of the jaw."""
+        def cen(s2):
+            q = self.setup_piece(s2)
+            if q is None:
+                return None
+            ys, xs = np.nonzero(A(q) > 0.5)
+            return (float(xs.mean() + 0.5), float(ys.mean() + 0.5)) if len(xs) else None
+        side = slot[-1] if slot[-2:] in ("_L", "_R") else ""
+        nxt = {"upper_arm": "forearm", "forearm": "hand", "thigh": "shin", "shin": "foot"}
+        base = slot[:-2] if side else slot
+        if base in nxt:
+            return {"away": cen(f"{nxt[base]}_{side}")}
+        if base == "hand":
+            return {"toward": cen(f"forearm_{side}")}
+        if slot == "neck":
+            return {"away": cen("head")}
+        if slot == "head":
+            return {"parent_end": cen("head"), "prefer": "parent"}   # skull base = the top cap of the neck
+        if slot == "jaw":
+            return {"back": 1.0 if self.facing == "right" else -1.0}
+        return {}
+
     def _derived_landmarks(self, A) -> None:
         lm, src = self.landmarks, self.lm_src
         fwd = 1 if self.facing == "right" else -1
@@ -738,10 +919,13 @@ class Build:
             src["hips"] = "midpoint of hip_L / hip_R"
         head = self.setup_piece("head")
         if head is not None:
-            ys, xs = np.nonzero(A(head) > 0.5)
-            top = ys.min()
-            lm["head_top"] = [round(float(xs[ys <= top + 1].mean() + 0.5), 1), float(top)]
-            src["head_top"] = "top of the head piece"
+            ha = A(head) > 0.5
+            ys, xs = np.nonzero(ha)
+            hx = lm["head"][0] if "head" in lm else float(xs.mean() + 0.5)
+            col = ha[:, max(0, int(hx) - 2):int(hx) + 3].any(axis=1)
+            top = int(np.nonzero(col)[0].min()) if col.any() else int(ys.min())
+            lm["head_top"] = [round(float(hx), 1), float(top)]
+            src["head_top"] = "top of the head piece above the skull base"
             if self.setup_piece("neck") is None and "head" in lm:
                 # no neck piece (Croak): the head joins the torso there; the nod pivot sits just above it
                 n = lm["head"]
@@ -765,12 +949,12 @@ class Build:
             hand = self.setup_piece(f"hand_{s}")
             if hand is not None and f"wrist_{s}" in lm:
                 ys, xs = np.nonzero(A(hand) > 0.5)
-                w = lm[f"wrist_{s}"]
-                d = (xs + 0.5 - w[0]) ** 2 + (ys + 0.5 - w[1]) ** 2
-                i = int(np.argmax(d))
-                far = (xs[i] + 0.5, ys[i] + 0.5)
-                lm[f"hand_{s}"] = [round(w[0] + 0.62 * (far[0] - w[0]), 1), round(w[1] + 0.62 * (far[1] - w[1]), 1)]
-                src[f"hand_{s}"] = "knuckles: 62% from the wrist to the farthest fingertip"
+                w = np.array(lm[f"wrist_{s}"])
+                e = np.array(lm.get(f"elbow_{s}", [w[0], w[1] - 1]))
+                dvec = (w - e) / (np.linalg.norm(w - e) or 1.0)             # the forearm direction
+                ext = float(((np.column_stack([xs + 0.5, ys + 0.5]) - w) @ dvec).max())
+                lm[f"hand_{s}"] = [round(float(w[0] + 0.62 * ext * dvec[0]), 1), round(float(w[1] + 0.62 * ext * dvec[1]), 1)]
+                src[f"hand_{s}"] = "knuckles: 62% of the hand's reach along the forearm direction"
             foot = self.setup_piece(f"foot_{s}")
             if foot is not None:
                 ys, xs = np.nonzero(A(foot) > 0.5)
@@ -807,7 +991,12 @@ class Build:
             inner = ndi.binary_erosion(a >= 0.999, iterations=2)
             sx0, sy0, sx1, sy1 = max(0, x), max(0, y), min(W, x + w), min(H, y + h)
             win = np.zeros_like(inner)
-            win[sy0 - y:sy1 - y, sx0 - x:sx1 - x] = (owner[sy0:sy1, sx0:sx1] == i) & (ma[sy0:sy1, sx0:sx1] >= 0.999)
+            # own the pixel with a 3 px margin to every other piece's edge: the master's antialiased
+            # outline of a piece in front must never be copied into the piece behind it (ghost lines when
+            # that front piece swaps or moves)
+            ow = owner[sy0:sy1, sx0:sx1]
+            mine = (ow == i) & ~ndi.binary_dilation((ow != i) & (ow >= 0), iterations=3)
+            win[sy0 - y:sy1 - y, sx0 - x:sx1 - x] = mine & (ma[sy0:sy1, sx0:sx1] >= 0.999)
             sel = inner & win
             if not sel.any():
                 p.info["lockedFrac"] = 0.0
@@ -828,8 +1017,10 @@ class Build:
             t = sl.joint_hole_test(self.canvas_alpha(c), self.canvas_alpha(par), j)
             c.info["jointHoles"] = t
             if t.get("holesPx") is not None:
-                area = math.pi * (0.9 * t["radius"]) ** 2
-                holes[c.pid] = {**t, "ok": t["holesPx"] <= max(4, 0.02 * area)}
+                # rotation resampling alone opens ~0.5% of the region on a clean capsule; a straight cut ~10%
+                holes[c.pid] = {**t, "ok": t["holesPx"] <= max(8, 0.015 * t["regionPx"])}
+            else:
+                holes[c.pid] = {**t, "ok": False}
         g["jointHoles"] = {"deg": sl.JOINT_TEST_DEG, "pieces": holes, "passed": all(v["ok"] for v in holes.values())}
         ups = {p.pid: p.info["canvasScale"] for p in self.pieces if p.info.get("canvasScale", 0) > 1.02}
         g["noUpscale"] = {"upscaled": ups, "passed": not ups}

@@ -35,6 +35,8 @@ export const POINTS = {
   buyConfirm: [0.5, 0.758], // CONFIRM in the confirm card (X at `close` goes back one level)
   logo: [0.214, 0.915], // big yellow paperclip square: publisher badge, no action on click
   cont: [0.5, 0.45], // "continue" tap on feature screens (centre)
+  resume: [0.572, 0.567], // "Resume Active Game?" dialog (unfinished round at load): Resume;
+  //                         Cancel is at [0.427, 0.567]
 };
 export const REGIONS = {
   grid: [0.3, 0.141, 0.402, 0.705], // 5x5 cells, measured on the live demo: pitch 102.8 x 101.4 px at 1280x720 (was the s.22 still ROI [0.302,0.123,0.402,0.733])
@@ -402,6 +404,21 @@ export async function enterGame(ref, { captureMs = 0 } = {}) {
     const rec = { seq: auth.seq, response: { round: act } };
     const info = roundOf(rec);
     log(`authenticate returned an active round (mode ${info?.mode} x${info?.pm}, ${info?.n} events${info?.bonus ? ', bonus' : ''}): capturing the resume`);
+    // the "Resume Active Game?" dialog comes ~0.9 s after the intro click: wait for its cyan
+    // Resume button, then click it (the capture below starts with the click)
+    const d = ref.driver;
+    let seen = false;
+    for (let i = 0; i < nf(10_000) && !seen; i++) {
+      await d.step();
+      if (i % 6 === 5) {
+        const img = await sample(ref, [0.54, 0.55, 0.07, 0.03]);
+        let g = 0, b = 0;
+        for (let k = 0; k < img.data.length; k += 3) (g += img.data[k + 1]), (b += img.data[k + 2]);
+        seen = g / (img.data.length / 3) > 180 && b / (img.data.length / 3) > 220;
+      }
+    }
+    log(seen ? 'resume dialog seen: clicking Resume' : 'no resume dialog within 10 s');
+    if (seen) await ref.click('resume', { note: 'Resume Active Game? -> Resume' });
     await ref.move(AWAY, {});
     await capture(ref, 'resume-round', { startRound: rec, forceFeature: true, every: 2, minMs: 5000, featureMaxMs: 420_000, notes: `round resumed after the intro (authenticate): mode ${info?.mode} x${info?.pm}` });
   }

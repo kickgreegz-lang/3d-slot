@@ -1,5 +1,6 @@
 import type { AttractSpec, GameFeatures, GridSpec, SpotBand, SymbolDef, WinTier } from '../../config/game';
 import type { BetModeDef } from '../../flow/modes';
+import { BASS_DROP_TIMING } from './timing';
 
 /**
  * SWAMP FUNK: BASS DROP — static game configuration. Same world and symbols as Swamp Funk
@@ -31,6 +32,10 @@ export const FEATURES: GameFeatures = {
   wildMultSum: 'external',
   /** 2-card canvas buy screen (screens/BuyScreen.ts, DESIGN.md §13) */
   buyScreen: 'game',
+  /** 124 px cells fall with the Swamp Funk time per cell (DESIGN.md §5 physics scale) */
+  physicsScale: true,
+  /** bigger 6x6 clusters: the lighter explode shake of DESIGN.md §18.2 (lab: bassDrop.shake) */
+  explodeShake: BASS_DROP_TIMING.shake,
 };
 
 const royal = (id: string, glyph: string, label: string, color: number, shade: number): SymbolDef => ({

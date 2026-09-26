@@ -45,7 +45,9 @@ import { GridThump } from './thump';
  *   board:hold      cells that stay standing through the next fall-out / drop-in (CR-10b)
  *   board:burst     EMITTED here during board:tumble at the explode-burst frame
  *   board:transform 'impact' (awaited): crush now, heavy impact placement anticipateDuration later
- * where k = pitch / BOARD_TIMING.physRefPitch.
+ * where k = pitch / BOARD_TIMING.physRefPitch. Game options (config GameFeatures):
+ * physicsScale (gravity falls keep the reference time per cell) and explodeShake (the
+ * explode trauma table).
  */
 const WEIGHT_RANK: Record<LandWeight, number> = { light: 0, medium: 1, heavy: 2, special: 3 };
 const LAND_SFX: Record<LandWeight, SfxId> = {
@@ -327,7 +329,7 @@ export class Board implements GameModule {
       const L = this.ctx.layout;
       const D = TIMING.drop;
       const g = D.gravity;
-      const dist = D.startOffsetCells * pitchOf(L);
+      const dist = this.fallDist(D.startOffsetCells * pitchOf(L));
       const T = fallTime(dist, g, D.minFall);
       const vImpact = (g * T) / 1000;
       const colStagger = stagger(D.columnStagger);
@@ -605,8 +607,11 @@ export class Board implements GameModule {
         this.ctx.game.broadcast('board:burst', { positions: burstPositions });
         clock.hitStop(E.hitStop);
         const B = BOARD_TIMING;
+        const X = FEATURES.explodeShake;
         this.ctx.game.broadcast('fx:shake', {
-          trauma: Math.min(B.explodeTraumaMax, B.explodeTraumaBase + B.explodeTraumaPerSymbol * n),
+          trauma: X
+            ? Math.min(X.explodeMax, X.explodeBase + X.explodePerSymbol * n)
+            : Math.min(B.explodeTraumaMax, B.explodeTraumaBase + B.explodeTraumaPerSymbol * n),
         });
         this.sfx('explode', { volume: Math.min(1, 0.7 + n * 0.03) });
       });
@@ -670,7 +675,7 @@ export class Board implements GameModule {
         let firstImpact = Number.POSITIVE_INFINITY;
         moving.forEach((m, k) => {
           const at = colDelay + k * stagger(Tu.rowStagger);
-          const T = fallTime((m.to - m.from) * pitch, g, TIMING.drop.minFall);
+          const T = fallTime(this.fallDist((m.to - m.from) * pitch), g, TIMING.drop.minFall);
           this.tweenRow(tl, m.sv, m.to, s(T), 'power1.in', s(at));
           if (T - BOARD_TIMING.blurOffLead - tBlur > 16) {
             tl.call(() => m.sv.setBlur(true), [], s(at + tBlur));
@@ -822,7 +827,7 @@ export class Board implements GameModule {
     const L = this.ctx.layout;
     const g = TIMING.drop.gravity;
     const from = GRID.firstVisibleRow - 1 - BOARD_TIMING.transformDropCells;
-    const T = fallTime((c.row - from) * pitchOf(L), g, TIMING.drop.minFall);
+    const T = fallTime(this.fallDist((c.row - from) * pitchOf(L)), g, TIMING.drop.minFall);
     const E = TIMING.explode;
     this.put(sv, c.reel, from);
     sv.view.zIndex = Z_BEAM - 1;
@@ -957,6 +962,15 @@ export class Board implements GameModule {
   /** Physics / distance scale of the current layout: k = pitch / BOARD_TIMING.physRefPitch. */
   private physK(): number {
     return pitchOf(this.ctx.layout) / BOARD_TIMING.physRefPitch;
+  }
+
+  /**
+   * A fall distance in gravity px: FEATURES.physicsScale measures it in reference px (/ k), so
+   * the time per cell and the landing velocity (squash) match the reference pitch; the tween
+   * still covers the real distance. Without the flag it is the design-px distance itself.
+   */
+  private fallDist(px: number): number {
+    return FEATURES.physicsScale ? px / this.physK() : px;
   }
 
   // =========================================================================

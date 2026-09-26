@@ -102,6 +102,18 @@ export interface GameFeatures {
   wildMultSum?: 'auto' | 'external';
   /** bonus-buy hex opens the DOM buy dialog ('dom', default) or a game module's own screen ('game'). */
   buyScreen?: 'dom' | 'game';
+  /**
+   * Gravity falls (drop-in, tumble refill, transform 'drop') keep the time per cell of the
+   * reference pitch BOARD_TIMING.physRefPitch (154): fall distances are measured in reference
+   * px (distance / k, k = pitch / 154), so a smaller cell falls with gravity x k and lands with
+   * the reference velocity (same squash). Default false (fixed gravity in design px).
+   */
+  physicsScale?: boolean;
+  /**
+   * Explode shake of a tumble step: trauma = min(explodeMax, explodeBase + explodePerSymbol x n).
+   * Replaces BOARD_TIMING.explodeTrauma* when set (pass a live timing table to keep it lab-tunable).
+   */
+  explodeShake?: { explodeBase: number; explodePerSymbol: number; explodeMax: number };
 }
 
 /** Deterministic idle board before the first spin (flow/attract.ts). */

@@ -2,7 +2,7 @@ import { gsap } from 'gsap';
 import { BOARD_TIMING } from '../../../board/boardTiming';
 import { pitchOf, slotPos } from '../../../board/model';
 import type { Rect } from '../../../config/layout';
-import { GRID } from '../../../config/game';
+import { FEATURES, GRID } from '../../../config/game';
 import { clock } from '../../../core/clock';
 import { TIMING, fallTime, s } from '../../../core/timing';
 import { semitoneRate } from '../../../audio/mix';
@@ -285,7 +285,9 @@ export class DropRun {
     const placed = ctx.game.broadcastAsync('board:transform', { cells: [cell], style: 'drop' });
     this.placed.push(placed);
     const from = GRID.firstVisibleRow - 1 - BOARD_TIMING.transformDropCells;
-    const fall = fallTime((f.wild.row - from) * pitchOf(L), TIMING.drop.gravity, TIMING.drop.minFall);
+    // same fall as the Board's 'drop' (FEATURES.physicsScale: distance in reference px)
+    const dist = (f.wild.row - from) * pitchOf(L);
+    const fall = fallTime(FEATURES.physicsScale ? dist / physK(L) : dist, TIMING.drop.gravity, TIMING.drop.minFall);
     this.sfx('wild_launch', semitoneRate(2 * f.index));
     this.sched.at(s(fall), () => {
       if (this.done || f.landed) return;

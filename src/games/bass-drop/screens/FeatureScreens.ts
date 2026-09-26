@@ -19,6 +19,7 @@ import { FeaturePlate } from './FeaturePlate';
 import { FeatureWipe } from './FeatureWipe';
 import { ensureScreenFonts } from './fonts';
 import { SCREENS_TIMING, SKINS, skinOf } from './look';
+import { ModalGate, onScreenKey } from './ui';
 import { type UpgradeEvent, UpgradeBanner } from './UpgradeBanner';
 
 const T = BASS_DROP_TIMING;
@@ -31,7 +32,8 @@ const BPM = { bonus: 106, super: 112 } as const;
  *
  *  - 'feature:trigger'  held until the feature intro is dismissed (the flow then switches to
  *                       the free game while the curtain still covers the screen):
- *                         t 0      HUD blocked (transparent stage), the grid dims to 0.5 / 300 ms
+ *                         t 0      HUD blocked (transparent stage + hotkeys; SPACE / ENTER are
+ *                                  the screen's tap), the grid dims to 0.5 / 300 ms
  *                         t 200    mascot cue fsTrigger (the meter owns the 3 pumps, flash,
  *                                  hit-stop and fs_trigger SFX on its own schedule)
  *                         t 1800   wipe (620 ms) in the feature colour + fs_intro
@@ -62,6 +64,11 @@ export class FeatureScreens implements GameModule {
   private readonly upgrade = new UpgradeBanner();
   private readonly plate = new FeaturePlate();
   private readonly dim = new Sprite({ texture: Texture.WHITE, tint: 0x000000, alpha: 0 });
+  /** HUD hotkeys are blocked while a screen is up (DESIGN §14): SPACE / ENTER act as its tap */
+  private readonly gate = new ModalGate();
+  private offKey: (() => void) | null = null;
+  private tapFn: (() => void) | null = null;
+  private spaceAllowed = true;
   private dimTween: gsap.core.Tween | null = null;
   private offs: Array<() => void> = [];
   private busy: Promise<void> | null = null;
@@ -113,6 +120,7 @@ export class FeatureScreens implements GameModule {
       g.on('board:reveal', () => void (this.revealed = true)),
       g.on('layout:change', ({ layout }) => this.layout(layout)),
       ctx.hud.on('hud:state', (st) => {
+        this.spaceAllowed = st.spacebarAllowed !== false;
         const auto = st.autoplayRemaining !== null && st.autoplayRemaining !== 0;
         if (auto === this.autoplay) return;
         this.autoplay = auto;
@@ -140,6 +148,8 @@ export class FeatureScreens implements GameModule {
     this.offs = [];
     for (const done of [...this.pending]) done();
     this.pending.clear();
+    this.unblock();
+    this.gate.destroy();
     this.dimTween?.kill();
     this.banner.destroy();
     this.upgrade.destroy();
@@ -163,6 +173,32 @@ export class FeatureScreens implements GameModule {
     } finally {
       this.busy = null;
     }
+  }
+
+  /**
+   * A screen is up: the HUD is disabled (DESIGN §14). The stage already swallows every pointer
+   * event; the gate blocks the HUD hotkeys too, so SPACE never slam-stops the rest of the
+   * feature from under a banner. SPACE / ENTER act as the screen's own tap instead (same
+   * jurisdiction rules as the HUD: spacebarAllowed, and taps need slamStopAllowed).
+   */
+  private block(): void {
+    this.gate.open();
+    this.offKey ??= onScreenKey((key) => {
+      if (key === 'confirm' && this.spaceAllowed && this.stage.tapsAllowed) this.tapFn?.();
+    });
+  }
+
+  /** The flow moves on (hand-off, round start, teardown): the HUD takes its keys back. */
+  private unblock(): void {
+    this.gate.close();
+    this.offKey?.();
+    this.offKey = null;
+  }
+
+  /** The current tap handler (pointer taps through the stage, SPACE / ENTER through block()). */
+  private setTap(fn: (() => void) | null): void {
+    this.tapFn = fn;
+    this.stage.onTap(fn);
   }
 
   /** Gameplay wait (s(), follows a slam-stop); resolved early by destroy(). */
@@ -255,6 +291,7 @@ export class FeatureScreens implements GameModule {
 
   private onRoundStart(): void {
     this.revealed = false;
+    this.unblock();
     // a curtain still sweeping out from the last round ends now
     this.wipe.finish();
   }
@@ -270,7 +307,8 @@ export class FeatureScreens implements GameModule {
     this.plate.set(0, p.totalFs, 0);
     // the HUD is blocked from t 0 (transparent stage over everything); nothing skips the trigger
     this.stage.open({ dim: 0, fadeIn: 0 });
-    this.stage.onTap(null);
+    this.setTap(null);
+    this.block();
     const meter = BASS_DROP_LAYOUT[ctx.layout.kind].meter;
     const look = { x: meter.cx, y: meter.cy };
     if (this.revealed) {
@@ -330,7 +368,7 @@ export class FeatureScreens implements GameModule {
         this.pending.delete(finish);
         unlock.kill();
         auto?.kill();
-        this.stage.onTap(null);
+        this.setTap(null);
         this.onAutoplay = null;
         resolve();
       };
@@ -353,7 +391,7 @@ export class FeatureScreens implements GameModule {
       };
       this.pending.add(finish);
       this.onAutoplay = arm;
-      this.stage.onTap(() => {
+      this.setTap(() => {
         if (unlocked) finish();
       });
       arm();
@@ -362,6 +400,7 @@ export class FeatureScreens implements GameModule {
 
   /** Resolve the screen now: the curtain sweeps out on its own while the flow moves on. */
   private handOff(): void {
+    this.unblock();
     const back = this.wipe.coverOut(s(S.trigger.wipe));
     const closed = this.stage.close(s(S.trigger.wipe * 0.8));
     this.tail = Promise.all([back, closed]).then(() => {
@@ -397,7 +436,8 @@ export class FeatureScreens implements GameModule {
     const U = S.upgrade;
     const addFs = p.addFs;
     this.stage.open({ dim: 0.6, fadeIn: s(220), liftMascots: true, liftFx: true });
-    this.stage.onTap(null);
+    this.setTap(null);
+    this.block();
     ctx.game.broadcast('mascot:cue', { cue: 'featureUpgrade', intensity: 1 });
     const up = this.upgrade;
     up.setup(this.res(), addFs);
@@ -412,6 +452,7 @@ export class FeatureScreens implements GameModule {
     await this.wait(U.out);
     if (this.dead) return;
     up.clear();
+    this.unblock();
     await this.stage.close(s(160));
     releaseTitlesIfIdle(ctx);
   }
@@ -423,11 +464,11 @@ export class FeatureScreens implements GameModule {
         if (!this.pending.has(done)) return;
         this.pending.delete(done);
         call?.kill();
-        this.stage.onTap(null);
+        this.setTap(null);
         resolve();
       };
       this.pending.add(done);
-      this.stage.onTap(done);
+      this.setTap(done);
       call = followSpeed(gsap.delayedCall(s(Math.max(0, ms)), done));
     });
   }
@@ -480,7 +521,8 @@ export class FeatureScreens implements GameModule {
     const skin = skinOf(feature);
     const finalApi = money.fromBook(Math.max(0, p.amount));
     this.stage.open({ dim: S.trigger.stageDim, fadeIn: s(300), liftMascots: true, liftFx: true });
-    this.stage.onTap(null);
+    this.setTap(null);
+    this.block();
     ctx.game.broadcast('sfx', { id: 'fs_outro' });
     await this.wipe.coverIn(visibleDesignRect(ctx), SKINS[skin], s(S.trigger.wipe));
     if (this.dead) return;
@@ -503,7 +545,7 @@ export class FeatureScreens implements GameModule {
         this.pending.delete(close);
         count.kill();
         hold?.kill();
-        this.stage.onTap(null);
+        this.setTap(null);
         this.onAutoplay = null;
         resolve();
       };
@@ -542,7 +584,7 @@ export class FeatureScreens implements GameModule {
       this.onAutoplay = () => {
         if (!this.manual) banner.hidePress();
       };
-      this.stage.onTap(() => {
+      this.setTap(() => {
         if (!counted) {
           count.progress(1);
           return;

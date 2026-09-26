@@ -192,6 +192,7 @@ export class GrooveMeter implements GameModule {
     this.drainTween?.kill();
     this.endRun();
     this.ctx.layers.winLayer.detach(this.fx.view);
+    if (this.rig.counter.view.parentRenderLayer) this.ctx.layers.winLayer.detach(this.rig.counter.view);
     this.fx.destroy();
     this.chip.destroy();
     this.rig.destroy();
@@ -286,6 +287,7 @@ export class GrooveMeter implements GameModule {
     }
     if (this.armed) this.finishNoTumble();
     this.cancelDrain();
+    this.raiseCounter();
     const thresholds = [...p.thresholds].sort((a, b) => a - b);
     if (thresholds.some((t) => t > MAX)) this.lapMode = true;
     const seed = (Math.imul(++this.stepSeq, 0x9e3779b1) ^ Math.imul(p.value, 0x85ebca6b) ^ Math.imul(p.delta, 0xc2b2ae35)) >>> 0;
@@ -461,8 +463,10 @@ export class GrooveMeter implements GameModule {
       if (this.lapMode && v > 0 && v % MAX === 0) this.lap();
     }
     this.rig.led.fillTo(lvl, up ? s(M.fillTween) : 0);
-    this.fireBursts();
+    // look first (a heat that ends here releases the mascots' lean-in BEFORE the notch's own
+    // cue, which the release would otherwise cancel), then the bursts and their state
     this.refresh();
+    if (this.fireBursts()) this.refresh();
   }
 
   /** Fallback lap (a threshold above 60 was listed): pink ring flash, LEDs empty, a lap pip (DESIGN §6.7). */
@@ -539,10 +543,14 @@ export class GrooveMeter implements GameModule {
     this.pendingBursts.sort((a, b) => a.threshold - b.threshold);
   }
 
-  private fireBursts(): void {
+  /** Burst every queued threshold the counter has reached; true when one fired. */
+  private fireBursts(): boolean {
+    let fired = false;
     while (this.pendingBursts.length && this.pendingBursts[0].threshold <= this.shown) {
       this.burst(this.pendingBursts.shift() as PendingBurst);
+      fired = true;
     }
+    return fired;
   }
 
   private burst(pb: PendingBurst): void {
@@ -564,9 +572,25 @@ export class GrooveMeter implements GameModule {
     const first = p.chainIndex <= 0;
     const sec = first ? Math.max(s(D.charge), D.chargeFloor / 1000) : Math.max(s(D.chargeChained), CHAINED_FLOOR);
     this.charging = p.threshold;
+    this.raiseCounter();
     this.rig.charge(sec, !first);
     this.refresh();
     this.dropBeats.at(sec, () => this.boom(p.threshold));
+  }
+
+  /**
+   * DESIGN §8.2 launch layering: the wild pops out of the woofer on winLayer, which draws above
+   * the whole meter; the live counter joins winLayer after it (render order only, it keeps its
+   * rig transform), so neither the launching wild nor the arriving orbs ever cover the digits.
+   * Checked on every arm and drop (modules that attach later, e.g. BassDrop's flights, stay under).
+   */
+  private raiseCounter(): void {
+    const layer = this.ctx.layers.winLayer;
+    const view = this.rig.counter.view;
+    const list = layer.renderLayerChildren;
+    if (list[list.length - 1] === view) return;
+    if (view.parentRenderLayer === layer) layer.detach(view);
+    layer.attach(view);
   }
 
   private boom(threshold: number): void {
@@ -657,8 +681,12 @@ export class GrooveMeter implements GameModule {
     rig.setGlowLevel(look.glow);
     rig.play(look.loop);
     if (look.heat && !this.heat) {
-      this.fx.cue('meterHeat');
+      this.fx.cue('meterHeat', 1);
       this.fx.sfx('meter_heat');
+    } else if (!look.heat && this.heat && !this.drainTween && this.shown > 0) {
+      // heat over while counting (locked at 40 / 60): the mascots' held lean-in ends here
+      // (a drain back to 0 at the next spin needs no cue: the round start resets them)
+      this.fx.cue('meterHeat', 0);
     }
     this.heat = look.heat;
     rig.notches.badges.forEach((b, i) => {

@@ -248,8 +248,9 @@ def find_components(alpha: np.ndarray, min_area: int | None = None, thr: float =
         comps.append({"label": i + 1, "bbox": [x0, y0, x1 - x0, y1 - y0], "area": int(areas[i]),
                       "centroid": [round(cents[i][1] + 0.5, 1), round(cents[i][0] + 0.5, 1)],
                       "noise": bool(areas[i] < min_area)})
-    # rows: a component joins the current row when its vertical span overlaps the row's span by at least
-    # half of the smaller height (top-aligned and centre-aligned layouts both read as one row)
+    # rows: a component joins the current row when its vertical span overlaps the span of the row's
+    # top-most piece by at least half of the smaller height (top- and centre-aligned layouts read as one
+    # row; a tall piece does not chain every lower piece into its row)
     keep = sorted((c for c in comps if not c["noise"]), key=lambda c: (c["bbox"][1], c["bbox"][0]))
     rows: list[list[dict]] = []
     span = None
@@ -259,7 +260,6 @@ def find_components(alpha: np.ndarray, min_area: int | None = None, thr: float =
             ov = min(y1, span[1]) - max(y0, span[0])
             if ov >= 0.5 * min(y1 - y0, span[1] - span[0]):
                 rows[-1].append(c)
-                span = (min(span[0], y0), max(span[1], y1))
                 continue
         rows.append([c])
         span = (y0, y1)

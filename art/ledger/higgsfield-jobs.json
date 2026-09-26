@@ -1406,6 +1406,289 @@
           "bytes": 21605965
         }
       ]
+    },
+    {
+      "id": "bd_c08",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c08: mascot_croak_sheet, chr_gumbo_rig_master",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "mascot_croak_sheet.c1",
+          "index": 0,
+          "job_id": "63e2a0a8-c1ab-4222-b0af-59fa61685868",
+          "status": "in_progress",
+          "template": "mascot_turnaround.txt#A",
+          "vars": {
+            "mascot": "croak",
+            "CHARACTER": "Baron Croak, a lanky adult bullfrog DJ: broad flat head with a very wide confident grin, big bulging golden eyes with narrow horizontal pupils set high on the head, a large inflatable throat pouch, mottled dark olive skin with a pale yellow belly and hot-pink toe pads, wearing a flat-brim cap backwards, an open hot-pink bowling shirt with a black lightning pattern over a black tank top, baggy black cargo shorts, big over-ear headphones around his neck and a heavy gold chain with a vinyl-record pendant",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "d439679c720948fdcdfa9369fcf3e8aae05f68c5e507287f4124273e97cfbfcb",
+          "resolution": "4k",
+          "aspect_ratio": "21:9",
+          "credits": 4,
+          "result_url": null,
+          "medias": [
+            {
+              "value": "23387c1a-08e0-48e8-a11f-1fde33df94fa",
+              "role": "image_references"
+            },
+            {
+              "value": "93e002fa-cf13-42ce-86d1-96359077b355",
+              "role": "image_references"
+            }
+          ],
+          "asset": "mascot_croak_sheet",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image"
+        },
+        {
+          "name": "chr_gumbo_rig_master.c1",
+          "index": 1,
+          "job_id": "156d6517-b845-4ab2-a618-66747120bb5b",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#A",
+          "vars": {
+            "mascot": "gumbo",
+            "CHARACTER": "Gumbo, a heavyset adult alligator bouncer: broad long snout with one gold tooth and a toothpick, heavy-lidded unimpressed yellow eyes, dark olive-green scaly hide with a pale khaki belly, wearing a tight maroon tank top, dark blue work jeans and black rubber boots",
+            "FACING": "toward the right side of the image",
+            "POSE_NOTE": "His thick tail rests on the ground behind the far leg, clear of both legs.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "c36a8d4a28a70fa758b1623c41048e2960f12cd07d15c0726910655aec269af8",
+          "resolution": "2k",
+          "aspect_ratio": "4:5",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173841_156d6517-b845-4ab2-a618-66747120bb5b.png",
+          "medias": [
+            {
+              "value": "93e002fa-cf13-42ce-86d1-96359077b355",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_gumbo_rig_master",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "faa88b607f9f64d5e4d3a26683a6dd519d6d1d5e2fef36b7512a93ce61697ef1",
+          "width": 1856,
+          "height": 2304,
+          "bytes": 5783444
+        },
+        {
+          "name": "chr_gumbo_rig_master.c2",
+          "index": 2,
+          "job_id": "44daef4c-bd59-4532-9b4d-1abbac690d85",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#A",
+          "vars": {
+            "mascot": "gumbo",
+            "CHARACTER": "Gumbo, a heavyset adult alligator bouncer: broad long snout with one gold tooth and a toothpick, heavy-lidded unimpressed yellow eyes, dark olive-green scaly hide with a pale khaki belly, wearing a tight maroon tank top, dark blue work jeans and black rubber boots",
+            "FACING": "toward the right side of the image",
+            "POSE_NOTE": "His thick tail rests on the ground behind the far leg, clear of both legs.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "c36a8d4a28a70fa758b1623c41048e2960f12cd07d15c0726910655aec269af8",
+          "resolution": "2k",
+          "aspect_ratio": "4:5",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173841_44daef4c-bd59-4532-9b4d-1abbac690d85.png",
+          "medias": [
+            {
+              "value": "93e002fa-cf13-42ce-86d1-96359077b355",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_gumbo_rig_master",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "639adb7888fd5de86eca12c68b5bcdd10e621f563f5100dcc1109bc3faa71147",
+          "width": 1856,
+          "height": 2304,
+          "bytes": 6269872
+        }
+      ]
+    },
+    {
+      "id": "bd_c11",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c11: sym_H1_parts, sym_H2_parts, sym_H3_parts, sym_H4_parts, sym_H3_eyes_half, sym_H3_eyes_closed, sym_H3_eyes_wide",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "sym_H1_parts.c1",
+          "index": 0,
+          "job_id": "58680e7f-b1e9-4b7e-9ca3-acd81488c745",
+          "status": "pending",
+          "template": "symbol_parts_sheet.txt#A",
+          "vars": {
+            "symbol": "H1",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "4ae1913e06443ce60821b5855dd1aef99d8d1c868f33bea45844fa54ed02b0db",
+          "resolution": "2k",
+          "aspect_ratio": "16:9",
+          "credits": 2,
+          "result_url": null,
+          "medias": [
+            {
+              "value": "ae6053be-6e34-4715-9b4b-e4375c29387f",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H1_parts",
+          "stage": "2d-image"
+        },
+        {
+          "name": "sym_H2_parts.c1",
+          "index": 1,
+          "job_id": "cb9e6e2b-8f8a-4af9-b1bb-4ed68ee7e496",
+          "status": "pending",
+          "template": "symbol_parts_sheet.txt#A",
+          "vars": {
+            "symbol": "H2",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "f5ba66cd6680fef3275c36d7cf63a321407fb4828ecfb890dc4c5d1d3ccfc88e",
+          "resolution": "2k",
+          "aspect_ratio": "16:9",
+          "credits": 2,
+          "result_url": null,
+          "medias": [
+            {
+              "value": "434527a1-ae53-4b11-bf93-358d052ee42c",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H2_parts",
+          "stage": "2d-image"
+        },
+        {
+          "name": "sym_H3_parts.c1",
+          "index": 2,
+          "job_id": "e2747512-f822-40cc-86ab-caaed97af105",
+          "status": "pending",
+          "template": "symbol_parts_sheet.txt#A",
+          "vars": {
+            "symbol": "H3",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "69c973466ce6c711044cd4ebb2af1101250408e49810e268612efeaab4ce68ef",
+          "resolution": "2k",
+          "aspect_ratio": "16:9",
+          "credits": 2,
+          "result_url": null,
+          "medias": [
+            {
+              "value": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H3_parts",
+          "stage": "2d-image"
+        },
+        {
+          "name": "sym_H4_parts.c1",
+          "index": 3,
+          "job_id": "6a9d8342-5d17-4bbe-a30e-1b0c65e3676d",
+          "status": "pending",
+          "template": "symbol_parts_sheet.txt#A",
+          "vars": {
+            "symbol": "H4",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "854902b9b2749305dba061a48430a6fa565cd57ff595550b24558b5b4a13d9de",
+          "resolution": "2k",
+          "aspect_ratio": "16:9",
+          "credits": 2,
+          "result_url": null,
+          "medias": [
+            {
+              "value": "3432f2f5-b229-48b1-b766-2db51d8538fc",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H4_parts",
+          "stage": "2d-image"
+        },
+        {
+          "name": "sym_H3_eyes_half.c1",
+          "index": 4,
+          "job_id": "7442ab08-6de4-45aa-87c6-f274ca6dbe9c",
+          "status": "pending",
+          "template": "symbol_parts_sheet.txt#D",
+          "vars": {
+            "symbol": "H3",
+            "STATE_CHANGE": "both eyes half closed in a lazy blink"
+          },
+          "promptHash": "e532c91368a112d321dada2f46705f97899040ef85a5bd1bf949547880f33a79",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": null,
+          "medias": [
+            {
+              "value": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H3_eyes_half",
+          "stage": "2d-image"
+        },
+        {
+          "name": "sym_H3_eyes_closed.c1",
+          "index": 5,
+          "job_id": "b434fd6d-cf9b-40ec-89ec-2774db22445d",
+          "status": "pending",
+          "template": "symbol_parts_sheet.txt#D",
+          "vars": {
+            "symbol": "H3",
+            "STATE_CHANGE": "both eyes fully closed, each drawn as a thick curved dark lid line"
+          },
+          "promptHash": "26f9870fc3241b77ea8fea9488b58a8398980473b42021c7292227bbff313ea2",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": null,
+          "medias": [
+            {
+              "value": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H3_eyes_closed",
+          "stage": "2d-image"
+        },
+        {
+          "name": "sym_H3_eyes_wide.c1",
+          "index": 6,
+          "job_id": "d44a3c0c-3d60-413e-bbe9-cb3dce83ed9b",
+          "status": "pending",
+          "template": "symbol_parts_sheet.txt#D",
+          "vars": {
+            "symbol": "H3",
+            "STATE_CHANGE": "both eyes opened wide in surprise with slightly bigger pupils"
+          },
+          "promptHash": "c767ec9fd11b51814d878f11e1f43f91aff4c2e30af6f7a17cf637aa03b45868",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": null,
+          "medias": [
+            {
+              "value": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H3_eyes_wide",
+          "stage": "2d-image"
+        }
+      ]
     }
   ]
 }

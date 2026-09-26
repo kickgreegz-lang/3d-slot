@@ -4,7 +4,7 @@ import type { LayoutSpec } from '../config/layout';
 import type { GameEvents } from '../game/events';
 import { ALPHA, type ParticleSystem, SIZE, SPIN, type Sim } from './particles';
 import { confettiTexture } from './textures';
-import { darken, lighten, mixColor, pick, rand, randInt } from './util';
+import { darken, fxRandom, lighten, mixColor, pick, rand, randInt } from './util';
 
 /**
  * Burst presets for `'fx:burst'`. Each preset is a small, hand-tuned recipe of
@@ -275,12 +275,12 @@ const coins = (c: BurstContext, p: BurstPayload, k: number, power: number, color
     s.g = 2600 * k;
     s.drag = 0.25;
     s.spin = SPIN.coin;
-    s.spinSpeed = rand(8, 16) * (Math.random() < 0.5 ? -1 : 1);
+    s.spinSpeed = rand(8, 16) * (fxRandom() < 0.5 ? -1 : 1);
     s.phase = rand(0, TAU);
     s.rot = rand(-0.35, 0.35);
     s.vrot = rand(-2, 2);
     // bigger (closer) coins for high-energy bursts, with depth variance
-    s.size0 = s.size1 = rand(34, 50) * k * (0.7 + 0.3 * power) * (Math.random() < 0.2 ? 1.35 : 1);
+    s.size0 = s.size1 = rand(34, 50) * k * (0.7 + 0.3 * power) * (fxRandom() < 0.2 ? 1.35 : 1);
     s.alphaMode = ALPHA.late;
     s.life = rand(1.45, 2.05);
     s.floorY = p.y + 250 * k * power;

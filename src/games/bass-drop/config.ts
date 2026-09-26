@@ -36,6 +36,8 @@ export const FEATURES: GameFeatures = {
   physicsScale: true,
   /** bigger 6x6 clusters: the lighter explode shake of DESIGN.md §18.2 (lab: bassDrop.shake) */
   explodeShake: BASS_DROP_TIMING.shake,
+  /** engine Fx leaves a quarter of the particle budget to the meter / drop systems (orb trails) */
+  particleReserve: 0.25,
 };
 
 const royal = (id: string, glyph: string, label: string, color: number, shade: number): SymbolDef => ({

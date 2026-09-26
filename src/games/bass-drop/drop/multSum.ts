@@ -7,6 +7,7 @@ import { TIMING, getSpeedProfile, s, stagger } from '../../../core/timing';
 import { pentaRate } from '../../../audio/mix';
 import type { GameContext } from '../../../game/context';
 import { ensureValueFont } from '../../../present/common/fonts';
+import { label } from '../../../present/common/text';
 import { WIN_PRESENT_TIMING } from '../../../present/WinPresenter';
 import { GROOVE } from '../config';
 import { BASS_DROP_TIMING, multTier, physK } from '../timing';
@@ -190,7 +191,8 @@ export class MultSumDirector {
     mv.style.fontSize = 86 * k;
     mv.text = this.ctx.money.format(this.ctx.money.fromBook(w.meta.winWithoutMult));
     mb.style.fontSize = 54 * k;
-    mb.text = `x${w.meta.wildMult ?? 0}`;
+    // same text as the badge WinPresenter draws (i18n 'win.mult', Bass Drop: '×{n}')
+    mb.text = label('win.mult', 'x{n}', { n: w.meta.wildMult ?? 0 });
     const c = cellCenter(L, overlay.reel, toSpotRow(overlay.row));
     const g = gridSize(L);
     const half = mv.width / 2 + 10 * k;

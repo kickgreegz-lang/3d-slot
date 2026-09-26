@@ -40,6 +40,14 @@ const LOCAL_TIMING = registerTiming('scene', {
 const NEON = 0x35f2e0;
 const NEON_HOT = 0xff3fa8;
 
+/** The neon tube under the beam: x0..x1 at height y (centre line), w thick (design px). */
+export interface TubeLine {
+  x0: number;
+  x1: number;
+  y: number;
+  w: number;
+}
+
 interface FrameGeom {
   u: number;
   beam: Rect;
@@ -47,8 +55,25 @@ interface FrameGeom {
   right: Rect;
   sill: Rect;
   rope: number;
-  tube: { x0: number; x1: number; y: number; w: number };
+  tube: TubeLine;
 }
+
+/**
+ * The frame's neon tube line for a layout (written into `out`: no allocation), so a game can
+ * light the tube it does not own (Bass Drop's drop charge, DESIGN §8.1). Same formula the
+ * Frame draws it with.
+ */
+export const frameTube = (L: LayoutSpec, out: TubeLine): TubeLine => {
+  const { panel: P, frame: F, frameParts: fp } = L;
+  const u = fp.post / 50;
+  const lx = Math.max(F.x, P.x - fp.post + 2);
+  const rx = Math.min(F.x + F.w - fp.post, P.x + P.w - 2);
+  out.x0 = lx + fp.post + 14 * u;
+  out.x1 = rx - 14 * u;
+  out.y = F.y + fp.beam + 5 * u;
+  out.w = Math.max(2, 4 * u);
+  return out;
+};
 
 const geometry = (L: LayoutSpec): FrameGeom => {
   const { panel: P, frame: F, frameParts: fp } = L;
@@ -68,7 +93,7 @@ const geometry = (L: LayoutSpec): FrameGeom => {
     right: { x: rx, y: postTop, w: fp.post, h: postBottom - postTop },
     sill,
     rope: fp.post * 0.95,
-    tube: { x0: lx + fp.post + 14 * u, x1: rx - 14 * u, y: F.y + fp.beam + 5 * u, w: Math.max(2, 4 * u) },
+    tube: frameTube(L, { x0: 0, x1: 0, y: 0, w: 0 }),
   };
 };
 

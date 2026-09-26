@@ -91,6 +91,56 @@ def content_box(bbox, a) -> list[float]:
     return [bbox[0] + float(xs.min()), bbox[1] + float(ys.min()), bbox[0] + float(xs.max() + 1), bbox[1] + float(ys.max() + 1)]
 
 
+def _box_iou(a, b) -> float:
+    x0, y0 = max(a[0], b[0]), max(a[1], b[1])
+    x1, y1 = min(a[2], b[2]), min(a[3], b[3])
+    i = max(0.0, x1 - x0) * max(0.0, y1 - y0)
+    u = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - i
+    return i / u if u else 0.0
+
+
+def truth_mapping(out: Path, cuts: dict, name: str, kind: str, defaults_from: str, facing: str = "right",
+                  fit: str = "matrix", hints: dict | None = None, out_dir: str | None = None) -> dict:
+    """Stand-in for the operator: a tools/split mapping whose component -> slot names come from the ground
+    truth (component box vs the placed piece box). cuts = {group: path of that sheet's cut components.json}.
+    fit 'matrix' uses the true master -> canvas transform (so boxes compare 1:1 with truth.json), else the
+    kind's own fit. hints = {pid: place dict} are added as the operator would after reading the preview."""
+    t = json.loads((out / "truth.json").read_text())
+    sheets = []
+    for g, sh in t["sheets"].items():
+        comps = json.loads(Path(cuts[g]).read_text())["components"]
+        pieces = {}
+        for c in comps:
+            if c["noise"]:
+                continue
+            x, y, w, h = c["bbox"]
+            pid = max((_box_iou([x, y, x + w, y + h], tp["sheetBox"]), pid) for pid, tp in t["pieces"].items()
+                      if tp["group"] == g)[1]
+            e: dict = {"slot": pid} if kind == "character" else {"name": pid}
+            if hints and pid in hints:
+                e["place"] = hints[pid]
+            pieces[c["id"]] = e
+        sheets.append({"id": g, "image": sh["image"], "expectKey": t["key"], "pieces": pieces})
+    M2C = np.linalg.inv(np.array(t["canvasToMaster"]))
+    m: dict = {"kind": kind, "master": {"image": str(out / "master.png"), "expectKey": t["key"]},
+               "canvas": t["canvas"], "defaultsFrom": defaults_from,
+               "out": {"dir": out_dir or str(out / "out")}, "sheets": sheets}
+    if fit == "matrix":
+        m["fit"] = {"mode": "matrix", "scale": float(M2C[0, 0]), "offset": [float(M2C[0, 2]), float(M2C[1, 2])]}
+    if kind == "character":
+        m.update({"skeleton": name, "facing": facing, "anchor": [0.5, 1.0]})
+        if fit != "matrix":
+            m["fit"] = {"mode": "feet"}
+    else:
+        m["symbol"] = name
+    return m
+
+
+def true_centre(out: Path, pid: str) -> list[float]:
+    tc = json.loads((out / "truth.json").read_text())["pieces"][pid]["canvasContent"]
+    return [(tc[0] + tc[2]) / 2, (tc[1] + tc[3]) / 2]
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--parts", required=True)

@@ -26,6 +26,13 @@ export interface PulseTarget {
 let shock: ShockwaveFilter | null = null;
 let shockTween: gsap.core.Tween | null = null;
 let shockOn: Container | null = null;
+/**
+ * The live shockwave's geometry: the visible rect its uniforms are normalised against, its
+ * design-space centre and ring width. Kept (not captured by the tween) so a resize mid-pulse
+ * can refit the filterArea and the uniforms (refitPulses).
+ */
+const shockView: Rect = { x: 0, y: 0, w: 1, h: 1 };
+const shockAt = { x: 0, y: 0, width: 0 };
 
 /**
  * Filter pass resolution. Low tier: 0.5 (budget rule). High tier: the renderer's own
@@ -40,6 +47,7 @@ export const configureFilterQuality = (tier: 'low' | 'high'): void => {
 let chroma: ChromaticFilter | null = null;
 let chromaTween: gsap.core.Tween | null = null;
 let chromaOn: Container | null = null;
+const chromaAt = { x: 0, y: 0 };
 
 /** The other pulse is live on a different container: adding here would nest filters. */
 const nests = (other: Container | null, target: Container): boolean => other !== null && other !== target;
@@ -53,6 +61,26 @@ const nests = (other: Container | null, target: Container): boolean => other !==
 const coverView = (target: Container, v: Rect): void => {
   const pad = (v.w + v.h) * 0.03;
   target.filterArea = new Rectangle(v.x - pad, v.y - pad, v.w + pad * 2, v.h + pad * 2);
+};
+
+const copyRect = (out: Rect, v: Rect): void => {
+  out.x = v.x;
+  out.y = v.y;
+  out.w = v.w;
+  out.h = v.h;
+};
+
+/** Normalised centre + ring width of the live shockwave for its current view rect. */
+const applyShockGeometry = (f: ShockwaveFilter): void => {
+  const v = shockView;
+  f.setCenter({ x: (shockAt.x - v.x) / v.w, y: (shockAt.y - v.y) / v.h, aspect: v.w / v.h });
+  f.halfWidth = shockAt.width / 2 / v.w;
+};
+
+/** A pulse ended: drop its filter, and the filterArea once no pulse filter is left on the target. */
+const release = (target: Container, f: ShockwaveFilter | ChromaticFilter): void => {
+  removeFilter(target, f);
+  if (shockOn !== target && chromaOn !== target && !target.filters?.length) target.filterArea = undefined;
 };
 
 export interface ShockwaveOptions {
@@ -80,8 +108,11 @@ export const pulseShockwave = ({ target, view: v }: PulseTarget, x: number, y: n
     shockOn = target;
   }
   coverView(target, v);
-  f.setCenter({ x: (x - v.x) / v.w, y: (y - v.y) / v.h, aspect: v.w / v.h });
-  f.halfWidth = o.width / 2 / v.w;
+  copyRect(shockView, v);
+  shockAt.x = x;
+  shockAt.y = y;
+  shockAt.width = o.width;
+  applyShockGeometry(f);
   f.brightness = o.brightness ?? 0.18;
   const state = { t: 0 };
   shockTween = gsap.to(state, {
@@ -90,13 +121,14 @@ export const pulseShockwave = ({ target, view: v }: PulseTarget, x: number, y: n
     ease: 'none',
     onUpdate: () => {
       const e = 1 - (1 - state.t) ** 2.2;
-      f.radius = (e * o.radius) / v.w;
-      f.amplitude = ((1 - state.t) ** 1.5 * o.amplitude) / v.w;
+      f.radius = (e * o.radius) / shockView.w;
+      f.amplitude = ((1 - state.t) ** 1.5 * o.amplitude) / shockView.w;
     },
     onComplete: () => {
-      if (shockOn) removeFilter(shockOn, f);
+      const on = shockOn;
       shockOn = null;
       shockTween = null;
+      if (on) release(on, f);
     },
   });
 };
@@ -124,6 +156,8 @@ export const pulseChromatic = ({ target, view: v }: PulseTarget, x: number, y: n
     chromaOn = target;
   }
   coverView(target, v);
+  chromaAt.x = x;
+  chromaAt.y = y;
   f.setCenter((x - v.x) / v.w, (y - v.y) / v.h);
   const state = { t: 0 };
   chromaTween = gsap.to(state, {
@@ -136,9 +170,47 @@ export const pulseChromatic = ({ target, view: v }: PulseTarget, x: number, y: n
       f.amount = o.amount * (t < 0.15 ? t / 0.15 : (1 - (t - 0.15) / 0.85) ** 2);
     },
     onComplete: () => {
-      if (chromaOn) removeFilter(chromaOn, f);
+      const on = chromaOn;
       chromaOn = null;
       chromaTween = null;
+      if (on) release(on, f);
     },
   });
+};
+
+/**
+ * 'layout:change' while a pulse runs. The filterArea and the normalised uniforms were
+ * computed from the visible rect at pulse time, so a resize would clip the target to the
+ * OLD rect for the rest of the pulse. Same design space (window resize): refit both pulses
+ * to the new visible rect `view`. New design space (`respace`, e.g. a rotation): the
+ * design-space centre means something else now, so stop both pulses and drop the filters.
+ */
+export const refitPulses = (view: Rect, respace: boolean): void => {
+  if (respace) {
+    stopPulses();
+    return;
+  }
+  if (shockOn && shock) {
+    copyRect(shockView, view);
+    coverView(shockOn, view);
+    applyShockGeometry(shock);
+  }
+  if (chromaOn && chroma) {
+    coverView(chromaOn, view);
+    chroma.setCenter((chromaAt.x - view.x) / view.w, (chromaAt.y - view.y) / view.h);
+  }
+};
+
+/** Kill both pulses now and remove their filters (and the filterArea they set). */
+export const stopPulses = (): void => {
+  shockTween?.kill();
+  shockTween = null;
+  chromaTween?.kill();
+  chromaTween = null;
+  const s0 = shockOn;
+  const c0 = chromaOn;
+  shockOn = null;
+  chromaOn = null;
+  if (s0 && shock) release(s0, shock);
+  if (c0 && chroma) release(c0, chroma);
 };

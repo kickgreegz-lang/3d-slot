@@ -194,9 +194,11 @@ export class Booth {
       let on = i === chase ? 0.55 + 0.45 * env : 0;
       if (this.frenzy) on = strobeOn ? 1 : 0;
       if (ledsAll >= 0) on = Math.max(on, ledsAll);
-      this.leds[i].tint = on > 0.05 ? this.color : LED_OFF;
+      // write tints only on change: pixi's tint setter allocates even for an unchanged value
+      const tint = on > 0.05 ? this.color : LED_OFF;
+      if (this.leds[i].tint !== tint) this.leds[i].tint = tint;
       this.leds[i].alpha = 1;
-      this.ledGlows[i].tint = this.color;
+      if (this.ledGlows[i].tint !== this.color) this.ledGlows[i].tint = this.color;
       this.ledGlows[i].alpha = on * 0.9;
     }
     this.crate.y = hop * this.motion;

@@ -68,7 +68,10 @@ export function roundOf(rec) {
   const r = res.round ?? res;
   const evs = Array.isArray(r.state) ? r.state : Array.isArray(r.events) ? r.events : [];
   const types = evs.map((e) => (e && typeof e === 'object' ? e.type ?? '?' : typeof e));
-  const bonus = types.some((t) => /free|bonus|feature|trigger|scatter/i.test(t)) || (!!r.mode && !/^base$/i.test(String(r.mode)));
+  // Dragonspire book types: s, reveal, tumbleWin, tumbleBoard, cumulativeTumbleWin, totalWin,
+  // finalWin, spawnWilds, freezeWilds, bonusEnter, bonusReveal, bonusExit. "freezeWilds" is a
+  // base-game powerup, not a feature (a plain /free/ test matched it).
+  const bonus = types.some((t) => /^bonus(Enter|Exit)$|free_?spins?(Trigger|Start)?$|^trigger|scatter/i.test(t)) || (!!r.mode && !/^(base|ante)$/i.test(String(r.mode)));
   return { mode: r.mode ?? null, pm: Number(r.payoutMultiplier ?? 0), active: r.active ?? null, n: evs.length, types, bonus };
 }
 
@@ -174,7 +177,7 @@ export async function pressToContinue(ref) {
   for (let i = 0; i < img.data.length; i += 4, k++) if (img.data[i] + img.data[i + 1] + img.data[i + 2] > 600) n++;
   return n / k;
 }
-const PTC_ON = Number(env('DF_PTC', 0.25));
+const PTC_ON = Number(env('DF_PTC', 0.2)); // total-win screen measured 0.27, bonus intro 0.44-0.62
 const enabledLum = (ref, lum) => {
   const c = ref.driver.dfCal ? ref.driver.dfCal.btn : 157;
   return c != null && Math.abs(lum - c) < BTN_TOL;

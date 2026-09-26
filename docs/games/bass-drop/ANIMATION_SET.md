@@ -13,7 +13,7 @@ Naming follows [ANIMATION_CONTRACT.md](../../ANIMATION_CONTRACT.md): contract na
 | Versions | Spine Editor **4.3.x** (one pinned patch) → `@esotericsoftware/spine-pixi-v8` 4.3.13. 4.3 JSON with one root `constraints[]` (IK → transform → physics); 4.2-format files are rejected |
 | Frame rate | Everything authored at **30 fps**. Frame counts below are exact authored lengths. The runtime `timeScale` handles speed profiles (`speedScale()`) and tempo (UI loops run at `bpm / 100`) |
 | Axes / units | Y-up in the editor. Symbols use the **360×360 @2x canvas** (cell = 300 units, `root` at the centre). Every other rig is authored at **2× its landscape design size** (e.g. the meter ring Ø 320 design px = 640 units) with `root` at the anchor stated per rig |
-| Style | ART_BIBLE locks: pure-black outline (≈ 3% of cell for symbols, 6–8 units for characters at 2×), 1 base + 2 hard shadow tones + 1 specular, top-left key light, plum extrusion on props, **no baked glow/bloom/blur**. Glow lives only in `fx_*` slots (additive) |
+| Style | **Formula D** ([STYLE_DECISION.md](STYLE_DECISION.md), `artbible.bassDrop.styleFormula`; ART_BIBLE §2.1): a clean, confident, single-weight bold black outline (≈ 3% of the cell for symbols, 6–8 units for characters at 2×) with thinner dark interior lines; painterly layered shading with soft gradients, glossy highlights and crisp white specular hotspots; key light from the upper left plus a warm bounce light and a thin cool rim light. **No plum extrusion**: depth comes from the rendering. **No baked glow/bloom/blur**: glow lives only in `fx_*` slots (additive). Backgrounds use the painted-environment formula. Every part piece keeps the same outline weight as its master, so a split rig reads as one drawing |
 | Text | **Never baked.** Every word or number is runtime BitmapText attached with `addSlotObject` to an **empty `txt_*` slot** (a bone + slot with no attachment at setup). Royal glyphs are the only lettering in art |
 | Tracks | Symbols: 0 state · 1 overlay (additive FX, `bass_react`, dim) · 2 face · 3 look. Characters: 0 body · 1 additive overlays (`wild_land_react`, `pouch_pump`) · 2 face (blink, mouth swaps) · 3 look (`ctrl_look` driven by the runtime). UI/env: 0 state · 1 one-shot overlays (tick, pump, hover) · 2 notch/button overlays |
 | Mixes | `defaultMix` 0.08 plus the contract §3 pairs, plus the pairs listed per rig below |
@@ -137,7 +137,7 @@ Priorities:
 
 The runtime keeps the shine **shader** for the band sweep, because there is no clipping in Spine. The rig adds squash, jelly and glint.
 
-- **Slots (3):** `letter` (mesh 4×4 = 16 verts, the whole carved-wood letter with face and extrusion), `fx_glint` (additive star at the top-left), `fx_glow`.
+- **Slots (3):** `letter` (mesh 4×4 = 16 verts, the whole carved-wood letter with its enamel face and painterly gradient shading; no extrusion under formula D), `fx_glint` (additive star at the top-left), `fx_glow`.
 - **Bones (≤ 8):** `root`, `squash`, `body`, `bend_top`, `bend_bottom` (mesh weights), `fx_glint`, `fx_glow`.
 
 | Anim | f | Loop | Events | Notes |
@@ -341,6 +341,8 @@ These replace the three.js GLBs **for Bass Drop only** (DESIGN §16). The `Masco
 **Common rules:**
 - **Canvas:** authored at 2× the landscape rect height; `root` = the feet anchor (`layout.json → mascots.*.feet`).
 - **View:** three-quarter, turned toward the reels (Gumbo faces screen-right, Croak faces screen-left).
+- **Near and far side** (ART_BIBLE `bassDrop.mascots.*.nearSide`): `_L`/`_R` are the character's own sides. Facing screen-right puts Gumbo's **right** side nearer the viewer, and facing screen-left puts Croak's **left** side nearer. The near-side limbs, eye and headphone cup are drawn **in front of** the torso; the far side is drawn behind it. The slot lists below are back to front in that order, and the part sheets name the pieces "near …" and "far …" the same way (`artbible.bassDrop.mascots.*.sheets`).
+- **Parts:** cut from the formula-D part sheets by `tools/split` onto the rig master (the parts contract in `tools/spine/README.md`). Every limb piece ends in a round overlap cap centred on its joint.
 - **Proportions:** adult (head bbox ≤ 27% of total height, ART_BIBLE §7). Outline 6–8 units at 2× (3–4 px on screen).
 - **Bone names** (contract §7.5 words, so `procedural`-style helpers can find them):
   - core: `hips`, `spine`, `chest`, `neck`, `head`;
@@ -356,28 +358,27 @@ These replace the three.js GLBs **for Bass Drop only** (DESIGN §16). The `Masco
 ### 5.1 `chr_gumbo`: heavyset adult alligator bouncer (left)
 
 - **Build:** wide, low centre of mass, slow tempo (clips authored at tempo 0.92: weight lands late, holds are longer).
-- **Wardrobe:** tank top, gold tooth, toothpick, gold chain.
-- **Pose (landscape):** stands in front-right of the lower cabinet with his **left forearm resting on the cabinet top**, so every boom physically shoves him. The cooler sits at his feet for the slams.
+- **Wardrobe** (the adopted formula-D design `ab2/D_gumbo`): tight maroon tank top, dark blue work jeans, black rubber boots, one gold tooth, a toothpick. **No gold chain**: the adopted design has none, so there is no `chain` slot and no `phys_chain_*` (`artbible.bassDrop.mascots.gumbo.rigDeltas`). A chain comes back only with a new design sheet that draws it.
+- **Near side = his R** (facing screen-right): the near (R) limbs are in front of the torso; the far (L) limbs are behind it.
+- **Pose (landscape):** stands in front-right of the lower cabinet with his **far (left) forearm resting on the cabinet top** behind him (`hand_L` `lean`, `ik_hand_L`), so every boom physically shoves him. The cooler sits at his feet for the slams, within reach of the near (right) fist.
 
-**Slots (≈ 34, back to front):**
-- `tail` (mesh);
-- `thigh_R`, `shin_R`, `foot_R`;
-- `upper_arm_R`, `forearm_R`, `hand_R` (`open`, `fist`, `point`);
-- `torso` (mesh), `tank_top` (mesh), `belly` (mesh), `chain` (mesh);
+**Slots (≈ 35, back to front):**
+- `tail` (mesh; rests on the ground behind the far leg, clear of both legs);
+- far side, behind the torso: `thigh_L`, `shin_L`, `foot_L` (boot); `upper_arm_L`, `forearm_L`, `hand_L` (`open`, `fist`, `point`, `lean`);
+- `torso` (mesh), `tank_top` (mesh), `belly` (mesh);
 - `neck`, `jaw` (mesh), `teeth_lower`, `head` (mesh, skull + snout top), `teeth_upper`, `gold_tooth`, `nostrils`;
-- `eye_L`, `eye_R` (4 states each), `pupil_L`, `pupil_R`, `brow_L`, `brow_R`;
+- `eye_L` (far), `eye_R` (near) (4 states each), `pupil_L`, `pupil_R`, `brow_L`, `brow_R`;
 - `mouth` (`closed_pick`, `grin`, `open`, `roar`), `toothpick`, `jowl` (mesh);
-- `thigh_L`, `shin_L`, `foot_L`;
-- `upper_arm_L`, `forearm_L`, `hand_L` (`open`, `fist`, `point`, `lean`);
+- near side, in front of the torso: `thigh_R`, `shin_R`, `foot_R` (boot); `upper_arm_R`, `forearm_R`, `hand_R` (`open`, `fist`, `point`);
 - `cooler_body`, `cooler_lid`, `fx_sweat` (additive, bored/heat).
 
-**Bones (≈ 64):**
+**Bones (≈ 60):**
 - core chain + limbs as above;
 - `jaw`, `snout`, `face_eye_L/R`, `face_pupil_L/R`, `face_brow_L/R`, `toothpick`, `phys_toothpick`;
-- `phys_jowl_1..2`, `phys_belly`, `tail_1..5` + `phys_tail_1..5`, `phys_chain_1..4`;
+- `phys_jowl_1..2`, `phys_belly`, `tail_1..5` + `phys_tail_1..5`;
 - `cooler`, `cooler_lid`, `ik_*`, `ctrl_look`.
 
-**Physics:** tail floppy, belly/jowl default, toothpick stiff, chain floppy.
+**Physics (9 constraints, budget ≤ 12):** tail floppy (`phys_tail_1..5`), belly default (`phys_belly`), jowl default (`phys_jowl_1..2`), toothpick stiff (`phys_toothpick`). The dropped chain would have added 4 constraints (13, over the budget).
 
 | Clip | f | Loop | Track | Events | Acting |
 |---|---|---|---|---|---|
@@ -390,7 +391,7 @@ These replace the three.js GLBs **for Bass Drop only** (DESIGN §16). The `Masco
 | `bass_drop` | **36** | no | 0 | — | f0–f14: braces (hunches, squints `half`, left hand grips the cabinet, `mouth` `closed_pick`). **f15 hit** (= the boom): hips pushed back 24 units f15–f18, eyes `wide`, toothpick flips; physics kicked by the keyed hip jolt. Recovers by f36 |
 | `wild_land_react` | 12 | no | **1** (additive) | — | Flinch: head dips 6 units f1, blink |
 | `win_big` | 60 | no | 0 | `sfx: cooler_slam` f24 | Slams the cooler lid at f24 with the right fist, lid bounces, `roar` |
-| `celebrate` | **72** | yes | 0 | — | 4 beats @100 BPM: shoulder bounce, tail wags on beats, chain swings |
+| `celebrate` | **72** | yes | 0 | — | 4 beats @100 BPM: shoulder bounce, tail wags on beats, belly jiggles |
 | `fs_trigger` | **75** | no | 0 | `sfx: cooler_slam` f36 | Wind-up f0–f30, **two-fisted slam at f36** (= feature-trigger pump 3), roar hold, return |
 | `fs_end` | 54 | no | 0 | — | Nod + two-finger salute |
 | `blink` | 5 | no | **2** | — | `closed` f1–f3 |
@@ -399,23 +400,38 @@ Aliases for the orchestrator's names: `bored` → `idle_bored`, `feature_trigger
 
 ### 5.2 `chr_croak`: lanky adult bullfrog DJ (right)
 
-- **Build:** tall, springy, quick (tempo 1.06). Headphones, open-collar shirt, gold chain, throat pouch.
-- **Pose:** stands behind the `env_dj_booth`, hands on the deck and fader.
+- **Build:** tall, springy, quick (tempo 1.06).
+- **Design** (adopted v2 brief `ab1/ab_croak_v2`, re-made in formula D as plan row `mascot_croak_sheet`): flat-brim cap worn backwards; open hot-pink bowling shirt with a black lightning pattern over a black tank top; baggy black cargo shorts; big over-ear headphones **around the neck**; a heavy gold chain with a vinyl-record pendant; a large throat pouch. Rest face: eyes open and a very wide confident grin. `half` eyes are a blink frame only, never a rest pose (they would give the meme-frog read, `artbible.bassDrop.mascots.croak.avoid`).
+- **Near side = his L** (facing screen-left): the near (L) limbs, eye and headphone cup are in front; the far (R) side is behind.
+- **Pose:** stands behind the `env_dj_booth`, near (left) hand on the fader (`ik_hand_L`), far (right) hand on the deck (`ik_hand_R`).
 
-**Slots (≈ 36, back to front):**
-- `cup_R`, `upper_arm_R`, `forearm_R`, `hand_R` (`open`, `point`, `fist`, `scratch`, `press`), `mic` (hidden until `fs_trigger`);
-- `thigh_R`, `shin_R`, `foot_R`, `thigh_L`, `shin_L`, `foot_L`;
-- `torso` (mesh), `shirt` (mesh), `chain` (mesh);
-- `pouch` (mesh, inflates), `head` (mesh), `band`, `eye_bulge_L`, `eye_bulge_R`, `eye_L`, `eye_R` (4 states), `pupil_L`, `pupil_R`, `lid_L`, `lid_R`;
-- `mouth` (`closed`, `smile`, `open`, `O`), `cup_L`;
-- `upper_arm_L`, `forearm_L`, `hand_L` (`open`, `point`, `fist`, `fader`), `fx_note` (additive music notes, celebrate).
+**Slots (≈ 34, back to front):**
+- far side, behind the torso: `upper_arm_R`, `forearm_R`, `hand_R` (`open`, `point`, `fist`, `scratch`, `press`), `mic` (hidden until `fs_trigger`);
+- `thigh_R`, `shin_R`, `foot_R` (far), `thigh_L`, `shin_L`, `foot_L` (near);
+- `torso` (mesh), `shirt` (mesh);
+- headphones around the neck, far side: `band` (over the back of the collar), `cup_R`;
+- `chain` (mesh, record pendant), `pouch` (mesh, inflates), `head` (mesh), **`cap`** (new: the backwards flat-brim cap on the `head` bone; it follows every nod and look), `eye_bulge_R`, `eye_bulge_L`, `eye_R`, `eye_L` (4 states), `pupil_R`, `pupil_L`, `lid_R`, `lid_L`;
+- `mouth` (`closed`, `smile`, `open`, `O`);
+- headphones, near side: `cup_L` (resting on the near collarbone, in front of the pouch), `cable` (mesh, hangs clear of the body);
+- near side, in front of the torso: `upper_arm_L`, `forearm_L`, `hand_L` (`open`, `point`, `fist`, `fader`), `fx_note` (additive music notes, celebrate).
 
 **Bones (≈ 70):**
 - core chain + long limbs;
-- `pouch`, `phys_pouch_1..2`, `band`, `cup_L`, `cup_R`, `phys_cable_1..3` (headphone cable);
-- `phys_chain_1..4`, `face_*`, `mic`, `ik_hand_L` (pinned to the fader), `ik_foot_*`, `ctrl_look`.
+- `pouch`, `phys_pouch_1..2`;
+- headphones: `band`, `cup_L`, `cup_R`, all **parented to `neck`**, not the head. The headphones rest around the neck, so a nod or look turn moves the head and cap but leaves the headphones on the collar; the cups rock only with the neck and chest. `phys_cable_1..3` hang from `cup_L`;
+- `phys_chain_1..3` on `chest`, `face_*` (the bulges carry the eyes: `face_bulge_*` › `face_eye_*` › `face_pupil_*`, `face_lid_*`), `mic` (on `hand_R`), `ik_hand_L` (pinned to the fader), `ik_hand_R` (deck), `ik_foot_*`, `ctrl_look`. The `cap` slot rides `head` and needs no bone of its own.
 
-**Physics:** pouch default, cable floppy, chain floppy.
+**Physics (8 constraints, budget ≤ 12):**
+- pouch default (`phys_pouch_1..2`), cable floppy (`phys_cable_1..3`), chain floppy with ζ 0.3 (`phys_chain_1..3`: a 3-link chain rings longer than one spring);
+- if the art director wants the cups to bounce on their own, `phys_cup_L/R` (default) make 10, still within the budget;
+- nothing else springs: the cap is stiff on the head.
+
+**Look constraints** (track 3, `ctrl_look`, contract `characters.look`):
+- `look` = transform `ctrl_look` → `head` rotation, additive, mix 0.6, clamped to ±12° (5° per 100 units);
+- `look_eyes` = `ctrl_look` x/y → `face_pupil_L/R`, mix 1, 3 units per 100, clamped to **[8, 5]** (x, y) so the narrow horizontal pupils never leave the golden iris. The pupils ride `face_eye_*` under the bulges, so the offset is applied in the bulge's frame;
+- the cap follows the head (same bone); the headphones and cable do not (neck);
+- lids are driven by `blink` only, never by the look;
+- the pupil slots are hidden in the `half` / `closed` eye states (`face.hide_pupils`).
 
 | Clip | f | Loop | Track | Events | Acting |
 |---|---|---|---|---|---|
@@ -425,7 +441,7 @@ Aliases for the orchestrator's names: `bored` → `idle_bored`, `feature_trigger
 | `react_small` | 36 | no | 0 | `sfx: dj_scratch` f4 | Scratch with the right hand (the runtime plays booth `scratch` in sync) |
 | `react_point` | 30 | no | 0 | — | Points at the meter at f8 |
 | `bass_drop_charge` | **15** | no | 0 | `drop_hit` f14, `sfx: button_slam` f14 | Raises the right hand f0–f8, **palm hits the drop button at f14**; the runtime plays booth `drop_press` in sync. Timescaled to the charge length like the meter `charge` |
-| `bass_drop` | 30 | no | 0 | — | Follow-through: headphones bounce (physics), pouch balloons to 1.4 at f4, recovers |
+| `bass_drop` | 30 | no | 0 | — | Follow-through: the cable and chain whip (physics), the cups rock with the neck, pouch balloons to 1.4 at f4, recovers |
 | `wild_land_react` | 12 | no | **1** | — | Additive flinch |
 | `pouch_pump` | 12 | no | **1** | — | Pouch 1.00→1.35→1.00 (sticky `mult_up`, `spotUpgrade` cue) |
 | `win_big` | 60 | no | 0 | `sfx: dj_scratch` f10 | Double scratch + headbang |

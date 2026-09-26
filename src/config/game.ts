@@ -114,6 +114,12 @@ export interface GameFeatures {
    * Replaces BOARD_TIMING.explodeTrauma* when set (pass a live timing table to keep it lab-tunable).
    */
   explodeShake?: { explodeBase: number; explodePerSymbol: number; explodeMax: number };
+  /**
+   * Share (0..1) of the tier particle budget the engine Fx system leaves to the game's own
+   * ParticleSystems, so a coin / debris storm cannot starve them (the budget itself is global:
+   * fx/particles.ts configureParticleBudget). Default 0 (Fx may use the whole budget).
+   */
+  particleReserve?: number;
 }
 
 /** Deterministic idle board before the first spin (flow/attract.ts). */

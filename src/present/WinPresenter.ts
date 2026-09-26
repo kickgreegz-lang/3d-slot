@@ -196,7 +196,7 @@ export class WinPresenter implements GameModule {
     const mult = w.meta?.clusterMult ?? 1;
     lab.badge.visible = !summing && mult > 1;
     if (lab.badge.visible) {
-      lab.badge.text = `x${mult}`;
+      lab.badge.text = label('win.mult', 'x{n}', { n: mult });
       this.placeBadge(lab);
     }
     lab.glow.tint = lighten(color, 0.15);
@@ -315,7 +315,7 @@ export class WinPresenter implements GameModule {
     }
   }
 
-  /** Badge shows xN with a punch (one per bump). */
+  /** Badge shows xN (i18n 'win.mult') with a punch (one per bump). */
   private bump(lab: ClusterLabel, mult: number, sfx = false): void {
     const sum = lab.sum;
     if (!sum) return;
@@ -323,7 +323,7 @@ export class WinPresenter implements GameModule {
     sum.shown = mult;
     sum.pendingMult = 0;
     const b = lab.badge;
-    b.text = `x${mult}`;
+    b.text = label('win.mult', 'x{n}', { n: mult });
     b.visible = true;
     this.placeBadge(lab);
     gsap.killTweensOf(b.scale);

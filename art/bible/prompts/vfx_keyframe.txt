@@ -1,10 +1,13 @@
-# TEMPLATE vfx_keyframe.txt: look-dev key frames for the FX style guide (docs/PIPELINE.md phase 5).
+# TEMPLATE vfx_keyframe.txt: look-dev key frames for the FX style guide (docs/PIPELINE.md phase 5), in the formula D
+# finish (docs/games/bass-drop/STYLE_DECISION.md; docs/ART_BIBLE.md section 2.1).
 # Shipped VFX are live code (src/fx) or Blender toon flipbooks; AI key frames are REFERENCE for shape language and colour,
 # and the start frame for an AI/Wan loop only when that route is cleared.
 # Placeholders: {EFFECT} {PHASE} {COLOURS} {STYLE_FORMULA} {KEY_HEX}
 #   {EFFECT}  e.g. cartoon smoke-puff explosion | coin burst | firefly sparkle trail | lightning arc | shockwave ring
 #   {PHASE}   anticipation | peak | dissipate
-#   {COLOURS} from the palette roles, e.g. "molten gold #FFC629 with white-hot core" or "swamp-green #3F9D3A smoke"
-Game visual effect: {EFFECT} at its {PHASE} frame, {COLOURS}, bold graphic cel-shaded shapes in 2-3 hard-edged tones, pure-black outline on solid shapes, chunky readable silhouette, no photoreal smoke, no soft airbrush.
+#   {COLOURS} from the palette roles, e.g. "polished gold #FFC629 with a white-hot core" or "swamp-green #3F9D3A smoke"
+#   {STYLE_FORMULA} Bass Drop passes artbible.bassDrop.styleFormula (formula D) as --var; the words below match it.
+# Never write "extrusion" or "molten" (they draw sticks and drips). Glow is a runtime fx_* slot: paint the shapes, not bloom.
+Game visual effect: {EFFECT} at its {PHASE} frame, {COLOURS}, bold graphic shapes with a clean single-weight black outline on the solid shapes and thinner dark interior lines, painterly layered shading with soft gradients inside the lines, glossy highlights and crisp white hotspots, key light from the upper left, a chunky silhouette that stays readable at small size, no photoreal smoke, no airbrushed haze.
 {STYLE_FORMULA}
 Single effect element, centred, on a solid uniform flat {KEY_HEX} background, no text, no characters.

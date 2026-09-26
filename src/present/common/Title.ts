@@ -1,5 +1,6 @@
 import { gsap } from 'gsap';
 import { Container } from 'pixi.js';
+import { fxRandom } from '../../fx/util';
 import { BakedWord, type GlyphStyle, type WordGlyph } from './glyphs';
 
 export interface TitleLine {
@@ -23,7 +24,8 @@ export class Title extends Container {
   glintPos = Number.NEGATIVE_INFINITY;
   glintWidth = 150;
   glintStrength = 0.8;
-  private time = Math.random() * 10;
+  /** idle-wave phase: seeded cosmetic stream (fx/util), so a replay matches */
+  private time = fxRandom() * 10;
   private halfWidth = 0;
 
   constructor(lines: TitleLine[], resolution: number, opts: { maxWidth: number; lineGap?: number }) {

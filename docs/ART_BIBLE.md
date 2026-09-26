@@ -31,6 +31,37 @@ Formula rules:
 - Keying and background words go in the per-kind suffix, never in the formula.
 - Never name a brand, studio, artist or existing game.
 
+### 2.1 Bass Drop finish: formula D (adopted 2026-09-26)
+
+**Swamp Funk: Bass Drop** does not use the flat-cel formula above for its foreground art. Its finish is
+**formula D**, adopted after three paid A/B rounds on Nano Banana Pro ([STYLE_DECISION.md](games/bass-drop/STYLE_DECISION.md);
+jobs `probe1`, `ab1`, `ab2` in `art/ledger/`). The machine-readable copies are
+`artbible.json → bassDrop.styleFormula` and `bassDrop.environmentFormula`. Every Bass Drop prompt passes
+them as `--var STYLE_FORMULA=…` (`art/plan/build_plan.py`). The formula above stays byte-identical, so
+every recorded Swamp Funk job keeps reproducing.
+
+> Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.
+
+Backgrounds use the **painted environment** formula:
+
+> Hand-painted premium slot-game environment, painterly soft brushwork, atmospheric perspective with softer and bluer detail in the distance, rich violet-indigo and teal night palette with warm amber and magenta neon accents, cinematic lighting, high detail at the edges.
+
+What formula D changes against the locks of §3 (everything not listed still holds):
+
+| Lock | Swamp Funk (§3) | Bass Drop (formula D) |
+|---|---|---|
+| Outline | Pure black, 4.6 design px (≈ 3% of the cell), interior 2.6 | **Same weight and colour**: a clean, single-weight bold black outline around every shape and thinner dark interior lines; mascots 6–8 units at 2× |
+| Shading | 1 flat base + 2 hard-edged shadow tones + 1 white streak, no gradients | Painterly layered shading **with soft gradients**, jewel-tone colours, glossy lacquered highlights, crisp white specular hotspots |
+| Extrusion | Plum `#4B283D`, 6–10 design px to the lower right | **None.** Depth comes from the rendering. Never write "extrusion" (the model draws a stick or tab) or "molten" (it draws drips); say "polished solid gold". Both words are banned in Bass Drop prompts (`bassDrop.bannedPromptWords`) |
+| Light | Top-left key, no rim light on the foreground | Top-left key + warm bounce + a **thin cool rim light** on the foreground |
+| Glow | Never baked | Unchanged: glow, bloom and blur are runtime `fx_*` slots |
+| Camera, canvas, fill | §3 | Unchanged |
+| Key colour | The requested hex is keyed | The requested hex goes into the prompt, but the matte **measures** the background and keys on that (`keyUniform`, §10): one adopted D symbol came back on olive |
+
+Royals stay vector (Lilita One / Titan One + resvg), with painterly gradient shading built into the vector
+so they sit next to formula-D symbols. The optional AI surface pass is `royal_material_pass.txt`, which
+is written in formula D.
+
 ## 3. The five locks
 
 | Lock | Value | Notes |
@@ -177,7 +208,7 @@ Turnaround inputs for image-to-3D are **unlit, outline-free, one figure per imag
 
 **Slop tells:** reject on sight, and the gates catch most of them.
 
-- [ ] Airbrushed gradients, or soft outlines that vary per symbol.
+- [ ] Airbrushed gradients, or soft outlines that vary per symbol. (Bass Drop formula D *wants* layered soft-gradient shading inside the lines; the tell there is a soft or doubled **outline**, or a gradient that smears across an outline.)
 - [ ] Mixed light directions between separately generated assets.
 - [ ] Photoreal texture next to flat art; plastic AI sheen; baked bloom.
 - [ ] Gibberish text or pseudo-letters anywhere.
@@ -192,19 +223,22 @@ Turnaround inputs for image-to-3D are **unlit, outline-free, one figure per imag
 
 Automated first, then the human batch sign-off. Values marked *calibrate* are starting thresholds, tuned on the approved paintover pack. Each gate's result is written into the asset's manifest row (`qa`).
 
+> **Bass Drop (formula D): recalibrate on formula-D anchors.** The thresholds below were set for the flat-cel finish. Soft-gradient shading adds colour clusters (palette ΔE), anti-aliased gradients change the dark-pixel width histogram (outline), the cool rim light is new (light direction), and the style baseline is new (DINOv2). Before any of those gates may *fail* a Bass Drop row, re-measure them on the approved formula-D anchors (`art/plan/approvals.json`: `sym_H1`, `sym_H3`, `sym_W`, `mascot_gumbo_sheet`, `mascot_croak_sheet_v2`, `bg_base_landscape`) and write the new numbers here. Compare base tones only for palette ΔE. Until then they are review aids and the art director judges by eye. Rows marked **(recalibrate on formula-D anchors)** below are affected. Halo, no text, canvas/pivot, adult proportions and `keyUniform` hold as written.
+
 | Gate | Method | Pass |
 |---|---|---|
 | **64 px readability** | Contact sheet of all symbols at 64 px, plus 150 and 75 px on the real panel colour. Claude and Gemini each identify every symbol blind. | Every symbol identified by both judges |
-| **Silhouette confusion** | Greyscale/alpha silhouettes; pairwise aligned-IoU confusion matrix | No pair ≥ 0.85 (*calibrate*) |
-| **Palette ΔE** | k-means dominant colours vs the §4 role colours (CIEDE2000) | Every cluster within 10 ΔE of an allowed role colour (*calibrate*); hidden-area fills < 3 ΔE vs the visible part (from research) |
-| **Outline histogram** | OpenCV width histogram of dark boundary pixels (max RGB < 70) at final display size | Outer outline 3–5 design px (bottom-right up to 7); ≥ 3 px for baked 3D inserts |
-| **Style similarity** | DINOv2 cosine similarity to the paintover pack; mascot identity vs the canonical front view | Above the pack baseline (*calibrate*) |
+| **Silhouette confusion** | Greyscale/alpha silhouettes; pairwise aligned-IoU confusion matrix | No pair ≥ 0.85 (*calibrate*) **(recalibrate on formula-D anchors)** |
+| **Palette ΔE** | k-means dominant colours vs the §4 role colours (CIEDE2000) | Every cluster within 10 ΔE of an allowed role colour (*calibrate*); hidden-area fills < 3 ΔE vs the visible part (from research) **(recalibrate on formula-D anchors: base tones only)** |
+| **Outline histogram** | OpenCV width histogram of dark boundary pixels (max RGB < 70) at final display size | Outer outline 3–5 design px (bottom-right up to 7); ≥ 3 px for baked 3D inserts **(recalibrate on formula-D anchors)** |
+| **Style similarity** | DINOv2 cosine similarity to the paintover pack; mascot identity vs the canonical front view | Above the pack baseline (*calibrate*) **(recalibrate on formula-D anchors: the baseline is the six approved anchors)** |
 | **Halo** | Composite on pure black and pure white | Zero key-tinted edge pixels |
+| **Key uniform** (`keyUniform`) | `tools/matte` `--key auto` measures the background (border strips + 8 patches) and keys on the **measured** colour, never the requested hex | Border p95 ≤ 32 and every patch median within 16 of the key (0–255 RGB), and a colour key (not white, grey or black); else exit 1: regenerate. Drift from the requested hex is reported, and fails only with `--max-key-drift` |
 | **No text** | OCR spot-check | No text except royal glyphs |
 | **Canvas / pivot** | 360×360 @2x, content height within the fill range, centred, straight alpha | All true |
 | **Adult proportions** | Head bbox / total height + vision rubric | ≤ 0.27 and judged adult by both judges (*calibrate*) |
-| **Light direction** | Vision rubric on the rotated in-game composite | Reads top-left |
-| **Spine split** | Rest-pose reassembly vs master; rotate each bone ±35° | SSIM > 0.98, alpha IoU > 0.99, no holes |
+| **Light direction** | Vision rubric on the rotated in-game composite | Reads top-left (formula D: key top-left, the thin cool rim is allowed) **(recalibrate on formula-D anchors)** |
+| **Spine split** | Rest-pose reassembly vs master (`tools/split`, SSIM at display scale); rotate each bone ±35° | SSIM > 0.98, alpha IoU > 0.99, no holes. Part sheets are edit-mode re-renders, so the SSIM needs `--lock-visible` **(recalibrate on the first formula-D split)** |
 | **Baked 3D insert** | Frame 1 vs static sprite; loop seam; alpha bounds; pivot drift; hull bleed | All pass |
 | **Video loop** (if used) | Last frame vs first after keying | Mean abs diff < 2/255 |
 

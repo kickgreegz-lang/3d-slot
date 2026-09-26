@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedBy": "c0107-bg",
+  "generatedBy": "tools/gen/hf-ingest.mjs",
   "rows": [
     {
       "id": "d_h1.raw.v01",
@@ -3242,6 +3242,70 @@
         "passed": true,
         "report": "build/qa/c0107/bd_bg_base_portrait/qa.json"
       }
+    },
+    {
+      "id": "chr_gumbo_rig_master.raw.v01",
+      "path": "art/_raw/chr_gumbo_rig_master/v01/raw.png",
+      "stage": "mascot-sheets",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "156d6517-b845-4ab2-a618-66747120bb5b",
+      "promptPath": "art/_raw/chr_gumbo_rig_master/v01/prompt.txt",
+      "promptHash": "c36a8d4a28a70fa758b1623c41048e2960f12cd07d15c0726910655aec269af8",
+      "template": "art/bible/prompts/mascot_parts_sheet.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T17:40:18Z",
+      "sha256": "faa88b607f9f64d5e4d3a26683a6dd519d6d1d5e2fef36b7512a93ce61697ef1",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c08 job chr_gumbo_rig_master.c1; 1856x2304 (2k 4:5); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "chr_gumbo_rig_master.raw.v02",
+      "path": "art/_raw/chr_gumbo_rig_master/v02/raw.png",
+      "stage": "mascot-sheets",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "44daef4c-bd59-4532-9b4d-1abbac690d85",
+      "promptPath": "art/_raw/chr_gumbo_rig_master/v02/prompt.txt",
+      "promptHash": "c36a8d4a28a70fa758b1623c41048e2960f12cd07d15c0726910655aec269af8",
+      "template": "art/bible/prompts/mascot_parts_sheet.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T17:40:20Z",
+      "sha256": "639adb7888fd5de86eca12c68b5bcdd10e621f563f5100dcc1109bc3faa71147",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c08 job chr_gumbo_rig_master.c2; 1856x2304 (2k 4:5); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
     }
   ]
 }

@@ -27,6 +27,8 @@ export const EN: Record<string, string> = {
   // presentation overlays (present/*: label(key, fallback))
   'fs.summary': '{n} FREE SPINS',
   tapToContinue: 'TAP TO CONTINUE',
+  /** cluster-label multiplier badge (a game may restyle it, e.g. '×{n}') */
+  'win.mult': 'x{n}',
   'bigwin.big': 'BIG WIN',
   'bigwin.super': 'SUPER WIN',
   'bigwin.mega': 'MEGA WIN',

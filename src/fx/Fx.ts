@@ -1,16 +1,18 @@
 import { gsap } from 'gsap';
 import { Container, Sprite, Texture } from 'pixi.js';
 import type { ParticleKey } from '../assets/art';
-import type { Rect } from '../config/layout';
+import { FEATURES } from '../config/game';
+import type { LayoutKind, Rect } from '../config/layout';
 import { clock } from '../core/clock';
 import { registerTiming, s } from '../core/timing';
 import type { GameContext, GameModule } from '../game/context';
 import type { GameEvents } from '../game/events';
 import { configureFilterBudget } from './filters/budget';
-import { configureFilterQuality, pulseShockwave } from './filters/effects';
-import { ParticleSystem } from './particles';
+import { configureFilterQuality, pulseShockwave, refitPulses } from './filters/effects';
+import { configureParticleBudget, ParticleSystem } from './particles';
 import { type BurstContext, spawnBurst } from './presets';
 import { ScreenShake } from './shake';
+import { clamp01, mix32, mixStr, seedFx } from './util';
 
 /** Local FX tuning (candidates for TIMING.fx — see contract requests). */
 export const FX_TIMING = registerTiming('fx', {
@@ -33,6 +35,13 @@ export const FX_TIMING = registerTiming('fx', {
  *                                                  (limiter: <= 3 starts/s, >= 334 ms apart; excess dropped)
  *
  * Everything advances on `clock.onUpdate`, so hit-stop freezes particles and shake.
+ *
+ * Owns the global particle budget (ctx.budget.maxParticles, shared by every ParticleSystem;
+ * this module's own system leaves FEATURES.particleReserve of it to the game's systems) and
+ * the seeded cosmetic RNG: each burst reseeds it from the round seed (a hash of the last
+ * 'board:reveal' board), the burst's index in that round and its payload, so a replayed book
+ * spawns the same particles. A 'layout:change' refits (resize) or stops (new design space)
+ * a live shockwave / chromatic pulse, which would otherwise stay clipped to the old rect.
  */
 export class Fx implements GameModule {
   private particles!: ParticleSystem;
@@ -46,19 +55,26 @@ export class Fx implements GameModule {
   private burstCtx!: BurstContext;
   private textures = new Map<ParticleKey, Texture>();
   private offs: Array<() => void> = [];
+  /** cosmetic seed of the current reveal (hash of its board) + bursts spawned since */
+  private roundSeed = 0x5eed;
+  private burstIndex = 0;
+  private kind: LayoutKind;
 
   constructor(private ctx: GameContext) {
     this.shake = new ScreenShake(ctx);
+    this.kind = ctx.layout.kind;
   }
 
   init(): void {
     const { ctx } = this;
     configureFilterBudget(ctx.budget.maxFilters);
     configureFilterQuality(ctx.tier);
+    configureParticleBudget(ctx.budget.maxParticles);
 
     const holder = new Container({ label: 'fx:particles' });
     ctx.layers.fx.addChild(holder);
-    this.particles = new ParticleSystem(holder, ctx.budget.maxParticles);
+    const reserve = clamp01(FEATURES.particleReserve ?? 0);
+    this.particles = new ParticleSystem(holder, Math.round(ctx.budget.maxParticles * (1 - reserve)));
     this.burstCtx = {
       sys: this.particles,
       tex: (key) => this.texture(key),
@@ -88,6 +104,7 @@ export class Fx implements GameModule {
       g.on('fx:burst', (p) => this.burst(p)),
       g.on('fx:shake', ({ trauma }) => this.shake.add(trauma)),
       g.on('fx:flash', (p) => this.doFlash(p)),
+      g.on('board:reveal', ({ board }) => this.seedRound(board)),
       g.on('layout:change', () => this.layout()),
       clock.onUpdate((dt) => {
         this.particles.update(dt);
@@ -99,6 +116,8 @@ export class Fx implements GameModule {
   layout(): void {
     const L = this.ctx.layout;
     this.burstCtx.layout = L;
+    refitPulses(this.visibleRect(), L.kind !== this.kind);
+    this.kind = L.kind;
     // screenFx is cover-scaled in design space: overshoot so the flash reaches every edge
     const pad = Math.max(L.width, L.height);
     this.flash.position.set(-pad, -pad);
@@ -124,7 +143,22 @@ export class Fx implements GameModule {
     return t;
   }
 
+  /** New board on screen: its symbols seed the round's cosmetic randomness. */
+  private seedRound(board: string[][]): void {
+    let h = 0x811c9dc5;
+    for (const col of board) {
+      for (const id of col) h = mix32(mixStr(h, id), 0x7c);
+      h = mix32(h, 0x2f);
+    }
+    this.roundSeed = h;
+    this.burstIndex = 0;
+  }
+
   private burst(p: GameEvents['fx:burst']): void {
+    let h = mix32(this.roundSeed, ++this.burstIndex);
+    h = mix32(mixStr(h, p.kind), Math.round(p.x));
+    h = mix32(mix32(h, Math.round(p.y)), p.count ?? -1);
+    seedFx(h);
     spawnBurst(this.burstCtx, p);
     if (p.kind === 'scatter') {
       const o = FX_TIMING.scatterShock;

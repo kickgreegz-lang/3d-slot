@@ -211,12 +211,17 @@ class BuyCard {
     gsap.to(this.hoverGlow, { alpha: can ? 0.42 : 0, duration: sec(B.hover), overwrite: true });
   }
 
-  /** Confirm-step look: the BUY row gives way to COST + the big price. */
-  setConfirm(on: boolean, duration: number): void {
-    const show = on ? 1 : 0;
-    const hide = on ? 0 : 1;
-    gsap.to([this.button, this.price, this.costX], { alpha: hide, duration, overwrite: true });
-    gsap.to([this.costCaption, this.bigPrice], { alpha: show, duration, overwrite: true });
+  /**
+   * Confirm-step look: the BUY row gives way to COST + the big price (`on`), or back. The two
+   * groups sit on top of each other, so they cross in sequence (out over the first 40 % of
+   * `d`, in over the last 55 %) and never share a frame at similar alpha. Added to the
+   * caller's select / back timeline, so a relayout (progress(1)) or close (kill) owns them.
+   */
+  setConfirm(on: boolean, d: number, tl: gsap.core.Timeline): void {
+    const row = [this.button, this.price, this.costX];
+    const confirm = [this.costCaption, this.bigPrice];
+    tl.to(on ? row : confirm, { alpha: 0, duration: d * 0.4, ease: 'power1.in' }, 0);
+    tl.to(on ? confirm : row, { alpha: 1, duration: d * 0.55, ease: 'power2.out' }, d * 0.45);
     this.button.eventMode = on ? 'none' : 'passive';
   }
 
@@ -401,7 +406,7 @@ export class BuyCards {
       if (j === i) {
         tl.to(c.root, { x: cc.x, y: cc.y, duration: d, ease: 'power3.inOut' }, 0);
         tl.to(c.root.scale, { x: B.confirmScale, y: B.confirmScale, duration: d, ease: 'back.out(1.6)' }, 0);
-        c.setConfirm(true, d);
+        c.setConfirm(true, d, tl);
       } else tl.to(c.root, { alpha: 0, duration: d * 0.7 }, 0);
     });
     this.buttons.visible = true;
@@ -430,7 +435,7 @@ export class BuyCards {
       if (j === i) {
         tl.to(c.root, { x: home.x, y: home.y, duration: d, ease: 'power3.inOut' }, 0);
         tl.to(c.root.scale, { x: 1, y: 1, duration: d, ease: 'power2.out' }, 0);
-        c.setConfirm(false, d);
+        c.setConfirm(false, d, tl);
       } else tl.to(c.root, { alpha: 1, duration: d * 0.7 }, d * 0.3);
     });
     tl.to(this.buttons, { alpha: 0, duration: d * 0.5 }, 0);

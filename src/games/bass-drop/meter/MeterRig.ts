@@ -356,7 +356,8 @@ export class MeterRig {
     this.swirl.rotation += (((p.swirlSpin + spin) * Math.PI) / 180) * dt;
     const flash = this.rimFlash.a;
     this.glow.alpha = Math.min(1, Math.max(this.glowLevel * 0.55 * pulse + p.glow * 0.6, flash));
-    this.glow.tint = flash > 0.08 ? this.rimFlashColor : this.trimColor;
+    const glowTint = flash > 0.08 ? this.rimFlashColor : this.trimColor;
+    if (this.glow.tint !== glowTint) this.glow.tint = glowTint; // the setter allocates: on change only
     this.capFlash.alpha = Math.min(1, Math.max(this.shot.cap, p.cap * 0.8));
     if (Math.abs(this.led.pulse - pulse) > 0.004) {
       this.led.pulse = pulse;

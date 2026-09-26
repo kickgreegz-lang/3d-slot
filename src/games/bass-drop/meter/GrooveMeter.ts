@@ -5,11 +5,12 @@ import type { ClusterWin } from '../../../book/types';
 import type { LayoutSpec } from '../../../config/layout';
 import { clock } from '../../../core/clock';
 import { followSpeed, getSpeedProfile, s } from '../../../core/timing';
+import { reducedMotion } from '../../../fx/motion';
 import type { GameContext, GameModule } from '../../../game/context';
 import type { GameEvents } from '../../../game/events';
 import { GROOVE } from '../config';
 import type { GrooveFeature, MeterMode } from '../events';
-import { BASS_DROP_TIMING, PINK } from '../timing';
+import { BASS_DROP_TIMING, PINK, TEAL } from '../timing';
 import { MeterArt } from './art';
 import { Beats } from './beats';
 import { Chip } from './Chip';
@@ -19,6 +20,7 @@ import { ensureMeterFonts } from './fonts';
 import { METER_LOOK as LOOK, R_REF, type RigLayout, polar, rigLayout } from './geometry';
 import { deriveLook } from './look';
 import { MeterRig } from './MeterRig';
+import { TubeLight } from './Tube';
 import { type OrbMode, type PlanCell, cellKey, orbsFor, planStep } from './plan';
 
 const T = BASS_DROP_TIMING;
@@ -75,7 +77,10 @@ interface PendingBurst {
  *    drains behind the upgrade screen; 'round:start' drains in the base game (400 ms);
  *  - 'meter:set' (resume / replay) is instant;
  *  - 'meter:blastSlot' mounts a launching wild in the rig's fx_blast slot (design px kept), so
- *    it leaves the woofer under the rim and the counter (DESIGN §8.2).
+ *    it leaves the woofer under the rim and the counter (DESIGN §8.2);
+ *  - the frame beam's neon tube (TubeLight, on layers.frame) glows while a notch is armed and
+ *    carries the charge pulse from the booth to the meter on the first drop of a step
+ *    (charge_start, DESIGN §6.2 / §8.1; none on a chained drop, §8.4).
  * Other modules are never called: everything goes through ctx.game.
  */
 export class GrooveMeter implements GameModule {
@@ -83,6 +88,7 @@ export class GrooveMeter implements GameModule {
   private rig!: MeterRig;
   private chip!: Chip;
   private fx!: MeterFx;
+  private tube!: TubeLight;
   private geo!: RigLayout;
   private readonly body = new Container({ label: 'grooveMeter' });
   private offs: Array<() => void> = [];
@@ -145,6 +151,9 @@ export class GrooveMeter implements GameModule {
     // that attach later (BassDrop's flights, win-elevated symbols, links) draw over it, but a
     // launching wild starts inside fx_blast (meter:blastSlot) and only takes winLayer past the rim.
     ctx.layers.winLayer.attach(this.rig.counter.view);
+    // over the Frame's tube (the Frame fills layers.frame on its own init, before the meter's)
+    this.tube = new TubeLight(M.armedHz);
+    ctx.layers.frame.addChild(this.tube.view);
     this.layout(ctx.layout);
     this.rig.led.fillTo(0, 0);
     this.refresh();
@@ -192,6 +201,7 @@ export class GrooveMeter implements GameModule {
     this.geo = rigLayout(L);
     this.rig.layout(this.geo, this.art.build(this.geo.cabinet, this.bakeRes()));
     this.chip.layout(this.geo.chip);
+    this.tube.layout(L);
     this.refresh();
   }
 
@@ -205,6 +215,7 @@ export class GrooveMeter implements GameModule {
     this.ctx.layers.winLayer.detach(this.fx.view);
     this.ctx.layers.winLayer.detach(this.rig.counter.view);
     this.fx.destroy();
+    this.tube.destroy();
     this.chip.destroy();
     this.rig.destroy();
     this.body.destroy({ children: true });
@@ -215,6 +226,7 @@ export class GrooveMeter implements GameModule {
 
   private onRoundStart(): void {
     this.dropBeats.cancel();
+    this.tube.reset();
     this.featureBeats.flush();
     this.endRun();
     this.armed = null;
@@ -247,6 +259,7 @@ export class GrooveMeter implements GameModule {
 
   private onBoardSet(): void {
     this.endRun();
+    this.tube.reset();
     this.armed = null;
     this.pendingBursts = [];
     this.rollRate = 0;
@@ -273,6 +286,7 @@ export class GrooveMeter implements GameModule {
 
   private onMeterSet(p: GameEvents['meter:set']): void {
     this.endRun();
+    this.tube.reset();
     this.cancelDrain();
     this.featureBeats.cancel();
     this.armed = null;
@@ -583,6 +597,7 @@ export class GrooveMeter implements GameModule {
     const sec = first ? Math.max(s(D.charge), D.chargeFloor / 1000) : Math.max(s(D.chargeChained), CHAINED_FLOOR);
     this.charging = p.threshold;
     this.rig.charge(sec, !first);
+    if (first) this.tube.play('charge', sec, reducedMotion());
     this.refresh();
     this.dropBeats.at(sec, () => this.boom(p.threshold));
   }
@@ -674,6 +689,9 @@ export class GrooveMeter implements GameModule {
     rig.setTrim(look.trim);
     rig.setGlowLevel(look.glow);
     rig.play(look.loop);
+    this.tube.setArmed(this.armedNotches.size > 0);
+    // the Frame lights its tube pink in the features
+    this.tube.setColor(this.mode === 'base' ? TEAL : PINK);
     if (look.heat && !this.heat) {
       this.fx.cue('meterHeat', 1);
       this.fx.sfx('meter_heat');
@@ -697,6 +715,7 @@ export class GrooveMeter implements GameModule {
     this.roll(dt);
     const beat = LOOK.beatMs[this.mode];
     this.rig.update(dt, beat);
+    this.tube.update(dt);
     this.rig.syncMount(this.ctx.layers.root);
     // overdrive crackle: a few pink sparks off the rim (seeded, idle garnish)
     if (this.rig.currentLoop === 'overdrive_loop' && dt > 0) {

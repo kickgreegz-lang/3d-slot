@@ -86,11 +86,12 @@ class NotchBadge {
     if (this.bursting) return;
     if (this.armed) {
       const on = this.solid ? 1 : 0.5 + 0.5 * Math.cos(t * Math.PI * 2 * armedHz);
-      this.ring.tint = GOLD;
+      // tints on change only (pixi's tint setter allocates even for an unchanged value)
+      if (this.ring.tint !== GOLD) this.ring.tint = GOLD;
       this.ring.alpha = 0.55 + 0.45 * on;
-      this.glow.tint = GOLD;
+      if (this.glow.tint !== GOLD) this.glow.tint = GOLD;
       this.glow.alpha = 0.25 + 0.6 * on;
-      this.icon.tint = 0xffffff;
+      if (this.icon.tint !== 0xffffff) this.icon.tint = 0xffffff;
       this.badge.scale.set(1.06 + 0.06 * on);
     } else if (this.pulse) {
       const on = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 * heatHz);

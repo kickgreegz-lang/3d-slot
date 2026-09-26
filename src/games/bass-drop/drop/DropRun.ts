@@ -85,7 +85,8 @@ export const chargeSeconds = (chainIndex: number): number =>
  * One `wild:drop` (DESIGN.md §8.1 beat sheet, §8.2 flight rules, §8.3 handoff, §8.4 chains).
  * t = 0 when the handler starts (the refill has settled):
  *   0          charge: bass_charge, cue bassDropCharge (chained: reactSmall), board:focus dim of
- *              the non-targets; reticles + small landing shadows at reticleAt;
+ *              the non-targets; reticles + small landing shadows at reticleAt (the neon-tube
+ *              pulse along the beam is the Groove Meter's: meter/Tube.ts, same charge length);
  *   C          boom: ShockwaveFilter from the meter (not in reduced motion), board:react wave,
  *              shake 0.45 (+0.1 per chain step, max 0.65), hit-stop 60, cyan flash 0.2 / 120 ms,
  *              bass_boom (+2 st per chain step), cue bassDrop;

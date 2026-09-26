@@ -8,6 +8,8 @@ import type { GameStrings } from '../../../i18n';
 export const STRINGS: GameStrings = {
   en: {
     'bd.drop.mult': '×{n}',
+    /** engine key: the cluster label's multiplier badge, same glyph as the wild badges */
+    'win.mult': '×{n}',
     'bd.drop.plusOne': '+{n}',
   },
   social: {},

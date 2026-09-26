@@ -21,6 +21,14 @@ const REF = LOOK.ref;
 
 type BadgeClip = 'slam' | 'appear' | 'mult_up' | 'maxed';
 
+/**
+ * t5 flame crown placement (badge-local ref units; the badge hangs at cell y +0.40). The W's
+ * WILD word covers cell y -0.03..+0.20, |x| < 0.33 and the t5 plate top is already at +0.16,
+ * so nothing may rise above the plate: two flames lick OUTWARD from behind the plate's ends
+ * (tips at |x| <= 0.51, y >= +0.25 of the cell, flicker included), never over the word.
+ */
+const FLAME = { x: 30, y: 6, rot: 0.8, scale: 0.66, flickerY: 1.1, flickerX: 0.96 } as const;
+
 /** Multiplier badge: tier plate (shape + colour per tier), t5 flame crown, live "×N". */
 export class MultBadge extends Container {
   /** ambient sticky heartbeat level (the module's loop drives beat.scale) */
@@ -28,7 +36,8 @@ export class MultBadge extends Container {
   /** clip motion (slam, punch, squash) */
   readonly pose = new Container({ label: 'badgePose' });
   private readonly plate = new Sprite({ anchor: 0.5 });
-  private readonly flame = new Sprite({ anchor: { x: 0.5, y: 1 } });
+  /** t5 flame crown: left / right tongues behind the plate */
+  private readonly flames = [new Sprite({ anchor: { x: 0.5, y: 1 } }), new Sprite({ anchor: { x: 0.5, y: 1 } })] as const;
   private readonly shine: Sprite;
   private readonly text: BitmapText;
   private flicker: gsap.core.Tween | null = null;
@@ -47,9 +56,15 @@ export class MultBadge extends Container {
       style: { fontFamily: MULT_FONT, fontSize: (LOOK.badgeCap * REF) / LOOK.capRatio },
       anchor: 0.5,
     });
-    this.flame.texture = art.tex.flame;
-    this.flame.visible = false;
-    this.pose.addChild(this.flame, this.plate, this.text, this.shine);
+    this.flames.forEach((f, i) => {
+      const side = i === 0 ? -1 : 1;
+      f.texture = art.tex.flame;
+      f.visible = false;
+      f.position.set(side * FLAME.x, FLAME.y);
+      f.rotation = side * FLAME.rot;
+      f.scale.set(FLAME.scale);
+    });
+    this.pose.addChild(...this.flames, this.plate, this.text, this.shine);
     this.beat.addChild(this.pose);
     this.addChild(this.beat);
   }
@@ -73,14 +88,21 @@ export class MultBadge extends Container {
     if (tier === this.tier) return;
     this.tier = tier;
     this.plate.texture = this.art.tex.plates[tier];
-    const top = -PLATE_SIZE[tier].h / 2;
-    this.flame.position.set(0, top + 16);
-    this.flame.visible = tier === 5;
     this.flicker?.kill();
     this.flicker = null;
-    this.flame.scale.set(1);
+    const [l, r] = this.flames;
+    l.visible = r.visible = tier === 5;
+    l.scale.set(FLAME.scale);
+    r.scale.set(FLAME.scale);
     if (tier === 5) {
-      this.flicker = gsap.to(this.flame.scale, { y: 1.1, x: 0.96, duration: sUi(170), ease: 'sine.inOut', yoyo: true, repeat: -1 });
+      this.flicker = gsap.to([l.scale, r.scale], {
+        y: FLAME.scale * FLAME.flickerY,
+        x: FLAME.scale * FLAME.flickerX,
+        duration: sUi(170),
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+      });
     }
   }
 

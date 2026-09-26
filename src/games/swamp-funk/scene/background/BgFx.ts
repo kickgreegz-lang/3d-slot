@@ -1,5 +1,6 @@
 import { Container, Particle, ParticleContainer, Rectangle, type Renderer, Sprite, type Texture } from 'pixi.js';
 import { mix } from '../../../../assets/placeholder/palette';
+import { reserveParticles } from '../../../../fx/particles';
 import type { GameContext } from '../../../../game/context';
 import { type Bulb, bulbsOf, glowSprite, paintCone, paintSignLit, rng } from './paint';
 import type { Composition, ScenePalette } from './theme';
@@ -14,6 +15,7 @@ import type { Composition, ScenePalette } from './theme';
  *   - fireflies drift and blink
  *   - drifting haze and slowly breathing light cones
  * `setHeat(t)` blends base -> free-spins colours (0..1).
+ * The bulbs + fireflies count against the global particle budget (reserved while alive).
  */
 
 const LOCAL = {
@@ -63,6 +65,7 @@ export class BgFx {
   private neon: NeonTube[] = [];
   private spill: [Sprite, Sprite] | null = null;
   private owned: Texture[] = [];
+  private releaseBudget: () => void = () => {};
   private t = 0;
   private heat = 0;
   private rand = rng(0xf1ee);
@@ -164,6 +167,7 @@ export class BgFx {
         blink: 0.25 + this.rand() * 0.5,
       });
     }
+    this.releaseBudget = reserveParticles(this.particles.particleChildren.length);
     this.applyHeat();
   }
 
@@ -248,6 +252,7 @@ export class BgFx {
   }
 
   destroy(): void {
+    this.releaseBudget();
     this.view.destroy({ children: true });
     for (const t of this.owned) t.destroy(true);
     this.owned.length = 0;

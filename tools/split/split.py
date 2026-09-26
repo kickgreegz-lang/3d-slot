@@ -271,6 +271,19 @@ class Build:
             est = sl.sheet_scale_from_features(feats, ps) if feats else None
             if est is not None and not (float(lo) <= est["scale"] <= float(hi)):
                 est = None
+            if est is not None and len(est["pieces"]) < 2:
+                # one piece's features (a repetitive chain) can lie: let the explained area arbitrate
+                alt = sl.estimate_sheet_scale(self.master, ps, lo=float(lo), hi=float(hi))
+                f2 = min(1.0, 384 / max(self.master.H, self.master.W))
+                lev = sl.resize_gray(self.master.prem, f2)
+                cands = [q for q in ps if q.setup and not q.hidden]
+                s_f = sl._explained(lev, cands, est["scale"], f2)
+                s_a = sl._explained(lev, cands, alt["scale"], f2)
+                if s_a > 1.1 * s_f:
+                    alt["featureScale"] = est["scale"]
+                    est = alt
+                else:
+                    est["explainedArea"] = {"features": round(s_f, 1), "search": round(s_a, 1), "searchScale": alt["scale"]}
             if est is None:
                 est = sl.estimate_sheet_scale(self.master, ps, lo=float(lo), hi=float(hi))
                 self.warnings.append(f"sheet {sid}: scale from the explained-area search ({est['scale']:.3f}); features "
@@ -281,6 +294,18 @@ class Build:
         auto = [p for p in self.pieces if p.setup and not p.hidden and self._place(p).get("mode") == "auto"]
         motion = self.m.get("motion", "affine")
         self._provisional_fit()
+        # 'at' hints get a provisional pose now (provisional fit, no snap) so they can serve as the search
+        # region of their children (an eye placed by hand, its pupil registered inside it); they never claim
+        # master pixels and are re-placed with the final fit after the rounds
+        provisional = []
+        for p in self.pieces:
+            pl = self._place(p)
+            if pl.get("mode") == "at" and p.A is None:
+                a = self._align_point(p, pl.get("anchor", "centre"))
+                c = sl.apply(np.linalg.inv(self.M2C_hint), [pl["at"]])[0]
+                p.A = (sl.trans_m(*c) @ sl.rot_m(float(pl.get("rotate", 0))) @ sl.scale_m(self.sheet_scale[p.sheet])
+                       @ sl.trans_m(-a[0], -a[1]))
+                provisional.append(p)
         pending = list(auto)
         last: dict[str, tuple[dict, np.ndarray | None]] = {}
         # rounds: parents before children, front before back. Round 0 accepts only strong, unambiguous fits
@@ -322,6 +347,10 @@ class Build:
                 if region:
                     rep["searchRegion"] = region
                 amb = rep.get("ambiguity", 0.0) if rep.get("init") == "ncc" else 0.0
+                twin = p.slot[:-2] + ("_R" if p.slot.endswith("_L") else "_L") if p.slot[-2:] in ("_L", "_R") else None
+                tw = self.setup_piece(twin) if twin else None
+                if tw is not None and tw in pending and tw is not p:
+                    amb = 0.0      # confusable with its own twin: either place is right, _twin_swaps orders them
                 need = max(sl.GATE_NCC, 0.85 - 0.1 * rnd)
                 weak = rep.get("visibleFrac", 1) < 0.35          # mostly hidden: image evidence is thin
                 # a piece whose parent exists but is not placed yet searched the whole master: only a clearly
@@ -344,8 +373,9 @@ class Build:
             self._refine_scales()
             if not pending or (rnd > 0 and not progress):
                 break
+        for p in provisional:
+            p.A = None
         self._twin_swaps(pending, last)
-        self._reassembly_refine(pending, last)
         # what never passed: keep the best attempt as an UNVERIFIED placement (the registration gate fails,
         # the previews still render) so the operator can confirm or correct it with a hint
         for p in pending:
@@ -399,7 +429,6 @@ class Build:
                     continue
                 errs.append(float(np.abs(acc[..., :3][sel] - m.fine[..., :3][sel]).mean()) +
                             float(np.count_nonzero(sel & (m.fine[..., 3] < 0.5))) / max(1, int(sel.sum())))
-            self.log(f"  twins {a.slot} / {b.slot}: error as found {errs[0]:.4f}, swapped {errs[1]:.4f}")
             if errs[1] < 0.8 * errs[0]:
                 self.log(f"  twins {a.slot} / {b.slot}: swapped (error {errs[0]:.4f} -> {errs[1]:.4f})")
                 for q, T in ((a, swapped[0]), (b, swapped[1])):
@@ -410,29 +439,27 @@ class Build:
                         last[q.pid] = (last[q.pid][0], T)
                     self.warnings.append(f"{q.pid}: swapped with its twin (occlusion fits the master better): check it")
 
-    def _reassembly_refine(self, pending: list, last: dict) -> None:
+    def _reassembly_refine(self) -> None:
         """Aperture problem: a limb whose ends hide under other pieces correlates equally well anywhere
         along its own axis. NCC never sees the master pixels a slid piece leaves unexplained; the composite
-        does. For every placed setup piece (front to back, two passes), try shifts along its axis (+-30% of
-        its length) and slightly across, with every other piece fixed, and keep the shift whose composite
-        best matches the master in that window (colour + alpha) when it improves the error by 10%."""
+        does. Once EVERY piece is placed (hints included), each registered piece that is aperture-prone
+        (visible < 75%, UNVERIFIED, or an _L/_R twin) tries shifts along its axis (+-30% of its length) and
+        slightly across, with all other pieces fixed, and keeps the shift whose composite matches the master
+        better (colour + alpha, -10% at least). A verified piece that moves more than 5% of its length was
+        registered wrong: it becomes UNVERIFIED."""
         m = self.master
         fr = m.fr * 0.5                                  # half the fine level: the slide is a coarse fix
         mfine = sl.resize_gray(m.prem, fr)
         H, W = mfine.shape[:2]
-        placed = {q.pid: (q.A if q.A is not None else last.get(q.pid, ({}, None))[1])
-                  for q in self.pieces if q.setup and not q.hidden}
-        placed = {k: v for k, v in placed.items() if v is not None}
-        def prone(q):
-            r = q.reg if q.A is not None else last.get(q.pid, ({}, None))[0]
-            twin = q.slot[:-2] + ("_R" if q.slot.endswith("_L") else "_L") if q.slot[-2:] in ("_L", "_R") else None
-            return q in pending or r.get("visibleFrac", 1) < 0.75 or twin in self.slots
+        rest = [q for q in self.pieces if q.setup and not q.hidden and q.A is not None]
 
-        order = sorted([q for q in self.pieces if q.pid in placed and prone(q)], key=lambda q: -(q.z or 0))
+        def prone(q):
+            twin = q.slot[:-2] + ("_R" if q.slot.endswith("_L") else "_L") if q.slot[-2:] in ("_L", "_R") else None
+            return (q.reg.get("verified") is False or q.reg.get("visibleFrac", 1) < 0.75 or twin in self.slots)
+
+        order = sorted([q for q in rest if prone(q) and self._place(q).get("mode") == "auto"], key=lambda q: -(q.z or 0))
         for p in order + order:                       # two passes: a fix can unlock its neighbour
-            if p.spec.get("place") not in (None, "auto"):
-                continue
-            A = scale_m_fine = sl.scale_m(fr) @ placed[p.pid]
+            A = sl.scale_m(fr) @ p.A
             h, w = p.alpha.shape
             q4 = sl.apply(A, [[0, 0], [w, 0], [0, h], [w, h]])
             L = float(max(np.ptp(q4[:, 0]), np.ptp(q4[:, 1])))
@@ -444,8 +471,8 @@ class Build:
             box = (X0, Y0, X1 - X0, Y1 - Y0)
             back = np.zeros((Y1 - Y0, X1 - X0, 4), np.float32)
             front = np.zeros_like(back)
-            for q in sorted([q for q in self.pieces if q.pid in placed and q is not p], key=lambda q: q.z or 0):
-                Lq = sl.warp_prem(q.prem, sl.scale_m(fr) @ placed[q.pid], box)
+            for q in sorted([q for q in rest if q is not p], key=lambda q: q.z or 0):
+                Lq = sl.warp_prem(q.prem, sl.scale_m(fr) @ q.A, box)
                 if (q.z or 0) < (p.z or 0):
                     back = Lq + back * (1 - Lq[..., 3:4])
                 else:
@@ -482,17 +509,16 @@ class Build:
                     if e < best[0]:
                         best = (e, dx, dy)
             if best[0] < 0.9 * e0 and math.hypot(best[1], best[2]) >= 1.0:
-                T = sl.scale_m(1 / fr) @ sl.trans_m(round(best[1]), round(best[2])) @ A
-                placed[p.pid] = T
-                if p.A is not None:
-                    p.A = T
-                elif p.pid in last:
-                    last[p.pid] = (last[p.pid][0], T)
-                tgt = p.reg if p.A is not None else last[p.pid][0]
-                tgt["reassemblyShift"] = [round(best[1] / fr, 1), round(best[2] / fr, 1)]
-                tgt["reassemblyError"] = [round(e0, 4), round(best[0], 4)]
-                self.log(f"  {p.pid:22s} slid {math.hypot(best[1], best[2]) / fr:.1f} master px by the reassembly "
-                         f"(window error {e0:.3f} -> {best[0]:.3f})")
+                p.A = sl.scale_m(1 / fr) @ sl.trans_m(round(best[1]), round(best[2])) @ A
+                moved = math.hypot(best[1], best[2])
+                p.reg["reassemblyShift"] = [round(best[1] / fr, 1), round(best[2] / fr, 1)]
+                p.reg["reassemblyError"] = [round(e0, 4), round(best[0], 4)]
+                p.reg["transform"] = sl.decompose(p.A)
+                self.log(f"  {p.pid:22s} slid {moved / fr:.1f} master px by the reassembly (window error {e0:.3f} -> {best[0]:.3f})")
+                if moved > 0.05 * L and p.reg.get("verified"):
+                    p.reg["verified"] = False
+                    self.warnings.append(f"{p.pid}: UNVERIFIED placement: the reassembly moved it {moved / fr:.0f} master px "
+                                         f"from where it registered; check it in preview.png (or give it a hint)")
 
     def _refine_scales(self) -> None:
         """Sheet scale from the accepted ECC fits of that sheet (the search grid is only ~2% fine)."""
@@ -596,9 +622,6 @@ class Build:
             x0, y0, x1, y1 = k[:, 0].min(), k[:, 1].min(), k[:, 2].max(), k[:, 3].max()
             return ((x0 + x1) / 2, (y0 + y1) / 2, 0.5 * math.hypot(x1 - x0, y1 - y0)), "children"
         return None, None
-
-    def m2c_scale_guess(self) -> float:
-        return getattr(self, "M2C_scale", 1.0)
 
     def _c2m(self, pt) -> np.ndarray:
         if not hasattr(self, "M2C"):
@@ -804,6 +827,7 @@ class Build:
         return next((q for q in self.slots.get(slot, []) if q.setup), None)
 
     def joints(self) -> None:
+        self.lm_problems: list[str] = []
         self.landmarks: dict[str, list] = {}
         self.lm_src: dict[str, str] = {}
         self.pairs: list[tuple[sl.Piece, sl.Piece, list]] = []
@@ -823,7 +847,7 @@ class Build:
                 kw = self._seed_args(slot, A)
                 cj = sl.cap_joint(A(c), A(par), **kw)
                 if cj.get("joint") is None:
-                    self.errors.append(f"{slot}: no joint with {par.slot} ({cj.get('why')})")
+                    self.lm_problems.append(f"{slot}: no joint with {par.slot} ({cj.get('why')})")
                     continue
                 c.joint = cj["joint"]
                 c.info.update({"jointWith": par.slot, **{k: v for k, v in cj.items() if k != "joint"}})
@@ -969,8 +993,8 @@ class Build:
                                                                  ("shoulder", "elbow", "wrist", "hand", "hip", "knee", "ankle", "toe")]
         miss = [k for k in need if k not in lm]
         if miss:
-            self.errors.append(f"missing landmark(s) {', '.join(miss)}: map the pieces they come from or give "
-                               f"landmarks: {{name: [x, y]}} in the mapping")
+            self.lm_problems.append(f"missing landmark(s) {', '.join(miss)}: map the pieces they come from, fix "
+                                    f"their placement, or give landmarks: {{name: [x, y]}} in the mapping")
 
     # ------------------------------------------------------------------ lock + gates
     def lock_visible(self) -> None:
@@ -1037,6 +1061,10 @@ class Build:
                 tot = max(b for _, b in ys) - min(a for a, _ in ys)
                 head = max(b for _, b in hs) - min(a for a, _ in hs)
                 g["adultProportions"] = {"headRatio": round(head / tot, 4), "max": 0.27, "passed": head / tot <= 0.27}
+        if self.kind == "character":
+            probs = getattr(self, "lm_problems", [])
+            g["landmarks"] = {"problems": probs, "passed": not probs}
+            self.warnings.extend(probs)
         g["passed"] = all(v.get("passed", True) for v in g.values() if isinstance(v, dict))
         self.report["gates"] = g
         return g
@@ -1193,6 +1221,11 @@ class Build:
         self.place_hinted()
         if self.errors:
             raise SplitError("; ".join(self.errors))
+        self._reassembly_refine()
+        for p in self.pieces:                         # 'like' placements follow a slid reference
+            if self._place(p).get("mode") == "like":
+                p.A = None
+        self.place_hinted()
         for p in self.pieces:
             sl.place_on_canvas(p, self.M2C, self.pad)
         self.joints()
@@ -1230,13 +1263,15 @@ def plan_expectations(row_id: str) -> list[str]:
         node = bible
         for k in src.split("."):
             node = node[k]
+        if isinstance(node, str):            # "a curved fang, its gold cap and a short chain" style lists
+            node = [x for x in re.split(r",\s*|\s+and\s+", node) if x.strip()]
         for it in node:
             slot = re.sub(r"\s*\(.*?\)", "", it["slot"] if isinstance(it, dict) else str(it)).strip()
             out += [s.strip() for s in slot.split("+")]
     elif (row.get("context") or {}).get("symbol"):
         sym = bible["symbols"][row["context"]["symbol"]]
         out = [re.sub(r"\s*\(.*?\)", "", p).strip() for p in sym.get("rigParts", [])]
-    return out
+    return [x for x in out if not x.startswith("fx_")]      # fx_* are code-drawn, never on a sheet
 
 
 def cmd_cut(a) -> int:

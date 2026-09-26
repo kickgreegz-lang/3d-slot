@@ -8,11 +8,43 @@ import { packParticleColor } from './util';
  *  - Grouped: a ParticleContainer may only draw ONE texture source with ONE blend mode, so
  *    particles are bucketed per (depth, blend, texture source). Depth orders the buckets:
  *    0 = smoke/dust (behind), 1 = solid debris (shards, coins, confetti), 2 = additive light.
- *  - Hard cap: `acquire()` returns null once `maxParticles` are alive.
+ *  - Hard cap: `acquire()` returns null once `maxParticles` are alive in this system OR the
+ *    tier budget (`configureParticleBudget`, ctx.budget.maxParticles) is used up across ALL
+ *    systems (engine Fx + a game's own systems + reserved static particles): the budget is
+ *    one global number (ANIMATION_SET §7.2), a system's `maxParticles` is only its sub-cap.
  *  - Time: `update(dt)` is driven by `clock.onUpdate`, so hit-stop freezes every particle.
  *
  * Sizes are in design px (texture-size independent): `size` = on-screen width of the particle.
  */
+
+/** Tier particle budget shared by every ParticleSystem (see configureParticleBudget). */
+let globalMax = Number.POSITIVE_INFINITY;
+/** live particles of every system + reserved static particles */
+let globalLive = 0;
+
+/** Set the global live-particle budget (Fx.init, ctx.budget.maxParticles). */
+export const configureParticleBudget = (maxParticles: number): void => {
+  globalMax = maxParticles;
+};
+
+/** Headroom under the global budget. */
+export const particlesFree = (): number => Math.max(0, globalMax - globalLive);
+
+/**
+ * Count `n` particles drawn outside any ParticleSystem (e.g. the background's static bulbs /
+ * fireflies ParticleContainer) against the global budget. Returns the release function
+ * (idempotent).
+ */
+export const reserveParticles = (n: number): (() => void) => {
+  const k = Math.max(0, Math.round(n));
+  globalLive += k;
+  let held = true;
+  return () => {
+    if (!held) return;
+    held = false;
+    globalLive = Math.max(0, globalLive - k);
+  };
+};
 
 export type ParticleBlend = 'normal' | 'add';
 export type ParticleDepth = 0 | 1 | 2;
@@ -153,9 +185,9 @@ export class ParticleSystem {
     return this.live;
   }
 
-  /** Remaining headroom under the cap. */
+  /** Remaining headroom under this system's sub-cap and the global budget. */
   get free(): number {
-    return Math.max(0, this.maxParticles - this.live);
+    return Math.max(0, Math.min(this.maxParticles - this.live, globalMax - globalLive));
   }
 
   /**
@@ -163,7 +195,7 @@ export class ParticleSystem {
    * Returns null when the budget is exhausted — callers just skip that particle.
    */
   acquire(texture: Texture, blend: ParticleBlend = 'normal', depth: ParticleDepth = 1): Sim | null {
-    if (this.live >= this.maxParticles) return null;
+    if (this.live >= this.maxParticles || globalLive >= globalMax) return null;
     const group = this.group(texture, blend, depth);
     const sim = this.pool.pop() ?? new Sim(texture);
     sim.reset(texture);
@@ -173,6 +205,7 @@ export class ParticleSystem {
     group.container.particleChildren.push(sim.p);
     group.dirty = true;
     this.live++;
+    globalLive++;
     return sim;
   }
 
@@ -252,6 +285,7 @@ export class ParticleSystem {
     dead.group = null;
     this.pool.push(dead);
     this.live--;
+    globalLive = Math.max(0, globalLive - 1);
     group.dirty = true;
   }
 

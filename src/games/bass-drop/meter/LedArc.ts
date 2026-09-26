@@ -86,14 +86,17 @@ export class LedArc {
     this.hot = hot;
     for (let i = 0; i < GEOM.ticks; i++) {
       const v = i + 1;
-      this.ticks[i].tint = v > lit ? METER_UNLIT : v === lit && hot && lit < GEOM.ticks ? lighten(segmentColor(v), 0.8) : segmentColor(v);
+      const tint = v > lit ? METER_UNLIT : v === lit && hot && lit < GEOM.ticks ? lighten(segmentColor(v), 0.8) : segmentColor(v);
+      // pixi's tint setter allocates even for an unchanged value: write on change only
+      if (this.ticks[i].tint !== tint) this.ticks[i].tint = tint;
     }
     const h = this.head;
     h.visible = lit > 0 && hot;
     if (h.visible) {
       const p = polar(tickDeg(Math.min(lit, GEOM.ticks)), TICK_R);
       h.position.set(p.x, p.y);
-      h.tint = lighten(segmentColor(lit), 0.55);
+      const ht = lighten(segmentColor(lit), 0.55);
+      if (h.tint !== ht) h.tint = ht;
     }
     this.refreshGlow();
   }
@@ -158,7 +161,10 @@ export class LedArc {
     );
   }
 
-  /** Called by the rig when `pulse` changed (loops); cheap (60 alpha writes). */
+  /**
+   * Called by the rig when `pulse` changed (loops, i.e. every frame) and by the fill / sweep
+   * tweens; cheap (60 alpha writes, tints only where the colour changed: no allocation).
+   */
   refreshGlow(): void {
     const f = this.fillState.v;
     const lvl = this.glowLevel * this.pulse;
@@ -178,7 +184,7 @@ export class LedArc {
       }
       const g = this.glows[i];
       g.alpha = Math.min(1, a);
-      g.tint = tint;
+      if (g.tint !== tint) g.tint = tint;
     }
     this.head.alpha = Math.min(1, 0.55 + 0.45 * lvl);
   }

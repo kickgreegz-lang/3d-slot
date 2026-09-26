@@ -103,7 +103,7 @@ const drawPlate = (tier: number): Container => {
   return root;
 };
 
-/** t5 flame crown above the plate: three tongues, orange shell + yellow core. */
+/** t5 flame tongue (the badge shows two, licking out from behind the plate ends): three tongues, orange shell + yellow core. */
 const drawFlame = (): Graphics => {
   const g = new Graphics();
   const tongue = (x: number, base: number, half: number, tip: number, lean: number, color: number): void => {

@@ -121,7 +121,9 @@ export class FeatureScreens implements GameModule {
       g.on('layout:change', ({ layout }) => this.layout(layout)),
       ctx.hud.on('hud:state', (st) => {
         this.spaceAllowed = st.spacebarAllowed !== false;
-        const auto = st.autoplayRemaining !== null && st.autoplayRemaining !== 0;
+        // the flow decrements the count before the round plays, so 0 is still the session's
+        // last round; STOP (or the session's end) reports null (matches the HUD's spin button)
+        const auto = st.autoplayRemaining !== null;
         if (auto === this.autoplay) return;
         this.autoplay = auto;
         this.onAutoplay?.();

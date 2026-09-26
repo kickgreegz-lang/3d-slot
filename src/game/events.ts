@@ -217,6 +217,11 @@ export type CoreGameEvents = {
    * the base game (mode:change basegame) clears it. Games without variants never emit it.
    */
   'music:stem': { stem: 'megamix' | null };
+  /**
+   * Scene-level music duck (dB, held holdMs then released) for a game's own fanfare that has no
+   * core event: Bass Drop's feature trigger (the engine ducks on fs:trigger itself).
+   */
+  'music:duck': { db: number; holdMs: number };
   'sfx': { id: SfxId; volume?: number; rate?: number; delayMs?: number };
   /** Add trauma (0..1) to the camera shake. */
   'fx:shake': { trauma: number };
@@ -226,9 +231,12 @@ export type CoreGameEvents = {
     x: number;
     y: number;
     color?: number;
+    /** particle count (preset default when omitted; 'explode' with 0 = light + smoke, no debris) */
     count?: number;
     /** 0..1 energy scale */
     power?: number;
+    /** 0..1 scale of the preset's additive light (explode: flash glow + ring); default 1 */
+    light?: number;
   };
   /** Full-screen flash (additive white/colour). */
   'fx:flash': { color?: number; alpha?: number; durationMs?: number };

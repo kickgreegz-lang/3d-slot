@@ -26,6 +26,9 @@ export const SCREENS_TIMING = registerTiming('bassDropScreens', {
     wipe: 620,
     /** mascot fsTrigger cue offset (DESIGN §10.1 t = 200) */
     mascotAt: 200,
+    /** music duck from t 0 (the engine's fs:trigger scene duck: -6 dB held 2.4 s) */
+    duckDb: -6,
+    duckHold: 2400,
   },
   /** ui_feature_intro: in 36 f (title_hit f10, banner f10-f18, count_hit f20, shine f24), out 12 f */
   featureIntro: {
@@ -73,6 +76,9 @@ export const SCREENS_TIMING = registerTiming('bassDropScreens', {
     cardDrop: f(12),
     dropFrom: 150,
     settle: [-4, 3, -2],
+    /** card titles slam in as whole words on card_land: scale titleFrom -> 1 over titleSlam ms */
+    titleFrom: 1.35,
+    titleSlam: 260,
     logoFrom: f(6),
     logoTo: f(18),
     loop: f(60),

@@ -171,12 +171,18 @@ const stars = (
 
 const explode = (c: BurstContext, p: BurstPayload, k: number, power: number, color: number): void => {
   const { x, y } = p;
-  // `count` = total debris (shards + sparks); default 6-10 shards + 8-12 sparks
-  const n = p.count !== undefined ? Math.max(3, Math.round(p.count * 0.45)) : randInt(6, 10);
-  const nSparks = p.count !== undefined ? Math.max(3, p.count - n) : randInt(8, 12);
-  // light first (additive flash + ring) so the eye lands on the impact
-  glow(c, x, y, k, { from: 260, to: 150, life: 0.2, color: lighten(color, 0.45), alpha: 1 });
-  ring(c, x, y, k, { from: 60, to: 300 * (0.8 + 0.2 * power), life: 0.34, color: lighten(color, 0.5) });
+  // `count` = total debris (shards + sparks); default 6-10 shards + 8-12 sparks; 0 = light and
+  // smoke only (a crushed symbol under a landing wild: no debris over the wild's squash)
+  const none = p.count !== undefined && p.count <= 0;
+  const n = none ? 0 : p.count !== undefined ? Math.max(3, Math.round(p.count * 0.45)) : randInt(6, 10);
+  const nSparks = none ? 0 : p.count !== undefined ? Math.max(3, p.count - n) : randInt(8, 12);
+  // light first (additive flash + ring) so the eye lands on the impact (`light` dims it: a
+  // crush under a landing wild must not white out the wild's impact squash)
+  const light = Math.min(1, Math.max(0, p.light ?? 1));
+  if (light > 0) {
+    glow(c, x, y, k, { from: 260 * (0.6 + 0.4 * light), to: 150, life: 0.2, color: lighten(color, 0.45), alpha: light });
+    ring(c, x, y, k, { from: 60, to: 300 * (0.8 + 0.2 * power), life: 0.34, color: lighten(color, 0.5), alpha: 0.95 * light });
+  }
   // smoke puff behind
   const smoke = c.tex('smoke');
   for (let i = 0; i < 3; i++) {
@@ -221,7 +227,7 @@ const explode = (c: BurstContext, p: BurstPayload, k: number, power: number, col
     s.life = rand(0.55, 0.85);
     s.color = tones[i % 3];
   }
-  sparks(c, x, y, k, nSparks, color, [700, 1500], { size: [26, 40] });
+  if (nSparks > 0) sparks(c, x, y, k, nSparks, color, [700, 1500], { size: [26, 40] });
 };
 
 const dust = (c: BurstContext, p: BurstPayload, k: number, power: number, color: number): void => {

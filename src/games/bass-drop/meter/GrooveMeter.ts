@@ -73,7 +73,9 @@ interface PendingBurst {
  *  - no tumble after an update (win cap): 'win:set' / 'round:end' / 'board:reveal' snap it;
  *  - 'feature:trigger' plays the three pumps and drains behind the wipe; 'feature:upgrade'
  *    drains behind the upgrade screen; 'round:start' drains in the base game (400 ms);
- *  - 'meter:set' (resume / replay) is instant.
+ *  - 'meter:set' (resume / replay) is instant;
+ *  - 'meter:blastSlot' mounts a launching wild in the rig's fx_blast slot (design px kept), so
+ *    it leaves the woofer under the rim and the counter (DESIGN §8.2).
  * Other modules are never called: everything goes through ctx.game.
  */
 export class GrooveMeter implements GameModule {
@@ -138,6 +140,11 @@ export class GrooveMeter implements GameModule {
     this.fx = new MeterFx(ctx, icons.orbCore, icons.orbHalo, icons.wave, icons.puff);
     ctx.layers.logo.addChild(this.fx.view);
     ctx.layers.winLayer.attach(this.fx.view);
+    // DESIGN §8.2 launch layering: the live counter draws on winLayer right after the meter's
+    // own FX (orbs, rings and sparks pass under the digits); it keeps its rig transform. Holders
+    // that attach later (BassDrop's flights, win-elevated symbols, links) draw over it, but a
+    // launching wild starts inside fx_blast (meter:blastSlot) and only takes winLayer past the rim.
+    ctx.layers.winLayer.attach(this.rig.counter.view);
     this.layout(ctx.layout);
     this.rig.led.fillTo(0, 0);
     this.refresh();
@@ -164,6 +171,10 @@ export class GrooveMeter implements GameModule {
       }),
       g.on('mode:change', ({ gameType }) => this.onModeChange(gameType)),
       g.on('meter:set', (p) => this.onMeterSet(p)),
+      g.on('meter:blastSlot', ({ display, attach }) => {
+        if (attach) this.rig.mountBlast(display);
+        else this.rig.unmountBlast(display);
+      }),
       g.on('bigwin:show', () => this.rig.pump()),
       g.on('sfx', ({ id }) => {
         if (id === 'bigwin_tier') this.rig.pump(LOOK.pumpScale + 0.04);
@@ -192,7 +203,7 @@ export class GrooveMeter implements GameModule {
     this.drainTween?.kill();
     this.endRun();
     this.ctx.layers.winLayer.detach(this.fx.view);
-    if (this.rig.counter.view.parentRenderLayer) this.ctx.layers.winLayer.detach(this.rig.counter.view);
+    this.ctx.layers.winLayer.detach(this.rig.counter.view);
     this.fx.destroy();
     this.chip.destroy();
     this.rig.destroy();
@@ -287,7 +298,6 @@ export class GrooveMeter implements GameModule {
     }
     if (this.armed) this.finishNoTumble();
     this.cancelDrain();
-    this.raiseCounter();
     const thresholds = [...p.thresholds].sort((a, b) => a - b);
     if (thresholds.some((t) => t > MAX)) this.lapMode = true;
     const seed = (Math.imul(++this.stepSeq, 0x9e3779b1) ^ Math.imul(p.value, 0x85ebca6b) ^ Math.imul(p.delta, 0xc2b2ae35)) >>> 0;
@@ -572,25 +582,9 @@ export class GrooveMeter implements GameModule {
     const first = p.chainIndex <= 0;
     const sec = first ? Math.max(s(D.charge), D.chargeFloor / 1000) : Math.max(s(D.chargeChained), CHAINED_FLOOR);
     this.charging = p.threshold;
-    this.raiseCounter();
     this.rig.charge(sec, !first);
     this.refresh();
     this.dropBeats.at(sec, () => this.boom(p.threshold));
-  }
-
-  /**
-   * DESIGN §8.2 launch layering: the wild pops out of the woofer on winLayer, which draws above
-   * the whole meter; the live counter joins winLayer after it (render order only, it keeps its
-   * rig transform), so neither the launching wild nor the arriving orbs ever cover the digits.
-   * Checked on every arm and drop (modules that attach later, e.g. BassDrop's flights, stay under).
-   */
-  private raiseCounter(): void {
-    const layer = this.ctx.layers.winLayer;
-    const view = this.rig.counter.view;
-    const list = layer.renderLayerChildren;
-    if (list[list.length - 1] === view) return;
-    if (view.parentRenderLayer === layer) layer.detach(view);
-    layer.attach(view);
   }
 
   private boom(threshold: number): void {
@@ -703,6 +697,7 @@ export class GrooveMeter implements GameModule {
     this.roll(dt);
     const beat = LOOK.beatMs[this.mode];
     this.rig.update(dt, beat);
+    this.rig.syncMount(this.ctx.layers.root);
     // overdrive crackle: a few pink sparks off the rim (seeded, idle garnish)
     if (this.rig.currentLoop === 'overdrive_loop' && dt > 0) {
       this.sparkAcc += dt;

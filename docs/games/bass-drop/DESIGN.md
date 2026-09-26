@@ -320,11 +320,11 @@ A pill under the meter (portrait and compact: on the frame beam). Content is liv
 |---|---|
 | Base | `NEXT DROP` + threshold number (`30`) + one W icon per wild (`WILDS_PER_DROP`). When the next threshold is 40 or 60, the JJ/MM icon is appended |
 | Base, ≥ 60 | `MEGA MIX!` in pink, no number |
-| Juke Jam | `NEXT DROP` + threshold + W icons tagged `×2–5`; at ≥ 50 it also shows `60 → MEGA MIX` |
+| Juke Jam | `NEXT DROP` + threshold + W icons tagged `×2–5`; at ≥ 50 (the next drop is the 60 drop, which also upgrades) it shows `60 → MEGA MIX` alone, so the line stays readable at every chip width |
 | Juke Jam, ≥ 60 | `MEGA MIX!` in pink (the upgrade plays after this spin) |
 | Mega Mix | `NEXT DROP` + threshold + W icons; while the home registry has room ([M-10]) the icons carry the clamp glyph (sticky), otherwise the plain ×-badge |
 | Mega Mix, ≥ 60 | `MAX` in pink + the number of homes (`5 STICKY`), no threshold |
-| Portrait / compact, free spins | Two lines: `JUKE JAM 3/8` over the next drop. The FS plate is merged into the chip |
+| Portrait / compact, free spins | Two lines: `JUKE JAM 3/8` over the next drop. The FS plate is merged into the chip: the plate grows to 1.55 × the chip height around the same centre and each line's text fills 74% of its half, so the portrait text stays ≥ 34 design px (≈ 10 CSS px on a 320 px wide phone) |
 
 The chip punches (scale 1.12, 200 ms, `back.out(3)`) when its content changes.
 
@@ -378,17 +378,17 @@ Totals (normal): 1 wild **1,480 ms**, 2 wilds 1,590 ms, 3 wilds 1,700 ms of **ga
 ### 8.2 Flight rules
 
 - Wilds are drawn on `winLayer`, so they cross the frame and the logo.
-- **Launch layering.** During `drop_launch` (8 f) the proxy is parented to the meter's `fx_blast` slot, i.e. above the cone and below the rim and `txt_count`, so it visibly comes out of the woofer without covering the counter. It reparents to `winLayer` (same world transform) on the frame it passes the rim radius (R × 0.875).
+- **Launch layering.** During `drop_launch` (8 f) the proxy is parented to the meter's `fx_blast` slot, i.e. above the cone and below the rim and `txt_count`, so it visibly comes out of the woofer without covering the counter. It reparents to `winLayer` (same world transform) on the frame it passes the rim radius (R × 0.875). Implemented with the game scene event `meter:blastSlot {display, attach}`; the trail ribbon starts at the rim, and the counter draws on `winLayer` right after the meter's own orbs and rings, so neither ever covers the digits.
 - **Apex control point.** For a quadratic Bézier from `y0` (origin) to `y2` (target) whose highest point must be exactly `apexY` (screen y grows downward, `apexY < min(y0, y2)`), the control point is `cy = apexY − √((y0 − apexY)(y2 − apexY))`; `cx` is the chord midpoint's x. (A control of `2·apex − (y0 + y2)/2` only hits the apex at t = 0.5 and overshoots when y0 ≠ y2.)
 - Flight order is ascending `(reel, row)`.
-- **Portrait:** the meter sits above the grid, so the arc rises (apex ≥ 160) then drops. **Compact:** the apex is clamped to 12.
+- **Portrait:** the meter sits above the grid, so the arc rises (apex ≥ 160) then drops. **Landscape:** the apex is clamped to 132, **compact:** to 76, so the whole scaled, spinning wild stays on screen at the top of its arc.
 - If a target is off-screen in a letterboxed tablet view, it is still inside the grid, so no special case is needed.
 
 ### 8.3 Replaced symbol and board handoff
 
 - **Ownership:** the Bass Drop module (`src/games/bass-drop/`) owns the charge, the boom and the flight, with a flying proxy (a pooled W Spine) on `winLayer`. The Board owns the cell: crush, placement and impact, through the core `board:transform`.
 - **Style `'impact'` (CR-10):**
-  - the old symbol explodes immediately (no orb, `fx_crush` power 0.6);
+  - the old symbol explodes immediately as a **crush** (no orb, `fx_crush` power 0.6): it is pressed and flattened under the wild with a dimmed light and no debris, so nothing covers the wild's impact squash (the wild's own dust crown and debris mark the contact);
   - after `TIMING.explode.anticipateDuration` (s()-scaled) the new id is placed and plays its heavy impact: `drop_impact` if the rig has it, else a procedural land with squash sy 0.72;
   - it resolves when settled.
   The module calls it at contact − `anticipateDuration` and hides its proxy on the placement frame. Both sides use the same s()-scaled constant, so the handoff is frame-exact in every profile.
@@ -583,7 +583,7 @@ All numbers are design px. The same values are in [layout.json](layout.json) (th
 | Tumble plate | (960, 961) scale 0.9 | On the sill |
 | HUD | current LANDSCAPE.hud; win (960, 1030) | |
 | Overlay centre | (960, 531) | Grid centre |
-| Wild arc apex | y ≥ 24 | Arcs pass over the beam |
+| Wild arc apex | y ≥ 132 | Arcs pass over the beam; the floor keeps the whole spinning 1.6–1.75× wild on screen at the apex (its bounding box reaches ≈ 150 px above its centre) |
 
 ### 15.2 Portrait 1080×1920
 
@@ -594,7 +594,7 @@ All numbers are design px. The same values are in [layout.json](layout.json) (th
 | Horns | (58, 486, 92, 80) · (930, 486, 92, 80) |
 | Logo | (240, 40, 600, 110) |
 | Groove Meter | centre **(540, 340)**, Ø 300; cabinet (380, 176, 320, 360), base hidden by the beam |
-| Meter chip = feature plate | (390, 522, 300, 48), on the beam |
+| Meter chip = feature plate | (370, 504, 340, 60), on the beam. In free spins the plate grows to 1.55 × the height (≈ 488–580) for two lines, text ≥ 34 px (≈ 10 CSS px on a 320 px wide phone) |
 | Gumbo / Croak | (0, 150, 400, 430) feet (200, 580) / (680, 150, 400, 430) feet (880, 580); both stand behind the beam, flanking the speaker |
 | DJ booth | (730, 380, 210, 140), on the beam in front of Croak |
 | Tumble plate | (540, 1434) scale 1.0 |
@@ -613,10 +613,10 @@ The landscape composition moves down by **+420**, as the current TABLET does: gr
 | Panel / frame | (218, 34, 463, 463) / (198, 8, 503, 517) · post 20, beam 26, sill 28 |
 | Logo | (331, 0, 236, 40), small, on the beam |
 | Groove Meter | centre (100, 168), Ø 170; no cabinets, no horns |
-| Meter chip = feature plate | (15, 262, 170, 40) |
+| Meter chip = feature plate | (15, 266, 170, 40); two lines in free spins (1.55 × the height) |
 | Mascots / booth | **off** (as in Swamp Funk compact) |
 | HUD | current `COMPACT.hud`, unchanged: spin (828, 270) size 170 · autoplay (770, 144) · turbo (886, 144) · menu (770, 408) · bonus buy (886, 408) · bet − (728, 502) · bet value (828, 488) · bet + (928, 502) · balance (828, 26) · win (828, 74) |
-| Centre / apex | (449, 265) / y ≥ 12 |
+| Centre / apex | (449, 265) / y ≥ 76 (keeps the 1.75× wild on screen) |
 
 ### 15.5 Screens
 
@@ -878,20 +878,22 @@ Contract requests (outside docs/games/bass-drop; each one lands in the same PR a
 |---|---|---|---|
 | **CR-1** | ~~Emit `stickyWilds` also after Mega Mix tumbles~~. The math reports the grown multiplier at the next reveal (+ its `stickyWilds`), and the FE animates `mult_up` there with a `+1` preview at win time (section 9) | book contract / math | **Withdrawn** |
 | **CR-2** | `meterUpdate {delta:0, thresholds:[]}` is a legal **silent set** (feature start, resume) | book contract / math | Optional: the mock never emits it; the FE resets the meter itself at trigger/upgrade and handles `delta:0` if it arrives (`src/games/bass-drop/book.ts` documents it) |
-| **CR-3** | Bass Drop `GameSceneEvents`: `meter:update`, `meter:set`, `wild:drop`, `wild:sticky`, `feature:trigger`, `feature:upgrade`, `intro:show` (no core change). **Core:** `music:beat` (CR-6) and the new `MascotCue`s `meterHeat`, `meterThreshold`, `bassDropCharge`, `bassDrop`, `wildLand`, `featureLock`, `featureUpgrade` (the cue union is core, `src/game/events.ts`) | `src/games/bass-drop/events.ts`; `src/game/events.ts` | **Landed** except `intro:show` and `music:beat` (CR-6). The game events and the 7 core `MascotCue`s are in; `mascot:cue` also takes an optional `look {x, y}`. `intro:show` was dropped: `IntroScreen` opens itself on the flow's first idle `hud:state` (never in replay or after a resume) |
+| **CR-3** | Bass Drop `GameSceneEvents`: `meter:update`, `meter:set`, `wild:drop`, `wild:sticky`, `feature:trigger`, `feature:upgrade`, `meter:blastSlot`, `intro:show` (no core change). **Core:** `music:beat` (CR-6) and the new `MascotCue`s `meterHeat`, `meterThreshold`, `bassDropCharge`, `bassDrop`, `wildLand`, `featureLock`, `featureUpgrade` (the cue union is core, `src/game/events.ts`) | `src/games/bass-drop/events.ts`; `src/game/events.ts` | **Landed** except `intro:show` and `music:beat` (CR-6). The game events and the 7 core `MascotCue`s are in; `mascot:cue` also takes an optional `look {x, y}`. `meter:blastSlot {display, attach}` (sync) mounts the launching wild in the meter's `fx_blast` slot through a design-px mount (section 8.2 launch layering). `intro:show` was dropped: `IntroScreen` opens itself on the flow's first idle `hud:state` (never in replay or after a resume) |
 | **CR-4** | ~~Tumble rule with pinned cells~~. The math keeps the standard web-sdk rule; sticky wilds tumble within a spin and respawn at their home (section 9) | `src/book/handlers.ts`, math | **Withdrawn** |
-| **CR-5** | New `SfxId`s (section 17) and `MusicStem` `megamix` | `src/game/events.ts`, `src/audio/manifest.ts` | **Landed**: every new `SfxId` has a dedicated procedural voice (`src/audio/synthBassDrop.ts`) and mix rule (`src/audio/mix.ts`); the `megamix` stem is selected by the core scene event `music:stem {stem}` (FeatureScreens emits it behind the curtain, at the upgrade slam and on a resumed Mega Mix) |
+| **CR-5** | New `SfxId`s (section 17) and `MusicStem` `megamix` | `src/game/events.ts`, `src/audio/manifest.ts` | **Landed**: every new `SfxId` has a dedicated procedural voice (`src/audio/synthBassDrop.ts`) and mix rule (`src/audio/mix.ts`); the `megamix` stem is selected by the core scene event `music:stem {stem}` (FeatureScreens emits it behind the curtain, at the upgrade slam and on a resumed Mega Mix). Bass Drop emits no `fs:trigger`, so the engine's trigger duck moved to the core event `music:duck {db, holdMs}` (FeatureScreens: −6 dB held 2.4 s from t 0; `fs_trigger` and `fs_intro` extend it) |
 | **CR-6** | `music:beat {bar, beat}` from Sound, so meter/booth/mascot loops can phase-lock (fallback: a 600 ms clock loop) | `src/audio/*` | Open. The meter, booth, horns and cabinet run the fallback beat (600 / 566 / 536 ms per mode) on the game clock |
 | **CR-7** | Soft trauma stacking in `ScreenShake.add`; flash limiter ≤ 3/s | `src/fx/shake.ts`, `src/fx/Fx.ts` (already listed as open in ANIMATION_CONTRACT §10.6) | **Landed**: `ScreenShake.add` stacks softly; `Fx` drops flashes beyond 3 per second or closer than 334 ms (`FX_TIMING.flash`) |
 | **CR-8** | ANIMATION_CONTRACT + `tools/spine/contract.json`: new animation names, events and FX ids from ANIMATION_SET §9–§12; the `drop_impact` squash exception; the 2D mascot rig section; UI skeleton names | `docs/ANIMATION_CONTRACT.md`, `tools/spine/contract.json` | Open |
 | **CR-9** | Bet modes `BASE` 1×, `BONUS` 100×, `SUPER` 300× | bass-drop bet-mode table | **Landed** (`src/games/bass-drop/config.ts` `BET_MODES`, `mock/games/bass-drop/mock.json`) |
-| **CR-10** | (a) `board:transform` style **`'impact'`**: crush the old symbol now, place the new id after `TIMING.explode.anticipateDuration`, play `drop_impact` (or a procedural squash of 0.72), then resolve (section 8.3). (b) A Mega Mix **hold set** for `board:reveal`: cells whose current symbol equals the reveal's id at that cell (a W on its own home) stay in place through the fall-out and are skipped by the drop-in (section 9.3). Tumbles never use it | `src/board/Board.ts`, `src/game/events.ts` | (a) **Landed**: `Board.impactCell` crushes at the call and places the W `anticipateDuration` later with the procedural impact keys (sy 0.72 at f1, 1.10 at f5, settled by f15; `drop_impact` is played instead when the W rig has it) and pushes the 4 neighbours. (b) **Landed** as the core scene event `board:hold {cells}` (a request for the next fall-out; BassDrop sends it on every `fs:update`) |
+| **CR-10** | (a) `board:transform` style **`'impact'`**: crush the old symbol now, place the new id after `TIMING.explode.anticipateDuration`, play `drop_impact` (or a procedural squash of 0.72), then resolve (section 8.3). (b) A Mega Mix **hold set** for `board:reveal`: cells whose current symbol equals the reveal's id at that cell (a W on its own home) stay in place through the fall-out and are skipped by the drop-in (section 9.3). Tumbles never use it | `src/board/Board.ts`, `src/game/events.ts` | (a) **Landed**: `Board.impactCell` crushes at the call (`explode({crush: true})`: the old symbol is pressed flat under the wild with a dim light and no debris, so the wild's squash reads on top) and places the W `anticipateDuration` later with the procedural impact keys (sy 0.72 at f1, 1.10 at f5, settled by f15; `drop_impact` is played instead when the W rig has it) and pushes the 4 neighbours. It resolves ≈ 330 ms of game time after the call (measured 360 ms at 60 fps; plus the 40 ms contact hit-stop on the wall clock in normal speed). (b) **Landed** as the core scene event `board:hold {cells}` (a request for the next fall-out; BassDrop sends it on every `fs:update`) |
 | **CR-11** | Gate hit-stops to the normal profile: `Board.tumble`'s explode hit-stop (and every Bass Drop hit-stop) only when `getSpeedProfile() === 'normal'` (section 18) | `src/board/Board.ts` (or a profile check in `clock.hitStop`) | **Landed** in `clock.hitStop`: normal profile only, capped at 120 ms, overlapping hit-stops keep the longer freeze, a slam releases a pending one |
 
 Also landed with the phase B front end (core, additive; Swamp Funk does not use them):
 - scene events `board:decorate` (keyed displays on a cell's view: multiplier badges, clamps), `board:thump` (grid spring, section 5), `board:react` (distance-staggered `bass_react`), `board:focus` (the drop's 20% dim), `board:burst` (emitted by the Board at the explode-burst frame: orbs, link snaps and count pops sync to it) and `win:labelMult` (the external multiplier-sum driver of section 7 step 6);
 - `GameFeatures` (`src/config/game.ts`): `wildMultSum: 'external'`, `buyScreen: 'game'` (the DOM buy dialog stands down), `physicsScale` (gravity falls keep the 154 px time per cell, section 5) and `explodeShake` (the `bassDrop.shake.explode*` values replace `BOARD_TIMING.explodeTrauma*`, section 18.2);
-- reduced motion: `src/fx/motion.ts` (`prefers-reduced-motion`, with an override for a settings toggle).
+- reduced motion: `src/fx/motion.ts` (`prefers-reduced-motion`, with an override for a settings toggle);
+- `fx:burst` takes `light` (0..1, the explode preset's flash glow and ring) and `count: 0` on `explode` (light and smoke only), used by the crush;
+- HUD hotkeys during the feature screens: FeatureScreens holds `modal:state` open from the trigger's t 0 to the hand-off (also upgrade and outro), so SPACE / ENTER never reach the flow as `ui:skip`; they act as the screen's own tap (tap lock, `spacebarAllowed` and `slamStopAllowed` respected).
 
 Art-lead decisions (default in brackets):
 - the logo word-mark: stacked "SWAMP FUNK / BASS DROP" [yes];

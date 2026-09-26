@@ -137,8 +137,8 @@
 <text x="678.8578931747213" y="364.48439305103716" font-family="Inter,Arial,sans-serif" font-size="20" font-weight="800" fill="#35f2e0" text-anchor="middle" dominant-baseline="middle">W</text>
 <circle cx="610.5" cy="462.1" r="22.5" fill="#0a0420" stroke="#ff3fa8" stroke-width="2.5"/>
 <text x="610.5" y="462.10958193360585" font-family="Inter,Arial,sans-serif" font-size="20" font-weight="800" fill="#ff3fa8" text-anchor="middle" dominant-baseline="middle">MM</text>
-<rect x="390" y="522" width="300" height="48" rx="24.0" fill="#0a0420" fill-opacity="0.9" stroke="#f8d828" stroke-width="2"/>
-<text x="540.0" y="546.0" font-family="Inter,Arial,sans-serif" font-size="19" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">NEXT DROP 30 · W W</text>
+<rect x="370" y="504" width="340" height="60" rx="30.0" fill="#0a0420" fill-opacity="0.9" stroke="#f8d828" stroke-width="2"/>
+<text x="540.0" y="534.0" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">NEXT DROP 30 · W W</text>
 <path d="M540,340 Q642.0,-202.4 744.0,1058.0" fill="none" stroke="#ffffff" stroke-width="3.0" stroke-dasharray="12.0,8.0"/>
 <text x="642.0" y="162.8" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">wild arc (apex y 177, min 160)</text>
 <path d="M880.0,1330.0 Q918.1,763.5 540,340" fill="none" stroke="#35f2e0" stroke-width="2.5" stroke-dasharray="4.0,6.0"/>

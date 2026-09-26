@@ -143,8 +143,8 @@
 <text x="248.0" y="506.0" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">NEXT DROP 30 · W W</text>
 <rect x="1514" y="300" width="344" height="110" rx="16" fill="#0a0420" fill-opacity="0.8" stroke="#35f2e0" stroke-width="2"/>
 <text x="1686.0" y="355.0" font-family="Inter,Arial,sans-serif" font-size="20" font-weight="600" fill="#35f2e0" text-anchor="middle" dominant-baseline="middle">FS PLATE: JUKE JAM 3/8</text>
-<path d="M248,318 Q700.0,-385.7 1152.0,595.0" fill="none" stroke="#ffffff" stroke-width="3.0" stroke-dasharray="12.0,8.0"/>
-<text x="700.0" y="42.0" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">wild arc (apex y 24, min 24)</text>
+<path d="M248,318 Q700.0,-161.5 1152.0,595.0" fill="none" stroke="#ffffff" stroke-width="3.0" stroke-dasharray="12.0,8.0"/>
+<text x="700.0" y="118.0" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">wild arc (apex y 132, min 132)</text>
 <path d="M1280.0,851.0 Q865.0,389.0 248,318" fill="none" stroke="#35f2e0" stroke-width="2.5" stroke-dasharray="4.0,6.0"/>
 <circle cx="1280.0" cy="851.0" r="9.0" fill="#35f2e0"/>
 <text x="864.9545102481703" y="409.03085445382413" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#35f2e0" text-anchor="middle" dominant-baseline="middle">orb path</text>

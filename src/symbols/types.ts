@@ -26,6 +26,14 @@ export type SymbolState =
   | 'explode'
   | 'hidden';
 
+/** SymbolView.explode options. */
+export interface ExplodeOptions {
+  /** particle energy (default 1) */
+  power?: number;
+  /** crushed under a landing wild instead of blown up (DESIGN bass-drop §8.3) */
+  crush?: boolean;
+}
+
 export interface LandOptions {
   /** impact speed in design px/s (drives squash amount + wobble energy) */
   velocity: number;
@@ -60,8 +68,13 @@ export interface SymbolView {
   setDim(on: boolean, animate?: boolean): void;
   /** Win: pop + win animation (+ shine). Ends in 'postWin' (still visible, highlighted). */
   win(): Promise<void>;
-  /** Explode: anticipation squeeze -> burst -> hidden. Emits particles via ctx (power scales them, default 1). */
-  explode(opts?: { power?: number }): Promise<void>;
+  /**
+   * Explode: anticipation squeeze -> burst -> hidden. Emits particles via ctx (power scales them,
+   * default 1). `crush`: the symbol is flattened under a landing wild (board:transform 'impact'):
+   * pressed flat instead of blown up, with a dim charge / light and fewer particles, so the
+   * wild's impact squash on top of it stays readable.
+   */
+  explode(opts?: ExplodeOptions): Promise<void>;
   /**
    * Board-wide bass reaction (Spine `bass_react` on track 1 if the skeleton has it, else a
    * procedural squash sy ~0.95 + small hop). Additive: never interrupts land / win.

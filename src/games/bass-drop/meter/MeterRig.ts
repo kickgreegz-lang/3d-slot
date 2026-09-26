@@ -1,5 +1,5 @@
 import { gsap } from 'gsap';
-import { Container, Sprite } from 'pixi.js';
+import { Container, Matrix, Sprite } from 'pixi.js';
 import { followSpeed, s } from '../../../core/timing';
 import { glowTexture, godRaysTexture } from '../../../fx/textures';
 import { BASS_DROP_TIMING, TEAL } from '../timing';
@@ -33,8 +33,16 @@ export class MeterRig {
   readonly led: LedArc;
   readonly counter = new Counter();
   readonly notches: Notches;
-  /** `fx_blast`: above the cone and the swirl, below txt_count and the notches */
+  /** `fx_blast`: above the cone and the swirl, below the rim, the LED arc, txt_count and the notches */
   readonly blastSlot = new Container({ label: 'fx_blast' });
+  /**
+   * Design-space mount inside `fx_blast` (meter:blastSlot): its transform cancels the rig's
+   * own (ring position, rig scale, cabinet squash), so a mounted display keeps the root design
+   * px its owner writes while it draws at the slot's depth.
+   */
+  private readonly blastMount = new Container({ label: 'fx_blast_mount' });
+  private readonly mountM = new Matrix();
+  private readonly rootM = new Matrix();
   private readonly cabinet = new Container({ label: 'cabinet' });
   private readonly cabSprite = new Sprite();
   private readonly cabTrim = new Sprite();
@@ -77,16 +85,18 @@ export class MeterRig {
     this.capFlash.width = this.capFlash.height = R_REF * GEOM.counterR * 2.6;
     this.blastStar.width = this.blastStar.height = R_REF * 1.5;
     this.coneRoot.addChild(this.cone, this.cap);
-    this.blastSlot.addChild(this.blastStar);
+    this.blastSlot.addChild(this.blastStar, this.blastMount);
+    // the woofer (cone, swirl, fx_blast) sits INSIDE the rim: the LED bed, metal rim, trim and
+    // LED arc draw over it, so a boom's cone punch and a launching wild pass under them
     this.ring.addChild(
       this.glow,
-      this.rim,
-      this.trim,
-      this.led.view,
       this.coneRoot,
       this.capFlash,
       this.swirl,
       this.blastSlot,
+      this.rim,
+      this.trim,
+      this.led.view,
       this.counter.view,
       this.notches.view,
     );
@@ -278,6 +288,30 @@ export class MeterRig {
     this.shot.cap = 0;
   }
 
+  // ---------------------------------------------------------------- fx_blast mount
+
+  /** meter:blastSlot attach: `display` (root design px) draws at the fx_blast depth. */
+  mountBlast(display: Container): void {
+    if (display.destroyed) return;
+    this.blastMount.addChild(display);
+  }
+
+  /** meter:blastSlot release (the owner re-parents it; nothing to do if it already did). */
+  unmountBlast(display: Container): void {
+    if (display.parent === this.blastMount) this.blastMount.removeChild(display);
+  }
+
+  /**
+   * Keep the mount's transform = inverse(fx_blast world) x root world, i.e. design px relative
+   * to `root`; after update() (the rig poses of this frame). Only while something is mounted.
+   */
+  syncMount(root: Container): void {
+    if (!this.blastMount.children.length) return;
+    const m = this.blastSlot.getGlobalTransform(this.mountM, false).invert();
+    m.append(root.getGlobalTransform(this.rootM, false));
+    this.blastMount.setFromMatrix(m);
+  }
+
   // ---------------------------------------------------------------- per frame
 
   /** dt game seconds; beatMs = beat period of the current music stem. */
@@ -335,6 +369,8 @@ export class MeterRig {
     this.poseTl?.kill();
     this.shotTl?.kill();
     gsap.killTweensOf([this.blastStar, this.blastStar.scale, this.rimFlash]);
+    // mounted displays belong to their owner: hand them back undestroyed
+    this.blastMount.removeChildren();
     this.led.destroy();
     this.notches.destroy();
     this.counter.destroy();

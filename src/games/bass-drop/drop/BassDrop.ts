@@ -37,7 +37,9 @@ const FOCUS_GRACE = 60;
  *
  * Layers: home markers on `tiles`; reticles + shadows on `board` above the masked symbols
  * (below the frame); flights, trails and impact FX on a `winLayer`-attached holder (they cross
- * the frame); label-sum clones, their arrival sparks and the "+1" pops on `overlay`, above the
+ * the frame), except that a launching proxy first draws in the Groove Meter's fx_blast slot
+ * ('meter:blastSlot': over the cone, under the rim and the counter) until it passes the rim,
+ * where its trail starts; label-sum clones, their arrival sparks and the "+1" pops on `overlay`, above the
  * cluster labels and the win-elevated symbols (which join winLayer after our holder).
  * A proxy hides on the frame AFTER its contact beat: the Board places its W in the promise
  * continuation of its own anticipateDuration wait, i.e. one rendered frame later.
@@ -97,6 +99,9 @@ export class BassDrop implements GameModule {
         this.hiding.push(p);
         this.hideAt.push(this.frame);
       },
+      mountProxy: (p) => this.mountProxy(p),
+      unmountProxy: (p) => this.unmountProxy(p),
+      endProxy: (p) => this.endProxy(p),
       acquireReticle: () => {
         const r = this.reticles.find((x) => !x.busy) ?? this.newReticle();
         r.busy = true;
@@ -172,13 +177,37 @@ export class BassDrop implements GameModule {
     return r;
   }
 
+  // =========================================================================== launch layering
+
+  /**
+   * DESIGN §8.2: during the launch the proxy draws in the Groove Meter's fx_blast slot (over the
+   * cone, under the rim and the counter) through 'meter:blastSlot'; the meter keeps the design
+   * px transform. False when no meter took it (it stays on the winLayer holder).
+   */
+  private mountProxy(p: WildProxy): boolean {
+    this.ctx.game.broadcast('meter:blastSlot', { display: p.view, attach: true });
+    return p.view.parent !== this.bodies && p.view.parent !== null;
+  }
+
+  /** Back onto the winLayer holder (same design px), e.g. on the frame it passes the rim. */
+  private unmountProxy(p: WildProxy): void {
+    if (p.view.parent === this.bodies || p.view.destroyed) return;
+    this.ctx.game.broadcast('meter:blastSlot', { display: p.view, attach: false });
+    this.bodies.addChild(p.view);
+  }
+
+  private endProxy(p: WildProxy): void {
+    this.unmountProxy(p);
+    p.end();
+  }
+
   /** Per frame (game dt; 0 during a hit-stop): proxies, reticle spin, FX, sticky heartbeat. */
   private tick(dt: number): void {
     this.frame++;
     // a contact beat runs before this frame's tick: hide one frame later (placement frame)
     for (let i = this.hiding.length - 1; i >= 0; i--) {
       if (this.hideAt[i] > this.frame - 2) continue;
-      this.hiding[i].end();
+      this.endProxy(this.hiding[i]);
       this.hiding.splice(i, 1);
       this.hideAt.splice(i, 1);
     }
@@ -244,7 +273,7 @@ export class BassDrop implements GameModule {
     this.fx.clear();
     this.hiding.length = 0;
     this.hideAt.length = 0;
-    for (const p of this.proxies) p.end();
+    for (const p of this.proxies) this.endProxy(p);
     for (const r of this.reticles) r.free();
   }
 
@@ -252,6 +281,7 @@ export class BassDrop implements GameModule {
     for (const off of this.offs) off();
     this.offs = [];
     this.abortRuns();
+    for (const p of this.proxies) this.unmountProxy(p);
     this.focusCall?.kill();
     this.sums.destroy();
     this.sticky.reset();

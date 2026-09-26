@@ -16,7 +16,7 @@ import { SPINE_ANIM, SPINE_EVENT, type SpineCue, SpineRig } from './SpinePool';
 import { FrameLoop, Spring } from './spring';
 import type { SymbolFxParams } from './symbolFxShader';
 import { SYMBOL_TIMING as T } from './symbolTiming';
-import type { LandOptions, SymbolState, SymbolView } from './types';
+import type { ExplodeOptions, LandOptions, SymbolState, SymbolView } from './types';
 
 const DEG = Math.PI / 180;
 const clamp = (v: number, a: number, b: number): number => Math.min(b, Math.max(a, v));
@@ -401,13 +401,14 @@ export class SymbolRig implements SymbolView {
     });
   }
 
-  explode(opts: { power?: number } = {}): Promise<void> {
+  explode(opts: ExplodeOptions = {}): Promise<void> {
     this.interrupt();
     this.stopBreath();
     this.antOn = false;
     this._state = 'explode';
     const E = TIMING.explode;
     const X = T.explode;
+    const C = opts.crush ? X.crush : null;
     const burstAt = s(E.anticipateDuration);
     const burst = s(E.burstDuration);
     const power = (opts.power ?? 1) * (this.def.kind === 'royal' ? 0.8 : 1);
@@ -418,8 +419,9 @@ export class SymbolRig implements SymbolView {
         x: c.x,
         y: c.y,
         color: this.def.color,
-        count: E.particles,
+        count: C ? Math.round(E.particles * C.particles) : E.particles,
         power,
+        light: C ? C.light : 1,
       });
     };
     // decorations (badges, clamps) break apart with the symbol
@@ -457,17 +459,26 @@ export class SymbolRig implements SymbolView {
     this.fx.dissolve = 0;
     this.fx.shineIntensity = 0;
     const tl = this.track(gsap.timeline());
-    // anticipation squeeze + charge-up
-    tl.to(this.pose.scale, { x: E.anticipateScale, y: E.anticipateScale, duration: burstAt, ease: E.anticipateEase }, 0);
-    tl.to(this.fx, { flash: X.chargeFlash, duration: burstAt, ease: 'power1.in' }, 0);
-    tl.to(this.glowState, { a: X.glowCharge, s: 0.95, duration: burstAt, ease: 'power1.in', onUpdate: this.onGlow }, 0);
-    // burst
+    const light = C ? C.charge : 1;
+    // anticipation squeeze + charge-up (crush: pressed down by the wild above it)
+    tl.to(
+      this.pose.scale,
+      { x: C ? C.pressX : E.anticipateScale, y: C ? C.pressY : E.anticipateScale, duration: burstAt, ease: E.anticipateEase },
+      0,
+    );
+    tl.to(this.fx, { flash: X.chargeFlash * light, duration: burstAt, ease: 'power1.in' }, 0);
+    tl.to(this.glowState, { a: X.glowCharge * light, s: 0.95, duration: burstAt, ease: 'power1.in', onUpdate: this.onGlow }, 0);
+    // burst (crush: flattened under the landing wild instead of blown up)
     tl.call(emitBurst, undefined, burstAt);
-    tl.to(this.pose.scale, { x: E.burstScale, y: E.burstScale, duration: burst, ease: X.burstEase }, burstAt);
+    tl.to(this.pose.scale, { x: C ? C.flatX : E.burstScale, y: C ? C.flatY : E.burstScale, duration: burst, ease: X.burstEase }, burstAt);
     tl.to(this.fx, { dissolve: 1, duration: burst, ease: X.dissolveEase }, burstAt);
     tl.to(this.fx, { flash: 0, duration: burst * 0.7, ease: 'power2.out' }, burstAt);
     tl.to(this.art, { alpha: 0, duration: burst, ease: X.fadeEase }, burstAt);
-    tl.to(this.glowState, { a: X.glowPeak, s: X.glowScale, duration: burst * 0.25, ease: 'power2.out', onUpdate: this.onGlow }, burstAt);
+    tl.to(
+      this.glowState,
+      { a: X.glowPeak * light, s: C ? 1 : X.glowScale, duration: burst * 0.25, ease: 'power2.out', onUpdate: this.onGlow },
+      burstAt,
+    );
     tl.to(this.glowState, { a: 0, duration: burst * 0.6, ease: 'power2.out', onUpdate: this.onGlow }, burstAt + burst * 0.25);
     return new Promise<void>((resolve) => {
       this.pending.push(resolve);

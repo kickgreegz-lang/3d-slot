@@ -17,7 +17,8 @@ export type BoothClip = 'scratch' | 'drop_press' | 'boom_follow' | 'frenzy_loop'
  * him. Anchor = bottom centre of the booth rect. Clips: `idle` (platter 1 rev / 72 f, LEDs
  * chase once per beat), `scratch` (36 f: platter back-and-forth x2, tonearm jitter, fader;
  * sfx dj_scratch at f4 through `onSfx`), `drop_press` (15 f stretched over the charge: button
- * glow ramps f0-f13, button down f14-f15), `boom_follow` (18 f: crate hop, all LEDs on and
+ * glow ramps f0-f13, button down f14-f15 with sfx button_slam on the first charge of a step,
+ * standing in for Croak's palm until the 2D mascot rig plays it), `boom_follow` (18 f: crate hop, all LEDs on and
  * fading, the button pops back up), `frenzy_loop` (LEDs strobe 2.5 Hz, platter fast).
  */
 export class Booth {
@@ -48,7 +49,10 @@ export class Booth {
   /** tonearm rest angle (pivot -> the record's outer grooves) */
   private armAngle = 0;
   motion = 1;
-  onSfx: (() => void) | null = null;
+  /** Spine `sfx` events: dj_scratch (scratch f4), button_slam (drop_press f14, first drop of a step) */
+  onSfx: ((id: 'dj_scratch' | 'button_slam') => void) | null = null;
+  /** this press ends in a button_slam (Croak's palm on the first charge; chained presses are silent) */
+  private slamSfx = false;
 
   constructor() {
     this.record.anchor.set(0.5);
@@ -110,7 +114,7 @@ export class Booth {
     this.color = color;
   }
 
-  play(name: BoothClip, lengthSec = 0): void {
+  play(name: BoothClip, lengthSec = 0, slam = false): void {
     switch (name) {
       case 'frenzy_loop':
         this.frenzy = true;
@@ -119,6 +123,7 @@ export class Booth {
         // 15 f stretched over the charge (game s, already s()-scaled), like Croak's bass_drop_charge;
         // the playhead multiplies by speedScale(), so a slam mid-charge retimes it with the boom
         this.pressed = false;
+        this.slamSfx = slam;
         this.press.play(name, B.pressFrames, lengthSec > 0 ? B.pressFrames / (FPS * lengthSec * speedScale()) : 1);
         return;
       case 'scratch':
@@ -145,7 +150,11 @@ export class Booth {
     // drop_press runs on its own playhead (stretched to the charge)
     const pressing = !!this.press.name;
     const pf = this.press.advance(dt);
-    if (pf >= B.pressDownFrame || (pressing && pf < 0)) this.pressed = true;
+    if (!this.pressed && (pf >= B.pressDownFrame || (pressing && pf < 0))) {
+      this.pressed = true;
+      if (this.slamSfx) this.onSfx?.('button_slam');
+      this.slamSfx = false;
+    }
     let hop = 0;
     let spinOff = 0;
     let fader = 0.7;
@@ -155,7 +164,7 @@ export class Booth {
       spinOff = sample(B.scratchSpin, f);
       fader = sample(B.scratchFader, f);
       armJitter = Math.sin(f * 1.7) * 0.05;
-      if (f >= B.scratchSfxFrame && this.lastScratchF < B.scratchSfxFrame) this.onSfx?.();
+      if (f >= B.scratchSfxFrame && this.lastScratchF < B.scratchSfxFrame) this.onSfx?.('dj_scratch');
       this.lastScratchF = f;
     } else if (f >= 0 && this.clip.is('boom_follow')) {
       hop = sample(B.boomHop, f);

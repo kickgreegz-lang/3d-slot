@@ -309,6 +309,9 @@ export class FeatureScreens implements GameModule {
     this.stage.open({ dim: 0, fadeIn: 0 });
     this.setTap(null);
     this.block();
+    // the music dips under the trigger from t 0 (Bass Drop has no fs:trigger, whose duck the
+    // engine Sound applies); fs_trigger (last pump) and fs_intro (wipe) extend it
+    ctx.game.broadcast('music:duck', { db: S.trigger.duckDb, holdMs: S.trigger.duckHold });
     const meter = BASS_DROP_LAYOUT[ctx.layout.kind].meter;
     const look = { x: meter.cx, y: meter.cy };
     if (this.revealed) {

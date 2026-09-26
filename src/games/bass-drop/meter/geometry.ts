@@ -77,8 +77,15 @@ export const METER_LOOK = registerTiming('bassDropMeter', {
   blastSmoke: 14,
   /** counter digit sizes, design px (DESIGN §6.1) */
   countFont: { landscape: 64, tablet: 64, portrait: 68, compact: 34 } as Record<LayoutKind, number>,
-  /** chip: FS merge (portrait / compact) extra height, and chip text size (fraction of the chip height) */
+  /**
+   * chip text: caption size as a fraction of a line's height (one line = the chip rect height);
+   * the merged FS plate (portrait / compact) grows the plate to chipFsPlate x the rect height
+   * and splits it into two lines whose text fills chipFsText of each line (DESIGN §6.8: the
+   * portrait chip text stays >= 34 design px, ~10 CSS px on a 320 px wide phone)
+   */
   chipText: 0.58,
+  chipFsPlate: 1.55,
+  chipFsText: 0.74,
   /** orbs: core / halo / trail size (x k), comet size multiplier (ANIMATION_SET §7.2) */
   orbCore: 18,
   orbHalo: 48,

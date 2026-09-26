@@ -788,7 +788,8 @@ export class Board implements GameModule {
     const old = this.slots[c.reel][c.row];
     this.unelevate(old);
     this.dim(old, false, false);
-    const burst = old.explode({ power: BOARD_TIMING.impactCrushPower });
+    // crushed flat under the landing wild (dim light, fewer particles): the W's squash reads on top
+    const burst = old.explode({ power: BOARD_TIMING.impactCrushPower, crush: true });
     this.sfx('symbol_crush');
     await clock.wait(TIMING.explode.anticipateDuration);
     if (gen !== this.gen) return;

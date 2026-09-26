@@ -77,7 +77,10 @@ export class Stage implements GameModule {
     ctx.layers.panel.addChildAt(this.back, 0);
     ctx.layers.frame.addChild(this.horns);
     ctx.layers.fx.addChildAt(this.front, 0);
-    this.booth.onSfx = () => ctx.game.broadcast('sfx', { id: 'dj_scratch' });
+    // booth foley only where the booth is drawn (no booth in compact)
+    this.booth.onSfx = (id) => {
+      if (this.booth.view.visible) ctx.game.broadcast('sfx', { id });
+    };
     this.applyMotion(reducedMotion());
     this.applyTint();
     this.layout(ctx.layout);
@@ -170,7 +173,7 @@ export class Stage implements GameModule {
   private onWildDrop(p: GameEvents['wild:drop']): void {
     const first = p.chainIndex <= 0;
     const charge = first ? Math.max(s(D.charge), D.chargeFloor / 1000) : Math.max(s(D.chargeChained), CHAINED_FLOOR);
-    this.booth.play('drop_press', charge);
+    this.booth.play('drop_press', charge, first);
     this.later(charge, () => {
       this.cabinet.play('boom_follow');
       this.hornL.play('boom_follow');

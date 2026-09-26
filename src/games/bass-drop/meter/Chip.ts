@@ -8,6 +8,7 @@ import type { GrooveFeature } from '../events';
 import { BASS_DROP_TIMING, GOLD, PINK, TEAL } from '../timing';
 import type { MeterIcons } from './art';
 import { METER_LABEL_FONT, METER_NUM_FONT } from './fonts';
+import { METER_LOOK as LOOK } from './geometry';
 
 const CAPTION = 0xf8d828;
 const MAX_ICONS = 4;
@@ -100,8 +101,10 @@ export class Chip {
   private build(m: ChipModel): void {
     const { w, h } = this.rect;
     const two = !!m.fs;
-    const lineH = two ? h * 0.82 : h;
-    const plateH = two ? h * 1.62 : h;
+    // one line fills the rect; the merged FS plate grows around the same centre, two lines
+    const plateH = two ? h * LOOK.chipFsPlate : h;
+    const lineH = two ? plateH / 2 : h;
+    const text = two ? LOOK.chipFsText : LOOK.chipText;
     this.plate.resize(w, plateH);
     this.plate.accentColor = m.accent;
 
@@ -111,17 +114,17 @@ export class Chip {
       const title = m.fs.feature === 'super' ? label('bd.meter.megaMix', 'MEGA MIX') : label('bd.meter.jukeJam', 'JUKE JAM');
       this.fsTitle.text = title;
       this.fsTitle.tint = m.fs.feature === 'super' ? PINK : GOLD;
-      this.fsTitle.style.fontSize = lineH * 0.56;
+      this.fsTitle.style.fontSize = lineH * text;
       this.fsNum.text = label('hud.fsOf', '{current}/{total}', { current: m.fs.current, total: m.fs.total });
-      this.fsNum.style.fontSize = lineH * 0.5;
-      this.flow(this.fsLine, [this.fsTitle, this.fsNum], lineH * 0.22, w * 0.9);
-      this.fsLine.y = -plateH * 0.25;
+      this.fsNum.style.fontSize = lineH * text * 0.9;
+      this.flow(this.fsLine, [this.fsTitle, this.fsNum], lineH * 0.22, w * 0.86);
+      this.fsLine.y = -plateH * 0.24;
     }
 
     // --- next-drop line
-    const cap = lineH * 0.56;
-    const numPx = lineH * 0.52;
-    const iconPx = lineH * 0.74;
+    const cap = lineH * text;
+    const numPx = cap * 0.93;
+    const iconPx = cap * 1.3;
     const parts: Container[] = [];
     for (const t of [this.caption, this.num, this.tag, this.upNum, this.upLabel, this.extra]) t.visible = false;
     for (const i of this.icons) i.visible = false;
@@ -146,6 +149,18 @@ export class Chip {
         e.text = label('bd.meter.sticky', '{n} STICKY', { n: m.homes });
         e.style.fontSize = cap;
       }
+    } else if (m.upgradeAt !== null && m.upgradeAt === m.threshold) {
+      // Juke Jam >= 50: the next drop IS the upgrade; `60 -> MEGA MIX` alone stays readable on
+      // every chip width (with the caption, three W icons and the tag it shrank to ~13 px)
+      const u = show(this.upNum);
+      u.text = String(m.upgradeAt);
+      u.style.fontSize = numPx * 1.08;
+      const a = show(this.arrow);
+      a.width = iconPx * 0.9;
+      a.height = iconPx * 0.66;
+      const l = show(this.upLabel);
+      l.text = label('bd.meter.megaMix', 'MEGA MIX');
+      l.style.fontSize = cap * 1.08;
     } else {
       const c = show(this.caption);
       c.text = label('bd.meter.nextDrop', 'NEXT DROP');
@@ -182,8 +197,8 @@ export class Chip {
         l.style.fontSize = cap;
       }
     }
-    this.flow(this.dropLine, parts, lineH * 0.14, w - h * 0.9);
-    this.dropLine.y = two ? plateH * 0.22 : 0;
+    this.flow(this.dropLine, parts, lineH * 0.12, two ? w * 0.9 : w - h * 0.9);
+    this.dropLine.y = two ? plateH * 0.24 : 0;
   }
 
   /** Lay `parts` out left to right (sprites are centre-anchored, texts left-anchored), centred, fitted to maxW. */

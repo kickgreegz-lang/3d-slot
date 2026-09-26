@@ -42,6 +42,7 @@ const writePref = (on: boolean): void => {
  *      win:set                   win level -> counter_end richness
  *      bigwin:show               big-win groove / stem + duck; bigwin_tier escalates
  *      fs:trigger                duck under the trigger fanfare
+ *      music:duck                a game's own scene duck (Bass Drop: feature:trigger t 0)
  *      mode:change               base <-> free-game music (bar-quantised)
  *      music:stem                a game's feature variant ('megamix') over the gameType stem
  *  - bass_charge carries its span (the charge length, speed-scaled) so the riser and the
@@ -98,6 +99,9 @@ export class Sound implements GameModule {
       }),
       game.on('fs:trigger', () => {
         e.duck(SCENE_DUCK.fsTrigger.db, SCENE_DUCK.fsTrigger.hold);
+      }),
+      game.on('music:duck', ({ db, holdMs }) => {
+        e.duck(db, holdMs / 1000);
       }),
       game.on('mode:change', ({ gameType }) => {
         this.gameType = gameType;

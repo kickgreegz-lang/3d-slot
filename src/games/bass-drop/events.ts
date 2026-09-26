@@ -1,3 +1,5 @@
+import type { Container } from 'pixi.js';
+
 /**
  * SWAMP FUNK: BASS DROP scene events (on top of the engine's CoreGameEvents), emitted by
  * ./book.ts for the game's feature modules (Groove Meter, speaker stack, feature intros).
@@ -44,4 +46,13 @@ export type GameSceneEvents = {
   'feature:trigger': { feature: GrooveFeature; meter: number; totalFs: number; bought: boolean };
   /** Juke Jam -> Mega Mix (60 reached during Juke Jam). */
   'feature:upgrade': { from: 'bonus'; to: 'super'; addFs: number };
+  /**
+   * Launch layering (DESIGN §8.2), synchronous. `attach: true`: the Groove Meter parents
+   * `display` into its `fx_blast` slot (above the cone and the swirl, below the rim, the LED
+   * arc, the counter and the notches) through a mount that maps root design px, so the owner
+   * keeps writing position / scale / rotation in design px. `attach: false`: the meter lets it
+   * go (the owner re-parents it, e.g. to its winLayer holder, on the frame it passes the rim).
+   * The owner checks `display.parent` to know whether a meter took it.
+   */
+  'meter:blastSlot': { display: Container; attach: boolean };
 };

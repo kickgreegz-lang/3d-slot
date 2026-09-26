@@ -124,10 +124,10 @@
 <text x="178.6861394656754" y="181.87448939558772" font-family="Inter,Arial,sans-serif" font-size="11" font-weight="800" fill="#35f2e0" text-anchor="middle" dominant-baseline="middle">W</text>
 <circle cx="139.9" cy="237.2" r="12.8" fill="#0a0420" stroke="#ff3fa8" stroke-width="1.4516129032258065"/>
 <text x="139.95" y="237.19542976237665" font-family="Inter,Arial,sans-serif" font-size="11" font-weight="800" fill="#ff3fa8" text-anchor="middle" dominant-baseline="middle">MM</text>
-<rect x="15" y="262" width="170" height="40" rx="20.0" fill="#0a0420" fill-opacity="0.9" stroke="#f8d828" stroke-width="2"/>
-<text x="100.0" y="282.0" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">NEXT 30 · WW</text>
-<path d="M100,168 Q331.0,-201.1 562.0,303.0" fill="none" stroke="#ffffff" stroke-width="1.741935483870968" stroke-dasharray="6.967741935483872,4.645161290322581"/>
-<text x="331.0" y="22.451612903225808" font-family="Inter,Arial,sans-serif" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">wild arc (apex y 12, min 12)</text>
+<rect x="15" y="266" width="170" height="40" rx="20.0" fill="#0a0420" fill-opacity="0.9" stroke="#f8d828" stroke-width="2"/>
+<text x="100.0" y="286.0" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">NEXT 30 · WW</text>
+<path d="M100,168 Q331.0,-68.5 562.0,303.0" fill="none" stroke="#ffffff" stroke-width="1.741935483870968" stroke-dasharray="6.967741935483872,4.645161290322581"/>
+<text x="331.0" y="67.87096774193549" font-family="Inter,Arial,sans-serif" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">wild arc (apex y 76, min 76)</text>
 <path d="M637.0,453.0 Q428.4,197.7 100,168" fill="none" stroke="#35f2e0" stroke-width="1.4516129032258065" stroke-dasharray="2.3225806451612905,3.483870967741936"/>
 <circle cx="637.0" cy="453.0" r="5.2" fill="#35f2e0"/>
 <text x="428.3847024445542" y="209.27751651448855" font-family="Inter,Arial,sans-serif" font-size="10" font-weight="600" fill="#35f2e0" text-anchor="middle" dominant-baseline="middle">orb path</text>

@@ -39,6 +39,12 @@ export const DROP_LOOK = {
   trailSpan: 0.32,
   /** share of the flight that finishes the spin (rotation eases to 0 by then) */
   spinEndAt: 0.9,
+  /**
+   * launch layering (DESIGN §8.2): the proxy flies inside the meter's fx_blast slot until its
+   * centre passes the rim's inner edge (x the ring radius), then takes winLayer; the trail
+   * ribbon starts there
+   */
+  rimExit: 0.875,
 
   // ---- reticle + landing shadow
   reticleD: 0.9,

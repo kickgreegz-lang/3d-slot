@@ -11,6 +11,7 @@ import { reducedMotion } from '../../../fx/motion';
 import type { GameContext } from '../../../game/context';
 import type { GameEvents } from '../../../game/events';
 import type { DroppedWild } from '../events';
+import { BASS_DROP_LAYOUT } from '../layout';
 import { BASS_DROP_TIMING, GOLD, TEAL, multTier, physK } from '../timing';
 import type { Reticle } from './decor';
 import type { DropFx } from './fx';
@@ -45,6 +46,12 @@ export interface DropHost {
   acquireProxy(): WildProxy;
   /** contact: the proxy stays up this frame and hides on the next one (the Board's placement frame) */
   releaseProxy(p: WildProxy): void;
+  /** launch layering: parent the proxy into the meter's fx_blast slot (meter:blastSlot); false if no meter took it */
+  mountProxy(p: WildProxy): boolean;
+  /** back to the winLayer holder (past the rim, contact, abort) */
+  unmountProxy(p: WildProxy): void;
+  /** hide now (abort / board:set): back on the holder, invisible, free */
+  endProxy(p: WildProxy): void;
   acquireReticle(): Reticle;
   /** board:focus restore, deferred a frame so a chained drop does not flicker the dim */
   focusLater(): void;
@@ -64,6 +71,10 @@ interface Flight {
   /** +1 clockwise (target right of the meter), -1 counter-clockwise */
   spinDir: number;
   landed: boolean;
+  /** still inside the meter's fx_blast slot (launch layering, DESIGN §8.2) */
+  mounted: boolean;
+  /** path progress where the wild passed the rim: the trail ribbon never reaches inside it */
+  uRim: number;
 }
 
 /** Charge seconds of a drop (s()-scaled, floored: first of a step >= chargeFloor, chained >= 60 ms). */
@@ -80,6 +91,8 @@ export const chargeSeconds = (chainIndex: number): number =>
  *              bass_boom (+2 st per chain step), cue bassDrop;
  *   C + 40 + i x 110  wild i launches from the woofer: Bezier to its cell, scale 0.55 -> 1.75 at
  *              60% -> 1.0 (power2.in), 1.25 turns easing to 0, trail; shadow grows from 55%;
+ *              inside the meter's fx_blast slot (meter:blastSlot) until its centre passes the
+ *              rim (ring radius x LOOK.rimExit), then on winLayer; the trail starts at the rim;
  *   contact - 80  board:transform {style:'impact'} (the Board crushes the doomed symbol);
  *   contact    the proxy hides on the placement frame; dust crown + debris + shock ring,
  *              board:thump, trauma 0.2, hit-stop 40, wild_impact, cue wildLand; the registry
@@ -140,6 +153,8 @@ export class DropRun {
         u: 0,
         spinDir: 1,
         landed: false,
+        mounted: false,
+        uRim: 0,
       };
       this.flights.push(f);
     }
@@ -205,6 +220,9 @@ export class DropRun {
     dropArc(L, f.wild.reel, f.wild.row, f.arc);
     f.spinDir = f.arc.x2 >= f.arc.x0 ? 1 : -1;
     proxy.begin(f.arc.x0, f.arc.y0, f.tint);
+    // it pops out of the woofer: under the rim and the counter until it passes the rim
+    f.mounted = this.host.mountProxy(proxy);
+    f.uRim = 0;
     this.fly(f);
     this.sfx('wild_launch', semitoneRate(2 * f.index));
     this.sfx('wild_whoosh', semitoneRate(f.index));
@@ -230,10 +248,22 @@ export class DropRun {
         : peakScale + (1 - peakScale) * p2in((u - a) / (1 - a));
     const spin = 1 - p2out(clamp01(u / LOOK.spinEndAt));
     proxy.place(this.pt.x, this.pt.y, scale, -f.spinDir * D.spinTurns * Math.PI * 2 * spin);
-    // the ribbon covers the last trailSpan of the path behind the wild (frame-rate independent)
+    if (f.mounted) {
+      // launch layering: winLayer from the frame the centre passes the rim's inner edge
+      const m = meterCentre(L, this.meter);
+      const rim = BASS_DROP_LAYOUT[L.kind].meter.ringOuterD * 0.5 * LOOK.rimExit;
+      if (Math.hypot(this.pt.x - m.x, this.pt.y - m.y) >= rim) {
+        this.host.unmountProxy(proxy);
+        f.mounted = false;
+        f.uRim = u;
+      }
+    }
+    // the ribbon covers the last trailSpan of the path behind the wild (frame-rate independent),
+    // starting at the rim (collapsed on the wild while it is still inside the woofer)
+    const from = f.mounted ? u : f.uRim;
     const n = LOOK.trailPoints;
     for (let i = 0; i < n; i++) {
-      arcAt(f.arc, Math.max(0, u - LOOK.trailSpan * (1 - i / (n - 1))), this.pt);
+      arcAt(f.arc, Math.max(from, u - LOOK.trailSpan * (1 - i / (n - 1))), this.pt);
       proxy.trailAt(i, this.pt.x, this.pt.y);
     }
     f.reticle.setGrow(clamp01((u - D.shadowFrom) / (1 - D.shadowFrom)));
@@ -257,6 +287,8 @@ export class DropRun {
     if (f.proxy) {
       // the Board places its W in the continuation of its own anticipateDuration wait (a
       // microtask after this beat), i.e. on the NEXT rendered frame: hide the proxy there
+      if (f.mounted) this.host.unmountProxy(f.proxy);
+      f.mounted = false;
       f.proxy.place(c.x, c.y, 1, 0);
       this.host.releaseProxy(f.proxy);
       f.proxy = null;
@@ -320,8 +352,9 @@ export class DropRun {
     this.sched.kill();
     for (const f of this.flights) {
       if (f.proxy) {
-        f.proxy.end();
+        this.host.endProxy(f.proxy);
         f.proxy = null;
+        f.mounted = false;
       }
       // landed reticles free themselves after their hit clip; aborted ones go now
       if (!f.landed) f.reticle.free();

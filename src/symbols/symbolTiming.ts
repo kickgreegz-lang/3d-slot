@@ -121,6 +121,13 @@ export const SYMBOL_TIMING = registerTiming('symbol', {
     glowPeak: 0.65,
     glowScale: 1.2,
     noiseScale: 7,
+    /**
+     * `crush` (explode under a landing wild, board:transform 'impact'): pressed (sx/sy at the
+     * burst frame) then flattened while it dissolves; charge flash + glow and the particle
+     * light scaled down and no debris (particles x the explode count; 0 = light + smoke only:
+     * the wild's own dust crown marks the contact), so its sy 0.72 impact squash reads on top.
+     */
+    crush: { pressX: 1.08, pressY: 0.84, flatX: 1.3, flatY: 0.32, charge: 0.25, light: 0.3, particles: 0 },
   },
   anticipation: {
     swayDeg: 2.6,

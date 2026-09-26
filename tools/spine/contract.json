@@ -75,5 +75,89 @@
     "runtimeKick": 26,
     "$runtimeKickMax": "validator default: SYMBOL_TIMING.spine.physicsImpulse 26 x the largest land multiplier m = 1 + (1.6 * 1.15 - 1) * 0.45 = 1.378 (TIMING.land.weight.special x maxVelocityFactor, squashKnee), see SymbolRig.land",
     "runtimeKickMax": 36
+  },
+  "characters": {
+    "$comment": "2D Spine characters (kind 'character'): docs/games/bass-drop/ANIMATION_SET.md section 5 (rigs, clips, events), section 10 (budgets) and section 12 CR-8. Read by spinegen/character.py (clip defaults, events, budgets) and validate.mjs --kind character. Symbol rules above do not apply to characters.",
+    "anchor": [0.5, 1.0],
+    "budgets": { "bones": 80, "slots": 40, "meshVertices": 2400, "physics": 12, "clipping": 0 },
+    "atlas": { "pages": 1, "maxPage": 2048 },
+    "physics": { "defaults": { "limit": 6000 }, "minLimit": 6000 },
+    "boneNames": {
+      "core": ["root", "hips", "spine", "chest", "neck", "head"],
+      "limbs": ["upper_arm", "forearm", "hand", "thigh", "shin", "foot"],
+      "words": ["jaw", "snout", "toothpick", "cooler", "cooler_lid", "pouch", "band", "cup", "mic", "tail"],
+      "prefixes": ["ctrl_", "ik_", "phys_", "face_", "fx_", "txt_"]
+    },
+    "requiredBones": ["root", "hips", "spine", "chest", "neck", "head", "ctrl_look",
+                      "upper_arm_L", "forearm_L", "hand_L", "thigh_L", "shin_L", "foot_L",
+                      "upper_arm_R", "forearm_R", "hand_R", "thigh_R", "shin_R", "foot_R"],
+    "springWords": ["tail", "jowl", "belly", "chain", "pouch", "cable", "toothpick"],
+    "faceStates": { "eyes": ["open", "half", "closed", "wide"] },
+    "proportions": { "headMax": 0.27, "excludeSlots": ["band", "cup_L", "cup_R", "cable", "mic", "toothpick"] },
+    "tracks": { "body": 0, "overlay": 1, "face": 2, "look": 3 },
+    "look": { "bone": "ctrl_look", "head": "look", "eyes": "look_eyes" },
+    "requiredClips": ["idle", "idle_bored", "anticipation", "react_small", "win_big", "celebrate", "fs_trigger", "fs_end"],
+    "clips": {
+      "$comment": "Windows for any character (ANIMATION_CONTRACT 7.2 durations at 30 fps); a rig listed under `rigs` must match its exact frames.",
+      "idle":             { "loop": true,  "frames": [120, 180], "track": 0 },
+      "idle_bored":       { "loop": true,  "frames": [120, 240], "track": 0 },
+      "anticipation":     { "loop": true,  "frames": [30, 60],   "track": 0 },
+      "meter_heat":       { "loop": true,  "frames": [36, 72],   "track": 0 },
+      "react_small":      { "loop": false, "frames": [36, 60],   "track": 0 },
+      "react_point":      { "loop": false, "frames": [24, 45],   "track": 0 },
+      "scratch":          { "loop": false, "frames": [24, 48],   "track": 0 },
+      "bass_drop_charge": { "loop": false, "frames": [12, 18],   "track": 0 },
+      "bass_drop":        { "loop": false, "frames": [24, 45],   "track": 0 },
+      "win_big":          { "loop": false, "frames": [45, 75],   "track": 0 },
+      "celebrate":        { "loop": true,  "frames": [60, 120],  "track": 0 },
+      "fs_trigger":       { "loop": false, "frames": [60, 90],   "track": 0 },
+      "fs_end":           { "loop": false, "frames": [45, 75],   "track": 0 },
+      "wild_land_react":  { "loop": false, "frames": [9, 15],    "track": 1, "additive": true },
+      "pouch_pump":       { "loop": false, "frames": [9, 15],    "track": 1, "additive": true },
+      "blink":            { "loop": false, "frames": [3, 6],     "track": 2 }
+    },
+    "rigs": {
+      "chr_gumbo": {
+        "$comment": "ANIMATION_SET 5.1 (tempo 0.92, faces screen-right, near side R per ART_BIBLE bassDrop.mascots.gumbo.nearSide)",
+        "attachments": { "mouth": ["closed_pick", "grin", "open", "roar"], "hand_R": ["open", "fist", "point"], "hand_L": ["open", "fist", "point", "lean"] },
+        "clips": {
+          "idle":            { "frames": 168, "loop": true,  "track": 0 },
+          "idle_bored":      { "frames": 180, "loop": true,  "track": 0 },
+          "anticipation":    { "frames": 36,  "loop": true,  "track": 0 },
+          "meter_heat":      { "frames": 48,  "loop": true,  "track": 0 },
+          "react_small":     { "frames": 45,  "loop": false, "track": 0 },
+          "react_point":     { "frames": 30,  "loop": false, "track": 0 },
+          "bass_drop":       { "frames": 36,  "loop": false, "track": 0 },
+          "wild_land_react": { "frames": 12,  "loop": false, "track": 1 },
+          "win_big":         { "frames": 60,  "loop": false, "track": 0, "events": [{ "name": "sfx", "string": "cooler_slam", "frame": 24 }] },
+          "celebrate":       { "frames": 72,  "loop": true,  "track": 0 },
+          "fs_trigger":      { "frames": 75,  "loop": false, "track": 0, "events": [{ "name": "sfx", "string": "cooler_slam", "frame": 36 }] },
+          "fs_end":          { "frames": 54,  "loop": false, "track": 0 },
+          "blink":           { "frames": 5,   "loop": false, "track": 2 }
+        }
+      },
+      "chr_croak": {
+        "$comment": "ANIMATION_SET 5.2 (tempo 1.06, faces screen-left, near side L). `scratch` is not in 5.2: the hand-only scratch without the sfx (the booth's `scratch` carries dj_scratch); react_small = scratch + nod + sfx.",
+        "attachments": { "mouth": ["closed", "smile", "open", "O"], "hand_R": ["open", "point", "fist", "scratch", "press"], "hand_L": ["open", "point", "fist", "fader"] },
+        "clips": {
+          "idle":             { "frames": 144, "loop": true,  "track": 0 },
+          "idle_bored":       { "frames": 150, "loop": true,  "track": 0 },
+          "anticipation":     { "frames": 36,  "loop": true,  "track": 0 },
+          "react_small":      { "frames": 36,  "loop": false, "track": 0, "events": [{ "name": "sfx", "string": "dj_scratch", "frame": 4 }] },
+          "scratch":          { "frames": 36,  "loop": false, "track": 0 },
+          "react_point":      { "frames": 30,  "loop": false, "track": 0 },
+          "bass_drop_charge": { "frames": 15,  "loop": false, "track": 0, "endsAt": "bass_drop",
+                                "events": [{ "name": "drop_hit", "frame": 14 }, { "name": "sfx", "string": "button_slam", "frame": 14 }] },
+          "bass_drop":        { "frames": 30,  "loop": false, "track": 0 },
+          "wild_land_react":  { "frames": 12,  "loop": false, "track": 1 },
+          "pouch_pump":       { "frames": 12,  "loop": false, "track": 1 },
+          "win_big":          { "frames": 60,  "loop": false, "track": 0, "events": [{ "name": "sfx", "string": "dj_scratch", "frame": 10 }] },
+          "celebrate":        { "frames": 72,  "loop": true,  "track": 0 },
+          "fs_trigger":       { "frames": 75,  "loop": false, "track": 0, "events": [{ "name": "sfx", "string": "mic_drop", "frame": 36 }] },
+          "fs_end":           { "frames": 54,  "loop": false, "track": 0 },
+          "blink":            { "frames": 5,   "loop": false, "track": 2 }
+        }
+      }
+    }
   }
 }

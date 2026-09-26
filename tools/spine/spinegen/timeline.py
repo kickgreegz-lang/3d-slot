@@ -30,6 +30,7 @@ SLOT_CHANNELS: dict[str, tuple[str, ...] | None] = {
     "attachment": None,
 }
 PHYSICS_CHANNELS = ("inertia", "strength", "damping", "mass", "wind", "gravity", "mix")
+IK_CHANNELS = ("mix", "softness")  # 4.3 IK keys: 2 curve channels (8 numbers), plus bendPositive/compress/stretch flags
 
 # neutral values used to check that one-shots return to rest
 REST = {"rotate": 0.0, "translate": (0.0, 0.0), "scale": (1.0, 1.0), "shear": (0.0, 0.0),
@@ -46,6 +47,8 @@ class Key:
     value: object
     ease: str | None = "linear"
     overshoot: float | None = None
+    curve: list[float] | None = None     # explicit absolute curve (4 numbers per channel); overrides `ease`
+    extra: dict | None = None            # extra key fields (e.g. IK bendPositive: false)
 
 
 @dataclass
@@ -55,7 +58,8 @@ class Track:
     keys: list[Key] = field(default_factory=list)
     label: str = ""
 
-    def key(self, frame: int | float, value, ease: str | None = "linear", overshoot: float | None = None) -> "Track":
+    def key(self, frame: int | float, value, ease: str | None = "linear", overshoot: float | None = None,
+            curve: list[float] | None = None, extra: dict | None = None) -> "Track":
         f = int(round(frame))
         if abs(f - frame) > 1e-6:
             raise ValueError(f"{self.label}: keys must sit on whole frames, got {frame}")
@@ -67,7 +71,9 @@ class Track:
         if self.channels and len(self.channels) > 1:
             if not isinstance(value, (tuple, list)) or len(value) != len(self.channels):
                 raise ValueError(f"{self.label}: expected {len(self.channels)} values, got {value!r}")
-        self.keys.append(Key(f, value, ease, overshoot))
+        if curve is not None and (not self.channels or len(curve) != 4 * len(self.channels)):
+            raise ValueError(f"{self.label}: explicit curve needs 4 numbers per channel")
+        self.keys.append(Key(f, value, ease, overshoot, curve, extra))
         self.keys.sort(key=lambda k: k.frame)
         return self
 
@@ -99,6 +105,13 @@ class Track:
             else:
                 for ch, v in zip(self.channels, vals):
                     m[ch] = rnd(v)
+            if k.extra:
+                m.update(k.extra)
+            if k.curve is not None:
+                if i + 1 < len(self.keys):
+                    m["curve"] = list(k.curve)
+                out.append(m)
+                continue
             if i + 1 < len(self.keys):
                 nxt = self.keys[i + 1]
                 nvals = nxt.value if len(self.channels) > 1 else (nxt.value,)
@@ -123,6 +136,7 @@ class Anim:
         self.bones: dict[str, dict[str, Track]] = {}
         self.slots: dict[str, dict[str, Track]] = {}
         self.physics: dict[str, dict[str, Track]] = {}
+        self.ik: dict[str, Track] = {}
         self.events: list[dict] = []
         self.markers: dict[str, int] = {}
 
@@ -154,6 +168,13 @@ class Anim:
         props[kind] = Track(kind, ("value",), label=f"{self.name}/{constraint}/{kind}")
         return props[kind]
 
+    def ik_timeline(self, constraint: str) -> Track:
+        """IK constraint timeline (mix + softness per key; flags go in Key.extra)."""
+        if constraint in self.ik:
+            raise ValueError(f"{self.name}: IK constraint '{constraint}' already has a timeline")
+        self.ik[constraint] = Track("ik", IK_CHANNELS, label=f"{self.name}/ik/{constraint}")
+        return self.ik[constraint]
+
     def event(self, frame: int, name: str, **payload) -> None:
         e = {"frame": int(frame), "name": name}
         e.update(payload)
@@ -165,6 +186,8 @@ class Anim:
             for props in group.values():
                 for tr in props.values():
                     f = max(f, tr.last_frame)
+        for tr in self.ik.values():
+            f = max(f, tr.last_frame)
         for e in self.events:
             f = max(f, e["frame"])
         return f
@@ -179,6 +202,8 @@ class Anim:
             out["slots"] = {s: {k: tr.emit(fps) for k, tr in sorted(p.items())} for s, p in sorted(self.slots.items())}
         if self.bones:
             out["bones"] = {b: {k: tr.emit(fps) for k, tr in sorted(p.items())} for b, p in sorted(self.bones.items())}
+        if self.ik:
+            out["ik"] = {c: tr.emit(fps) for c, tr in sorted(self.ik.items())}
         if self.physics:
             out["physics"] = {c: {k: tr.emit(fps) for k, tr in sorted(p.items())} for c, p in sorted(self.physics.items())}
         if self.events:

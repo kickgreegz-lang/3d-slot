@@ -12,7 +12,7 @@ It extends, and never contradicts, the repo-wide contracts:
 Where Bass Drop needs something new in a shared contract, the change is listed as a **contract request (CR-n)** in section 23 instead of being assumed.
 
 Tags used here:
-- **[RM]**: a starting value that must be re-measured from the Dragonspire Frostfall reference capture once network access exists (protocol in section 22).
+- **[RM]**: a starting value that must be re-measured from the Dragonspire Frostfall reference capture (protocol in section 22, status in section 22.1: not measured yet).
 - **[M-n]**: a math-owned decision. The front end ships the default given here and must render whatever the book says.
 - **[CR-n]**: a change to a shared contract (`src/game/events.ts`, the book event contract, ANIMATION_CONTRACT, `tools/spine/contract.json`).
 
@@ -24,15 +24,19 @@ Sources (none of them is in the repo: third-party frames are never committed, an
 - `ref_dragon_1.png` (Dragonspire intro, 1073×604) and `ref_dragon_2.png` + `ref_dragon_2_grid.png` (Dragonspire base game, 1079×607): the user's screenshots, kept in the session scratchpad only;
 - our Swamp Funk captures from `tools/capture/shot.mjs` at 1920×1080 (regenerate them; they are not committed).
 
-The live demo could not be captured: the proxy refuses `paperclip.live.engine.io` and `rgsd.engine.io` (HTTP 403 on CONNECT). **Every timing in this document is derived from our own `timing.ts` plus AAA norms, not measured from Dragonspire.** Timings that need the capture carry **[RM]**.
+The live demo has not been captured yet (log in section 22.1):
+- first attempt: the proxy refused `paperclip.live.engine.io` and `rgsd.engine.io` (HTTP 403 on CONNECT);
+- second attempt (2026-09-26, run `probe1`): the network allowed both hosts and the page plus all 47 page/asset requests loaded, but the RGS rejected the demo session (`POST /wallet/authenticate` → HTTP 400 `ERR_VAL` "session not found"). The game never left its loading screen, and 0 frames were captured.
+
+**Every timing in this document is still derived from our own `timing.ts` plus AAA norms, not measured from Dragonspire.** Timings that need the capture carry **[RM]**. Nothing in motion has been observed: the table below is read off two stills only.
 
 Measured from the stills (proportions of the viewport, converted to our 1920×1080 space):
 
 | Element | Dragonspire | What Bass Drop does |
 |---|---|---|
 | Grid | 5×5, centred (x centre 50.2%); column pitch ≈ 8.0% of viewport width (≈ 154 px at 1920); square cells, so the grid is **≈ 71% of viewport height** | 6×6, centred; cell 124 + gap 4 = 128 pitch; grid 764 px tall = **71% of 1080** (same proportion) |
-| Meter | Dark stone ring with a gold inner rim; "0/35" in frosted cyan in the centre disc; ring Ø ≈ 14% of width (≈ 267 px at 1920); centre ≈ (16.4%, 31.3%) = (316, 338); a lantern cap at 12 o'clock; a dragon perched on the upper-right of the ring | **Groove Meter**: a speaker woofer, ring Ø 320 at (248, 318). "23/60" in the dust cap. Six notch badges on the rim. Gumbo leans on the speaker stack; the cone itself is the "creature" (it breathes, pumps and booms) |
-| Mini panel under the meter | A 5-column blue grid under a dragon crest with wings; its function is not visible in a still | Not copied. Our "next drop" chip hangs under the meter. **[RM]** find out what the panel does before deciding whether we need an equivalent |
+| Meter | Dark stone ring with a gold inner rim; "0/35" in frosted cyan in the centre disc; ring Ø ≈ 14% of width (≈ 267 px at 1920); centre ≈ (16.4%, 31.3%) = (316, 338); a lantern cap at 12 o'clock; a dragon perched on the upper-right of the ring. The still shows 0/35 while four special wilds are on the board (per-spin reset, or a frame just after one: section 23, R-3) | **Groove Meter**: a speaker woofer, ring Ø 320 at (248, 318). "23/60" in the dust cap. Six notch badges on the rim. Gumbo leans on the speaker stack; the cone itself is the "creature" (it breathes, pumps and booms) |
+| Mini panel under the meter | A 5×5 grid of empty blue cells (the main board's shape) under a dragon crest with wings; its function is not visible in a still (it may be a position map, e.g. where special wilds landed: unconfirmed) | Not copied. Our "next drop" chip hangs under the meter. **[RM]** find out what the panel does before deciding whether we need an equivalent (section 23, R-4) |
 | Symbols | Glossy cel gems with snow caps; outline ≈ 3.5% of the cell; highs are crown, horn, scroll, blade | We keep the Swamp Funk set (outline 3% of the cell, top-left light, plum extrusion). It already matches the reference's finish level |
 | Special wilds | A 2×2 dragon wild with a huge "100x" in ice letters overlapping its gold frame; 1×1 dragon wilds with "2x"/"5x" at the bottom; one "5x" wild drawn translucent (ghosted: arriving or pending) | **Multiplier badge** at the bottom-centre of the W: plate 64% × 40% of the cell, digits **30% of the cell** tall, overlapping the cell's bottom edge by 10%. A **ghosted landing shadow** on target cells while a wild is in flight. No 2×2 wild (not in our mechanics) |
 | Frame | Ornate ice-dragon frame; dragons perched on both top corners; ice crystals on the posts; thin light column separators | Cypress frame (Swamp Funk) + **two horn speakers bolted on the top corners** (our "perched dragons"). They pump on every boom. The neon tube on the beam carries the drop charge |
@@ -709,6 +713,8 @@ All Bass Drop constants live in one registered table (lab-tunable), section 18.2
 
 ### 18.1 Per-phase timings (ms)
 
+**Re-measure status (2026-09-26): 0 of the 13 [RM] rows are measured, and none is adopted.** The capture was blocked by an expired demo session (section 22.1), so every value below is still ours. After section 22 step 4 a row's Measure cell becomes `measured: <ref value> (kept)` or `measured: <ref value> (adopted)`; until then it stays **[RM]**. The row → `reference-timings.json` key map and the comparison rules are in section 22.1.
+
 | Phase | Normal | Turbo | Super turbo | Derivation | Measure |
 |---|---|---|---|---|---|
 | Fall-out (whole board) | 510 | 130 | 87 | `spin.fallOutDuration` 260 + column stagger 35 × 5 + row stagger 15 × 5 | [RM] |
@@ -842,7 +848,7 @@ The explode shake values **replace** `BOARD_TIMING.explodeTrauma*` for Bass Drop
 
 ---
 
-## 22. Reference re-measure protocol (when network access exists)
+## 22. Reference re-measure protocol (Dragonspire capture)
 
 Tool: the reference capture track's `tools/reference/capture.mjs`, which captures frame-exact at a virtual 60 fps into the gitignored `art/_reference/`. Output is for study only and is never shipped.
 
@@ -865,6 +871,57 @@ Tool: the reference capture track's `tools/reference/capture.mjs`, which capture
    - the mini grid panel's function.
 4. Write the results to `docs/games/bass-drop/reference-timings.json` (numbers only, no frames). For every **[RM]** row in section 18.1, record the measured value next to ours and adopt it if it differs by more than 15% **and** still passes our feel gates (ANIMATION_CONTRACT §9). Mark adopted rows "measured".
 5. Re-check sections 0 and 6.3 (meter behaviour) against the capture; append any divergence as an open decision in section 23.
+
+### 22.1 Status (2026-09-26): blocked, nothing measured, nothing adopted
+
+**Result of step 4: no change.** No reference value exists, so no [RM] row could be compared, kept or adopted. The timing constants in `src/` stay as they are, and the step 5 re-check of sections 0 and 6.3 could not be done: its questions are open decisions R-1 to R-8 in section 23.
+
+Capture log (outputs in the gitignored `art/_reference/dragonspire/`):
+
+| Run | Outcome |
+|---|---|
+| (before 2026-09) | The proxy refused both hosts (HTTP 403 on CONNECT) |
+| `probe1` (2026-09-26, 1280×720, virtual clock) | Network fine: the document and all 47 page/asset requests returned 200. The RGS rejected the session: `POST /wallet/authenticate` → HTTP 400 `ERR_VAL` "session not found" (the `sessionID` in the supplied demo URL had expired). The game retried `wallet/balance` 59 times (all 400), showed its loading screen and then went blank. **0 frames, 0 screenshots, 0 segments.** The fallback (same URL with no `sessionID`, or with an invented one) was not run: the permission check refused it |
+
+What exists:
+- [reference-timings.json](reference-timings.json): `status: not_measured`, 21 rows, each with our value, the measuring method, the unit and the confidence it will have once data exists. It holds numbers only, and every reference value is `null`.
+- An analysis pipeline (capture scripts for segments a–e plus `df-analyse.mjs`, which rewrites the JSON from the runs in one command). It holds no third-party content, and it lives in the study session's scratchpad, so it must move to `tools/reference/scripts/` if the study continues in another session. Checked on our own mock slot (`tools/reference/test/mock-slot.html`): 45/45 column stops inside the true window, flash cadence 125 ms (true 125), turbo stop-gap ratio 0.27 (true 0.25), shake self-test exact to the pixel. **Not checked on a tumble game:** the fall-out/drop-in split, the meter heuristics, and the intro, idle and bonus rows.
+- The region rectangles (grid, meter, mini panel, HUD, shake patches) are read off the stills, not off a live probe.
+
+To unblock, one of:
+1. a fresh demo URL with a live `sessionID` from the user (IDs expire, so run it soon after it is issued);
+2. the user's explicit approval to load the demo with no `sessionID` or with a random one.
+
+Stake Engine replay URLs need no session, but they need round event ids, which we do not have. Once the game boots: run segment `a` first and verify the regions on `shots/*.grid.png`, then segments `b c d e` at `--viewport 1280x720 --jpeg 85` (the virtual clock keeps timing frame-exact on the shared CPUs; about 1.5–2.5 h), then `df-analyse.mjs`.
+
+**Row map for step 4.** "Compare against" is the value of ours that measures the same thing as the JSON row. It is not always the 18.1 cell.
+
+| 18.1 row | Ours (N / T / ST) | `reference-timings.json` key | Compare against (N / T / ST) | Adopt at confidence |
+|---|---|---|---|---|
+| Fall-out (whole board) | 510 / 130 / 87 | `fallOut.wholeBoard` | 5×5 equivalent **460** / 130 / 87 (4 column and 4 row gaps) | medium |
+| Drop-in | 950 / 265 / 175 | `dropIn.firstMoveToLastSettle`, `column.stagger`, `land.bouncePeaks` | 5×5 equivalent **865** / 265 / 175; column stagger per gap 60 / 0 / 0; 1 rebound | medium (the drop-in row is low until the split is confirmed on frames) |
+| Cluster present | 1,000 / 500 / 333 | none: inside `tumble.stepAfterLand` | the per-phase split, read off every-frame sheets | high |
+| Explode | 360 / 130 / 87 | none: inside `tumble.stepAfterLand` | as above | high |
+| Orb flight | 520 / 260 / 173 | `meter.reaction` | first orb arrival counted from the start of the win presentation: **≈ 1,790** (with the 100 ms explode hit-stop) / 845 / 563. The JSON's `ours` 610 applies only if the frames show the reference has no separate present phase | medium |
+| Orb spread (cap) | 300 / 0 / 0 | `meter.perSymbolOrCluster` + frames | only if the reference flies one item per symbol | high |
+| Meter tick | 60 / 120 / 90 | `meter.counterBurst` | the sum: 270 / 135 / 90 | medium |
+| Refill | 800 / 950 (worst) | none: inside `tumble.stepAfterLand` | the per-phase split | high |
+| Tumble step | ≈ 1,250 / 410 / 275 | `tumble.stepAfterLand` | cluster present + step: **2,250 / 910 / 608** (our build measures 2,000–2,133 / 900–966 / 617–650, [README](README.md#measured-round-timings)) | medium |
+| Feature intro | 2,600 / 1,300 / 867 | `bonus.flow` | the split, read off every-2nd-frame sheets | high |
+| Feature outro | 2,200 + 1,800 count | `bonus.flow` | as above | high |
+| Big win tiers | 5 / 7 / 9 / 13 / 18 s | `bigWin.tiers` | per tier, with that tier's ×bet threshold (section 11) | high |
+| Intro cards in / out | 900 / 400 | `intro.cardsOut` | out only ("in" runs during boot in real time and is not frame-exact) | medium |
+
+The other JSON rows (`spin.pressToFirstMotion`, `land.settleTail`, `speed.*`, `wild.summon`, `shake.peak`, `miniPanel.activity`, `idle.loops`, `winFlash.peakSpacing`) have no 18.1 row. They feed the open decisions R-2 to R-8 (section 23), not the table.
+
+**Comparison rules for step 4** (in addition to the > 15% rule):
+1. **Grid size.** Dragonspire is 5×5 and ours is 6×6. Compare per gap (column and row stagger) and per cell (fall time per pitch), never whole-board totals. An adopted per-gap value is re-derived into our 6×6 totals. The reference pitch (≈ 154 px at 1920) equals our `physRefPitch`, so per-cell fall times compare directly (section 5).
+2. **Composite rows adopt nothing on their own.** `tumble.stepAfterLand` and `bonus.flow` are sums: a phase changes only after its share has been read off the frames.
+3. **Same instrument on both sides.** The reference numbers come from motion energy, not from a spec. Before adopting, run the same `timings.mjs` regions on a capture of our own build and compare like with like: our build already differs from 18.1 (drop-in measured 1,067 / 333 / 233 vs 950 / 265 / 175 in the table).
+4. **Confidence.** Adopt only at the confidence given in the row map. A `low` JSON row is confirmed on the contact sheets first.
+5. **Speed profiles.** Our turbo is one global factor (÷2 and ÷3, staggers 0), shared with Swamp Funk. A per-phase reference ratio that differs by > 15% is adopted as a Bass Drop per-key value or floor in `BASS_DROP_TIMING`, never by changing `SPEED_SCALE` (R-5).
+6. **Feel gates** (ANIMATION_CONTRACT §9 and section 24). A land change keeps squash 0.80–0.88, settle within ±2% in ≤ 150 ms, rebound ≤ 8% SH and no column overlap. A shake change keeps the boom at 4–10 px and every non-big-win shake below the 6–14 px big-win gate. Flashes stay ≤ 3/s, and the 160 ms bass-drop charge floor stays.
+7. **Pillars win over the reference.** The bass drop stays the biggest beat (pillar 2), and no adoption may shorten a step of the visible cause-and-effect chain below readability (pillar 1).
 
 ---
 
@@ -894,6 +951,19 @@ Also landed with the phase B front end (core, additive; Swamp Funk does not use 
 - reduced motion: `src/fx/motion.ts` (`prefers-reduced-motion`, with an override for a settings toggle);
 - `fx:burst` takes `light` (0..1, the explode preset's flash glow and ring) and `count: 0` on `explode` (light and smoke only), used by the crush;
 - HUD hotkeys during the feature screens: FeatureScreens holds `modal:state` open from the trigger's t 0 to the hand-off (also upgrade and outro), so SPACE / ENTER never reach the flow as `ui:skip`; they act as the screen's own tap (tap lock, `spacebarAllowed` and `slamStopAllowed` respected).
+
+Reference study decisions (open until the Dragonspire capture exists, section 22.1). Each row has a default, which is what ships now. The capture can change pacing inside our design, never its identity (ART_BIBLE §0).
+
+| R | Question | Default (ships now) | What would change it |
+|---|---|---|---|
+| **R-1** | Unblock the capture | — | The user supplies a fresh demo URL with a live `sessionID`, or explicitly approves loading the demo with no or a random `sessionID` |
+| **R-2** | Meter granularity (section 6.3): does the reference count per symbol or per cluster, and does anything fly from the board to the meter? | Keep ours: one orb per exploding symbol, counter +1 per arrival. The meter counts connections (math), and the orbs are the visible link (pillar 1) | Pacing only. If the reference counts per cluster and our stream measures busier than its equivalent, tune `orbs.spreadCap` and the super-turbo comet count; the per-symbol model stays |
+| **R-3** | Meter reset: the still shows 0/35 with four special wilds on the board | Keep ours: drain on every base spin (section 6.5) | Nothing: the stateless rule (section 21) requires it |
+| **R-4** | What the mini 5×5 panel under the reference meter does | No equivalent: the next-drop chip (section 6.8) carries the forward-looking information, and Mega Mix homes show on the board (section 9) | If the panel shows state the player needs and we do not show, add it in our own form (on the board or the chip), never as a copied side grid |
+| **R-5** | Turbo, a second turbo state and quick stop, per phase | Keep ÷2 / ÷3 with staggers 0, and a slam-stop plays the rest of the round at the fastest allowed profile, normally super turbo (`src/flow/controller.ts`, `followSpeed`) | A per-phase ratio > 15% off at medium confidence → a per-key value or floor in `BASS_DROP_TIMING`, never `SPEED_SCALE` (shared with Swamp Funk) |
+| **R-6** | The summon, beat by beat: cue, source, flight, landing, multiplier reveal, shake | Keep section 8: one wild 1,580 ms wall clock (normal), boom 4.5 px | A reference summon > 15% shorter may shorten the flight and settle only, never the charge or its 160 ms floor. A larger reference shake is adopted only below the big-win gate (section 19) |
+| **R-7** | Big-win tier thresholds and durations | Keep 15 / 30 / 50 / 100× and 5 / 7 / 9 / 13 / 18 s (the Swamp Funk values) | A difference > 15% at high confidence → Bass Drop's own `WIN_TIERS` (`src/games/bass-drop/config.ts`); the shared `TIMING.bigWin` durations change only with a contract request |
+| **R-8** | Idle character motion (the perched corner figures, the lantern) and spin-click feedback | Keep ours: horns pump on booms, the cone breathes on the beat, the mascots idle, `ui.pressScale` 0.92 | Loop periods stay on our music grid. If the reference's idle is much sparser, check that ours does not read as busy on the golden captures |
 
 Art-lead decisions (default in brackets):
 - the logo word-mark: stacked "SWAMP FUNK / BASS DROP" [yes];

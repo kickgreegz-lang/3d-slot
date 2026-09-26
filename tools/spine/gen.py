@@ -13,6 +13,9 @@ What it writes (deterministic: same inputs -> byte-identical output):
     f / zeta: strength = (2*pi*f)^2 * mass, damping = exp(-2*zeta*2*pi*f/60);
   * the contract animation set (idle, land, win, win_loop, anticipation(+_intro/_out),
     explode, appear, blur, blink) with events, curves as absolute beziers.
+rig.yaml with `kind: character` builds a 2D Spine CHARACTER instead (spinegen/character.py +
+spinegen/acting.py): biped bones from landmarks, foot/hand IK, look-at, attachment swaps, springs
+and the ANIMATION_SET section 5 clip set from named motion presets (tools/spine/README.md).
 Exit codes: 0 ok, 1 rig/contract error, 2 usage error. `--check` generates in memory and
 exits 1 if OUT differs (CI drift check).
 """
@@ -27,6 +30,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from spinegen import provenance as prov  # noqa: E402
+from spinegen.character import CHAR_GEN_VERSION, CharacterBuilder, is_character_rig  # noqa: E402
 from spinegen.rig import GEN_VERSION, RigBuilder, RigError, dump  # noqa: E402
 
 
@@ -46,8 +50,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
 
+    character = is_character_rig(a.rig)
     try:
-        rb = RigBuilder(a.rig, out_path=a.out, images_path=a.images_path, spine_version=a.spine_version)
+        builder = CharacterBuilder if character else RigBuilder
+        rb = builder(a.rig, out_path=a.out, images_path=a.images_path, spine_version=a.spine_version)
         doc = rb.build()
     except (RigError, ValueError, FileNotFoundError, KeyError) as e:
         print(f"gen.py: ERROR: {e}", file=sys.stderr)
@@ -66,7 +72,23 @@ def main(argv: list[str] | None = None) -> int:
     if not out.exists() or out.read_text(encoding="utf-8") != text:
         out.write_text(text, encoding="utf-8")
     st = rb.report.stats
-    if not a.quiet:
+    if not a.quiet and character:
+        pr = st.get("proportions") or {}
+        print(f"gen.py: wrote {out}  ({rb.skel_name}, kind character, spine {doc['skeleton']['spine']})")
+        print(f"  bones {st['bones']}  slots {st['slots']}  mesh vertices {st['meshVertices']}  physics {st['physics']}"
+              + (f"  head {pr['head']}/{pr['height']} = {pr['headFraction']:.3f} of the height" if pr else ""))
+        print(f"  constraints: {', '.join(st['constraints']) or '-'}")
+        for n, r in st["clips"].items():
+            ev = " ".join(f"{e[1]}{'(' + e[2] + ')' if e[2] else ''}@{e[0]}" for e in r["events"])
+            print(f"  clip {n:<17} {r['frames']:>4} f {'loop' if r['loop'] else '    '} track {r['track']}  "
+                  f"{r['timelines']:>3} timelines {r['keys']:>4} bone keys{('  ' + ev) if ev else ''}")
+        for m, info in (st.get("meshes") or {}).items():
+            print(f"  mesh {m}: {info['vertices']} verts, {info['triangles']} tris, hull {info['hull']}, "
+                  f"{'weighted' if info['weighted'] else 'unweighted'}")
+        for w in list(st.get("acting") or []) + [f"warning: {w}" for w in rb.report.warnings]:
+            print(f"  {w}")
+        print(f"  next: node tools/spine/validate.mjs {out} --kind character")
+    elif not a.quiet:
         print(f"gen.py: wrote {out}  ({rb.skel_name}, kind {rb.kind}, spine {doc['skeleton']['spine']})")
         print(f"  bones {st['bones']}  slots {st['slots']}  mesh vertices {st['meshVertices']}  "
               f"feet_y {st['feet_y']}  body_y {st['body_y']}")
@@ -81,7 +103,8 @@ def main(argv: list[str] | None = None) -> int:
     if a.provenance or a.manifest:
         inputs = [p for p in dict.fromkeys(rb.report.inputs)]
         row = prov.make_row(asset_id=f"{rb.skel_name}.skeleton-json", path=out, stage="spine-authoring",
-                            model="tools/spine/gen.py", version=GEN_VERSION, inputs=inputs, license_id=a.license_id,
+                            model="tools/spine/gen.py", version=CHAR_GEN_VERSION if character else GEN_VERSION,
+                            inputs=inputs, license_id=a.license_id,
                             shipped=a.shipped, notes=f"spine {doc['skeleton']['spine']}; inputs: "
                             + ", ".join(prov.rel(p) for p in inputs[:2]) + f" (+{max(0, len(inputs) - 2)} images)")
         for f in (a.provenance, a.manifest):

@@ -1,0 +1,691 @@
+{
+ "$comment": "Written by tools/spine/examples/character_demo/make_parts.mjs (procedural placeholder; stands in for the split stage). Canvas 720x1260 @2x, image space (y down); root = anchor (feet point).",
+ "skeleton": "chr_croak",
+ "kind": "character",
+ "canvas": [
+  720,
+  1260
+ ],
+ "anchor": [
+  0.5,
+  1
+ ],
+ "images": "images",
+ "landmarks": {
+  "hips": [
+   385,
+   700
+  ],
+  "spine": [
+   378,
+   600
+  ],
+  "chest": [
+   368,
+   495
+  ],
+  "neck": [
+   352,
+   408
+  ],
+  "head": [
+   346,
+   384
+  ],
+  "head_top": [
+   338,
+   176
+  ],
+  "shoulder_L": [
+   430,
+   450
+  ],
+  "elbow_L": [
+   458,
+   622
+  ],
+  "wrist_L": [
+   440,
+   790
+  ],
+  "hand_L": [
+   430,
+   860
+  ],
+  "shoulder_R": [
+   305,
+   440
+  ],
+  "elbow_R": [
+   266,
+   610
+  ],
+  "wrist_R": [
+   252,
+   778
+  ],
+  "hand_R": [
+   243,
+   848
+  ],
+  "hip_L": [
+   425,
+   735
+  ],
+  "knee_L": [
+   398,
+   968
+  ],
+  "ankle_L": [
+   432,
+   1212
+  ],
+  "toe_L": [
+   348,
+   1242
+  ],
+  "hip_R": [
+   348,
+   728
+  ],
+  "knee_R": [
+   318,
+   962
+  ],
+  "ankle_R": [
+   345,
+   1206
+  ],
+  "toe_R": [
+   262,
+   1236
+  ]
+ },
+ "parts": [
+  {
+   "slot": "cup_R",
+   "bbox": [
+    190,
+    244,
+    76,
+    96
+   ],
+   "z": 0,
+   "bone": "cup_R",
+   "parent": "band",
+   "joint": [
+    232,
+    290
+   ]
+  },
+  {
+   "slot": "upper_arm_R",
+   "bbox": [
+    235,
+    403,
+    107,
+    238
+   ],
+   "z": 1,
+   "bone": "upper_arm_R"
+  },
+  {
+   "slot": "forearm_R",
+   "bbox": [
+    225,
+    579,
+    72,
+    226
+   ],
+   "z": 2,
+   "bone": "forearm_R"
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "open",
+   "bbox": [
+    208,
+    743,
+    79,
+    146
+   ],
+   "z": 3,
+   "bone": "hand_R"
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "point",
+   "bbox": [
+    204,
+    741,
+    85,
+    170
+   ]
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "fist",
+   "bbox": [
+    204,
+    741,
+    85,
+    127
+   ]
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "scratch",
+   "bbox": [
+    204,
+    741,
+    88,
+    129
+   ]
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "press",
+   "bbox": [
+    208,
+    743,
+    79,
+    146
+   ]
+  },
+  {
+   "slot": "mic",
+   "bbox": [
+    203,
+    782,
+    66,
+    157
+   ],
+   "z": 4,
+   "bone": "mic",
+   "parent": "hand_R",
+   "joint": [
+    248,
+    812
+   ],
+   "hidden": true
+  },
+  {
+   "slot": "thigh_R",
+   "bbox": [
+    284,
+    686,
+    106,
+    310
+   ],
+   "z": 5,
+   "bone": "thigh_R"
+  },
+  {
+   "slot": "shin_R",
+   "bbox": [
+    284,
+    928,
+    88,
+    305
+   ],
+   "z": 6,
+   "bone": "shin_R"
+  },
+  {
+   "slot": "foot_R",
+   "bbox": [
+    207,
+    1184,
+    169,
+    70
+   ],
+   "z": 7,
+   "bone": "foot_R"
+  },
+  {
+   "slot": "thigh_L",
+   "bbox": [
+    362,
+    691,
+    107,
+    313
+   ],
+   "z": 8,
+   "bone": "thigh_L"
+  },
+  {
+   "slot": "shin_L",
+   "bbox": [
+    362,
+    932,
+    98,
+    308
+   ],
+   "z": 9,
+   "bone": "shin_L"
+  },
+  {
+   "slot": "foot_L",
+   "bbox": [
+    283,
+    1190,
+    181,
+    74
+   ],
+   "z": 10,
+   "bone": "foot_L"
+  },
+  {
+   "slot": "torso",
+   "bbox": [
+    295,
+    402,
+    179,
+    345
+   ],
+   "z": 11,
+   "bone": "spine"
+  },
+  {
+   "slot": "shirt",
+   "bbox": [
+    293,
+    416,
+    182,
+    330
+   ],
+   "z": 12,
+   "bone": "spine"
+  },
+  {
+   "slot": "chain",
+   "bbox": [
+    335,
+    413,
+    110,
+    124
+   ],
+   "z": 13,
+   "bone": "phys_chain_1"
+  },
+  {
+   "slot": "pouch",
+   "bbox": [
+    214,
+    370,
+    144,
+    111
+   ],
+   "z": 14,
+   "bone": "phys_pouch_1"
+  },
+  {
+   "slot": "head",
+   "bbox": [
+    178,
+    191,
+    302,
+    230
+   ],
+   "z": 15,
+   "bone": "head"
+  },
+  {
+   "slot": "band",
+   "bbox": [
+    211,
+    105,
+    268,
+    186
+   ],
+   "z": 16,
+   "bone": "band",
+   "parent": "head",
+   "joint": [
+    340,
+    180
+   ]
+  },
+  {
+   "slot": "eye_bulge_R",
+   "bbox": [
+    232,
+    152,
+    116,
+    104
+   ],
+   "z": 17,
+   "bone": "face_bulge_R",
+   "parent": "head",
+   "joint": [
+    290,
+    204
+   ]
+  },
+  {
+   "slot": "eye_bulge_L",
+   "bbox": [
+    332,
+    156,
+    132,
+    116
+   ],
+   "z": 18,
+   "bone": "face_bulge_L",
+   "parent": "head",
+   "joint": [
+    398,
+    214
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "open",
+   "bbox": [
+    255,
+    161,
+    74,
+    70
+   ],
+   "z": 19,
+   "bone": "face_eye_R",
+   "parent": "face_bulge_R",
+   "joint": [
+    292,
+    196
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "half",
+   "bbox": [
+    252,
+    161,
+    80,
+    70
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "closed",
+   "bbox": [
+    255,
+    169,
+    74,
+    60
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "wide",
+   "bbox": [
+    250,
+    156,
+    84,
+    80
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "open",
+   "bbox": [
+    357,
+    166,
+    86,
+    80
+   ],
+   "z": 20,
+   "bone": "face_eye_L",
+   "parent": "face_bulge_L",
+   "joint": [
+    400,
+    206
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "half",
+   "bbox": [
+    354,
+    166,
+    92,
+    80
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "closed",
+   "bbox": [
+    357,
+    175,
+    86,
+    68
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "wide",
+   "bbox": [
+    351,
+    161,
+    98,
+    90
+   ]
+  },
+  {
+   "slot": "pupil_R",
+   "bbox": [
+    273,
+    187,
+    34,
+    22
+   ],
+   "z": 21,
+   "bone": "face_pupil_R",
+   "parent": "face_eye_R",
+   "joint": [
+    290,
+    198
+   ]
+  },
+  {
+   "slot": "pupil_L",
+   "bbox": [
+    379,
+    196,
+    38,
+    24
+   ],
+   "z": 22,
+   "bone": "face_pupil_L",
+   "parent": "face_eye_L",
+   "joint": [
+    398,
+    208
+   ]
+  },
+  {
+   "slot": "lid_R",
+   "bbox": [
+    251,
+    158,
+    82,
+    31
+   ],
+   "z": 23,
+   "bone": "face_lid_R",
+   "parent": "face_eye_R",
+   "joint": [
+    292,
+    172
+   ]
+  },
+  {
+   "slot": "lid_L",
+   "bbox": [
+    353,
+    163,
+    94,
+    34
+   ],
+   "z": 24,
+   "bone": "face_lid_L",
+   "parent": "face_eye_L",
+   "joint": [
+    400,
+    178
+   ]
+  },
+  {
+   "slot": "mouth",
+   "attachment": "closed",
+   "bbox": [
+    198,
+    323,
+    241,
+    42
+   ],
+   "z": 25,
+   "bone": "head"
+  },
+  {
+   "slot": "mouth",
+   "attachment": "smile",
+   "bbox": [
+    198,
+    313,
+    247,
+    51
+   ]
+  },
+  {
+   "slot": "mouth",
+   "attachment": "open",
+   "bbox": [
+    198,
+    324,
+    240,
+    85
+   ]
+  },
+  {
+   "slot": "mouth",
+   "attachment": "O",
+   "bbox": [
+    212,
+    318,
+    223,
+    64
+   ]
+  },
+  {
+   "slot": "cup_L",
+   "bbox": [
+    422,
+    246,
+    88,
+    108
+   ],
+   "z": 26,
+   "bone": "cup_L",
+   "parent": "band",
+   "joint": [
+    462,
+    300
+   ]
+  },
+  {
+   "slot": "cable",
+   "bbox": [
+    451,
+    333,
+    54,
+    258
+   ],
+   "z": 27,
+   "bone": "phys_cable_1"
+  },
+  {
+   "slot": "upper_arm_L",
+   "bbox": [
+    391,
+    411,
+    100,
+    244
+   ],
+   "z": 28,
+   "bone": "upper_arm_L"
+  },
+  {
+   "slot": "forearm_L",
+   "bbox": [
+    412,
+    589,
+    79,
+    229
+   ],
+   "z": 29,
+   "bone": "forearm_L"
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "open",
+   "bbox": [
+    393,
+    754,
+    83,
+    154
+   ],
+   "z": 30,
+   "bone": "hand_L"
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "point",
+   "bbox": [
+    389,
+    751,
+    90,
+    181
+   ]
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "fist",
+   "bbox": [
+    389,
+    751,
+    90,
+    135
+   ]
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "fader",
+   "bbox": [
+    389,
+    751,
+    90,
+    146
+   ]
+  },
+  {
+   "slot": "fx_note",
+   "bbox": [
+    172,
+    265,
+    61,
+    65
+   ],
+   "z": 31,
+   "bone": "fx_note",
+   "parent": "root",
+   "joint": [
+    200,
+    300
+   ],
+   "blend": "additive",
+   "color": "ffffff00"
+  }
+ ]
+}

@@ -1,0 +1,435 @@
+{
+  "$comment": "Dragonspire Frostfall (Paperclip Gaming) demo, re-measure protocol of DESIGN.md s.22. Numbers only: no frames, pixels, assets or text of the reference. Captures stay in the gitignored art/_reference/. \"ours\" = DESIGN.md s.18.1/s.19 values for comparison; adopt a measured value only if it differs by > 15% and passes ANIMATION_CONTRACT s.9 feel gates.",
+  "schema": 1,
+  "status": "not_measured",
+  "statusNote": "No Dragonspire frames exist yet. The only capture attempt (probe1) got HTTP 400 \"session not found\" from the RGS authenticate call: the demo sessionID had expired, so the game never left its loading screen. Every reference value is null until a run with a fresh demo URL is analysed.",
+  "label": null,
+  "generatedAt": "2026-09-26T12:55:43.453Z",
+  "generator": "df-analyse.mjs (study scripts kept outside the repo) on top of tools/reference/timings.mjs",
+  "capture": {
+    "runs": [],
+    "skipped": [
+      {
+        "run": "probe1",
+        "reason": "0 frames (status error, authenticate HTTP 400)"
+      }
+    ],
+    "regions": {
+      "grid": [
+        0.302,
+        0.123,
+        0.402,
+        0.733
+      ],
+      "meter": [
+        0.095,
+        0.17,
+        0.14,
+        0.27
+      ],
+      "mini": [
+        0.105,
+        0.5,
+        0.125,
+        0.3
+      ],
+      "hud": [
+        0.24,
+        0.84,
+        0.62,
+        0.16
+      ]
+    },
+    "shakePatches": {
+      "stage": [
+        0.255,
+        0.3,
+        0.04,
+        0.3
+      ],
+      "logo": [
+        0.76,
+        0.1,
+        0.18,
+        0.2
+      ],
+      "hud": [
+        0.3,
+        0.87,
+        0.28,
+        0.09
+      ]
+    },
+    "regionSource": "fractions of the game canvas read off the user's two stills (ref_dragon_2.png base game, ref_dragon_1.png intro), not verified on a live probe"
+  },
+  "units": "ms of virtual game time (60 fps, frame-exact) unless noted; px converted to a 1920-wide canvas",
+  "confidenceScale": {
+    "none": "no data",
+    "low": "heuristic on motion energy: confirm on the contact sheets",
+    "medium": "direct energy measurement, +-1 frame on every-frame segments",
+    "high": "confirmed frame by frame"
+  },
+  "measurements": {
+    "spin.pressToFirstMotion": {
+      "status": "not_measured",
+      "row": null,
+      "ours": null,
+      "ref": {
+        "normal": null,
+        "turbo": null,
+        "quick": null
+      },
+      "unit": "ms",
+      "method": "first burst start over grid.c1..c5 energy after the spin input (timings.mjs bursts, capture timeline); RGS answers within 1-2 frames (net-sync), so this is the game's own start latency",
+      "confidence": "none",
+      "plannedConfidence": "medium"
+    },
+    "fallOut.wholeBoard": {
+      "status": "not_measured",
+      "row": "Fall-out (whole board)",
+      "ours": {
+        "normal": 510,
+        "turbo": 130,
+        "super": 87
+      },
+      "ref": {
+        "normal": null,
+        "turbo": null
+      },
+      "unit": "ms",
+      "method": "loss rounds where every column shows two bursts 17..400 ms apart: first burst = old symbols leaving (first start -> last end over the 5 columns); if the game drops without a gap this stays null and must be read off the every-frame sheets",
+      "confidence": "none",
+      "note": null,
+      "plannedConfidence": "medium",
+      "compareAgainst": {
+        "normal": 460,
+        "turbo": 130,
+        "super": 87,
+        "why": "ours re-derived for a 5x5 board (4 column and 4 row gaps): 260 + 35x4 + 15x4; adopt per gap, then re-derive our 6x6 total (DESIGN.md s.22.1 rule 1)"
+      }
+    },
+    "column.stagger": {
+      "status": "not_measured",
+      "row": "Drop-in stagger (column)",
+      "ours": {
+        "normal": 60,
+        "turbo": 0,
+        "super": 0
+      },
+      "ref": {
+        "normal": null,
+        "turbo": null,
+        "turboB": null,
+        "quick": null
+      },
+      "unit": "ms",
+      "method": "median gap between consecutive columnStops (end of each column's first >=150 ms burst), every-frame spins +-1 frame, every-2nd/3rd +-2/3 frames",
+      "confidence": "none",
+      "plannedConfidence": "medium"
+    },
+    "dropIn.firstMoveToLastSettle": {
+      "status": "not_measured",
+      "row": "Drop-in: first move -> last settle",
+      "ours": {
+        "normal": 950,
+        "turbo": 265,
+        "super": 175
+      },
+      "ref": {
+        "normal": null,
+        "turbo": null
+      },
+      "unit": "ms",
+      "method": "split loss rounds: second burst first start -> last end over the 5 columns; otherwise median(last column settleT) - median(first motion), flagged includesFallOut",
+      "confidence": "none",
+      "plannedConfidence": "low",
+      "compareAgainst": {
+        "normal": 865,
+        "turbo": 265,
+        "super": 175,
+        "why": "ours re-derived for a 5x5 board: 950 - one column gap (60) - one row gap (25); staggers are 0 in turbo"
+      }
+    },
+    "land.settleTail": {
+      "status": "not_measured",
+      "row": "Land settle (per symbol)",
+      "ours": {
+        "normal": 150,
+        "turbo": 75,
+        "super": 50
+      },
+      "ref": {
+        "normal": null,
+        "turbo": null
+      },
+      "unit": "ms",
+      "method": "timings.mjs landing tail: low-energy motion after the column stop until a >=50 ms quiet gap",
+      "confidence": "none",
+      "plannedConfidence": "medium"
+    },
+    "land.bouncePeaks": {
+      "status": "not_measured",
+      "row": null,
+      "ours": {
+        "normal": 1
+      },
+      "ref": {
+        "normal": null
+      },
+      "unit": "count",
+      "method": "local energy maxima inside the landing tail, every-frame spins only; a bounce shows as 1-2 peaks (down and back): confirm on frames",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "tumble.stepAfterLand": {
+      "status": "not_measured",
+      "row": "Tumble step (explode + refill)",
+      "ours": {
+        "normal": 1250,
+        "turbo": 410,
+        "super": 275
+      },
+      "ref": {
+        "normal": null,
+        "turbo": null
+      },
+      "unit": "ms",
+      "method": "(last grid motion - board settle) / number of win events in the round's book; includes win present, explode and refill, so compare with present + explode + refill, not the step row alone",
+      "confidence": "none",
+      "plannedConfidence": "low",
+      "compareAgainst": {
+        "normal": 2250,
+        "turbo": 910,
+        "super": 608,
+        "build": {
+          "normal": [
+            2000,
+            2133
+          ],
+          "turbo": [
+            900,
+            966
+          ],
+          "super": [
+            617,
+            650
+          ]
+        },
+        "why": "the measurement spans win present + explode + refill: cluster present 1000/500/333 + tumble step 1250/410/275; build = docs/games/bass-drop/README.md measured round timings"
+      }
+    },
+    "meter.reaction": {
+      "status": "not_measured",
+      "row": "Orb flight (meter lag after the first post-land grid burst)",
+      "ours": {
+        "normal": 610,
+        "turbo": 305,
+        "super": 203
+      },
+      "ref": {
+        "normal": null,
+        "turbo": null
+      },
+      "unit": "ms",
+      "method": "start of the first meter-region burst after the first post-land grid burst (ours = pop-out 90 + flight 520)",
+      "confidence": "none",
+      "plannedConfidence": "low",
+      "compareAgainst": {
+        "normal": 1790,
+        "turbo": 845,
+        "super": 563,
+        "why": "our first orb arrival counted from the start of the win presentation: cluster present + explode squeeze 80 + pop-out 90 + flight 520 (+ the 100 ms explode hit-stop in normal only). The \"ours\" 610 (pop-out + flight) applies only if the frames show the reference has no separate present phase"
+      }
+    },
+    "meter.counterBurst": {
+      "status": "not_measured",
+      "row": "Meter tick (LED in / settle / punch)",
+      "ours": {
+        "normal": 270,
+        "turbo": 135,
+        "super": 90
+      },
+      "ref": {
+        "normal": null,
+        "turbo": null
+      },
+      "unit": "ms",
+      "method": "median duration of meter-region bursts after the first post-land grid burst; per-symbol vs per-cluster from burst count vs book clusters/winSymbols (see segments[].meterBursts)",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "winFlash.peakSpacing": {
+      "status": "not_measured",
+      "row": null,
+      "ours": null,
+      "ref": {
+        "normal": null
+      },
+      "unit": "ms",
+      "method": "timings.mjs flashPeakSpacingMs (a blink cycle is 2x)",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "speed.turboOverNormal": {
+      "status": "not_measured",
+      "row": "turbo ratio per phase",
+      "ours": {
+        "factor": 0.5
+      },
+      "ref": null,
+      "unit": "ratio",
+      "method": "median(turbo state A) / median(normal) per metric",
+      "confidence": "none",
+      "plannedConfidence": "medium"
+    },
+    "speed.turboBOverNormal": {
+      "status": "not_measured",
+      "row": "second turbo state ratio (super turbo if the button cycles)",
+      "ours": {
+        "factor": 0.333
+      },
+      "ref": null,
+      "unit": "ratio",
+      "method": "median(turbo state B) / median(normal); state B is super turbo only if the df-c turbo-A/B/C shots show 3 states",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "speed.quickStopOverNormal": {
+      "status": "not_measured",
+      "row": "quick stop (second press at +150 ms)",
+      "ours": null,
+      "ref": null,
+      "unit": "ratio",
+      "method": "median(quick) / median(normal); boardSettle ratio < 0.8 means a slam stop exists",
+      "confidence": "none",
+      "plannedConfidence": "medium"
+    },
+    "meter.perSymbolOrCluster": {
+      "status": "not_measured",
+      "row": "Meter increment granularity (s.6.3 check)",
+      "ours": {
+        "model": "one orb per winning symbol, counter +1 per orb"
+      },
+      "ref": null,
+      "unit": "bursts per cluster / per symbol, x100",
+      "method": "meter-region bursts after the first post-land grid burst divided by clusters and winning symbols in the book; ~100 per cluster = per-cluster increments, ~100 per symbol = per-symbol; rolls merge bursts, so confirm on frames",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "wild.summon": {
+      "status": "not_measured",
+      "row": "Dragon / wild summon (duration, shake)",
+      "ours": {
+        "oneWildMs": 1580,
+        "threeWildsMs": 1880,
+        "boomPx": 4.5
+      },
+      "ref": null,
+      "unit": "ms / px at 1920",
+      "method": "rounds whose book has wild/dragon/multiplier events: longest full-canvas burst after the board settles, plus shake episodes of the static patches; beat-by-beat split read off the frames",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "miniPanel.activity": {
+      "status": "not_measured",
+      "row": "Mini 5-column panel under the meter (function unknown)",
+      "ours": null,
+      "ref": null,
+      "unit": "count / ms",
+      "method": "mini-region bursts per spin; activity in loss rounds = reacts to every spin (reel/column display), only after wins = win/meter linked; the function itself is read off the frames",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "intro.cardsOut": {
+      "status": "not_measured",
+      "row": "Intro cards in / out",
+      "ours": {
+        "out": 400,
+        "in": 900
+      },
+      "ref": {
+        "out": null
+      },
+      "unit": "ms",
+      "method": "intro-dismiss segment (every frame): click -> last full-canvas motion; \"in\" happens during boot in real time and is not measurable frame-exact",
+      "confidence": "none",
+      "plannedConfidence": "medium"
+    },
+    "idle.loops": {
+      "status": "not_measured",
+      "row": null,
+      "ours": null,
+      "ref": null,
+      "unit": "ms",
+      "method": "median spacing of burst starts per region during 30 s of idle",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "bigWin.tiers": {
+      "status": "not_measured",
+      "row": "Big win tiers",
+      "ours": {
+        "tiersS": [
+          5,
+          7,
+          9,
+          13,
+          18
+        ]
+      },
+      "ref": null,
+      "unit": "ms / x bet",
+      "method": "segments whose play payout >= DF_BIGWIN x bet: payout multiplier from the RGS body, duration = press -> last full-canvas motion (continue taps after 4 s of stillness). Tier names and thresholds must be read off the frames",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "bonus.flow": {
+      "status": "not_measured",
+      "row": "Feature trigger / intro / outro",
+      "ours": {
+        "triggerMs": 1800,
+        "introMs": 2600,
+        "outroMs": 4000
+      },
+      "ref": null,
+      "unit": "ms",
+      "method": "whole bought/hunted bonus segment; trigger -> intro -> first spin -> outro split must be read off the every-2nd-frame sheets",
+      "confidence": "none",
+      "plannedConfidence": "low"
+    },
+    "shake.peak": {
+      "status": "not_measured",
+      "row": "Shake peaks (s.19)",
+      "ours": {
+        "boomPx": 4.5,
+        "chainMaxPx": 9.3,
+        "triggerPx": 7.9,
+        "bigWinGatePx": [
+          6,
+          14
+        ]
+      },
+      "ref": null,
+      "unit": "px at 1920 wide",
+      "method": "SAD block match (+-20 px, parabolic sub-pixel) of static patches (stage frame, logo, HUD) against the segment's first frame; episodes = runs of |offset| >= 0.75 px; validated on synthetic shifts (--shake-selftest)",
+      "confidence": "none",
+      "plannedConfidence": "medium"
+    }
+  },
+  "profiles": {
+    "normal": null,
+    "turboA": null,
+    "turboB": null,
+    "quick": null
+  },
+  "segments": [],
+  "shake": [],
+  "decisions": [
+    {
+      "date": "2026-09-26",
+      "step": "DESIGN.md s.22 step 4",
+      "result": "no change: nothing measured, no [RM] row adopted (DESIGN.md s.22.1)",
+      "adopted": []
+    }
+  ]
+}

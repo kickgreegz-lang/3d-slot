@@ -1,0 +1,697 @@
+{
+ "$comment": "Written by tools/spine/examples/character_demo/make_parts.mjs (procedural placeholder; stands in for the split stage). Canvas 868x992 @2x, image space (y down); root = anchor (feet point).",
+ "skeleton": "chr_gumbo",
+ "kind": "character",
+ "canvas": [
+  868,
+  992
+ ],
+ "anchor": [
+  0.5,
+  1
+ ],
+ "images": "images",
+ "landmarks": {
+  "hips": [
+   420,
+   628
+  ],
+  "spine": [
+   424,
+   525
+  ],
+  "chest": [
+   430,
+   420
+  ],
+  "neck": [
+   452,
+   338
+  ],
+  "head": [
+   458,
+   292
+  ],
+  "head_top": [
+   452,
+   128
+  ],
+  "jaw": [
+   458,
+   276
+  ],
+  "chin": [
+   690,
+   296
+  ],
+  "shoulder_R": [
+   332,
+   376
+  ],
+  "elbow_R": [
+   300,
+   530
+  ],
+  "wrist_R": [
+   322,
+   668
+  ],
+  "hand_R": [
+   332,
+   748
+  ],
+  "shoulder_L": [
+   510,
+   372
+  ],
+  "elbow_L": [
+   566,
+   520
+  ],
+  "wrist_L": [
+   588,
+   648
+  ],
+  "hand_L": [
+   598,
+   726
+  ],
+  "hip_R": [
+   370,
+   652
+  ],
+  "knee_R": [
+   398,
+   808
+  ],
+  "ankle_R": [
+   366,
+   950
+  ],
+  "toe_R": [
+   446,
+   980
+  ],
+  "hip_L": [
+   476,
+   648
+  ],
+  "knee_L": [
+   512,
+   802
+  ],
+  "ankle_L": [
+   498,
+   946
+  ],
+  "toe_L": [
+   578,
+   972
+  ]
+ },
+ "parts": [
+  {
+   "slot": "tail",
+   "bbox": [
+    73,
+    583,
+    290,
+    377
+   ],
+   "z": 0,
+   "bone": "phys_tail_1"
+  },
+  {
+   "slot": "thigh_L",
+   "bbox": [
+    412,
+    584,
+    153,
+    271
+   ],
+   "z": 1,
+   "bone": "thigh_L"
+  },
+  {
+   "slot": "shin_L",
+   "bbox": [
+    457,
+    750,
+    107,
+    237
+   ],
+   "z": 2,
+   "bone": "shin_L"
+  },
+  {
+   "slot": "foot_L",
+   "bbox": [
+    447,
+    918,
+    166,
+    72
+   ],
+   "z": 3,
+   "bone": "foot_L"
+  },
+  {
+   "slot": "upper_arm_L",
+   "bbox": [
+    456,
+    318,
+    156,
+    248
+   ],
+   "z": 4,
+   "bone": "upper_arm_L"
+  },
+  {
+   "slot": "forearm_L",
+   "bbox": [
+    520,
+    474,
+    106,
+    212
+   ],
+   "z": 5,
+   "bone": "forearm_L"
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "open",
+   "bbox": [
+    547,
+    612,
+    87,
+    156
+   ],
+   "z": 6,
+   "bone": "hand_L"
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "fist",
+   "bbox": [
+    545,
+    609,
+    93,
+    135
+   ]
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "point",
+   "bbox": [
+    545,
+    609,
+    93,
+    180
+   ]
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "lean",
+   "bbox": [
+    547,
+    612,
+    87,
+    167
+   ]
+  },
+  {
+   "slot": "torso",
+   "bbox": [
+    283,
+    323,
+    306,
+    400
+   ],
+   "z": 7,
+   "bone": "spine"
+  },
+  {
+   "slot": "tank_top",
+   "bbox": [
+    294,
+    328,
+    280,
+    370
+   ],
+   "z": 8,
+   "bone": "spine"
+  },
+  {
+   "slot": "belly",
+   "bbox": [
+    406,
+    584,
+    176,
+    137
+   ],
+   "z": 9,
+   "bone": "phys_belly"
+  },
+  {
+   "slot": "chain",
+   "bbox": [
+    384,
+    336,
+    162,
+    150
+   ],
+   "z": 10,
+   "bone": "phys_chain_1"
+  },
+  {
+   "slot": "neck",
+   "bbox": [
+    392,
+    266,
+    128,
+    110
+   ],
+   "z": 11,
+   "bone": "neck"
+  },
+  {
+   "slot": "jaw",
+   "bbox": [
+    420,
+    222,
+    287,
+    117
+   ],
+   "z": 12,
+   "bone": "jaw"
+  },
+  {
+   "slot": "teeth_lower",
+   "bbox": [
+    494,
+    256,
+    192,
+    34
+   ],
+   "z": 13,
+   "bone": "jaw"
+  },
+  {
+   "slot": "head",
+   "bbox": [
+    382,
+    120,
+    335,
+    188
+   ],
+   "z": 14,
+   "bone": "head"
+  },
+  {
+   "slot": "teeth_upper",
+   "bbox": [
+    480,
+    274,
+    218,
+    36
+   ],
+   "z": 15,
+   "bone": "head"
+  },
+  {
+   "slot": "gold_tooth",
+   "bbox": [
+    577,
+    272,
+    42,
+    47
+   ],
+   "z": 16,
+   "bone": "head"
+  },
+  {
+   "slot": "nostrils",
+   "bbox": [
+    647,
+    194,
+    70,
+    38
+   ],
+   "z": 17,
+   "bone": "snout",
+   "parent": "head",
+   "joint": [
+    684,
+    214
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "open",
+   "bbox": [
+    539,
+    126,
+    54,
+    48
+   ],
+   "z": 18,
+   "bone": "face_eye_L",
+   "parent": "head",
+   "joint": [
+    566,
+    150
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "half",
+   "bbox": [
+    536,
+    124,
+    60,
+    50
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "closed",
+   "bbox": [
+    539,
+    132,
+    54,
+    40
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "wide",
+   "bbox": [
+    535,
+    123,
+    62,
+    54
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "open",
+   "bbox": [
+    474,
+    128,
+    64,
+    56
+   ],
+   "z": 19,
+   "bone": "face_eye_R",
+   "parent": "head",
+   "joint": [
+    506,
+    156
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "half",
+   "bbox": [
+    471,
+    127,
+    70,
+    57
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "closed",
+   "bbox": [
+    474,
+    135,
+    64,
+    46
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "wide",
+   "bbox": [
+    469,
+    124,
+    74,
+    64
+   ]
+  },
+  {
+   "slot": "pupil_L",
+   "bbox": [
+    558,
+    135,
+    18,
+    32
+   ],
+   "z": 20,
+   "bone": "face_pupil_L",
+   "parent": "face_eye_L",
+   "joint": [
+    567,
+    151
+   ]
+  },
+  {
+   "slot": "pupil_R",
+   "bbox": [
+    498,
+    138,
+    20,
+    38
+   ],
+   "z": 21,
+   "bone": "face_pupil_R",
+   "parent": "face_eye_R",
+   "joint": [
+    508,
+    157
+   ]
+  },
+  {
+   "slot": "brow_L",
+   "bbox": [
+    533,
+    114,
+    70,
+    31
+   ],
+   "z": 22,
+   "bone": "face_brow_L",
+   "parent": "head",
+   "joint": [
+    566,
+    132
+   ]
+  },
+  {
+   "slot": "brow_R",
+   "bbox": [
+    467,
+    115,
+    82,
+    36
+   ],
+   "z": 23,
+   "bone": "face_brow_R",
+   "parent": "head",
+   "joint": [
+    506,
+    136
+   ]
+  },
+  {
+   "slot": "mouth",
+   "attachment": "closed_pick",
+   "bbox": [
+    439,
+    279,
+    58,
+    23
+   ],
+   "z": 24,
+   "bone": "head"
+  },
+  {
+   "slot": "mouth",
+   "attachment": "grin",
+   "bbox": [
+    439,
+    273,
+    92,
+    34
+   ]
+  },
+  {
+   "slot": "mouth",
+   "attachment": "open",
+   "bbox": [
+    433,
+    279,
+    58,
+    46
+   ]
+  },
+  {
+   "slot": "mouth",
+   "attachment": "roar",
+   "bbox": [
+    425,
+    253,
+    83,
+    97
+   ]
+  },
+  {
+   "slot": "toothpick",
+   "bbox": [
+    459,
+    279,
+    107,
+    53
+   ],
+   "z": 25,
+   "bone": "phys_toothpick"
+  },
+  {
+   "slot": "jowl",
+   "bbox": [
+    413,
+    297,
+    112,
+    58
+   ],
+   "z": 26,
+   "bone": "phys_jowl_1"
+  },
+  {
+   "slot": "thigh_R",
+   "bbox": [
+    302,
+    584,
+    152,
+    280
+   ],
+   "z": 27,
+   "bone": "thigh_R"
+  },
+  {
+   "slot": "shin_R",
+   "bbox": [
+    323,
+    754,
+    129,
+    239
+   ],
+   "z": 28,
+   "bone": "shin_R"
+  },
+  {
+   "slot": "foot_R",
+   "bbox": [
+    313,
+    920,
+    174,
+    76
+   ],
+   "z": 29,
+   "bone": "foot_R"
+  },
+  {
+   "slot": "upper_arm_R",
+   "bbox": [
+    249,
+    316,
+    143,
+    265
+   ],
+   "z": 30,
+   "bone": "upper_arm_R"
+  },
+  {
+   "slot": "forearm_R",
+   "bbox": [
+    250,
+    480,
+    113,
+    229
+   ],
+   "z": 31,
+   "bone": "forearm_R"
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "open",
+   "bbox": [
+    278,
+    629,
+    94,
+    170
+   ],
+   "z": 32,
+   "bone": "hand_R"
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "fist",
+   "bbox": [
+    275,
+    626,
+    101,
+    147
+   ]
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "point",
+   "bbox": [
+    275,
+    626,
+    101,
+    196
+   ]
+  },
+  {
+   "slot": "cooler_body",
+   "bbox": [
+    558,
+    804,
+    210,
+    192
+   ],
+   "z": 33,
+   "bone": "cooler",
+   "parent": "root",
+   "joint": [
+    662,
+    988
+   ],
+   "tip": [
+    662,
+    800
+   ]
+  },
+  {
+   "slot": "cooler_lid",
+   "bbox": [
+    554,
+    748,
+    216,
+    76
+   ],
+   "z": 34,
+   "bone": "cooler_lid",
+   "parent": "cooler",
+   "joint": [
+    662,
+    792
+   ],
+   "tip": [
+    760,
+    792
+   ]
+  }
+ ]
+}

@@ -8,7 +8,7 @@ Every generation prompt in this project is **rendered from these templates plus 
 
 Human-readable rationale: [docs/ART_BIBLE.md](../../../docs/ART_BIBLE.md). Where each template is used: [docs/PIPELINE.md](../../../docs/PIPELINE.md).
 
-Bass Drop per-asset values live in [`../artbible.json`](../artbible.json) → `bassDrop` and reach the templates as `--var`; every Bass Drop prompt, its hash and its render command are in [`art/plan/bass-drop.json`](../../plan/bass-drop.json) (plan: [docs/games/bass-drop/ART_PLAN.md](../../../docs/games/bass-drop/ART_PLAN.md)).
+Bass Drop per-asset values live in [`../artbible.json`](../artbible.json) → `bassDrop` and reach the templates as `--var`, including `STYLE_FORMULA` = `bassDrop.styleFormula` (formula D) or `bassDrop.environmentFormula` for plates, per [STYLE_DECISION.md](../../../docs/games/bass-drop/STYLE_DECISION.md) (never write "extrusion" or "molten" in a Bass Drop brief); every Bass Drop prompt, its hash and its render command are in [`art/plan/bass-drop.json`](../../plan/bass-drop.json) (plan: [docs/games/bass-drop/ART_PLAN.md](../../../docs/games/bass-drop/ART_PLAN.md)).
 
 | Template | Used for | Default model / route |
 |---|---|---|

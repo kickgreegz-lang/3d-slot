@@ -37,7 +37,10 @@ const FOCUS_GRACE = 60;
  *
  * Layers: home markers on `tiles`; reticles + shadows on `board` above the masked symbols
  * (below the frame); flights, trails and impact FX on a `winLayer`-attached holder (they cross
- * the frame); label-sum clones on `overlay`, above the cluster labels.
+ * the frame); label-sum clones, their arrival sparks and the "+1" pops on `overlay`, above the
+ * cluster labels and the win-elevated symbols (which join winLayer after our holder).
+ * A proxy hides on the frame AFTER its contact beat: the Board places its W in the promise
+ * continuation of its own anticipateDuration wait, i.e. one rendered frame later.
  * Speed: gameplay beats go through s() / followSpeed (slam-safe), hit-stops through the gated
  * clock.hitStop. Every promise it returns resolves on board:set / round start / destroy.
  */

@@ -202,9 +202,10 @@ export class WildRegistry {
    * instant: badge + closed clamps at once; otherwise the caller plays the return clips.
    */
   adopt(h: Home, mult: number, instant: boolean): WildEntity {
+    // whatever was tracked there (or for this home) belonged to a view that is gone
     const old = this.entityAt(h.reel, h.row);
-    if (old && old !== h.entity) this.kill(old, false);
-    if (h.entity && h.entity !== old) this.kill(h.entity, false);
+    if (old) this.kill(old, false);
+    if (h.entity) this.kill(h.entity, false);
     const e = this.create(h.reel, h.row, mult);
     e.home = h;
     h.entity = e;

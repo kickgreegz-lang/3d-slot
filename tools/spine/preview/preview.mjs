@@ -199,6 +199,14 @@ const probe = () => {
       tipX: +tip.x.toFixed(1),
       tipY: +tip.y.toFixed(1),
     };
+    if (isChar && b.parent) {
+      // characters move whole: plot each spring against its parent (the spring, not the body motion)
+      const pp = b.parent.appliedPose;
+      const loc = pp.worldToLocal({ x: p.worldX, y: p.worldY });
+      out.phys[n].dx = +(loc.x - b.data.setupPose.x).toFixed(2);
+      out.phys[n].dy = +(loc.y - b.data.setupPose.y).toFixed(2);
+      out.phys[n].rot = +(p.getWorldRotationX() - pp.getWorldRotationX() - b.data.setupPose.rotation).toFixed(2);
+    }
   }
   return out;
 };

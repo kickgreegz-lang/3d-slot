@@ -63,7 +63,8 @@ poses:
   # --- anticipation
   hover: {spine: {rot: -8}, chest: {rot: -6}, neck: {rot: -2}, head: {rot: 2}, look: [340, 60], place: {ik_hand_L: [300, 578]}, attach: {hand_L: open}}
   # --- react_small / scratch / win_big
-  scratch_ready: {hips: {y: -16}, spine: {rot: -6}, head: {rot: -4}, attach: {hand_R: scratch, mouth: smile}}
+  scratch_ready: {hips: {y: -22}, spine: {rot: -9}, chest: {rot: -4}, head: {rot: -6}, attach: {hand_R: scratch, mouth: smile}}
+  scratch_lean: {base: scratch_ready, hips: {y: -30, x: 8}, spine: {rot: -12}, head: {rot: -10}, attach: {eyes: half}}
   # --- react_point
   point_fwd: {spine: {rot: -2}, chest: {rot: 4}, head: {rot: 8}, look: [360, 260], ik: {ik_hand_L: 0}, upper_arm_L: {rot: 128}, forearm_L: {rot: 12}, hand_L: {rot: -5}, attach: {hand_L: point, mouth: smile}}
   point_cock: {hips: {y: -14}, ik: {ik_hand_L: 0}, upper_arm_L: {rot: 70}, forearm_L: {rot: 60}, attach: {hand_L: fist}}
@@ -78,7 +79,7 @@ poses:
   phones_adjust: {base: phones_reach, head: {rot: 8}, neck: {rot: 3}, reach: {hand_L: [460, 318]}}
   crowd_look: {spine: {rot: 2}, chest: {rot: 3}, head: {rot: -4}, look: [60, -220]}
   # --- celebrate
-  arms_up: {ik: {ik_hand_L: 0, ik_hand_R: 0}, upper_arm_L: {rot: 158}, forearm_L: {rot: 24}, upper_arm_R: {rot: 168}, forearm_R: {rot: 28}, chest: {rot: 4}, head: {rot: 6}, attach: {hand_L: fist, hand_R: fist, mouth: open}}
+  arms_up: {ik: {ik_hand_L: 0, ik_hand_R: 0}, upper_arm_L: {rot: 196}, forearm_L: {rot: 16}, upper_arm_R: {rot: 138}, forearm_R: {rot: 22}, chest: {rot: 5}, head: {rot: 8}, attach: {hand_L: fist, hand_R: fist, mouth: open}}   # a V over the head, face clear
   # --- fs_trigger (mic drop)
   mic_up: {hips: {y: -4}, spine: {rot: 4}, chest: {rot: 7}, head: {rot: 10}, look: [200, 300], ik: {ik_hand_R: 0}, upper_arm_R: {rot: 172}, forearm_R: {rot: 18}, hand_R: {rot: 4}, attach: {hand_R: fist, mouth: smile}}
   mic_out: {hips: {y: -8}, spine: {rot: -2}, chest: {rot: 3}, head: {rot: 2}, look: [300, -100], ik: {ik_hand_R: 0}, upper_arm_R: {rot: 98}, forearm_R: {rot: 6}, hand_R: {rot: -4}, attach: {hand_R: fist}}
@@ -127,8 +128,8 @@ clips:
       24: {pose: scratch_ready, ease: linear}
       36: {pose: rest, ease: sine_in_out}
     layers:
-      - {preset: sway, bone: ik_hand_R, channel: x, amount: 18, cycles: 3, at: 2, frames: 24}
-      - {preset: nod, at: 4, count: 2, every: 10, amount: 8, bob: 5}
+      - {preset: sway, bone: ik_hand_R, channel: x, amount: 30, cycles: 3, at: 2, frames: 24}
+      - {preset: nod, at: 4, count: 2, every: 10, amount: 11, bob: 9}
   scratch:                       # hand-only scratch (the booth's `scratch` carries the sfx)
     keys:
       3: {pose: scratch_ready, ease: sine_in_out}
@@ -174,12 +175,13 @@ clips:
   win_big:                       # double scratch (+ dj_scratch f10) + headbang
     keys:
       4: {pose: scratch_ready, ease: sine_in_out}
-      30: {pose: scratch_ready, ease: linear}
+      28: {pose: scratch_lean, ease: sine_in_out}
+      50: {pose: scratch_lean, ease: linear}
       60: {pose: rest, ease: sine_in_out}
     swap: {mouth: {8: smile, 30: open, 54: closed}, eyes: {30: closed, 50: open}}
     layers:
-      - {preset: sway, bone: ik_hand_R, channel: x, amount: 24, cycles: 4, at: 6, frames: 26}
-      - {preset: nod, at: 30, count: 3, every: 8, amount: 16, bob: 8, neck: 0.5, chest: 0.5}
+      - {preset: sway, bone: ik_hand_R, channel: x, amount: 40, cycles: 4, at: 6, frames: 26}
+      - {preset: nod, at: 30, count: 3, every: 8, amount: 26, bob: 14, neck: 0.5, chest: 0.5, attack: 2}
       - {preset: pulse, bone: pouch, at: [31, 39, 47], amount: 0.18, attack: 2, release: 6}
   celebrate:                     # 4 beats: arms up, fist pumps on beats, fx_note puffs
     keys: {0: arms_up, 72: arms_up}

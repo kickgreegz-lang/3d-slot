@@ -700,7 +700,7 @@ Reused: `spin_start`, `fall_out`, `land_*`, `win_small`, `win_cluster`, `explode
 **Model.**
 - Gameplay durations go through `s()`: normal ×1, turbo ÷2, super turbo ÷3.
 - `stagger()` zeroes staggers in turbo and super turbo.
-- **Hit-stops are off in turbo and super turbo.** This needs CR-11: today `Board.tumble` calls `clock.hitStop(TIMING.explode.hitStop)` (100 ms, real time) in every profile, which would add 100 ms to every turbo/super-turbo tumble step.
+- **Hit-stops are off in turbo and super turbo** (CR-11, landed in `clock.hitStop`: every hit-stop, the Board's explode hit-stop included, only freezes the game clock in the normal profile).
 - Times below are wall-clock times. In normal speed they include the hit-stops (which freeze the game clock).
 - Bass-drop **floors** (below) keep the signature beat readable.
 - UI screens (intro, buy, big-win count) are **not** speed-scaled.
@@ -719,7 +719,7 @@ All Bass Drop constants live in one registered table (lab-tunable), section 18.2
 | Cluster present (`winInfo` resolves) | 1,000 | 500 | 333 | dim 170 ∥ outline 340 ∥ links ≤ 320; pop 130 + win ≤ 900; label 250 + 700 hold | [RM] |
 | Extra cluster in the same `winInfo` | +120 | +0 | +0 | `clusterStagger` | |
 | Wild-multiplier label sum | +600 | +300 | +0 | Flights skipped in super turbo | |
-| Explode (squeeze + burst + hit-stop) | 360 | 130 | 87 | 80 + 180 + 100 (hit-stop off in turbo, CR-11; +100 each until then) | [RM] |
+| Explode (squeeze + burst + hit-stop) | 360 | 130 | 87 | 80 + 180 + 100 (hit-stop off in turbo and super turbo, CR-11) | [RM] |
 | Orb pop-out | 90 | 45 | 30 | | |
 | Orb flight | 520 | 260 | 173 | | [RM] |
 | Orb spread (cap) | 300 | 0 (±10% flight) | 0 (≤ 6 comets) | | [RM] |
@@ -754,7 +754,7 @@ Typical round totals (normal / turbo / super), excluding RGS latency:
 | One cluster, no drop | 3.7 s | 1.3 s | 0.9 s |
 | Three tumbles + two one-wild drops (+ small-win count) | 12.0 s | 4.9 s | 3.3 s |
 
-Until CR-11 lands, add 0.1 s per tumble step in turbo and super turbo (for example 5.2 s / 3.6 s for the last row).
+Measured in the running build: see [README.md](README.md#measured-round-timings).
 
 `minimumRoundDuration` is honoured by the flow, as today.
 
@@ -878,15 +878,20 @@ Contract requests (outside docs/games/bass-drop; each one lands in the same PR a
 |---|---|---|---|
 | **CR-1** | ~~Emit `stickyWilds` also after Mega Mix tumbles~~. The math reports the grown multiplier at the next reveal (+ its `stickyWilds`), and the FE animates `mult_up` there with a `+1` preview at win time (section 9) | book contract / math | **Withdrawn** |
 | **CR-2** | `meterUpdate {delta:0, thresholds:[]}` is a legal **silent set** (feature start, resume) | book contract / math | Optional: the mock never emits it; the FE resets the meter itself at trigger/upgrade and handles `delta:0` if it arrives (`src/games/bass-drop/book.ts` documents it) |
-| **CR-3** | Bass Drop `GameSceneEvents`: `meter:update`, `meter:set`, `wild:drop`, `wild:sticky`, `feature:trigger`, `feature:upgrade`, `intro:show` (no core change). **Core:** `music:beat` (CR-6) and the new `MascotCue`s `meterHeat`, `meterThreshold`, `bassDropCharge`, `bassDrop`, `wildLand`, `featureLock`, `featureUpgrade` (the cue union is core, `src/game/events.ts`) | `src/games/bass-drop/events.ts`; `src/game/events.ts` | Game events landed except `intro:show`; the core `MascotCue`s and `music:beat` are open |
+| **CR-3** | Bass Drop `GameSceneEvents`: `meter:update`, `meter:set`, `wild:drop`, `wild:sticky`, `feature:trigger`, `feature:upgrade`, `intro:show` (no core change). **Core:** `music:beat` (CR-6) and the new `MascotCue`s `meterHeat`, `meterThreshold`, `bassDropCharge`, `bassDrop`, `wildLand`, `featureLock`, `featureUpgrade` (the cue union is core, `src/game/events.ts`) | `src/games/bass-drop/events.ts`; `src/game/events.ts` | **Landed** except `intro:show` and `music:beat` (CR-6). The game events and the 7 core `MascotCue`s are in; `mascot:cue` also takes an optional `look {x, y}`. `intro:show` was dropped: `IntroScreen` opens itself on the flow's first idle `hud:state` (never in replay or after a resume) |
 | **CR-4** | ~~Tumble rule with pinned cells~~. The math keeps the standard web-sdk rule; sticky wilds tumble within a spin and respawn at their home (section 9) | `src/book/handlers.ts`, math | **Withdrawn** |
-| **CR-5** | New `SfxId`s (section 17) and `MusicStem` `megamix` | `src/game/events.ts`, `src/audio/manifest.ts` | Open |
-| **CR-6** | `music:beat {bar, beat}` from Sound, so meter/booth/mascot loops can phase-lock (fallback: a 600 ms clock loop) | `src/audio/*` | Open |
-| **CR-7** | Soft trauma stacking in `ScreenShake.add`; flash limiter ≤ 3/s | `src/fx/shake.ts`, `src/fx/Fx.ts` (already listed as open in ANIMATION_CONTRACT §10.6) | Open (`ScreenShake.add` still adds linearly) |
+| **CR-5** | New `SfxId`s (section 17) and `MusicStem` `megamix` | `src/game/events.ts`, `src/audio/manifest.ts` | **Landed**: every new `SfxId` has a dedicated procedural voice (`src/audio/synthBassDrop.ts`) and mix rule (`src/audio/mix.ts`); the `megamix` stem is selected by the core scene event `music:stem {stem}` (FeatureScreens emits it behind the curtain, at the upgrade slam and on a resumed Mega Mix) |
+| **CR-6** | `music:beat {bar, beat}` from Sound, so meter/booth/mascot loops can phase-lock (fallback: a 600 ms clock loop) | `src/audio/*` | Open. The meter, booth, horns and cabinet run the fallback beat (600 / 566 / 536 ms per mode) on the game clock |
+| **CR-7** | Soft trauma stacking in `ScreenShake.add`; flash limiter ≤ 3/s | `src/fx/shake.ts`, `src/fx/Fx.ts` (already listed as open in ANIMATION_CONTRACT §10.6) | **Landed**: `ScreenShake.add` stacks softly; `Fx` drops flashes beyond 3 per second or closer than 334 ms (`FX_TIMING.flash`) |
 | **CR-8** | ANIMATION_CONTRACT + `tools/spine/contract.json`: new animation names, events and FX ids from ANIMATION_SET §9–§12; the `drop_impact` squash exception; the 2D mascot rig section; UI skeleton names | `docs/ANIMATION_CONTRACT.md`, `tools/spine/contract.json` | Open |
 | **CR-9** | Bet modes `BASE` 1×, `BONUS` 100×, `SUPER` 300× | bass-drop bet-mode table | **Landed** (`src/games/bass-drop/config.ts` `BET_MODES`, `mock/games/bass-drop/mock.json`) |
-| **CR-10** | (a) `board:transform` style **`'impact'`**: crush the old symbol now, place the new id after `TIMING.explode.anticipateDuration`, play `drop_impact` (or a procedural squash of 0.72), then resolve (section 8.3). (b) A Mega Mix **hold set** for `board:reveal`: cells whose current symbol equals the reveal's id at that cell (a W on its own home) stay in place through the fall-out and are skipped by the drop-in (section 9.3). Tumbles never use it | `src/board/Board.ts`, `src/game/events.ts` | (a) **Landed** (`BoardTransformStyle` has `'impact'`; `Board.impactCell` still uses the procedural land, `drop_impact` comes with the W rig). (b) Open, P1 |
-| **CR-11** | Gate hit-stops to the normal profile: `Board.tumble`'s explode hit-stop (and every Bass Drop hit-stop) only when `getSpeedProfile() === 'normal'` (section 18) | `src/board/Board.ts` (or a profile check in `clock.hitStop`) | Open |
+| **CR-10** | (a) `board:transform` style **`'impact'`**: crush the old symbol now, place the new id after `TIMING.explode.anticipateDuration`, play `drop_impact` (or a procedural squash of 0.72), then resolve (section 8.3). (b) A Mega Mix **hold set** for `board:reveal`: cells whose current symbol equals the reveal's id at that cell (a W on its own home) stay in place through the fall-out and are skipped by the drop-in (section 9.3). Tumbles never use it | `src/board/Board.ts`, `src/game/events.ts` | (a) **Landed**: `Board.impactCell` crushes at the call and places the W `anticipateDuration` later with the procedural impact keys (sy 0.72 at f1, 1.10 at f5, settled by f15; `drop_impact` is played instead when the W rig has it) and pushes the 4 neighbours. (b) **Landed** as the core scene event `board:hold {cells}` (a request for the next fall-out; BassDrop sends it on every `fs:update`) |
+| **CR-11** | Gate hit-stops to the normal profile: `Board.tumble`'s explode hit-stop (and every Bass Drop hit-stop) only when `getSpeedProfile() === 'normal'` (section 18) | `src/board/Board.ts` (or a profile check in `clock.hitStop`) | **Landed** in `clock.hitStop`: normal profile only, capped at 120 ms, overlapping hit-stops keep the longer freeze, a slam releases a pending one |
+
+Also landed with the phase B front end (core, additive; Swamp Funk does not use them):
+- scene events `board:decorate` (keyed displays on a cell's view: multiplier badges, clamps), `board:thump` (grid spring, section 5), `board:react` (distance-staggered `bass_react`), `board:focus` (the drop's 20% dim), `board:burst` (emitted by the Board at the explode-burst frame: orbs, link snaps and count pops sync to it) and `win:labelMult` (the external multiplier-sum driver of section 7 step 6);
+- `GameFeatures` (`src/config/game.ts`): `wildMultSum: 'external'`, `buyScreen: 'game'` (the DOM buy dialog stands down), `physicsScale` (gravity falls keep the 154 px time per cell, section 5) and `explodeShake` (the `bassDrop.shake.explode*` values replace `BOARD_TIMING.explodeTrauma*`, section 18.2);
+- reduced motion: `src/fx/motion.ts` (`prefers-reduced-motion`, with an override for a settings toggle).
 
 Art-lead decisions (default in brackets):
 - the logo word-mark: stacked "SWAMP FUNK / BASS DROP" [yes];

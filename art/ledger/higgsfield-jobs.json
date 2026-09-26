@@ -1,0 +1,101 @@
+{
+  "$comment": "Paid Higgsfield MCP generation jobs (route higgsfield-mcp). Results live on the Higgsfield CDN until downloaded into art/_raw by tools/gen ingestion; prompts are rendered from art/bible/prompts via tools/gen/genlib.py (promptHash = sha256 of the rendered text). Committed so paid jobs survive container restarts.",
+  "batches": [
+    {
+      "id": "probe1",
+      "date": "2026-09-26",
+      "purpose": "style probes: high-pay symbols, wild, mascot design sheets, background plate",
+      "model": "nano_banana_pro",
+      "jobs": [
+        {
+          "name": "sym_H1",
+          "job_id": "f9263dd2-697b-49c6-9952-b1f96bdff2b1",
+          "template": "symbol.txt",
+          "promptHash": "a87d14debbc270efd7491ed168471164babeed338f9ee38be7bcf8afc20f3a25",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115042_f9263dd2-697b-49c6-9952-b1f96bdff2b1.png",
+          "status": "completed"
+        },
+        {
+          "name": "sym_H2",
+          "job_id": "edeabb64-063c-4c2b-8dad-0a3a34a7c160",
+          "template": "symbol.txt",
+          "promptHash": "d273071adfba07a3c35f95c8b46e53d2dfc100dd0d43a61d014f8eb7550e82b5",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_edeabb64-063c-4c2b-8dad-0a3a34a7c160.png",
+          "status": "completed"
+        },
+        {
+          "name": "sym_H3",
+          "job_id": "687a256b-611b-4ae8-b8fe-b7009ccd6cde",
+          "template": "symbol.txt",
+          "promptHash": "b413d961fe7d0edf3fa9f697410ad06d779216303bbd841b85055aa6bbf453a1",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_687a256b-611b-4ae8-b8fe-b7009ccd6cde.png",
+          "status": "completed"
+        },
+        {
+          "name": "sym_H4",
+          "job_id": "d2ed0952-5cf6-40c9-8a69-6f2cf0d08dea",
+          "template": "symbol.txt",
+          "promptHash": "30ffa72a9e7bc1d2dc79ef63d129be0e4c98aa16d9eb21bf6f7e0d6dfd9ceb28",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_d2ed0952-5cf6-40c9-8a69-6f2cf0d08dea.png",
+          "status": "completed"
+        },
+        {
+          "name": "sym_W",
+          "job_id": "99ee9b64-fc4b-4181-b8ed-e81861d9508b",
+          "template": "symbol.txt",
+          "promptHash": "98e26ae4e649ef92c04d5f0600e049e6d48d3936ccc99a44d4cc4f8212f70905",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_99ee9b64-fc4b-4181-b8ed-e81861d9508b.png",
+          "status": "completed"
+        },
+        {
+          "name": "mascot_gumbo_sheetA",
+          "job_id": "210017de-2d34-4853-b8cb-6187289f9368",
+          "template": "mascot_turnaround.txt#A",
+          "promptHash": "b6e14ced7c356c82b83f3c2098f7d5fffb81299c42bb2fd56290e2a7129afdb4",
+          "resolution": "4k",
+          "aspect_ratio": "21:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_210017de-2d34-4853-b8cb-6187289f9368.png",
+          "status": "completed"
+        },
+        {
+          "name": "mascot_croak_sheetA",
+          "job_id": "b05efcf1-24cc-411b-b74b-73c1eba5ce43",
+          "template": "mascot_turnaround.txt#A",
+          "promptHash": "dbe71f8e1bc60a6a85ca79f2e8f869aa15268132978a3aeedb035e8acfc0a5e7",
+          "resolution": "4k",
+          "aspect_ratio": "21:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115249_b05efcf1-24cc-411b-b74b-73c1eba5ce43.png",
+          "status": "completed"
+        },
+        {
+          "name": "bg_A_landscape",
+          "job_id": "06e37c08-9a5e-4c4a-8bae-c5c3a4bebae5",
+          "template": "background.txt#A",
+          "promptHash": "0f1a30e5b627e12a7cbcf348db42ad4409967f1ebabd06d2eab9df75163bb466",
+          "resolution": "4k",
+          "aspect_ratio": "21:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_06e37c08-9a5e-4c4a-8bae-c5c3a4bebae5.png",
+          "status": "completed"
+        }
+      ]
+    }
+  ]
+}

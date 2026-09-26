@@ -92,7 +92,7 @@
                       "upper_arm_L", "forearm_L", "hand_L", "thigh_L", "shin_L", "foot_L",
                       "upper_arm_R", "forearm_R", "hand_R", "thigh_R", "shin_R", "foot_R"],
     "springWords": ["tail", "jowl", "belly", "chain", "pouch", "cable", "toothpick"],
-    "faceStates": { "eyes": ["open", "half", "closed", "wide"] },
+    "faceStates": { "eyes": ["open", "half", "closed", "wide"], "slots": ["eye_L", "eye_R", "pupil_L", "pupil_R"] },
     "proportions": { "headMax": 0.27, "excludeSlots": ["band", "cup_L", "cup_R", "cable", "mic", "toothpick"] },
     "tracks": { "body": 0, "overlay": 1, "face": 2, "look": 3 },
     "look": { "bone": "ctrl_look", "head": "look", "eyes": "look_eyes" },

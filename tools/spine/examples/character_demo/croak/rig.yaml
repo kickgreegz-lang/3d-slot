@@ -81,10 +81,10 @@ poses:
   # --- celebrate
   arms_up: {ik: {ik_hand_L: 0, ik_hand_R: 0}, upper_arm_L: {rot: 196}, forearm_L: {rot: 16}, upper_arm_R: {rot: 138}, forearm_R: {rot: 22}, chest: {rot: 5}, head: {rot: 8}, attach: {hand_L: fist, hand_R: fist, mouth: open}}   # a V over the head, face clear
   # --- fs_trigger (mic drop)
-  mic_up: {hips: {y: -4}, spine: {rot: 4}, chest: {rot: 7}, head: {rot: 10}, look: [200, 300], ik: {ik_hand_R: 0}, upper_arm_R: {rot: 172}, forearm_R: {rot: 18}, hand_R: {rot: 4}, attach: {hand_R: fist, mouth: smile}}
+  mic_up: {hips: {y: -4}, spine: {rot: 4}, chest: {rot: 7}, head: {rot: 10}, look: [200, 300], ik: {ik_hand_R: 0}, upper_arm_R: {rot: 128}, forearm_R: {rot: 40}, hand_R: {rot: 4}, attach: {hand_R: fist, mouth: smile}}   # up and forward: the arm clears the head, so the raised mic reads (straight up hid the arm behind the head)
   mic_out: {hips: {y: -8}, spine: {rot: -2}, chest: {rot: 3}, head: {rot: 2}, look: [300, -100], ik: {ik_hand_R: 0}, upper_arm_R: {rot: 98}, forearm_R: {rot: 6}, hand_R: {rot: -4}, attach: {hand_R: fist}}
-  mic_dropped: {base: mic_out, hips: {y: -12}, upper_arm_R: {rot: 92}, forearm_R: {rot: 2}, hand_R: {rot: -30}, chest: {rot: 6}, head: {rot: 8}, attach: {hand_R: open, mouth: smile}}
-  swagger: {hips: {y: -6}, spine: {rot: 6}, chest: {rot: 9}, head: {rot: 12}, look: [120, 200], ik: {ik_hand_R: 0, ik_hand_L: 0}, upper_arm_R: {rot: 12}, forearm_R: {rot: 18}, upper_arm_L: {rot: 64}, forearm_L: {rot: 118}, hand_L: {rot: -20}, attach: {hand_R: open, hand_L: point, mouth: smile}}
+  mic_dropped: {base: mic_out, hips: {y: -10}, hand_R: {rot: -26}, chest: {rot: 5}, head: {rot: 6}, attach: {hand_R: open, mouth: smile}}   # arm stays out, the hand opens: the empty hand sells the drop
+  swagger: {hips: {y: -6}, spine: {rot: 6}, chest: {rot: 9}, head: {rot: 12}, look: [120, 200], ik: {ik_hand_R: 0, ik_hand_L: 0}, upper_arm_R: {rot: 12}, forearm_R: {rot: 18}, upper_arm_L: {rot: 104}, forearm_L: {rot: 16}, hand_L: {rot: -6}, attach: {hand_R: open, hand_L: point, mouth: smile}}   # point out at the crowd (a bent elbow put the hand over the mouth)
   # --- fs_end (bow, a hand on the headphones)
   bow: {hips: {y: -12}, spine: {rot: -16}, chest: {rot: -12}, neck: {rot: -4}, head: {rot: -10}, ik: {ik_hand_L: 0}, reach: {hand_L: [470, 330]}, hand_L: {rot: 60}, attach: {hand_L: open, eyes: closed, mouth: smile}}
   # --- overlays (additive deltas from setup)
@@ -197,13 +197,14 @@ clips:
       28: {pose: mic_up, ease: linear}
       33: {pose: mic_out, ease: sine_in_out}
       36: {pose: mic_dropped, ease: expo_out}
-      58: {pose: swagger, ease: sine_in_out}
+      47: {pose: mic_dropped, ease: linear}
+      60: {pose: swagger, ease: sine_in_out}
       64: {pose: swagger, ease: linear}
       75: {pose: rest, ease: sine_in_out}
     swap: {mic: {10: mic}, hand_R: {9: fist, 36: open}}
     layers:
       - {preset: tremble, bone: upper_arm_R, amount: 1.5, hz: 6, at: 12, frames: 18}
-      - {preset: release, bone: mic, at: 36, frames: 14, fall: 440, forward: 2, spin: 110, slot: mic}
+      - {preset: release, bone: mic, at: 36, frames: 11, fall: 470, forward: 2, spin: 110, slot: mic}
   fs_end:                        # bow, a hand on the headphones
     keys:
       18: {pose: bow, ease: sine_in_out}

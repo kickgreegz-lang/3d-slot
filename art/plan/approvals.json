@@ -1,4 +1,41 @@
 {
   "$comment": "Art-director picks for docs/games/bass-drop/ART_PLAN.md. One entry per approved plan row (ids from art/plan/bass-drop.json): the chosen candidate's Higgsfield job_id (from art/ledger/higgsfield-jobs.json). 'python3 art/plan/build_plan.py spec --batch <id>' refuses to build a batch until every reference it uses is listed here. Shape: \"sym_H1\": {\"job_id\": \"577c5994-...\", \"by\": \"<name>\", \"date\": \"YYYY-MM-DD\", \"note\": \"...\"}. Empty until the adopted anchors (docs/games/bass-drop/STYLE_DECISION.md: ab2 D_H1 / D_H3 / D_W / D_gumbo, ab1 ab_bg_painted / ab_croak_v2) are downloaded and checked at full size (the CDN host is blocked by the egress policy today); then add them by plan row id (sym_H1, sym_H3, sym_W, mascot_gumbo_sheet, mascot_croak_sheet_v2, bg_base_landscape).",
-  "approvals": {}
+  "approvals": {
+    "sym_H1": {
+      "job_id": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+      "by": "Claude (art director, per the user brief)",
+      "date": "2026-09-26",
+      "note": "ab2 D_H1: premium polished-gold boombox, formula D. Background came back olive, not #00FF00: matte on the measured key."
+    },
+    "sym_H3": {
+      "job_id": "44034344-f29e-4004-a999-8b7b8c7f328c",
+      "by": "Claude (art director, per the user brief)",
+      "date": "2026-09-26",
+      "note": "ab2 D_H3: crawfish in a denim vest with a smirk, formula D."
+    },
+    "sym_W": {
+      "job_id": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+      "by": "Claude (art director, per the user brief)",
+      "date": "2026-09-26",
+      "note": "ab2 D_W: gold-capped teal fang on a chain, formula D."
+    },
+    "mascot_gumbo_sheet": {
+      "job_id": "93e002fa-cf13-42ce-86d1-96359077b355",
+      "by": "Claude (art director, per the user brief)",
+      "date": "2026-09-26",
+      "note": "ab2 D_gumbo: tank top, jeans, boots, tail, cooler; formula D."
+    },
+    "mascot_croak_sheet_v2": {
+      "job_id": "23387c1a-08e0-48e8-a11f-1fde33df94fa",
+      "by": "Claude (art director, per the user brief)",
+      "date": "2026-09-26",
+      "note": "ab1 croak v2: backwards cap, pink lightning bowling shirt, headphones, vinyl chain; no meme-frog read."
+    },
+    "bg_base_landscape": {
+      "job_id": "924d3637-ba19-46de-9384-7260679fa353",
+      "by": "Claude (art director, per the user brief)",
+      "date": "2026-09-26",
+      "note": "ab1 painted juke joint: atmospheric depth, speaker stage in the back, calm dark centre."
+    }
+  }
 }

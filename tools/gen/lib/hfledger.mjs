@@ -23,11 +23,36 @@ export const LEDGER_COMMENT = 'Paid Higgsfield MCP generation jobs (route higgsf
  * jobs_wait (what the manifest row records); credits measured 2026-09-26 on the Plus plan.
  * Never add an OpenAI model here: gpt_image_2 / gpt_image_2_5 / openai_hazel are denylisted.
  */
+const NB_ASPECTS = ['1:1', '3:2', '2:3', '4:3', '3:4', '4:5', '5:4', '9:16', '16:9', '21:9'];
+/**
+ * 'resolutions' / 'aspectRatios' / 'mediaRoles' (when present) are the options models_explore 'get' listed on
+ * 2026-09-26; 'plan' refuses anything else before a request is paid for. Absent = not checked.
+ */
 export const MCP_MODELS = {
-  nano_banana_pro: { reports: 'nano_banana_2', upstream: 'Google Nano Banana Pro (gemini-3-pro-image)', credits: { '2k': 2, '4k': 4 } },
-  nano_banana_2: { reports: null, upstream: 'Google Nano Banana 2 (gemini-3.1-flash-image)', credits: { '1k': 1.5, '2k': 2 } },
+  nano_banana_pro: {
+    reports: 'nano_banana_2', upstream: 'Google Nano Banana Pro (gemini-3-pro-image)', credits: { '2k': 2, '4k': 4 },
+    resolutions: ['1k', '2k', '4k'], aspectRatios: NB_ASPECTS, mediaRoles: ['image_references'],
+  },
+  nano_banana_2: {
+    reports: null, upstream: 'Google Nano Banana 2 (gemini-3.1-flash-image)', credits: { '1k': 1.5, '2k': 2 },
+    resolutions: ['1k', '2k', '4k'], aspectRatios: ['auto', ...NB_ASPECTS], mediaRoles: ['image_references', 'mask'],
+  },
   seedream_v4_5: { reports: null, upstream: 'ByteDance Seedream 4.5', credits: { '*': 1 } },
 };
+
+/** Manifest stages (art/manifest.schema.json row.stage enum): a ledger 'stage' override must be one of them. */
+export const MANIFEST_STAGES = loadJson(path.join(REPO, 'art', 'manifest.schema.json')).$defs.row.properties.stage.enum;
+
+/** Problems with a request's model options (empty = fine or not checkable). */
+export function requestProblems(model, { resolution, aspect_ratio: aspect, medias } = {}) {
+  const m = MCP_MODELS[model];
+  if (!m) return [];
+  const out = [];
+  if (m.resolutions && resolution != null && !m.resolutions.includes(String(resolution))) out.push(`resolution ${JSON.stringify(resolution)} is not one of ${model}'s ${m.resolutions.join('|')}`);
+  if (m.aspectRatios && aspect != null && !m.aspectRatios.includes(String(aspect))) out.push(`aspect_ratio ${JSON.stringify(aspect)} is not one of ${model}'s ${m.aspectRatios.join(' ')}`);
+  for (const md of medias ?? []) if (m.mediaRoles && !m.mediaRoles.includes(md?.role)) out.push(`media role ${JSON.stringify(md?.role)} is not one of ${model}'s ${m.mediaRoles.join('|')}`);
+  return out;
+}
 
 export const estimateCredits = (model, resolution) => {
   const c = MCP_MODELS[model]?.credits;
@@ -71,6 +96,7 @@ export function ledgerProblems(doc) {
       if (seenJob.has(key)) errs.push(`job ${j.job_id}: recorded twice (${seenJob.get(key)} and ${b.id}/${j.name})`);
       seenJob.set(key, `${b.id}/${j.name}`);
       if (j.template && j.template.includes('#') && !/#[A-Z0-9]+$/.test(j.template)) errs.push(`${b.id}/${j.name}: bad template ref ${j.template}`);
+      if (j.stage !== undefined && !MANIFEST_STAGES.includes(j.stage)) errs.push(`${b.id}/${j.name}: stage ${JSON.stringify(j.stage)} is not a manifest stage (${MANIFEST_STAGES.join(', ')})`);
       for (const k of Object.keys(j.vars ?? {})) {
         if (!/^[A-Z0-9_]+$/.test(k) && !['symbol', 'mascot', 'rigReady'].includes(k)) errs.push(`${b.id}/${j.name}: vars.${k} is neither symbol/mascot/rigReady nor an UPPER_CASE placeholder`);
       }
@@ -202,7 +228,8 @@ export function assetFor(job) {
 const STAGE_BY_TEMPLATE = {
   'symbol.txt': '2d-image', 'symbol_parts_sheet.txt': '2d-image', 'royal_material_pass.txt': '2d-image',
   'frame_piece.txt': '2d-image', 'vfx_keyframe.txt': '2d-image',
-  'mascot_turnaround.txt': 'mascot-sheets', 'mascot_expressions.txt': 'mascot-sheets',
+  'prop.txt': '2d-image', 'emblem.txt': '2d-image', 'card_art.txt': '2d-image',
+  'mascot_turnaround.txt': 'mascot-sheets', 'mascot_expressions.txt': 'mascot-sheets', 'mascot_parts_sheet.txt': 'mascot-sheets',
   'background.txt': 'backgrounds', 'video_loop.txt': 'video',
 };
 
@@ -223,6 +250,18 @@ export function stageFor(job, asset = assetFor(job)) {
 }
 
 export const requestModelFor = (batch, job) => job.request_model ?? batch.model;
+
+/** The ledger job 'record' writes for a plan entry (also used by 'plan' to validate a spec before it is paid for). */
+export function ledgerJobFromPlan(pj, { name = pj.name, job_id, status, type, model, requestModel, credits, result_url } = {}) {
+  const job = {
+    name, index: pj.index, job_id, status: status ?? 'submitted',
+    ...(type ? { type } : {}), ...(model ? { model } : {}), ...(requestModel ? { request_model: requestModel } : {}),
+    template: pj.template ?? null, ...(pj.template ? { vars: pj.vars ?? {} } : {}), promptHash: pj.promptHash,
+    resolution: pj.resolution, aspect_ratio: pj.aspect_ratio, credits: credits ?? pj.credits ?? null, result_url: result_url ?? null,
+  };
+  for (const k of ['medias', 'refHashes', 'asset', 'stage']) if (pj[k] !== undefined) job[k] = pj[k];
+  return job;
+}
 
 /** Model id for the manifest row: as reported by the job, else the known mapping, else the request id. */
 export function rowModelFor(batch, job) {

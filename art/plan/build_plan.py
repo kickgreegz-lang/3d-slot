@@ -15,6 +15,7 @@ The human plan is docs/games/bass-drop/ART_PLAN.md.
   python3 art/plan/build_plan.py table --doc      # refresh the asset table inside ART_PLAN.md (--check verifies it)
   python3 art/plan/build_plan.py spec --batch c01 # 'pnpm gen:hf-ingest plan --spec' input for one batch;
                                                   # every reference must be approved in art/plan/approvals.json
+  python3 art/plan/build_plan.py spec --batch c01 --attempt 2 --rows sym_H2 --candidates 1   # retry a rejected row
 
 Script-free route: each planned row's 'render' field is the exact tools/gen/genlib.py command that prints its
 prompt. Nothing here calls a vendor or spends credits. Stdlib only.
@@ -203,11 +204,13 @@ for state in ("half", "closed", "wide"):
     row(f"sym_H3_eyes_{state}", phase="symbols", priority="P1", batch="c11", kind="parts", template="symbol_parts_sheet.txt#D",
         what=f"Crawfish eye state '{state}' (slot eyes)", rig="sym_H3", atlas="symbols", symbol="H3",
         vars=v(STATE_CHANGE=bd(f"symbols.H3.eyeStates.{state}")), model="nano_banana_2", resolution="1k",
-        refs=[("sym_H3_rig", "edit-source (head crop)")], source=[f"art/source/spine/images/sym_H3/eyes_{state}.png"],
-        downstream=[f"{M} <raw> art/_work/sym_H3_eyes_{state}/crop.png --key auto --no-fit",
-                    "Register to the head crop of master_rig_2048.png (ECC), cut the eye region, attachment eyes/" + state],
+        refs=[("sym_H3_rig", "edit-source")], source=[f"art/source/spine/images/sym_H3/eyes_{state}.png"],
+        downstream=[f"{M} <raw> art/_work/sym_H3_eyes_{state}/edit.png --key auto --no-fit",
+                    "Register the whole edit to master_rig_2048.png (ECC, scale ~2x), cut the eye region, attachment eyes/" + state],
         fallback="Procedural lids (a dark arc over the open eye) drawn in the rig.",
-        notes="Nano Banana 2 at 1k: an edit of a head crop whose eyes are < 80 px on the 360 canvas; 1.5 instead of 2 credits.")
+        notes="Nano Banana 2 at 1k: an edit of the whole rig-ready master (referenced by its job id, nothing uploaded). At 1k the "
+              "crawfish is ~870 px tall, above the ~600 px its 300-unit cell content needs at 2x, so the eye region is never "
+              "upscaled; 1.5 instead of 2 credits.")
 
 # ---- phase 2: wild
 row("sym_W_rig", phase="wild", priority="P0", batch="c03", kind="symbol", template="symbol.txt",
@@ -433,11 +436,14 @@ for mid in ("gumbo", "croak"):
             vars=v(PART_LIST=join(f"mascots.{mid}.sheets.{sheet}", ", ", "piece"), STYLE_FORMULA=FD),
             resolution=res, aspect=asp, candidates=cands, stage="mascot-sheets",
             refs=[(f"chr_{mid}_rig_master", "view + scale"), (ident, "identity")],
-            source=[f"art/source/bass-drop/spine/images/{mb['rig']}/<slot>[_<attachment>].png", f"art/source/mascots/{mid}/spine2d/parts.json"],
+            source=[f"art/source/bass-drop/spine/images/{mb['rig']}/<slot>.png (variants: <slot>/<attachment>.png)", f"art/source/mascots/{mid}/spine2d/parts.json"],
             downstream=[f"{M} <raw> art/_work/chr_{mid}_parts_{sheet}/sheet.png --key auto --no-fit",
                         f"Cut into pieces; name them by bassDrop.mascots.{mid}.sheets.{sheet}[].slot; register each to rig_master.png (ECC/SIFT)",
                         "Hidden overlaps: symbol_parts_sheet.txt#C with Nano Banana 2 masked inpaint (fill reserve)",
-                        f"{mb['rig']}: Spine Editor, human animator (ANIMATION_SET §11) -> GAME=bass-drop node tools/spine/validate.mjs build/spine/{mb['rig']}.json --kind any"],
+                        f"Deliver per tools/spine/README.md 'Character parts contract' (canvas {mb['authoringHeightUnits']} units tall at 2x, feet = root, landmarks, near side {mb['nearSide']} in front, overlap caps on the joints)",
+                        f"{mb['rig']}: $PYTHON tools/spine/gen.py art/source/mascots/{mid}/spine2d/rig.yaml -o build/spine/{mb['rig']}.json "
+                        f"(kind: character; start from tools/spine/examples/character_demo/{mid}/rig.yaml) -> node tools/spine/validate.mjs build/spine/{mb['rig']}.json "
+                        f"-> pack.py -> validate --atlas -> preview/capture.mjs --scenarios all; an animator polish pass in the Spine Editor is optional"],
             fallback="SAM split of the rig master + masked fills for every hidden overlap.")
 
 # ---- P2 extras (funded from unused retries or a top-up; see budget.perPriority.P2)
@@ -731,7 +737,8 @@ def cmd_table(doc: dict, write_doc: bool) -> int:
     return 0
 
 
-def cmd_spec(doc: dict, batch: str, approvals_path: Path, allow_unapproved: bool) -> int:
+def cmd_spec(doc: dict, batch: str, approvals_path: Path, allow_unapproved: bool, only_rows: list[str] | None = None,
+             attempt: int = 1, candidates: int | None = None) -> int:
     rows = [a for a in doc["assets"] if a["batch"] == batch]
     if not rows:
         print(f"error: no batch {batch!r} (have {[b['id'] for b in doc['batches']]})", file=sys.stderr)
@@ -739,8 +746,26 @@ def cmd_spec(doc: dict, batch: str, approvals_path: Path, allow_unapproved: bool
     if rows[0]["status"] != "planned":
         print(f"error: batch {batch} is already generated", file=sys.stderr)
         return 2
+    if only_rows:
+        unknown = sorted(set(only_rows) - {a["id"] for a in rows})
+        if unknown:
+            print(f"error: rows {unknown} are not in batch {batch} ({[a['id'] for a in rows]})", file=sys.stderr)
+            return 2
+        rows = [a for a in rows if a["id"] in only_rows]
+    if attempt < 1 or (candidates is not None and candidates < 1):
+        print("error: --attempt and --candidates must be >= 1", file=sys.stderr)
+        return 2
+    # a batch id is recorded once: a retry (regenerating rejected rows) is a new attempt with its own batch id and names
+    spec_batch = f"bd_{batch}" if attempt == 1 else f"bd_{batch}_r{attempt}"
+    ledger = json.loads(LEDGER_PATH.read_text(encoding="utf-8")) if LEDGER_PATH.is_file() else {"batches": []}
+    if any(b["id"] == spec_batch for b in ledger["batches"]):
+        print(f"error: batch {spec_batch} is already recorded in {LEDGER_PATH.relative_to(REPO)}; to regenerate rejected rows use "
+              f"--attempt {attempt + 1} [--rows ROW ...] [--candidates N]", file=sys.stderr)
+        return 2
+    ljobs = {j["job_id"].lower(): {**j, "batch": b["id"]} for b in ledger["batches"] for j in b["jobs"]}
+    by_id = {a["id"]: a for a in doc["assets"]}
     approved = json.loads(approvals_path.read_text(encoding="utf-8")).get("approvals", {}) if approvals_path.is_file() else {}
-    missing, jobs, index = [], [], 0
+    missing, bad, jobs, index = [], [], [], 0
     for a in rows:
         medias = []
         for ref in a["refs"]:
@@ -748,9 +773,21 @@ def cmd_spec(doc: dict, batch: str, approvals_path: Path, allow_unapproved: bool
             if not val:
                 missing.append(f"{a['id']} -> {ref['ref']}")
                 val = f"UNAPPROVED:{ref['ref']}"
+            else:
+                # the approved image must be a finished ledger job that belongs to that row: a typo or a pick copied
+                # to the wrong row would be sent to Higgsfield as a reference and paid for
+                j = ljobs.get(val.lower())
+                anchor = by_id[ref["ref"]]["jobIds"]
+                if j is None:
+                    bad.append(f"{ref['ref']}: approved job {val} is not in the ledger")
+                elif str(j.get("status", "")).lower() != "completed":
+                    bad.append(f"{ref['ref']}: approved job {val} ({j['batch']}/{j['name']}) is {j.get('status')}, not completed")
+                elif (anchor and val.lower() != anchor[0].lower()) or (not anchor and j.get("asset") != ref["ref"]):
+                    bad.append(f"{ref['ref']}: approved job {val} is {j['batch']}/{j['name']}, not a candidate of row {ref['ref']}")
             medias.append({"value": val, "role": "image_references"})
-        for k in range(1, a["candidates"] + 1):
-            job = {"index": index, "name": f"{a['id']}.c{k}", "template": a["template"], "vars": a["ledgerVars"],
+        for k in range(1, (candidates or a["candidates"]) + 1):
+            name = f"{a['id']}.c{k}" if attempt == 1 else f"{a['id']}.r{attempt}.c{k}"
+            job = {"index": index, "name": name, "template": a["template"], "vars": a["ledgerVars"],
                    "resolution": a["resolution"], "aspect_ratio": a["aspectRatio"], "credits": a["credits"]["perImage"],
                    "asset": a["id"], "stage": a["stage"]}
             if a["model"] != "nano_banana_pro":
@@ -759,11 +796,15 @@ def cmd_spec(doc: dict, batch: str, approvals_path: Path, allow_unapproved: bool
                 job["medias"] = medias
             jobs.append(job)
             index += 1
+    if bad:
+        print("error: art/plan/approvals.json has picks that cannot be references:\n  " + "\n  ".join(bad), file=sys.stderr)
+        return 3
     if missing and not allow_unapproved:
         print("error: references not approved yet (add them to art/plan/approvals.json):\n  " + "\n  ".join(missing), file=sys.stderr)
         return 3
-    spec = {"batch": f"bd_{batch}", "model": "nano_banana_pro", "planTier": "Higgsfield Plus",
-            "purpose": f"Bass Drop Phase C batch {batch}: " + ", ".join(a["id"] for a in rows), "jobs": jobs}
+    what = ", ".join(a["id"] for a in rows)
+    spec = {"batch": spec_batch, "model": "nano_banana_pro", "planTier": "Higgsfield Plus",
+            "purpose": f"Bass Drop Phase C batch {batch}{f' retry {attempt}' if attempt > 1 else ''}: {what}", "jobs": jobs}
     print(json.dumps(spec, indent=2, ensure_ascii=False))
     return 0
 
@@ -789,6 +830,9 @@ def main(argv=None) -> int:
     ap.add_argument("--batch", help="spec: batch id (see 'summary')")
     ap.add_argument("--approvals", default=str(APPROVALS_PATH), help="spec: approved job ids per plan row")
     ap.add_argument("--allow-unapproved", action="store_true", help="spec: emit UNAPPROVED:<id> placeholders (review only)")
+    ap.add_argument("--rows", nargs="+", metavar="ROW", help="spec: only these rows of the batch (e.g. the rejected ones)")
+    ap.add_argument("--attempt", type=int, default=1, help="spec: 2, 3, ... for a retry: batch bd_<id>_r<N>, names <row>.r<N>.c<k>")
+    ap.add_argument("--candidates", type=int, help="spec: candidates per row (default: the plan's; a retry usually needs 1)")
     ap.add_argument("--doc", action="store_true", help="table: splice the table into docs/games/bass-drop/ART_PLAN.md")
     a = ap.parse_args(argv)
     doc = plan_doc()
@@ -799,7 +843,7 @@ def main(argv=None) -> int:
     if a.cmd == "spec":
         if not a.batch:
             ap.error("spec needs --batch")
-        return cmd_spec(doc, a.batch, Path(a.approvals), a.allow_unapproved)
+        return cmd_spec(doc, a.batch, Path(a.approvals), a.allow_unapproved, a.rows, a.attempt, a.candidates)
     text = dumps(doc)
     if a.check:
         cur = PLAN_PATH.read_text(encoding="utf-8") if PLAN_PATH.is_file() else ""

@@ -62,7 +62,7 @@
         },
         "refHashes": { "type": "array", "items": { "$ref": "#/$defs/sha256" } },
         "asset": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$", "description": "art/_raw/<asset> folder override (default: genlib defaultAsset from template + vars, else the name)." },
-        "stage": { "type": "string", "description": "Manifest stage override (default by template: symbols 2d-image, mascot sheets mascot-sheets, backgrounds backgrounds)." },
+        "stage": { "type": "string", "description": "Manifest stage override (default by template: symbols, parts, props, emblems, cards, frame, VFX 2d-image; mascot sheets mascot-sheets; backgrounds backgrounds). Must be one of the art/manifest.schema.json row.stage values (checked by tools/gen/lib/hfledger.mjs, and by 'plan' before anything is paid)." },
         "sha256": { "$ref": "#/$defs/sha256", "description": "sha256 of the downloaded result, set by the first successful ingest; later downloads must match." },
         "width": { "type": "integer", "minimum": 1 },
         "height": { "type": "integer", "minimum": 1 },

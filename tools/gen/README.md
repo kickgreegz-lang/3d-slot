@@ -54,6 +54,9 @@ is Nano Banana 2. Never an OpenAI model (`gpt_image_2`, `gpt_image_2_5`, `openai
 # 1. plan: render every prompt from the art bible and print the exact generate_image_batch arguments
 #    (≤ 12 requests per call; `resolution` 1k|2k|4k, medias = media_id/job_id UUIDs with role image_references)
 pnpm gen:hf-ingest plan --spec spec.json --max-credits 20      # -> art/_work/hf-plans/<batch>.plan.json + {calls:[{requests}]}
+#    refuses (exit 2, nothing written) any job 'record' could not store after paying: bad name/asset/vars, a stage
+#    outside the manifest enum, a resolution / aspect ratio / media role the model does not take (models_explore);
+#    never replaces a plan file whose jobs differ (its calls may be paid already) unless --force
 python3 art/plan/build_plan.py spec --batch c01 > spec.json    # the Bass Drop plan emits this spec shape
 # 2. pay: pass calls[i] to the MCP tool generate_image_batch; save its JSON reply verbatim (e.g. submit.json)
 # 3. record the paid jobs at once (before waiting), then again with the jobs_wait reply
@@ -104,8 +107,8 @@ What ingest does for every `completed` job without a local copy:
    `--parent-id` for `pnpm matte`), `route: higgsfield-mcp`, `vendor: Higgsfield`, `model` as reported
    (`nano_banana_2` for NBP), `version: higgsfield-mcp/<request model>@<batch date>`, `seed: null`, `jobId`,
    `promptPath`, `promptHash`, `template`, `refHashes` (from `medias[].sha256`), stage per kind
-   (symbols/parts/props/frame/VFX `2d-image`, mascot sheets `mascot-sheets`, backgrounds `backgrounds`;
-   `stage` overrides), `licenseId: higgsfield`, `tosVersion` (newest `licenses/tos/higgsfield/*.pdf`, else
+   (symbols/parts/props/emblems/cards/frame/VFX `2d-image`, mascot sheets incl. `mascot_parts_sheet.txt`
+   `mascot-sheets`, backgrounds `backgrounds`; a job's `stage` overrides and must be a manifest stage), `licenseId: higgsfield`, `tosVersion` (newest `licenses/tos/higgsfield/*.pdf`, else
    null), `planTier`, `cost` in credits, `shipped: false`. The ledger job gains `sha256/width/height/bytes`.
 6. **Licence:** allowlist `higgsfield` is `clearance: pending`, so these rows **build and preview but cannot
    ship**: `pnpm licence:audit` passes (ToS warning); any shipped row or `public/assets` file descending from
@@ -172,8 +175,8 @@ python tools/gen/scenario.py --template symbol.txt --symbol H3 --model-id model_
 ## Tests (no keys, no network)
 
 ```bash
-tools/.venv/bin/python tools/gen/test/test_gen.py     # 35 tests; also runs with a stdlib-only python3
-python3 tools/gen/test/test_hf_ingest.py              # the 11 hf-ingest tests alone
+tools/.venv/bin/python tools/gen/test/test_gen.py     # 36 tests; also runs with a stdlib-only python3
+python3 tools/gen/test/test_hf_ingest.py              # the 12 hf-ingest tests alone
 ```
 Covers: every template/section rendered by Python and Node with identical text + hash; the gate table
 (allowed: NBP/NB2/Seedance/Kling/ElevenLabs/Stable Audio 2.5; refused: `gpt_image_2(_5)`, `openai_hazel`,
@@ -189,7 +192,9 @@ sidecars, Range resume after a cut connection, bad signature / truncated PNG / w
 egress 403 (one request, clear message) vs CloudFront 403 vs a non-allowed host, tampered `raw.png` and a
 changed CDN file never overwritten, prompt drift → stored-prompt fallback, OpenAI models refused,
 `plan` → `record` (submit + wrapped `jobs_wait`, no status downgrade, idempotent) → ingest → `status`,
-staged request/result lists, placeholder media ids refused, the real ledger valid and every probe prompt
+staged request/result lists, placeholder media ids refused, `plan` refusing every spec `record` could not
+store after paying (bad name/vars/asset/stage, resolution/aspect/media role the model does not take) and
+never replacing a different plan file without `--force`, the real ledger valid and every probe prompt
 reproducible, and `pnpm licence:audit` passing on the rows but failing once they are shipped.
 
 ## Doc snippets (for docs/PIPELINE.md "Tooling status" and art/bible/prompts/README.md)

@@ -257,13 +257,78 @@ class PlanTests(unittest.TestCase):
         sp = WORK / "c01.spec.json"
         sp.write_text(json.dumps(spec))
         out = WORK / "c01.plan.json"
-        r = subprocess.run([NODE, str(hf), "plan", "--spec", str(sp), "--ledger", str(WORK / "no-ledger.json"), "--out", str(out)],
-                           cwd=REPO, capture_output=True, text=True)
-        if r.returncode != 0:
-            self.skipTest(f"hf-ingest plan unavailable ({r.stderr.strip()[:200]})")
+        r = subprocess.run([NODE, str(hf), "plan", "--spec", str(sp), "--ledger", str(WORK / "no-ledger.json"), "--out", str(out),
+                            "--force"], cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)                       # a spec the planner refuses would block the batch
         plan = json.loads(out.read_text())
         for j in plan["jobs"]:
             self.assertEqual(j["promptHash"], BY_ID[j["name"].rsplit(".c", 1)[0]]["promptHash"], j["name"])
+
+    def _spec(self, *args, ledger=None, approvals=None):
+        """Run build_plan.cmd_spec in-process against a scratch ledger / approvals file: (exit, stdout, stderr)."""
+        import contextlib
+        import io
+        old = bp.LEDGER_PATH
+        if ledger is not None:
+            bp.LEDGER_PATH = WORK / "spec_ledger.json"
+            bp.LEDGER_PATH.write_text(json.dumps(ledger))
+        ap = WORK / "spec_approvals.json"
+        ap.write_text(json.dumps({"approvals": approvals or {}}))
+        out, err = io.StringIO(), io.StringIO()
+        try:
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                code = bp.main(["spec", *args, "--approvals", str(ap)])
+        finally:
+            bp.LEDGER_PATH = old
+        return code, out.getvalue(), err.getvalue()
+
+    def test_spec_rejects_bad_approvals_and_supports_retries(self):
+        WORK.mkdir(parents=True, exist_ok=True)
+        real = json.loads(bp.LEDGER_PATH.read_text(encoding="utf-8"))
+        anchors = {a["id"]: {"job_id": a["jobIds"][0]} for a in ANCHORS}
+        # a pick that is not a ledger job, or a job of another row (a probe1 image for sym_H1), is never sent
+        code, _, err = self._spec("--batch", "c01", ledger=real, approvals={**anchors, "sym_H1": {"job_id": "00000000-0000-4000-8000-000000000000"}})
+        self.assertEqual(code, 3, err)
+        self.assertIn("sym_H1: approved job 00000000-0000-4000-8000-000000000000 is not in the ledger", err)
+        probe_h1 = next(j["job_id"] for j in bp.ledger_jobs().values() if j["batch"] == "probe1" and j["name"] == "sym_H1")
+        code, _, err = self._spec("--batch", "c01", ledger=real, approvals={**anchors, "sym_H1": {"job_id": probe_h1}})
+        self.assertEqual(code, 3, err)
+        self.assertIn("not a candidate of row sym_H1", err)
+        code, out, err = self._spec("--batch", "c01", ledger=real, approvals=anchors)
+        self.assertEqual(code, 0, err)
+        spec = json.loads(out)
+        self.assertEqual(spec["batch"], "bd_c01")
+        # once bd_c01 is recorded, the same spec is refused; a retry of the rejected row gets its own batch and names
+        rec = json.loads(json.dumps(real))
+        rec["batches"].append({"id": "bd_c01", "date": "2026-09-27", "model": "nano_banana_pro", "jobs": [
+            {"name": j["name"], "job_id": f"00000000-0000-4000-8000-{i:012d}", "status": "completed", "asset": j["asset"]}
+            for i, j in enumerate(spec["jobs"])]})
+        code, _, err = self._spec("--batch", "c01", ledger=rec, approvals=anchors)
+        self.assertEqual(code, 2, err)
+        self.assertIn("--attempt 2", err)
+        code, out, err = self._spec("--batch", "c01", "--attempt", "2", "--rows", "sym_H2", "--candidates", "1", ledger=rec, approvals=anchors)
+        self.assertEqual(code, 0, err)
+        retry = json.loads(out)
+        self.assertEqual((retry["batch"], [j["name"] for j in retry["jobs"]]), ("bd_c01_r2", ["sym_H2.r2.c1"]))
+        self.assertEqual(retry["jobs"][0]["asset"], "sym_H2")
+        code, _, err = self._spec("--batch", "c01", "--rows", "sym_W", ledger=real, approvals=anchors)
+        self.assertEqual(code, 2, err)
+        # an approved candidate of a planned row (its ledger 'asset' is the row id) may be a reference; another row's may not
+        c02_anchor = {**anchors, "sym_H2": {"job_id": "00000000-0000-4000-8000-000000000000"}, "sym_H4": {"job_id": "00000000-0000-4000-8000-000000000002"}}
+        code, out, err = self._spec("--batch", "c02", ledger=rec, approvals=c02_anchor)
+        self.assertEqual(code, 0, err)
+        c02_bad = {**c02_anchor, "sym_H4": {"job_id": "00000000-0000-4000-8000-000000000001"}}   # that job is sym_H2.c2
+        code, _, err = self._spec("--batch", "c02", ledger=rec, approvals=c02_bad)
+        self.assertEqual(code, 3, err)
+        self.assertIn("not a candidate of row sym_H4", err)
+        # the retry spec goes straight into the ingestion tool's planner
+        hf = REPO / "tools" / "gen" / "hf-ingest.mjs"
+        sp = WORK / "retry.spec.json"
+        sp.write_text(json.dumps(retry))
+        r = subprocess.run([NODE, str(hf), "plan", "--spec", str(sp), "--ledger", str(WORK / "no-ledger.json"),
+                            "--out", str(WORK / "retry.plan.json"), "--force"], cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["estimatedCredits"], 2)
 
     def test_docs_cover_every_row_and_template(self):
         art_plan = (REPO / "docs" / "games" / "bass-drop" / "ART_PLAN.md").read_text(encoding="utf-8")

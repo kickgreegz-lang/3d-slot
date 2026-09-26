@@ -149,6 +149,10 @@ try {
 
   for (const name of scenarios) {
     const sc = SCEN[name];
+    if (!sc && isChar && ['charge_drop', 'look', 'win_celebrate'].includes(name)) {
+      console.log(`capture: ${name}: not applicable to this rig (its clips are missing), skipped`);
+      continue;
+    }
     if (!sc) throw new Error(`unknown scenario ${name} (${Object.keys(SCEN).join(', ')})`);
     const missing = (sc.needs ?? []).filter((n) => !info.animations.some((a) => a.name === n));
     if (missing.length) {

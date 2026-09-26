@@ -35,7 +35,7 @@ Read with: [STYLE_DECISION.md](STYLE_DECISION.md) (the finish), [DESIGN.md](DESI
 
 **Hue watch-outs** (ART_BIBLE §4): H2 pink and W teal equal the background neon hues and must read as enamel, not glow; the meter trim band is generated light grey and recoloured per mode in code (teal / gold / pink); the multiplier badge is generated once in gold (t3) and hue-mapped to t1 teal, t2 lime, t4 orange, t5 pink (DESIGN §9).
 
-**Key colours.** The requested hex goes into the prompt, but the model does not always obey it (one D symbol came back on olive). Every matte step therefore runs `tools/matte/outline_matte.py --key auto` (border median) and checks the border is uniform and near the requested hex (`keyUniform` gate), else regenerates.
+**Key colours.** The requested hex goes into the prompt, but the model does not always obey it (one D symbol came back on olive). Every matte step therefore runs `tools/matte/outline_matte.py --key auto` (border median, implemented) and checks the border is uniform and near the requested hex (`keyUniform` gate), else regenerates. **`keyUniform` is not automated yet** (tools/matte has no such check): until it is, the reviewer checks the four corners by eye, and the matte's own halo gate catches a wrong key.
 
 | Assets | Requested key | Why |
 |---|---|---|
@@ -153,9 +153,10 @@ Per row, the JSON adds the rendered prompt, its `promptHash`, the exact render c
 3. **Batch spec:** `python3 art/plan/build_plan.py spec --batch c01 > art/_work/hf-plans/bd_c01.spec.json`, then `pnpm gen:hf-ingest plan --spec art/_work/hf-plans/bd_c01.spec.json` prints the exact `generate_image_batch` call. Each candidate is its own job (`<row>.c1`, `<row>.c2`); references are passed as **Higgsfield job ids** (`medias: [{value: <job_id>, role: "image_references"}]`), so nothing local is uploaded.
 4. **Generate** with the Higgsfield MCP, **always passing `model` explicitly**: the MCP's default image model is `gpt_image_2_5`, which is denylisted.
 5. **Record + ingest** (`tools/gen/hf-ingest.mjs`, the ingestion track): `pnpm gen:hf-ingest record --plan … --from <MCP JSON>`, then `pnpm gen:hf-ingest` downloads into `art/_raw/<row id>/vNN/` and appends manifest rows.
-6. **Review** against §6, add the pick to `approvals.json`, run the row's `downstream` steps (matte → cut/register → Spine), then the next batch.
+6. **Review** against §6, add the pick to `approvals.json`, run the row's `downstream` steps (matte → cut/register → Spine), then the next batch. `spec` checks every pick is a completed ledger job of that row (exit 3 otherwise).
+7. **Retry** a rejected row (the 1.5× allowance in §4): `python3 art/plan/build_plan.py spec --batch c01 --attempt 2 --rows sym_H2 --candidates 1` makes batch `bd_c01_r2` with job `sym_H2.r2.c1` (same prompt, same references); a batch id already in the ledger is refused, so a spec is never paid twice by mistake.
 
-**Model choice.** Nano Banana Pro everywhere: the adopted anchors were made with it, and NB2 costs the same at 2k. The three H3 eye edits use **NB2 at 1k** (1.5 instead of 2 credits): they are edits of a head crop whose eyes are under 80 px on the 360 canvas. The hidden-area **fills** also use NB2, because it is the one model here with masked inpaint (`is_inpaint` + a `mask` media). Seedream and every other model are not used. **Never** any OpenAI model (`gpt_image_2`, `gpt_image_2_5`, `openai_hazel`): OpenAI's policy bars real-money gambling ([denylist](../../../licenses/denylist.json) `openai-gpt-image`). Higgsfield has no seed and no negative prompt, so consistency comes from the frozen formula plus the references.
+**Model choice.** Nano Banana Pro everywhere: the adopted anchors were made with it, and NB2 costs the same at 2k. The three H3 eye edits use **NB2 at 1k** (1.5 instead of 2 credits): each edits the whole approved rig-ready master (referenced by job id, nothing uploaded), and at 1k the crawfish is still ~870 px tall, above the ~600 px its cell content needs at 2x, so the eye region is never upscaled. The hidden-area **fills** also use NB2, because it is the one model here with masked inpaint (`is_inpaint` + a `mask` media). Seedream and every other model are not used. **Never** any OpenAI model (`gpt_image_2`, `gpt_image_2_5`, `openai_hazel`): OpenAI's policy bars real-money gambling ([denylist](../../../licenses/denylist.json) `openai-gpt-image`). Higgsfield has no seed and no negative prompt, so consistency comes from the frozen formula plus the references.
 
 **Resolution.** 2k for anything that ends ≤ ~1,300 units at the 2× authoring size (symbols, props, emblems, cards, rig masters, hand and prop sheets). 4k for background plates, the Croak design sheet, and the mascot **body** and **face** sheets, whose pieces must reach the 2× authoring size after cutting (Croak is 1,260 units tall; a torso piece on a 2k sheet would need upscaling, which the bible forbids).
 
@@ -221,13 +222,13 @@ Style anchors → symbols → W → meter/cabinets/booth/horns → emblems → b
 **Downstream per family** (exact commands per row in the JSON):
 - **Matte:** `GAME=bass-drop python3 tools/matte/outline_matte.py <raw> <out> --key auto [--symbol <ID> | --no-fit]`. Beauty masters are canvas-fitted (`--symbol`, then `tools/matte/variants.py`); everything else keeps full resolution (`--no-fit`). The closed single-weight black outline of formula D is what the key matte relies on.
 - **Cut and register:** each sheet is cut into pieces and every piece is registered to its master (ECC/SIFT), then named by the slot map in `artbible.bassDrop` (PIPELINE 3.1; `tools/split` is planned). Hidden overlaps the sheets missed are filled with `symbol_parts_sheet.txt#C` on NB2 masked inpaint (fill reserves).
-- **Spine:** symbols through `tools/spine/gen.py` + `validate.mjs`; meter, env and characters in the Spine Editor (characters by a human animator, ANIMATION_SET §11), validated with `GAME=bass-drop node tools/spine/validate.mjs … --kind …` once CR-8 adds the `wild`, `ui`, `env` and `character` kinds.
+- **Spine:** symbols through `tools/spine/gen.py` + `validate.mjs`. **Characters** too: the split stage delivers the pieces per the [character parts contract](../../../tools/spine/README.md#character-parts-contract-what-the-split-stage-delivers), and `tools/spine/gen.py` builds `chr_gumbo` / `chr_croak` from a `kind: character` `rig.yaml` (start from `tools/spine/examples/character_demo/<id>/rig.yaml`), validated with `node tools/spine/validate.mjs build/spine/chr_<id>.json` (`chr_*` = `--kind character`); an animator polish pass in the Spine Editor is optional. Meter and env rigs are still built in the Spine Editor and validated with `--kind any` until CR-8 adds the `wild`, `ui` and `env` kinds.
 
 ---
 
 ## 6. Review rubric per asset
 
-Gates are the [ART_BIBLE §10](../../ART_BIBLE.md#10-qa-gates) set (ids from `artbible.gates`; the JSON lists them per row) plus `keyUniform` (the measured key background is uniform and near the requested hex). Automated first, then the art director. **Retry budget:** 2 regenerations per asset, then the best result goes to a human (paintover if needed). The palette-ΔE, outline-histogram and style-similarity thresholds were set for the flat-cel finish: **recalibrate them on the approved formula-D anchors** before they may fail a row (soft gradients add colour clusters; compare base tones only).
+Gates are the [ART_BIBLE §10](../../ART_BIBLE.md#10-qa-gates) set (ids from `artbible.gates`; the JSON lists them per row) plus `keyUniform` (the measured key background is uniform and near the requested hex). Automated today: halo and canvas/pivot (the matte, exit 1), and for rigs the budgets, adult proportions, clip lengths and events (`tools/spine/validate.mjs`). Palette ΔE, outline histogram, silhouette confusion, style similarity, OCR no-text, darker centre and `keyUniform` are **planned** (PIPELINE 2.1), so the reviewer applies them by eye until they exist; then the art director. **Retry budget:** 2 regenerations per asset, then the best result goes to a human (paintover if needed). The palette-ΔE, outline-histogram and style-similarity thresholds were set for the flat-cel finish: **recalibrate them on the approved formula-D anchors** before they may fail a row (soft gradients add colour clusters; compare base tones only).
 
 **Every foreground asset (formula D):** a single-weight black outline with no sketchy double line; no drips on gold, no stick or tab poking out of the object; the rim light thin and cool, never a glow; nothing glowing, no light rays, no cast shadow; no text or pseudo-letters.
 
@@ -266,6 +267,7 @@ Gates are the [ART_BIBLE §10](../../ART_BIBLE.md#10-qa-gates) set (ids from `ar
 7. **Portrait plate:** reframe edit + width crop (planned, no outpaint credits) vs outpaint.
 8. **Frame:** the Swamp Funk cypress design in formula D (planned) or a Bass Drop variant with speaker-bolt corners.
 9. **Booth camera exception** (seen slightly from above).
+10. **Tablet (1920×1920) plate.** No row generates one: the tablet layout is the landscape composition moved down 420 px (DESIGN §15.3). Either crop the middle square of the 4k portrait plate (3072 px wide, keeps both neon masses) or the centre of the landscape plate (2688 px tall, loses the side neon behind the mascots). Both are above 1920 px, so neither upscales; decide once both plates are approved.
 
 ---
 
@@ -277,5 +279,6 @@ python3 art/plan/build_plan.py table --doc     # refresh the asset table on this
 python3 art/plan/build_plan.py --check         # both are current (CI / tests)
 python3 art/plan/build_plan.py summary         # budget and batches
 python3 art/plan/build_plan.py spec --batch c01  # hf-ingest spec (needs approvals)
+python3 art/plan/build_plan.py spec --batch c01 --attempt 2 --rows sym_H2 --candidates 1   # retry a rejected row
 python3 art/plan/test/test_plan.py             # plan tests (render parity with the Node twin, budget, refs, hf-ingest compatibility)
 ```

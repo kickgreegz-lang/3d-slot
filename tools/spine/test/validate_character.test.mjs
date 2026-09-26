@@ -59,6 +59,13 @@ const cases = [
   ['additive outside fx_', (d) => { d.slots.find((s) => s.name === 'torso').blend = 'additive'; }, /only allowed on fx_/],
   ['IK curve arity', (d) => { const k = d.animations.win_big.ik.ik_hand_L.find((x) => Array.isArray(x.curve)); k.curve = k.curve.slice(0, 4); }, /ik\/ik_hand_L key \d+: curve has 4 numbers, expected 8/],
   ['bad sfx id', (d) => { d.animations.react_small.events = [{ time: 0.1, name: 'sfx', string: 'boing' }]; }, /not an SfxId/],
+  ['face clip keys a body bone', (d) => { d.animations.blink.bones = { ...(d.animations.blink.bones ?? {}), head: { rotate: [{ value: 0 }, { time: 2 / 30, value: 10 }, { time: 3 / 30, value: 0 }] } }; }, /blink: face clip \(track 2\) keys body bones\/IK head/],
+  ['eye slot missing', (d) => {
+    d.slots.find((s) => s.name === 'eye_L').name = 'eye_x';
+    for (const sk of d.skins) { sk.attachments.eye_x = sk.attachments.eye_L; delete sk.attachments.eye_L; }
+    for (const a of Object.values(d.animations)) if (a.slots?.eye_L) { a.slots.eye_x = a.slots.eye_L; delete a.slots.eye_L; }
+  }, /slot "eye_L" missing/],
+  ['dead look-at', (d) => { const c = d.constraints.find((x) => x.name === 'look'); for (const k of Object.keys(c)) if (/^mix/.test(k)) c[k] = 0; }, /look-at: .* the look constraint is dead/],
 ];
 
 let failures = 0;

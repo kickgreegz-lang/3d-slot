@@ -56,9 +56,65 @@ export function roundOf(rec) {
   return { mode: r.mode ?? null, pm: Number(r.payoutMultiplier ?? 0), active: r.active ?? null, n: evs.length, types, bonus };
 }
 
+/* ---------------------------------------------------------- render skip */
+// The game is a Pixi v8 WebGL app that costs ~1 s of SwiftShader GPU time per frame on the
+// shared CPUs. While the clock is paused (manual stepping) every frame still runs the game's
+// ticker (logic, tweens, Spine, timers: frame-exact), but the on-screen render of the stage is
+// deferred and done only for frames that are looked at (captured frame, stillness sample,
+// screenshot) or before an input event. Renders into render textures are never skipped.
+// Needs window.__PIXI_APP__ (the Pixi devtools hook the game exposes). DF_RENDER_ALL=1 disables it.
+export async function installRenderSkip(ref) {
+  const d = ref.driver;
+  if (env('DF_RENDER_ALL', '0') === '1' || d._dfSkip) return;
+  const r = await d.page.evaluate(() => {
+    const app = globalThis.__PIXI_APP__;
+    const R = app?.renderer;
+    if (!R || typeof R.render !== 'function') return 'no __PIXI_APP__.renderer';
+    if (R.__refPatched) return 'ok (already)';
+    const orig = R.render;
+    let pending = null;
+    const toScreen = (o) => o === app.stage || (!!o && typeof o === 'object' && !o.target && o.container === app.stage);
+    R.render = function (...a) {
+      if (globalThis.__ref?.stats().manual && toScreen(a[0])) {
+        pending = a;
+        return;
+      }
+      pending = null;
+      return orig.apply(this, a);
+    };
+    globalThis.__refRenderNow = () => {
+      if (!pending) return false;
+      const a = pending;
+      pending = null;
+      orig.apply(R, a);
+      return true;
+    };
+    R.__refPatched = true;
+    return 'ok';
+  });
+  log(`render skip: ${r}`);
+  if (!String(r).startsWith('ok')) return;
+  d._dfSkip = true;
+  const now = () => renderNow(ref);
+  for (const k of ['shoot', 'click', 'key']) {
+    const f = d[k].bind(d);
+    d[k] = async (...a) => {
+      await now();
+      return f(...a);
+    };
+  }
+  await ref.note('render skip on: the stage is rendered only for captured/sampled frames and before input (logic still steps every frame)');
+}
+export async function renderNow(ref) {
+  const d = ref.driver;
+  if (!d._dfSkip) return false;
+  return d.page.evaluate(() => globalThis.__refRenderNow?.() ?? false);
+}
+
 /* ------------------------------------------------------------- stillness */
 async function sample(ref, region) {
   const d = ref.driver;
+  await renderNow(ref);
   const c = d.canvas ?? (await d.findCanvas());
   const [x, y, w, h] = region;
   const clip = { x: c.x + x * c.width, y: c.y + y * c.height, width: Math.max(1, w * c.width), height: Math.max(1, h * c.height) };
@@ -192,12 +248,15 @@ export async function spin(ref, name, o = {}) {
 
 /** Boot, fail loudly on a dead session, grid screenshot of the intro. */
 export async function boot(ref) {
-  await ref.waitReady({ timeout: 300_000, quietMs: 2500, response: '/wallet/authenticate', canvasMinArea: 0.3 });
+  // the game polls /wallet/balance every ~5 s, so "network quiet" is rarely true: short quiet
+  // window, bounded wait (the intro needs ~60-120 s of real time under SwiftShader to build)
+  await ref.waitReady({ timeout: Number(env('DF_BOOT_MS', 150_000)), minMs: Number(env('DF_BOOT_MIN_MS', 60_000)), quietMs: 1200, response: '/wallet/authenticate', canvasMinArea: 0.3 });
   await netSettled(ref);
   const auth = rgs(ref).find((r) => r.endpoint === 'wallet-authenticate');
   if (!auth) throw new Error('no /wallet/authenticate call seen: the game did not reach its RGS');
   if (auth.status >= 400) throw new Error(`RGS authenticate failed: HTTP ${auth.status} ${JSON.stringify(auth.response)} (sessionID expired: get a fresh demo URL)`);
   await ref.waitReal(4000); // let the intro finish building in real time
+  await installRenderSkip(ref);
   await ref.screenshot('intro', { grid: true });
 }
 

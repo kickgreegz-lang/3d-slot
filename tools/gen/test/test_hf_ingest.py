@@ -600,6 +600,52 @@ class HfIngestTests(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(json.loads(r.stdout)["calls"][0]["requests"][0]["params"]["medias"], [{"value": J[1], "role": "image_references"}])
 
+    def test_plan_refuses_what_record_cannot_store(self):
+        """Anything 'record' would refuse AFTER the credits are spent must already fail at 'plan' (exit 2, no plan file)."""
+        base = {"name": "sym_H2", "template": "symbol.txt", "vars": {"symbol": "H2"}}
+        bad = {
+            "name with a space": {"name": "sym H2"},
+            "unknown lower-case var (silently unused by the renderer)": {"vars": {"symbol": "H2", "rig_ready": True}},
+            "non-string placeholder value": {"vars": {"symbol": "H2", "LIGHT_NOTE": 0}},
+            "stage outside the manifest enum": {"stage": "props"},
+            "unsafe asset folder": {"asset": "../x"},
+            "resolution the model does not take": {"resolution": "8k"},
+            "aspect ratio the model does not take": {"aspect_ratio": "7:3"},
+            "mask media on Nano Banana Pro": {"medias": [{"value": J[1], "role": "mask"}]},
+        }
+        plan = self.w / "plan.json"
+        for why, patch in bad.items():
+            (self.w / "spec.json").write_text(json.dumps({"batch": "p1", "model": "nano_banana_pro", "jobs": [{**base, **patch}]}))
+            r = self.run_tool("plan", "--spec", str(self.w / "spec.json"), "--out", str(plan))
+            self.assertEqual(r.returncode, 2, f"{why}: {r.stderr}")
+            self.assertIn("cannot record", r.stderr, why)
+            self.assertFalse(plan.exists(), why)
+        # NB2 takes a mask (masked inpaint fills); new templates get their stage from the template
+        ok = {"batch": "p1", "model": "nano_banana_pro", "jobs": [
+            {"name": "fill_1", "template": "symbol.txt", "vars": {"symbol": "H3"}, "request_model": "nano_banana_2", "resolution": "1k",
+             "medias": [{"value": J[1], "role": "image_references"}, {"value": J[2], "role": "mask"}]}]}
+        (self.w / "spec.json").write_text(json.dumps(ok))
+        r = self.run_tool("plan", "--spec", str(self.w / "spec.json"), "--out", str(plan))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["estimatedCredits"], 1.5)
+        # a plan file whose calls may already be paid for is never silently replaced by a different one
+        ok["jobs"][0]["vars"]["LIGHT_NOTE"] = "lit from above"
+        (self.w / "spec.json").write_text(json.dumps(ok))
+        before = plan.read_bytes()
+        r = self.run_tool("plan", "--spec", str(self.w / "spec.json"), "--out", str(plan))
+        self.assertEqual(r.returncode, 2, r.stderr)
+        self.assertIn("already holds a different plan", r.stderr)
+        self.assertEqual(plan.read_bytes(), before)
+        r = self.run_tool("plan", "--spec", str(self.w / "spec.json"), "--out", str(plan), "--force")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotEqual(plan.read_bytes(), before)
+        probe = self.w / "stages.mjs"
+        probe.write_text(f"import {{ stageFor }} from '{(GEN / 'lib' / 'hfledger.mjs').as_uri()}';\n"
+                         "console.log(JSON.stringify(['prop.txt#A', 'emblem.txt#C', 'card_art.txt', 'mascot_parts_sheet.txt#B']"
+                         ".map((t) => stageFor({ name: 'x', template: t }, 'x'))));\n")
+        r = subprocess.run([NODE, str(probe)], cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(json.loads(r.stdout), ["2d-image", "2d-image", "2d-image", "mascot-sheets"], r.stderr)
+
     def test_real_ledger_is_valid_and_reproducible(self):
         ledger = REPO / "art" / "ledger" / "higgsfield-jobs.json"
         schema = REPO / "art" / "ledger" / "higgsfield-jobs.schema.json"

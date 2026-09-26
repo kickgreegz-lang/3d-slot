@@ -4,8 +4,9 @@
  *
  * Static (raw JSON): core biped bones + ctrl_look, bone words/prefixes, character budgets (bones,
  *   slots, mesh vertices, physics constraints), physics limit >= 6000, the look transform
- *   constraints, eye slots with every face state, the per-rig attachment sets (mouth shapes, hand
- *   poses), face (track 2) clips that key only face slots/bones, overlays that never key root.
+ *   constraints, eye_L/R + pupil_L/R slots, every eye slot with every face state, the per-rig
+ *   attachment sets (mouth shapes, hand poses), face (track 2) clips that key only face slots/bones
+ *   (error), clips that never key root.
  * Runtime: every contract clip present with the exact ANIMATION_SET length, events on their frames,
  *   loop seams (keyed pose, physics excluded), overlays that start and end on zero deltas,
  *   `endsAt` hand-offs (bass_drop_charge -> bass_drop), one-shots ending on idle's first pose (mix
@@ -53,6 +54,7 @@ export function characterStatic(raw, ctx) {
   const atts = new Map();
   for (const skin of raw.skins ?? []) for (const [s, e] of Object.entries(skin.attachments ?? {})) atts.set(s, new Set([...(atts.get(s) ?? []), ...Object.keys(e)]));
   const slots = raw.slots ?? [];
+  for (const need of CC.faceStates.slots ?? []) if (!slots.some((s) => s.name === need)) err(`slot "${need}" missing (ANIMATION_SET 5: every mascot has eye_L/R with the face states and pupil_L/R for the look)`);
   for (const s of slots) {
     if (/^eye_[LR]$/.test(s.name)) {
       const have = atts.get(s.name) ?? new Set();
@@ -77,7 +79,8 @@ export function characterStatic(raw, ctx) {
     if (keyedBones.includes('root')) err(`${name}: keys the root bone (root is the feet anchor placed by the layout)`);
     if (track === 2) {
       const bad = keyedBones.filter((b) => !/^face_/.test(b));
-      if (bad.length || Object.keys(a.ik ?? {}).length) warn(`${name}: face clip (track 2) keys body bones ${bad.join(', ')}; they override track 0`);
+      // track 2 is applied over the body track at mix 1: any body key there freezes the body clip's bone
+      if (bad.length || Object.keys(a.ik ?? {}).length) err(`${name}: face clip (track 2) keys body bones/IK ${[...bad, ...Object.keys(a.ik ?? {})].join(', ')}; they would override track 0 (face clips swap attachments and key face_* bones only)`);
     }
   }
   const physN = cons.filter((c) => c.type === 'physics').length;
@@ -211,7 +214,8 @@ export function characterRuntime(data, ctx) {
     const hd = (s) => s.findBone('head').appliedPose.getWorldRotationX();
     const dr = hd(up) - hd(base);
     info(`look-at: ctrl_look +100 up turns the head ${dr.toFixed(1)} deg`);
-    if (Math.abs(dr) < 0.5 || Math.abs(dr) > 30) warn(`look-at: the head turns ${dr.toFixed(1)} deg for a 100-unit look offset (expected 0.5-30)`);
+    if (Math.abs(dr) < 0.5) err(`look-at: the head turns ${dr.toFixed(1)} deg for a 100-unit ctrl_look offset: the look constraint is dead (mix 0 or wrong source); DESIGN 16 needs heads tracking the wilds`);
+    else if (Math.abs(dr) > 30) warn(`look-at: the head turns ${dr.toFixed(1)} deg for a 100-unit look offset (expected 0.5-30)`);
   }
 
   // ------------------------------------------------------------------ clips

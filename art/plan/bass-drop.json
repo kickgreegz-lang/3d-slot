@@ -2503,7 +2503,7 @@
       "outputs": {
         "raw": "art/_raw/chr_gumbo_parts_body/vNN/",
         "source": [
-          "art/source/bass-drop/spine/images/chr_gumbo/<slot>[_<attachment>].png",
+          "art/source/bass-drop/spine/images/chr_gumbo/<slot>.png (variants: <slot>/<attachment>.png)",
           "art/source/mascots/gumbo/spine2d/parts.json"
         ]
       },
@@ -2511,7 +2511,8 @@
         "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/chr_gumbo_parts_body/sheet.png --key auto --no-fit",
         "Cut into pieces; name them by bassDrop.mascots.gumbo.sheets.body[].slot; register each to rig_master.png (ECC/SIFT)",
         "Hidden overlaps: symbol_parts_sheet.txt#C with Nano Banana 2 masked inpaint (fill reserve)",
-        "chr_gumbo: Spine Editor, human animator (ANIMATION_SET §11) -> GAME=bass-drop node tools/spine/validate.mjs build/spine/chr_gumbo.json --kind any"
+        "Deliver per tools/spine/README.md 'Character parts contract' (canvas 992 units tall at 2x, feet = root, landmarks, near side R in front, overlap caps on the joints)",
+        "chr_gumbo: $PYTHON tools/spine/gen.py art/source/mascots/gumbo/spine2d/rig.yaml -o build/spine/chr_gumbo.json (kind: character; start from tools/spine/examples/character_demo/gumbo/rig.yaml) -> node tools/spine/validate.mjs build/spine/chr_gumbo.json -> pack.py -> validate --atlas -> preview/capture.mjs --scenarios all; an animator polish pass in the Spine Editor is optional"
       ],
       "gates": [
         "keyUniform",
@@ -2586,7 +2587,7 @@
       "outputs": {
         "raw": "art/_raw/chr_gumbo_parts_face/vNN/",
         "source": [
-          "art/source/bass-drop/spine/images/chr_gumbo/<slot>[_<attachment>].png",
+          "art/source/bass-drop/spine/images/chr_gumbo/<slot>.png (variants: <slot>/<attachment>.png)",
           "art/source/mascots/gumbo/spine2d/parts.json"
         ]
       },
@@ -2594,7 +2595,8 @@
         "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/chr_gumbo_parts_face/sheet.png --key auto --no-fit",
         "Cut into pieces; name them by bassDrop.mascots.gumbo.sheets.face[].slot; register each to rig_master.png (ECC/SIFT)",
         "Hidden overlaps: symbol_parts_sheet.txt#C with Nano Banana 2 masked inpaint (fill reserve)",
-        "chr_gumbo: Spine Editor, human animator (ANIMATION_SET §11) -> GAME=bass-drop node tools/spine/validate.mjs build/spine/chr_gumbo.json --kind any"
+        "Deliver per tools/spine/README.md 'Character parts contract' (canvas 992 units tall at 2x, feet = root, landmarks, near side R in front, overlap caps on the joints)",
+        "chr_gumbo: $PYTHON tools/spine/gen.py art/source/mascots/gumbo/spine2d/rig.yaml -o build/spine/chr_gumbo.json (kind: character; start from tools/spine/examples/character_demo/gumbo/rig.yaml) -> node tools/spine/validate.mjs build/spine/chr_gumbo.json -> pack.py -> validate --atlas -> preview/capture.mjs --scenarios all; an animator polish pass in the Spine Editor is optional"
       ],
       "gates": [
         "keyUniform",
@@ -2669,7 +2671,7 @@
       "outputs": {
         "raw": "art/_raw/chr_gumbo_parts_hands/vNN/",
         "source": [
-          "art/source/bass-drop/spine/images/chr_gumbo/<slot>[_<attachment>].png",
+          "art/source/bass-drop/spine/images/chr_gumbo/<slot>.png (variants: <slot>/<attachment>.png)",
           "art/source/mascots/gumbo/spine2d/parts.json"
         ]
       },
@@ -2677,7 +2679,8 @@
         "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/chr_gumbo_parts_hands/sheet.png --key auto --no-fit",
         "Cut into pieces; name them by bassDrop.mascots.gumbo.sheets.hands[].slot; register each to rig_master.png (ECC/SIFT)",
         "Hidden overlaps: symbol_parts_sheet.txt#C with Nano Banana 2 masked inpaint (fill reserve)",
-        "chr_gumbo: Spine Editor, human animator (ANIMATION_SET §11) -> GAME=bass-drop node tools/spine/validate.mjs build/spine/chr_gumbo.json --kind any"
+        "Deliver per tools/spine/README.md 'Character parts contract' (canvas 992 units tall at 2x, feet = root, landmarks, near side R in front, overlap caps on the joints)",
+        "chr_gumbo: $PYTHON tools/spine/gen.py art/source/mascots/gumbo/spine2d/rig.yaml -o build/spine/chr_gumbo.json (kind: character; start from tools/spine/examples/character_demo/gumbo/rig.yaml) -> node tools/spine/validate.mjs build/spine/chr_gumbo.json -> pack.py -> validate --atlas -> preview/capture.mjs --scenarios all; an animator polish pass in the Spine Editor is optional"
       ],
       "gates": [
         "keyUniform",
@@ -2752,7 +2755,7 @@
       "outputs": {
         "raw": "art/_raw/chr_gumbo_parts_props/vNN/",
         "source": [
-          "art/source/bass-drop/spine/images/chr_gumbo/<slot>[_<attachment>].png",
+          "art/source/bass-drop/spine/images/chr_gumbo/<slot>.png (variants: <slot>/<attachment>.png)",
           "art/source/mascots/gumbo/spine2d/parts.json"
         ]
       },
@@ -2760,7 +2763,8 @@
         "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/chr_gumbo_parts_props/sheet.png --key auto --no-fit",
         "Cut into pieces; name them by bassDrop.mascots.gumbo.sheets.props[].slot; register each to rig_master.png (ECC/SIFT)",
         "Hidden overlaps: symbol_parts_sheet.txt#C with Nano Banana 2 masked inpaint (fill reserve)",
-        "chr_gumbo: Spine Editor, human animator (ANIMATION_SET §11) -> GAME=bass-drop node tools/spine/validate.mjs build/spine/chr_gumbo.json --kind any"
+        "Deliver per tools/spine/README.md 'Character parts contract' (canvas 992 units tall at 2x, feet = root, landmarks, near side R in front, overlap caps on the joints)",
+        "chr_gumbo: $PYTHON tools/spine/gen.py art/source/mascots/gumbo/spine2d/rig.yaml -o build/spine/chr_gumbo.json (kind: character; start from tools/spine/examples/character_demo/gumbo/rig.yaml) -> node tools/spine/validate.mjs build/spine/chr_gumbo.json -> pack.py -> validate --atlas -> preview/capture.mjs --scenarios all; an animator polish pass in the Spine Editor is optional"
       ],
       "gates": [
         "keyUniform",
@@ -2835,7 +2839,7 @@
       "outputs": {
         "raw": "art/_raw/chr_croak_parts_body/vNN/",
         "source": [
-          "art/source/bass-drop/spine/images/chr_croak/<slot>[_<attachment>].png",
+          "art/source/bass-drop/spine/images/chr_croak/<slot>.png (variants: <slot>/<attachment>.png)",
           "art/source/mascots/croak/spine2d/parts.json"
         ]
       },
@@ -2843,7 +2847,8 @@
         "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/chr_croak_parts_body/sheet.png --key auto --no-fit",
         "Cut into pieces; name them by bassDrop.mascots.croak.sheets.body[].slot; register each to rig_master.png (ECC/SIFT)",
         "Hidden overlaps: symbol_parts_sheet.txt#C with Nano Banana 2 masked inpaint (fill reserve)",
-        "chr_croak: Spine Editor, human animator (ANIMATION_SET §11) -> GAME=bass-drop node tools/spine/validate.mjs build/spine/chr_croak.json --kind any"
+        "Deliver per tools/spine/README.md 'Character parts contract' (canvas 1260 units tall at 2x, feet = root, landmarks, near side L in front, overlap caps on the joints)",
+        "chr_croak: $PYTHON tools/spine/gen.py art/source/mascots/croak/spine2d/rig.yaml -o build/spine/chr_croak.json (kind: character; start from tools/spine/examples/character_demo/croak/rig.yaml) -> node tools/spine/validate.mjs build/spine/chr_croak.json -> pack.py -> validate --atlas -> preview/capture.mjs --scenarios all; an animator polish pass in the Spine Editor is optional"
       ],
       "gates": [
         "keyUniform",
@@ -2918,7 +2923,7 @@
       "outputs": {
         "raw": "art/_raw/chr_croak_parts_face/vNN/",
         "source": [
-          "art/source/bass-drop/spine/images/chr_croak/<slot>[_<attachment>].png",
+          "art/source/bass-drop/spine/images/chr_croak/<slot>.png (variants: <slot>/<attachment>.png)",
           "art/source/mascots/croak/spine2d/parts.json"
         ]
       },
@@ -2926,7 +2931,8 @@
         "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/chr_croak_parts_face/sheet.png --key auto --no-fit",
         "Cut into pieces; name them by bassDrop.mascots.croak.sheets.face[].slot; register each to rig_master.png (ECC/SIFT)",
         "Hidden overlaps: symbol_parts_sheet.txt#C with Nano Banana 2 masked inpaint (fill reserve)",
-        "chr_croak: Spine Editor, human animator (ANIMATION_SET §11) -> GAME=bass-drop node tools/spine/validate.mjs build/spine/chr_croak.json --kind any"
+        "Deliver per tools/spine/README.md 'Character parts contract' (canvas 1260 units tall at 2x, feet = root, landmarks, near side L in front, overlap caps on the joints)",
+        "chr_croak: $PYTHON tools/spine/gen.py art/source/mascots/croak/spine2d/rig.yaml -o build/spine/chr_croak.json (kind: character; start from tools/spine/examples/character_demo/croak/rig.yaml) -> node tools/spine/validate.mjs build/spine/chr_croak.json -> pack.py -> validate --atlas -> preview/capture.mjs --scenarios all; an animator polish pass in the Spine Editor is optional"
       ],
       "gates": [
         "keyUniform",
@@ -3001,7 +3007,7 @@
       "outputs": {
         "raw": "art/_raw/chr_croak_parts_hands/vNN/",
         "source": [
-          "art/source/bass-drop/spine/images/chr_croak/<slot>[_<attachment>].png",
+          "art/source/bass-drop/spine/images/chr_croak/<slot>.png (variants: <slot>/<attachment>.png)",
           "art/source/mascots/croak/spine2d/parts.json"
         ]
       },
@@ -3009,7 +3015,8 @@
         "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/chr_croak_parts_hands/sheet.png --key auto --no-fit",
         "Cut into pieces; name them by bassDrop.mascots.croak.sheets.hands[].slot; register each to rig_master.png (ECC/SIFT)",
         "Hidden overlaps: symbol_parts_sheet.txt#C with Nano Banana 2 masked inpaint (fill reserve)",
-        "chr_croak: Spine Editor, human animator (ANIMATION_SET §11) -> GAME=bass-drop node tools/spine/validate.mjs build/spine/chr_croak.json --kind any"
+        "Deliver per tools/spine/README.md 'Character parts contract' (canvas 1260 units tall at 2x, feet = root, landmarks, near side L in front, overlap caps on the joints)",
+        "chr_croak: $PYTHON tools/spine/gen.py art/source/mascots/croak/spine2d/rig.yaml -o build/spine/chr_croak.json (kind: character; start from tools/spine/examples/character_demo/croak/rig.yaml) -> node tools/spine/validate.mjs build/spine/chr_croak.json -> pack.py -> validate --atlas -> preview/capture.mjs --scenarios all; an animator polish pass in the Spine Editor is optional"
       ],
       "gates": [
         "keyUniform",
@@ -3084,7 +3091,7 @@
       "outputs": {
         "raw": "art/_raw/chr_croak_parts_props/vNN/",
         "source": [
-          "art/source/bass-drop/spine/images/chr_croak/<slot>[_<attachment>].png",
+          "art/source/bass-drop/spine/images/chr_croak/<slot>.png (variants: <slot>/<attachment>.png)",
           "art/source/mascots/croak/spine2d/parts.json"
         ]
       },
@@ -3092,7 +3099,8 @@
         "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/chr_croak_parts_props/sheet.png --key auto --no-fit",
         "Cut into pieces; name them by bassDrop.mascots.croak.sheets.props[].slot; register each to rig_master.png (ECC/SIFT)",
         "Hidden overlaps: symbol_parts_sheet.txt#C with Nano Banana 2 masked inpaint (fill reserve)",
-        "chr_croak: Spine Editor, human animator (ANIMATION_SET §11) -> GAME=bass-drop node tools/spine/validate.mjs build/spine/chr_croak.json --kind any"
+        "Deliver per tools/spine/README.md 'Character parts contract' (canvas 1260 units tall at 2x, feet = root, landmarks, near side L in front, overlap caps on the joints)",
+        "chr_croak: $PYTHON tools/spine/gen.py art/source/mascots/croak/spine2d/rig.yaml -o build/spine/chr_croak.json (kind: character; start from tools/spine/examples/character_demo/croak/rig.yaml) -> node tools/spine/validate.mjs build/spine/chr_croak.json -> pack.py -> validate --atlas -> preview/capture.mjs --scenarios all; an animator polish pass in the Spine Editor is optional"
       ],
       "gates": [
         "keyUniform",
@@ -3433,7 +3441,7 @@
       "refs": [
         {
           "ref": "sym_H3_rig",
-          "role": "edit-source (head crop)",
+          "role": "edit-source",
           "jobId": null
         }
       ],
@@ -3451,8 +3459,8 @@
         ]
       },
       "downstream": [
-        "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/sym_H3_eyes_half/crop.png --key auto --no-fit",
-        "Register to the head crop of master_rig_2048.png (ECC), cut the eye region, attachment eyes/half"
+        "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/sym_H3_eyes_half/edit.png --key auto --no-fit",
+        "Register the whole edit to master_rig_2048.png (ECC, scale ~2x), cut the eye region, attachment eyes/half"
       ],
       "gates": [
         "keyUniform",
@@ -3462,7 +3470,7 @@
         "noText"
       ],
       "fallback": "Procedural lids (a dark arc over the open eye) drawn in the rig.",
-      "notes": "Nano Banana 2 at 1k: an edit of a head crop whose eyes are < 80 px on the 360 canvas; 1.5 instead of 2 credits."
+      "notes": "Nano Banana 2 at 1k: an edit of the whole rig-ready master (referenced by its job id, nothing uploaded). At 1k the crawfish is ~870 px tall, above the ~600 px its 300-unit cell content needs at 2x, so the eye region is never upscaled; 1.5 instead of 2 credits."
     },
     {
       "order": 38,
@@ -3503,7 +3511,7 @@
       "refs": [
         {
           "ref": "sym_H3_rig",
-          "role": "edit-source (head crop)",
+          "role": "edit-source",
           "jobId": null
         }
       ],
@@ -3521,8 +3529,8 @@
         ]
       },
       "downstream": [
-        "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/sym_H3_eyes_closed/crop.png --key auto --no-fit",
-        "Register to the head crop of master_rig_2048.png (ECC), cut the eye region, attachment eyes/closed"
+        "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/sym_H3_eyes_closed/edit.png --key auto --no-fit",
+        "Register the whole edit to master_rig_2048.png (ECC, scale ~2x), cut the eye region, attachment eyes/closed"
       ],
       "gates": [
         "keyUniform",
@@ -3532,7 +3540,7 @@
         "noText"
       ],
       "fallback": "Procedural lids (a dark arc over the open eye) drawn in the rig.",
-      "notes": "Nano Banana 2 at 1k: an edit of a head crop whose eyes are < 80 px on the 360 canvas; 1.5 instead of 2 credits."
+      "notes": "Nano Banana 2 at 1k: an edit of the whole rig-ready master (referenced by its job id, nothing uploaded). At 1k the crawfish is ~870 px tall, above the ~600 px its 300-unit cell content needs at 2x, so the eye region is never upscaled; 1.5 instead of 2 credits."
     },
     {
       "order": 39,
@@ -3573,7 +3581,7 @@
       "refs": [
         {
           "ref": "sym_H3_rig",
-          "role": "edit-source (head crop)",
+          "role": "edit-source",
           "jobId": null
         }
       ],
@@ -3591,8 +3599,8 @@
         ]
       },
       "downstream": [
-        "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/sym_H3_eyes_wide/crop.png --key auto --no-fit",
-        "Register to the head crop of master_rig_2048.png (ECC), cut the eye region, attachment eyes/wide"
+        "GAME=bass-drop python3 tools/matte/outline_matte.py <raw> art/_work/sym_H3_eyes_wide/edit.png --key auto --no-fit",
+        "Register the whole edit to master_rig_2048.png (ECC, scale ~2x), cut the eye region, attachment eyes/wide"
       ],
       "gates": [
         "keyUniform",
@@ -3602,7 +3610,7 @@
         "noText"
       ],
       "fallback": "Procedural lids (a dark arc over the open eye) drawn in the rig.",
-      "notes": "Nano Banana 2 at 1k: an edit of a head crop whose eyes are < 80 px on the 360 canvas; 1.5 instead of 2 credits."
+      "notes": "Nano Banana 2 at 1k: an edit of the whole rig-ready master (referenced by its job id, nothing uploaded). At 1k the crawfish is ~870 px tall, above the ~600 px its 300-unit cell content needs at 2x, so the eye region is never upscaled; 1.5 instead of 2 credits."
     },
     {
       "order": 40,

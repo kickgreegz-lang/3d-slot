@@ -11,8 +11,8 @@ import zlib from 'node:zlib';
 import { GenError, RAW_ROOT, buildValues, gate, parseArgs, render, templatePath, versionDirs } from './lib/genlib.mjs';
 import {
   LEDGER, LEDGER_PROMPTS, MCP_MODELS, allJobs, assetFor, checkedLedger, estimateCredits, findJob, isCompleted,
-  isFailed, isTerminal, jobContext, parseMcpJobs, promptFile, requestModelFor, resolvePrompt, rowModelFor, stageFor,
-  storePrompt, updateLedger,
+  isFailed, isTerminal, jobContext, ledgerJobFromPlan, ledgerProblems, parseMcpJobs, promptFile, requestModelFor,
+  requestProblems, resolvePrompt, rowModelFor, stageFor, storePrompt, updateLedger,
 } from './lib/hfledger.mjs';
 import { MANIFEST, REPO, isMain, makeRow, nowIso, readManifest, record, rel, safeId, sha256File, sha256Text } from './lib/provenance.mjs';
 
@@ -49,6 +49,7 @@ Options:
   --allow-size-mismatch accept a PNG whose size does not fit the job's resolution/aspect (noted in the row)
   --json                status: machine-readable output
   plan:   --spec FILE  --out FILE  --max-credits N (fails closed when the estimate is unknown)
+          --force (replace an existing plan file whose jobs differ; only when its calls were never submitted)
   record: --plan FILE | --request FILE  --from FILE|- (repeatable)  --name INDEX=NAME  --purpose TEXT
           --plan-tier TEXT  --credits N (override the per-job estimate)  --date YYYY-MM-DD
 Exit codes: 0 ok/nothing to do · 2 usage, ledger or prompt error · 3 licence refusal · 4 cost cap ·
@@ -60,7 +61,7 @@ const SPEC = {
   batch: { type: 'string', multi: true }, job: { type: 'string', multi: true }, 'dry-run': { type: 'boolean' },
   'allow-host': { type: 'string', multi: true }, 'timeout-s': { type: 'number', default: 600 }, retries: { type: 'number', default: 3 },
   'allow-size-mismatch': { type: 'boolean' }, json: { type: 'boolean' }, 'store-prompts': { type: 'boolean' },
-  spec: { type: 'string' }, out: { type: 'string' }, 'max-credits': { type: 'number' },
+  spec: { type: 'string' }, out: { type: 'string' }, 'max-credits': { type: 'number' }, force: { type: 'boolean' },
   plan: { type: 'string' }, request: { type: 'string' }, from: { type: 'string', multi: true }, name: { type: 'string', multi: true },
   purpose: { type: 'string' }, 'plan-tier': { type: 'string' }, credits: { type: 'number' }, date: { type: 'string' },
 };
@@ -669,6 +670,19 @@ function cmdPlan(a) {
   });
   const idx = new Set();
   for (const j of jobs) { if (idx.has(j.index)) throw new GenError(`spec: duplicate index ${j.index}`); idx.add(j.index); }
+  const date = spec.date ?? today();
+  // Everything 'record' will refuse must fail HERE, before the request is paid for: build the ledger that recording
+  // these jobs would produce (placeholder job ids) and validate it, plus the model's request options.
+  const probs = [];
+  for (const j of jobs) for (const m of requestProblems(j.request_model ?? spec.model, j)) probs.push(`${j.name}: ${m}`);
+  const probe = structuredClone(doc);
+  let pb = probe.batches.find((b) => b.id === spec.batch);
+  if (!pb) probe.batches.push(pb = { id: spec.batch, date, purpose: spec.purpose ?? '', model: spec.model, planTier: spec.planTier ?? null, jobs: [] });
+  jobs.forEach((j, i) => pb.jobs.push(ledgerJobFromPlan(j, {
+    job_id: `ffffffff-ffff-4fff-8fff-${String(i).padStart(12, '0')}`, requestModel: j.request_model,
+  })));
+  probs.push(...ledgerProblems(probe).map((m) => m.replace(/^schema \/batches\/\d+\/jobs\/(\d+)\/?/, (_, k) => `${pb.jobs[Number(k)]?.name ?? `jobs[${k}]`}: `)));
+  if (probs.length) throw new GenError(`spec ${a.spec} would pay for jobs the ledger cannot record:\n  ${probs.join('\n  ')}`);
   const unknown = jobs.filter((j) => j.credits == null).map((j) => j.name);
   const total = unknown.length ? null : jobs.reduce((s, j) => s + j.credits, 0);
   if (a['max-credits'] !== undefined) {
@@ -677,10 +691,18 @@ function cmdPlan(a) {
   }
   const plan = {
     planVersion: 1, tool: TOOL, ledger: rel(ledgerPath),
-    batch: { id: spec.batch, date: spec.date ?? today(), purpose: spec.purpose ?? '', model: spec.model, planTier: spec.planTier ?? null },
+    batch: { id: spec.batch, date, purpose: spec.purpose ?? '', model: spec.model, planTier: spec.planTier ?? null },
     jobs,
   };
   const out = path.resolve(a.out ?? path.join(REPO, 'art', '_work', 'hf-plans', `${spec.batch}.plan.json`));
+  // 'record --plan' maps the MCP reply to prompts by index alone: silently replacing a plan whose calls were already
+  // submitted would record the paid jobs under the wrong prompts.
+  const old = fs.existsSync(out) ? readJsonMaybe(out) : null;
+  if (old && JSON.stringify(old.jobs) !== JSON.stringify(plan.jobs) && !a.force) {
+    throw new GenError(`${rel(out)} already holds a different plan for batch ${spec.batch}. If its calls were submitted, `
+      + `record them with that file first (pnpm gen:hf-ingest record --plan ${rel(out)} --from <reply>); otherwise pass --force `
+      + '(or --out another file).');
+  }
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, `${JSON.stringify(plan, null, 2)}\n`);
   const calls = [];
@@ -786,14 +808,10 @@ function cmdRecord(a) {
       for (let k = 2; batch.jobs.some((j) => j.name === name); k++) name = `${pj.name}.r${k}`;
       if (name !== pj.name) log(`warning: ${batch.id}/${pj.name} is already recorded with another job_id; recording ${x.job_id} as ${name}`);
       const reqModel = pj.request_model ?? (plan.batch.model !== batch.model ? plan.batch.model : null);
-      const job = {
-        name, index: pj.index, job_id: x.job_id, status: x.status ?? 'submitted',
-        ...(x.type ? { type: x.type } : {}), ...(x.model ? { model: x.model } : {}),
-        ...(reqModel ? { request_model: reqModel } : {}),
-        template: pj.template ?? null, ...(pj.template ? { vars: pj.vars ?? {} } : {}), promptHash: pj.promptHash,
-        resolution: pj.resolution, aspect_ratio: pj.aspect_ratio, credits: a.credits ?? pj.credits ?? null, result_url: x.result_url ?? null,
-      };
-      for (const k of ['medias', 'refHashes', 'asset', 'stage']) if (pj[k] !== undefined) job[k] = pj[k];
+      const job = ledgerJobFromPlan(pj, {
+        name, job_id: x.job_id, status: x.status, type: x.type, model: x.model, requestModel: reqModel,
+        credits: a.credits, result_url: x.result_url,
+      });
       if (job.credits == null) log(`warning: ${batch.id}/${job.name}: credit cost unknown (pass --credits N, or check the MCP 'transactions')`);
       batch.jobs.push(job);
       report.added.push(`${batch.id}/${job.name}`);

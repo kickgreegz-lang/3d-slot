@@ -10,7 +10,8 @@
 #   {FACING}         bassDrop.mascots.<id>.facing
 #   {POSE_NOTE}      bassDrop.mascots.<id>.poseNote (A only)
 #   {PART_LIST}      bassDrop.mascots.<id>.sheets.<body|face|hands|props> joined with ", " (B-E)
-#   {STYLE_FORMULA}  artbible.styleFormula ; {KEY_HEX} mascots.<id>.keyHex (gumbo #FF00FF, croak #0000FF)
+#   {STYLE_FORMULA}  artbible.styleFormula; Bass Drop passes artbible.bassDrop.styleFormula (formula D, STYLE_DECISION.md)
+#   {KEY_HEX}        mascots.<id>.keyHex (gumbo #FF00FF, croak #0000FF); measure the real key when matting (--key auto)
 # 'near' = the side closer to the viewer in the three-quarter view (gumbo faces screen-right: near = his right;
 # croak faces screen-left: near = his left). Spine _L/_R names are the character's own sides.
 # Never use: kid, child, cute, chibi, baby.
@@ -26,7 +27,7 @@ Solid uniform flat {KEY_HEX} background, no floor, no cast shadow, no text, no l
 
 ## SECTION B: body parts sheet
 {IDENTITY_LOCK}
-Cut-out animation parts sheet of the same character as the reference, in the same three-quarter view, scale, outline weight, colours and cel shading: {PART_LIST}. Every piece drawn separately and complete, including the area normally hidden where it joins its neighbour, which ends in a rounded overlap cap; pieces laid out in a loose grid with wide empty gaps so no two pieces touch, and each piece keeps its own closed black outline.
+Cut-out animation parts sheet of the same character as the reference, in the same three-quarter view, scale, outline weight, colours and shading: {PART_LIST}. Every piece drawn separately and complete, including the area normally hidden where it joins its neighbour, which ends in a rounded overlap cap; pieces laid out in a loose grid with wide empty gaps so no two pieces touch, and each piece keeps its own closed black outline.
 {STYLE_FORMULA}
 Solid uniform flat {KEY_HEX} background, no text, no labels, no numbers, no grid lines, no shadows.
 

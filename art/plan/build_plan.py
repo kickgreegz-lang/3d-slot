@@ -8,9 +8,9 @@ tools/gen/genlib.py, the same renderer every generation tool uses, so a row's pr
 generation records. The human plan is docs/games/bass-drop/ART_PLAN.md.
 
   python3 art/plan/build_plan.py                  # rewrite art/plan/bass-drop.json
-  python3 art/plan/build_plan.py --check          # exit 1 when the committed plan is stale
+  python3 art/plan/build_plan.py --check          # exit 1 when bass-drop.json or the ART_PLAN.md table is stale
   python3 art/plan/build_plan.py summary          # budget per priority and per batch
-  python3 art/plan/build_plan.py table            # markdown asset table (pasted into ART_PLAN.md)
+  python3 art/plan/build_plan.py table --doc      # refresh the asset table inside ART_PLAN.md (--check verifies it)
   python3 art/plan/build_plan.py spec --batch c01 # 'pnpm gen:hf-ingest plan --spec' input for one batch;
                                                   # every reference must be approved in art/plan/approvals.json
 
@@ -126,7 +126,8 @@ for sid, rig in (("H1", "sym_H1"), ("H2", "sym_H2"), ("H3", "sym_H3"), ("H4", "s
 for mid in ("gumbo", "croak"):
     row(f"mascot_{mid}_sheetA", phase="anchors", priority="P0", batch="probe1", kind="mascot",
         template="mascot_turnaround.txt#A", what=f"{genlib.bible()['mascots'][mid]['name']} design model sheet (probe1); identity reference",
-        rig=f"chr_{mid}", mascot=mid, resolution="4k", aspect="21:9", probe=f"mascot_{mid}_sheetA", stage="mascot-sheets",
+        rig=f"chr_{mid}", atlas=f"bd_chr_{mid}", mascot=mid, resolution="4k", aspect="21:9", probe=f"mascot_{mid}_sheetA",
+        stage="mascot-sheets",
         source=[f"art/source/mascots/{mid}/sheets/design_sheet.png"],
         downstream=["Human approval of identity and adult proportions (ART_BIBLE §7), then copy the approved raw to the source path."],
         fallback="Rejected sheet: regenerate once (probe redo reserve). Everything in the mascots phase waits for this approval.")
@@ -684,18 +685,41 @@ def cmd_summary(doc: dict) -> int:
     return 0
 
 
-def cmd_table(doc: dict) -> int:
-    print("| # | Asset | What | Template | Model · res · aspect | Cand. | References | Pri. | Credits (base → w/ retries) | Rig / atlas |")
-    print("|---|---|---|---|---|---|---|---|---|---|")
+DOC_PATH = REPO / "docs" / "games" / "bass-drop" / "ART_PLAN.md"
+TABLE_BEGIN = "<!-- BEGIN asset-table (generated: python3 art/plan/build_plan.py table --doc) -->"
+TABLE_END = "<!-- END asset-table -->"
+
+
+def table_md(doc: dict) -> str:
+    lines = ["| # | Asset | What | Template | Model · res · aspect | Cand. | References | Pri. | Credits base → w/ retries | Rig |",
+             "|---|---|---|---|---|---|---|---|---|---|"]
     for a in doc["assets"]:
         model = {"nano_banana_pro": "NBP", "nano_banana_2": "NB2"}[a["model"]]
-        refs = ", ".join(f"`{r['ref']}`" for r in a["refs"]) or "none"
-        if a["jobIds"]:
-            cred = f"{a['credits']['spent']} spent"
-        else:
-            cred = f"{a['credits']['base']:g} → {a['credits']['withRetries']:g}"
-        print(f"| {a['order']} | `{a['id']}` | {a['what']} | `{a['template']}` | {model} · {a['resolution']} · {a['aspectRatio']} | "
-              f"{a['candidates'] or '–'} | {refs} | {a['priority']} | {cred} | {a['rig']} / {a['atlas'] or '–'} |")
+        refs = ", ".join(f"`{r['ref']}`" for r in a["refs"]) or "–"
+        cred = f"{a['credits']['spent']:g} spent" if a["jobIds"] else f"{a['credits']['base']:g} → {a['credits']['withRetries']:g}"
+        rig = a["rig"].split(" (")[0].split(",")[0]
+        lines.append(f"| {a['order']} | `{a['id']}` | {a['what']} | `{a['template']}` | {model} · {a['resolution']} · "
+                     f"{a['aspectRatio']} | {a['candidates'] or '–'} | {refs} | {a['priority']} | {cred} | {rig} |")
+    return "\n".join(lines)
+
+
+def doc_with_table(doc: dict) -> tuple[str, str]:
+    """(current ART_PLAN.md text, the same text with the generated asset table spliced in)."""
+    cur = DOC_PATH.read_text(encoding="utf-8")
+    i, j = cur.find(TABLE_BEGIN), cur.find(TABLE_END)
+    if i < 0 or j < i:
+        raise SystemExit(f"{DOC_PATH.relative_to(REPO)}: asset-table markers missing")
+    return cur, cur[:i] + TABLE_BEGIN + "\n" + table_md(doc) + "\n" + cur[j:]
+
+
+def cmd_table(doc: dict, write_doc: bool) -> int:
+    if not write_doc:
+        print(table_md(doc))
+        return 0
+    cur, new = doc_with_table(doc)
+    if new != cur:
+        DOC_PATH.write_text(new, encoding="utf-8")
+    print(f"{DOC_PATH.relative_to(REPO)}: asset table {'updated' if new != cur else 'already current'}")
     return 0
 
 
@@ -706,12 +730,13 @@ def main(argv=None) -> int:
     ap.add_argument("--batch", help="spec: batch id (see 'summary')")
     ap.add_argument("--approvals", default=str(APPROVALS_PATH), help="spec: approved job ids per plan row")
     ap.add_argument("--allow-unapproved", action="store_true", help="spec: emit UNAPPROVED:<id> placeholders (review only)")
+    ap.add_argument("--doc", action="store_true", help="table: splice the table into docs/games/bass-drop/ART_PLAN.md")
     a = ap.parse_args(argv)
     doc = plan_doc()
     if a.cmd == "summary":
         return cmd_summary(doc)
     if a.cmd == "table":
-        return cmd_table(doc)
+        return cmd_table(doc, a.doc)
     if a.cmd == "spec":
         if not a.batch:
             ap.error("spec needs --batch")
@@ -721,6 +746,10 @@ def main(argv=None) -> int:
         cur = PLAN_PATH.read_text(encoding="utf-8") if PLAN_PATH.is_file() else ""
         if cur != text:
             print(f"{PLAN_PATH.relative_to(REPO)} is stale: run python3 art/plan/build_plan.py", file=sys.stderr)
+            return 1
+        cur_doc, new_doc = doc_with_table(doc)
+        if cur_doc != new_doc:
+            print(f"{DOC_PATH.relative_to(REPO)} asset table is stale: run python3 art/plan/build_plan.py table --doc", file=sys.stderr)
             return 1
         print(f"{PLAN_PATH.relative_to(REPO)} is up to date ({len(doc['assets'])} rows)")
         return 0

@@ -6,25 +6,25 @@
 #   {EMBLEM}         emblems.<id>.subject
 #   {PALETTE}        emblems.<id>.palette  (role colours with hex)
 #   {ICONS}          C only: emblems.<id>.icons joined with "; "
-#   {STYLE_FORMULA}  artbible.styleFormula (byte-identical)
+#   {STYLE_FORMULA}  artbible.styleFormula; Bass Drop passes artbible.bassDrop.styleFormula (formula D, STYLE_DECISION.md)
 #   {KEY_HEX}        emblems.<id>.keyHex
-# Glow is a runtime fx_* slot: lamps and lit panels are painted as bright flat cel colour with no halo, no rays.
+# Glow is a runtime fx_* slot: lamps and lit panels are painted as bright glossy colour with no halo, no rays.
 # Words (titles, counts, the game name) are live text on txt_* slots or a typeset vector word-mark: never ask for letters.
 # References: A = 3 style anchors (+ the approved meter master for the speaker stack); B = the approved emblems + anchors;
 #             C = the approved emblems and W master the icons simplify.
 # Output: A 1:1 2k; B 16:9 2k; C 16:9 2k. Notch states (_off/_next/_lit/_spent) and W pips are made in code.
 
 ## SECTION A: feature emblem
-Game feature emblem: {EMBLEM}. Bold heraldic silhouette that reads at 120 px, {PALETTE}, frontal three-quarter view with a slight low angle. Lamps and lit panels painted as bright flat cel colours with a white specular streak, no glow halo, no light rays.
+Game feature emblem: {EMBLEM}. Bold heraldic silhouette that reads at 120 px, {PALETTE}, frontal three-quarter view with a slight low angle. Lamps and lit panels painted as bright glossy colours with crisp white specular hotspots, no glow halo, no light rays.
 {STYLE_FORMULA}
 Single emblem, centred, filling 85% of the frame height with equal empty margin on all four sides, no text, no letters, no numbers, no characters. Any enclosed opening is solid flat {KEY_HEX}. On a solid uniform flat {KEY_HEX} background, no gradient, no vignette, no cast shadow, no glow on the background.
 
 ## SECTION B: logo emblem without lettering (a typographer sets the word-mark on the blank banner)
-Game logo emblem with no lettering: {EMBLEM}, {PALETTE}. A wide blank banner plate across the middle is left completely empty for a word-mark added later. Chunky slanted shapes with a short dark-plum extrusion toward the lower right.
+Game logo emblem with no lettering: {EMBLEM}, {PALETTE}. A wide blank banner plate across the middle is left completely empty for a word-mark added later. Chunky slanted shapes with clear three-dimensional volume.
 {STYLE_FORMULA}
 Single emblem, centred, filling 85% of the frame width with equal empty margin, no text, no letters, no numbers, no symbols or marks on the banner. Any enclosed opening is solid flat {KEY_HEX}. On a solid uniform flat {KEY_HEX} background, no gradient, no cast shadow, no glow.
 
 ## SECTION C: icon sheet (small UI glyphs)
-Sheet of small game UI icons in the style of the references: {ICONS}. Each icon a simple bold silhouette that reads at 40 px, thick black outline, flat cel colours with one specular streak, all icons at the same height, laid out in one row with wide empty gaps so no two icons touch.
+Sheet of small game UI icons in the style of the references: {ICONS}. Each icon a simple bold silhouette that reads at 40 px, thick black outline, bold clean colours with one crisp specular hotspot, all icons at the same height, laid out in one row with wide empty gaps so no two icons touch.
 {STYLE_FORMULA}
 No text, no letters, no numbers, no labels. Solid uniform flat {KEY_HEX} background, no cast shadows, no glow.

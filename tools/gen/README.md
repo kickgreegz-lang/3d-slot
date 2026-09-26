@@ -1,4 +1,4 @@
-# tools/gen: generation wrappers (Higgsfield CLI, Vertex Nano Banana Pro, Scenario)
+# tools/gen: generation wrappers (Higgsfield CLI + MCP ingestion, Vertex Nano Banana Pro, Scenario)
 
 Committed scripts that turn **art bible templates** into **vendor requests** and store the result
 with provenance. MCP servers are for exploring; anything that may ship comes from these
@@ -9,6 +9,8 @@ with provenance. MCP servers are for exploring; anything that may ship comes fro
 | `higgsfield.mjs` | official `@higgsfield/cli` (`higgsfield generate create <model> … --wait --json`), route `higgsfield-cli` | `nano_banana_2` (= **Nano Banana Pro**), `nano_banana_flash`, `nano_banana_2_lite`, `seedance_2_0(_mini)`, `kling3_0(_turbo)` |
 | `nbp.py` | Vertex AI via `google-genai` (sync or Batch API), route `vertex` | allowlist `modelIds`: `gemini-3-pro-image` (GA; `-preview` refused), `gemini-3.1-flash-image`, `gemini-3.1-flash-lite-image` |
 | `scenario.py` | Scenario REST `POST /v1/generate/custom/{modelId}`, route `scenario` | your LoRA model id; `--base` must be an Apache-2.0 base (`qwen-image`, `z-image`, `flux2-klein-4b-base`) |
+| `hf-ingest.mjs` (`pnpm gen:hf-ingest`) | Higgsfield **MCP** jobs, route `higgsfield-mcp`: `plan` (rendered `generate_image_batch` arguments) → `record` (MCP JSON → committed ledger `art/ledger/higgsfield-jobs.json`) → ingest (CDN → `art/_raw` + rows) · `status` · `check` | MCP ids: `nano_banana_pro` (= **Nano Banana Pro**; its jobs report `nano_banana_2`, which the row records), `nano_banana_2` (= Nano Banana **2** on the MCP!), `seedream_v4_5` |
+| `lib/hfledger.mjs` | ledger load/validate (schema `art/ledger/higgsfield-jobs.schema.json`) and locked updates, prompt re-render vs stored copy, asset/stage/model resolution, MCP JSON parsing | |
 | `genlib.py` / `lib/genlib.mjs` | shared: template rendering, licence gate, raw-folder layout (Python and JS twins, parity-tested) | |
 | `provenance.py` / `lib/provenance.mjs` | manifest rows (schema `art/manifest.schema.json`), append-only + locked writes; also used by tools/matte, video, audio, assets | |
 
@@ -36,6 +38,82 @@ with provenance. MCP servers are for exploring; anything that may ship comes fro
    rendered prompt, its hash and the target folder, and writes nothing.
 
 Exit codes: `0` ok/skipped · `2` usage or template error · `3` licence refusal · `4` cost cap · `5` vendor failure · `6` download failure.
+
+## Higgsfield MCP route: plan → pay → record → ingest (`pnpm gen:hf-ingest`)
+
+The MCP generates on Higgsfield's side and hands back CDN URLs, so the wrapper cannot own the call the way
+`higgsfield.mjs` owns the CLI. Instead every **paid** MCP job goes into the committed ledger
+`art/ledger/higgsfield-jobs.json` (schema next to it; `art/_raw` is gitignored, the ledger survives
+container restarts), and `hf-ingest.mjs` turns ledger jobs into the same raw layout and rows as every
+other route. It never calls the MCP and needs no credentials. Model ids differ from the CLI's: on the
+MCP `nano_banana_pro` is Nano Banana Pro (the finished job reports `nano_banana_2`) and `nano_banana_2`
+is Nano Banana 2. Never an OpenAI model (`gpt_image_2`, `gpt_image_2_5`, `openai_hazel`): `plan`,
+`record` and ingest all refuse them (exit 3). No seed and no negative prompt on Higgsfield.
+
+```bash
+# 1. plan: render every prompt from the art bible and print the exact generate_image_batch arguments
+#    (≤ 12 requests per call; `resolution` 1k|2k|4k, medias = media_id/job_id UUIDs with role image_references)
+pnpm gen:hf-ingest plan --spec spec.json --max-credits 20      # -> art/_work/hf-plans/<batch>.plan.json + {calls:[{requests}]}
+python3 art/plan/build_plan.py spec --batch c01 > spec.json    # the Bass Drop plan emits this spec shape
+# 2. pay: pass calls[i] to the MCP tool generate_image_batch; save its JSON reply verbatim (e.g. submit.json)
+# 3. record the paid jobs at once (before waiting), then again with the jobs_wait reply
+pnpm gen:hf-ingest record --plan art/_work/hf-plans/<batch>.plan.json --from submit.json
+pnpm gen:hf-ingest record --from wait.json                     # status, result_url, reported model (never downgrades)
+#    re-recording is a no-op; a plan submitted twice keeps the second set of (paid) jobs as <name>.r2, .r3, …
+# ad-hoc MCP calls made without a plan (prompt stored verbatim, template null); items may carry "name":
+pnpm gen:hf-ingest record --batch ab1 --request req.json --from submit.json [--name 0=ui_emblem_juke] [--purpose …] [--plan-tier "Higgsfield Plus"]
+pnpm gen:hf-ingest record --batch ab1 --request staged.json --from staged.json   # [{index,name,params,job_id,result_url}] lists
+# 4. download + provenance (idempotent; re-run = no-op; an interrupted download resumes with HTTP Range)
+pnpm gen:hf-ingest [--batch B] [--job NAME|JOB_ID] [--dry-run]
+pnpm gen:hf-ingest status [--json]      # jobs, credits spent per batch, downloaded or not, target folder / row id
+pnpm gen:hf-ingest check [--store-prompts]   # ledger schema + every prompt reproducible + licence gate (offline, CI-safe)
+```
+
+MCP JSON accepted by `record --from` (file or `-`): any `{jobs:[…]}` / `results` / top-level array whose items carry
+`job_id` (or `id`) plus `index`, `status`, `model`, `type`, `result_url`, also when wrapped as an MCP tool result
+(`{content:[{type:"text",text:"<json>"}]}`). The `jobs_wait` reply shape was checked live on 2026-09-26; the
+`generate_image_batch` reply is parsed by the same generic rule (items without a `job_id` are reported as not
+submitted, no charge). An item with a `result_url` but no `status` counts as completed.
+
+Plan spec (`plan --spec`): `{"batch", "model", "purpose"?, "planTier"?, "date"?, "resolution"?, "aspect_ratio"?,
+"jobs": [{"name", "template", "vars": {"symbol"|"mascot"|"rigReady", "UPPER_CASE_PLACEHOLDER": "value"},
+"resolution"?, "aspect_ratio"?, "credits"?, "index"?, "request_model"?, "medias"?, "asset"?, "stage"?}]}`.
+Credits are estimated from the rates measured on 2026-09-26 (NBP 2 at 2k / 4 at 4k, NB2 1.5 at 1k / 2 at
+2k, Seedream 4.5 1); unknown rates make `--max-credits` fail closed (exit 4).
+
+What ingest does for every `completed` job without a local copy:
+1. **Gate + prompt first, no network:** licence gate on the request and the reported model; the prompt is
+   re-rendered from `template` + `vars` (genlib) and must hash to `promptHash`. If the bible or template
+   changed since, the stored copy `art/ledger/prompts/<promptHash>.txt` is used (warning); neither → exit 2.
+   `record` stores every recorded prompt there; `check --store-prompts` freezes older jobs.
+2. **Download** `result_url` (https on `*.cloudfront.net` / `*.higgsfield.ai` only; `--allow-host` adds one)
+   into `art/_raw/.incoming/<job_id>.part`, resuming with `Range` after an interruption (`--retries`, `--timeout-s`).
+   The **egress-policy 403** (`x-deny-reason`, or a refused proxy CONNECT) stops at the first job, names the host
+   and says to allow it in the environment's Network access settings (exit 6); a CloudFront 403/404 says the URL
+   expired: refresh it with `jobs_wait` + `record`.
+3. **Verify:** PNG signature, IHDR first, every chunk CRC, IDAT, IEND (truncation); size vs the job
+   (exact once the ledger knows it, else aspect within 3 % and ~1024·k px per side or long edge for `k`k);
+   sha256 vs the ledger/manifest. A failure keeps the bytes as `.incoming/<job_id>.rejected` and exits 7
+   (`--allow-size-mismatch` accepts an odd size and notes it in the row).
+4. **Write** `art/_raw/<asset>/vNN/{raw.png, prompt.txt, job.json, manifest.json}`. `<asset>` = the job's
+   `asset`, else genlib's `defaultAsset` (the same folder `gen:higgsfield` uses: `sym_H1`, `sym_H1_rig`,
+   `mascot_gumbo_turnaround_A`, `background_A`), else the name; candidates of one asset get v01, v02, ….
+   A job already in `art/manifest.json` keeps its `vNN` on any machine. Nothing is ever overwritten: an
+   existing different `raw.png`/`prompt.txt`/row is a conflict (exit 7).
+5. **Rows** (append-only, `art/manifest.json` created if missing): id `<asset>.raw.vNN` (lower-case; the
+   `--parent-id` for `pnpm matte`), `route: higgsfield-mcp`, `vendor: Higgsfield`, `model` as reported
+   (`nano_banana_2` for NBP), `version: higgsfield-mcp/<request model>@<batch date>`, `seed: null`, `jobId`,
+   `promptPath`, `promptHash`, `template`, `refHashes` (from `medias[].sha256`), stage per kind
+   (symbols/parts/props/frame/VFX `2d-image`, mascot sheets `mascot-sheets`, backgrounds `backgrounds`;
+   `stage` overrides), `licenseId: higgsfield`, `tosVersion` (newest `licenses/tos/higgsfield/*.pdf`, else
+   null), `planTier`, `cost` in credits, `shipped: false`. The ledger job gains `sha256/width/height/bytes`.
+6. **Licence:** allowlist `higgsfield` is `clearance: pending`, so these rows **build and preview but cannot
+   ship**: `pnpm licence:audit` passes (ToS warning); any shipped row or `public/assets` file descending from
+   them fails with "licence 'higgsfield' has clearance 'pending'" until `licenses/clearances/higgsfield.pdf`
+   is filed and the entry says `cleared`.
+
+Exit codes (`hf-ingest.mjs`): `0` ok/nothing to do · `2` usage, ledger or prompt error · `3` licence refusal ·
+`4` cost cap (plan) · `6` download failure incl. the egress block · `7` verification failure or file conflict.
 
 ## Setup
 
@@ -94,7 +172,8 @@ python tools/gen/scenario.py --template symbol.txt --symbol H3 --model-id model_
 ## Tests (no keys, no network)
 
 ```bash
-tools/.venv/bin/python tools/gen/test/test_gen.py     # 24 tests; also runs with a stdlib-only python3
+tools/.venv/bin/python tools/gen/test/test_gen.py     # 35 tests; also runs with a stdlib-only python3
+python3 tools/gen/test/test_hf_ingest.py              # the 11 hf-ingest tests alone
 ```
 Covers: every template/section rendered by Python and Node with identical text + hash; the gate table
 (allowed: NBP/NB2/Seedance/Kling/ElevenLabs/Stable Audio 2.5; refused: `gpt_image_2(_5)`, `openai_hazel`,
@@ -103,11 +182,21 @@ Higgsfield via `test/fake-higgsfield.mjs` (dry-run writes nothing, explicit vide
 cost preview, download, row, idempotent skip, resume after a failed job); NBP dry-run validated with
 the real `google-genai` types, Batch stage → collect; Scenario against a local mock REST server (auth
 header, asset upload, polling, CU cost, cost cap); manifest rows validated with `jsonschema`.
+`test_hf_ingest.py` runs hf-ingest against a local HTTP server standing in for the Higgsfield CDN:
+layout + rows (validated with `jsonschema` when installed and always with the audit's own `schema-lite`),
+stage per kind, reported model, idempotent re-run (no request, no file touched), manifest rebuilt from
+sidecars, Range resume after a cut connection, bad signature / truncated PNG / wrong size / wrong aspect,
+egress 403 (one request, clear message) vs CloudFront 403 vs a non-allowed host, tampered `raw.png` and a
+changed CDN file never overwritten, prompt drift → stored-prompt fallback, OpenAI models refused,
+`plan` → `record` (submit + wrapped `jobs_wait`, no status downgrade, idempotent) → ingest → `status`,
+staged request/result lists, placeholder media ids refused, the real ledger valid and every probe prompt
+reproducible, and `pnpm licence:audit` passing on the rows but failing once they are shipped.
 
 ## Doc snippets (for docs/PIPELINE.md "Tooling status" and art/bible/prompts/README.md)
 
 ```md
 | `tools/gen/{higgsfield.mjs,nbp.py,scenario.py}` + `genlib` | **exists** | Rendered-prompt generation (Higgsfield CLI, Vertex NBP sync/Batch, Scenario LoRA REST) into `art/_raw/<asset>/vNN/` with manifest rows; licence gate; `--dry-run` |
+| `tools/gen/hf-ingest.mjs` (`gen:hf-ingest`) | **exists** | Higgsfield MCP: `plan` (rendered batch arguments) → `record` (ledger `art/ledger/higgsfield-jobs.json`) → ingest (CDN → `art/_raw` + `higgsfield-mcp` rows; resumable, verified, idempotent) · `status` · `check` |
 ```
 - prompts/README.md minimal renderer: `line.split()[2]` yields `"A:"`, not `"A"`, so `file.txt#A` never
   matches; and `re.sub(r"\n{2,}", "\n")` leaves double spaces from empty placeholders. Point readers

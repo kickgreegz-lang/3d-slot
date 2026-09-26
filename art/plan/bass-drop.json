@@ -784,7 +784,7 @@
       "what": "Gumbo design model sheet (probe1); identity reference",
       "kind": "mascot",
       "rig": "chr_gumbo",
-      "atlas": null,
+      "atlas": "bd_chr_gumbo",
       "template": "mascot_turnaround.txt#A",
       "context": {
         "mascot": "gumbo"
@@ -845,7 +845,7 @@
       "what": "Baron Croak design model sheet (probe1); identity reference",
       "kind": "mascot",
       "rig": "chr_croak",
-      "atlas": null,
+      "atlas": "bd_chr_croak",
       "template": "mascot_turnaround.txt#A",
       "context": {
         "mascot": "croak"

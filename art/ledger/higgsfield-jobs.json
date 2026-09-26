@@ -136,6 +136,168 @@
           "type": "image"
         }
       ]
+    },
+    {
+      "id": "ab1",
+      "date": "2026-09-26",
+      "purpose": "style A/B round 2: formula B (glossy cel) and C (hand-painted) on H1/H3/W, painted-environment background, Croak v2 sheet (docs/games/bass-drop/STYLE_DECISION.md)",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "ab_B_H1",
+          "index": 10,
+          "job_id": "437c03a6-8c69-47e5-87a5-735eafdb8f55",
+          "status": "completed",
+          "template": null,
+          "promptHash": "6629f38870463062d92af7833ae3a95c5dacbd998798253c61e3ffebd2e0362f",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_437c03a6-8c69-47e5-87a5-735eafdb8f55.png"
+        },
+        {
+          "name": "ab_B_H3",
+          "index": 11,
+          "job_id": "b32b33be-2330-4a51-9cf4-5df55f8104e1",
+          "status": "completed",
+          "template": null,
+          "promptHash": "48dcae27533e82ee6554701b5c4b81ac53290c4a6faac8242466217145ed5c53",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_b32b33be-2330-4a51-9cf4-5df55f8104e1.png"
+        },
+        {
+          "name": "ab_B_W",
+          "index": 12,
+          "job_id": "b2db210e-30c4-4f85-8d82-0e74c23c4851",
+          "status": "completed",
+          "template": null,
+          "promptHash": "3efe455e918793f7935220f54ef0cdcce40c6e6b3a65732c3d84ece8f1736d9e",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_b2db210e-30c4-4f85-8d82-0e74c23c4851.png"
+        },
+        {
+          "name": "ab_C_H1",
+          "index": 13,
+          "job_id": "393e3e3d-f11b-4a1b-98a7-e1283ee05fd2",
+          "status": "completed",
+          "template": null,
+          "promptHash": "0980e126b07e7391d7450de29d4f180b38298a8438a1ae272d1c445703f6b573",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_393e3e3d-f11b-4a1b-98a7-e1283ee05fd2.png"
+        },
+        {
+          "name": "ab_C_H3",
+          "index": 14,
+          "job_id": "404343d8-ad21-4bb7-b0f0-3eee2196d6a1",
+          "status": "completed",
+          "template": null,
+          "promptHash": "044eef71c791a5fbc9579c0cb981c65ade73d170ff74d4c80e1bcd2c16e93e88",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_404343d8-ad21-4bb7-b0f0-3eee2196d6a1.png"
+        },
+        {
+          "name": "ab_C_W",
+          "index": 15,
+          "job_id": "b979a4aa-30de-4d10-bdbe-6ef6440357c1",
+          "status": "completed",
+          "template": null,
+          "promptHash": "83a4a18458efd5a4392ea11ca6527a8a977c38eb4ee003e2b9eee4a2f0b36f5e",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_b979a4aa-30de-4d10-bdbe-6ef6440357c1.png"
+        },
+        {
+          "name": "ab_bg_painted",
+          "index": 16,
+          "job_id": "924d3637-ba19-46de-9384-7260679fa353",
+          "status": "completed",
+          "template": null,
+          "promptHash": "889800d3f5f5b90eb938fa5175a6f78390c78923e6958f4213591a11d674ec4b",
+          "resolution": "4k",
+          "aspect_ratio": "21:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_924d3637-ba19-46de-9384-7260679fa353.png"
+        },
+        {
+          "name": "ab_croak_v2",
+          "index": 17,
+          "job_id": "23387c1a-08e0-48e8-a11f-1fde33df94fa",
+          "status": "completed",
+          "template": null,
+          "promptHash": "c84ef841a23b1b3e09daa39caa28eddb26380bd142900d04a066ee408282743e",
+          "resolution": "4k",
+          "aspect_ratio": "21:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_23387c1a-08e0-48e8-a11f-1fde33df94fa.png"
+        }
+      ]
+    },
+    {
+      "id": "ab2",
+      "date": "2026-09-26",
+      "purpose": "style A/B round 3: formula D (clean single-weight outline + painterly) on H1/H3/W and the Gumbo sheet; adopted (docs/games/bass-drop/STYLE_DECISION.md)",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "D_H1",
+          "index": 20,
+          "job_id": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+          "status": "completed",
+          "template": null,
+          "promptHash": "a20971b57778b972ebbd2a15322966026b02f7a6133c341ce0fefc0b6a67b6cc",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121655_577c5994-a49f-487d-a1e9-f5fd386c7867.png"
+        },
+        {
+          "name": "D_H3",
+          "index": 21,
+          "job_id": "44034344-f29e-4004-a999-8b7b8c7f328c",
+          "status": "completed",
+          "template": null,
+          "promptHash": "05eef8c0570a9eabd015fa3da56918bf71400f2d8156e94931a61cf688a1e4cb",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121655_44034344-f29e-4004-a999-8b7b8c7f328c.png"
+        },
+        {
+          "name": "D_W",
+          "index": 22,
+          "job_id": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+          "status": "completed",
+          "template": null,
+          "promptHash": "962ed0883c458dc613ea8cd073aecf44eb9c176482e6546443afabe911d78bd6",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121656_61232bf0-67d9-47b7-b32f-af5e587e4c31.png"
+        },
+        {
+          "name": "D_gumbo",
+          "index": 23,
+          "job_id": "93e002fa-cf13-42ce-86d1-96359077b355",
+          "status": "completed",
+          "template": null,
+          "promptHash": "c943f1b714343755f33489f8602189c3b1acc0cc86ab631ef6151db788e9a7e3",
+          "resolution": "4k",
+          "aspect_ratio": "21:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121655_93e002fa-cf13-42ce-86d1-96359077b355.png"
+        }
+      ]
     }
   ]
 }

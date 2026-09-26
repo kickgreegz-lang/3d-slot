@@ -10,6 +10,8 @@
 # E and F (Bass Drop, art/plan/bass-drop.json): E = feature variant as an edit of the approved base plate of the same
 # orientation, so base <-> variant crossfades keep every shape in place; {VARIANT_NOTE} = artbible.bassDrop.backgrounds.<mode>.variantNote.
 # F = portrait reframe as an edit of the approved landscape plate.
+# Bass Drop passes {STYLE_FORMULA} = artbible.bassDrop.environmentFormula (painted environment, STYLE_DECISION.md) and
+# LEFT_MASS / RIGHT_MASS / TOP_DETAIL from artbible.bassDrop.backgrounds.base.
 
 ## SECTION A: full plate
 Game background of {SETTING}, wide establishing view at eye level, seen from behind the slot reels. {LEFT_MASS} at the far left edge; {RIGHT_MASS} at the far right edge; {TOP_DETAIL}; dark floor at the bottom. {VARIANT_NOTE}

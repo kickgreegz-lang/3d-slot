@@ -187,7 +187,18 @@ Tools: [tools/gen](../tools/gen/README.md), [tools/matte](../tools/matte/README.
 
     The wrapper runs `higgsfield generate cost`, then `generate create nano_banana_2 … --wait --json`, downloads every result into `art/_raw/` and writes the rows (`route: "higgsfield-cli"`). `--max-credits` fails closed (exit 4) when the cost preview has no figure it recognises.
 
-    For interactive work, use the Higgsfield MCP instead: `models_explore` to resolve the Pro id (it may show as `nano_banana_pro`), then `generate_image` → `job_status`. Download every result into `art/_raw/` (manifest `route: "higgsfield-mcp"`). Ships only after the Higgsfield clearance (see [STACK § Image route](STACK.md#image-route-higgsfield-or-vertex--scenario-you-decide)).
+    **Or through the Higgsfield MCP** (route `higgsfield-mcp`). MCP ids differ from the CLI's: `nano_banana_pro` is Nano Banana Pro (its jobs report `nano_banana_2`, which the row records; 2 credits at 2k, 4 at 4k) and the MCP's `nano_banana_2` is Nano Banana 2. Never `gpt_image_2`, `gpt_image_2_5` or `openai_hazel` (denylisted). Every paid job is recorded in the committed ledger `art/ledger/higgsfield-jobs.json`, and [`hf-ingest.mjs`](../tools/gen/README.md#higgsfield-mcp-route-plan--pay--record--ingest-pnpm-genhf-ingest) turns it into the same raw layout and rows as the CLI route:
+
+    ```bash
+    pnpm gen:hf-ingest plan --spec spec.json --max-credits 20     # rendered prompts -> exact generate_image_batch arguments
+    #   MCP: generate_image_batch(calls[i]) -> save the reply as submit.json; jobs_wait(...) -> save as wait.json
+    pnpm gen:hf-ingest record --plan art/_work/hf-plans/<batch>.plan.json --from submit.json   # record paid jobs at once
+    pnpm gen:hf-ingest record --from wait.json                    # status + result_url
+    pnpm gen:hf-ingest                                            # download -> art/_raw/<asset>/vNN/{raw.png,prompt.txt,job.json,manifest.json} + rows
+    pnpm gen:hf-ingest status                                     # credits per batch, downloaded or not, row ids for --parent-id
+    ```
+
+    Ingest re-renders each prompt and checks its `promptHash` (falling back to the stored copy in `art/ledger/prompts/`), verifies the PNG (CRCs, IEND, size vs resolution and aspect, sha256 vs the ledger), resumes interrupted downloads, never overwrites a different file, and writes `shipped: false` rows (`licenseId: higgsfield`, `seed: null`, `jobId`). In a cloud session the CDN host (`d8j0ntlcm91z4.cloudfront.net`) must be allowed in the environment's Network access settings; until then ingest stops with exit 6 and names the host. Ships only after the Higgsfield clearance (see [STACK § Image route](STACK.md#image-route-higgsfield-or-vertex--scenario-you-decide)).
   - **Then, either route:**
     1. **Matte:** `pnpm matte <raw.png> "build/pack/symbols{tps}/sym_<ID>.png" --symbol <ID> --key <KEY_HEX> --emit-master art/source/symbols/<ID>/master_2048.png`. The closed-outline key matte is exact on bible-compliant art. Art without a closed outline goes through ToonOut or `tools/matte/rembg_matte.sh birefnet-general` (never rembg's default model), then `--alpha-from`.
     2. **Fit:** the matte also fits the art: content = `cellScale × 300 px` from `src/games/$GAME/config.ts` (default swamp-funk), measured on the longer side (`--fit height` is available), because the runtime `SymbolRig.fit` scales by `max(w,h)`. It is centred on the **360×360 @2x** canvas, in straight alpha, and never upscaled.

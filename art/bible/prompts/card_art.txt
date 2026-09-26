@@ -5,7 +5,7 @@
 # Placeholders (values: art/bible/artbible.json -> bassDrop.cards.<id>):
 #   {SCENE}          cards.<id>.scene     the hero objects, each an approved asset passed as a reference
 #   {BACKDROP}       cards.<id>.backdrop  environment only; neon is allowed here because it is background
-#   {STYLE_FORMULA}  artbible.styleFormula (byte-identical)
+#   {STYLE_FORMULA}  artbible.styleFormula; Bass Drop passes artbible.bassDrop.styleFormula (formula D, STYLE_DECISION.md)
 # One 1:1 2k image serves both skins: landscape crops about 3:2, portrait crops 1:1, so the subject stays inside the
 # central two-thirds of the height. References: the approved master of every object in the scene + the base plate.
 Game card illustration: {SCENE} The subject is centred and fills the central two-thirds of the frame height, seen frontal three-quarter with a slight low angle, with exactly the same object designs as the references. Backdrop: {BACKDROP}, softer, darker and lower in contrast than the subject.

@@ -5,9 +5,10 @@
 # Placeholders (values: art/bible/artbible.json -> bassDrop.props.<id>; art/plan/build_plan.py passes them as --var):
 #   {PROP}           props.<id>.prop    one noun phrase, no brand/studio/artist/game names
 #   {VIEW}           props.<id>.view    e.g. "orthographic front view" or "front three-quarter view from slightly above"
-#   {DETAIL}         props.<id>.detail  materials, role colours (hex), which moving parts must read clearly
+#   {DETAIL}         props.<id>.detail  materials, role colours (hex), which moving parts must read clearly.
+#                    Never write 'extrusion' or 'molten' (artbible.bassDrop.bannedPromptWords); say 'polished solid gold'.
 #   {PIECES}         B only: props.<id>.pieces joined with "; "
-#   {STYLE_FORMULA}  artbible.styleFormula (byte-identical, never edited)
+#   {STYLE_FORMULA}  artbible.styleFormula; Bass Drop passes artbible.bassDrop.styleFormula (formula D, STYLE_DECISION.md)
 #   {KEY_HEX}        props.<id>.keyHex  (#00FF00 default; #FF00FF when the prop has green/teal; #0000FF when both clash)
 # References: A = 3-4 approved style anchors (H1 for anything with speaker cones or gold, W for teal enamel);
 #             B = the approved object the pieces attach to (e.g. the W master) + 1-2 style anchors.
@@ -21,6 +22,6 @@ Game stage prop: {PROP}, {VIEW}. {DETAIL}
 Single object, centred, the whole object in frame with equal empty margin on all four sides, no characters, no text, no letters, no numbers, no logos, no neon tubes, no glow. Any enclosed opening is solid flat {KEY_HEX}. On a solid uniform flat {KEY_HEX} background, no gradient, no vignette, no cast shadow, no floor.
 
 ## SECTION B: matching piece sheet (new separate pieces designed to fit the reference object)
-Set of separate game pieces made to match the reference exactly in outline weight, colours, gold and cel shading: {PIECES}. Each piece drawn complete and upright at a consistent scale, laid out in a loose row with wide empty gaps so no two pieces touch, each piece keeps its own closed black outline.
+Set of separate game pieces made to match the reference exactly in outline weight, colours, gold and shading: {PIECES}. Each piece drawn complete and upright at a consistent scale, laid out in a loose row with wide empty gaps so no two pieces touch, each piece keeps its own closed black outline.
 {STYLE_FORMULA}
 No text, no letters, no numbers, no labels, no glow. Any enclosed opening is solid flat {KEY_HEX}. Solid uniform flat {KEY_HEX} background, no cast shadows.

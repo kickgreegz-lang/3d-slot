@@ -781,9 +781,13 @@ function cmdRecord(a) {
         doc.batches.push(batch);
       }
       storePrompt(pj.prompt, promptsDir);
+      // a re-submitted plan (e.g. after a timeout) creates new, also paid, jobs: keep them under a suffixed name
+      let name = pj.name;
+      for (let k = 2; batch.jobs.some((j) => j.name === name); k++) name = `${pj.name}.r${k}`;
+      if (name !== pj.name) log(`warning: ${batch.id}/${pj.name} is already recorded with another job_id; recording ${x.job_id} as ${name}`);
       const reqModel = pj.request_model ?? (plan.batch.model !== batch.model ? plan.batch.model : null);
       const job = {
-        name: pj.name, index: pj.index, job_id: x.job_id, status: x.status ?? 'submitted',
+        name, index: pj.index, job_id: x.job_id, status: x.status ?? 'submitted',
         ...(x.type ? { type: x.type } : {}), ...(x.model ? { model: x.model } : {}),
         ...(reqModel ? { request_model: reqModel } : {}),
         template: pj.template ?? null, ...(pj.template ? { vars: pj.vars ?? {} } : {}), promptHash: pj.promptHash,

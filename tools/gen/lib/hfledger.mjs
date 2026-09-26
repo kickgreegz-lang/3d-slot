@@ -5,7 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { validate } from '../../licence/schema-lite.mjs';
-import { GenError, buildValues, defaultAsset, loadJson, render, splitTemplateRef } from './genlib.mjs';
+import { GenError, bible, buildValues, defaultAsset, loadJson, render, splitTemplateRef } from './genlib.mjs';
 import { REPO, rel, sha256Text, withLock, writeAtomic } from './provenance.mjs';
 
 export const LEDGER = path.join(REPO, 'art', 'ledger', 'higgsfield-jobs.json');
@@ -214,8 +214,11 @@ export function stageFor(job, asset = assetFor(job)) {
     if (s) return s;
   }
   if (String(job.type ?? '').toLowerCase() === 'video') return 'video';
-  if (/^mascot_/i.test(asset)) return 'mascot-sheets';
-  if (/^(bg|background)(_|$)/i.test(asset)) return 'backgrounds';
+  // untemplated jobs: name tokens (ab_bg_painted, D_gumbo, ab_croak_v2); mascot ids come from the art bible
+  const tokens = new Set(asset.toLowerCase().split(/[_.-]+/));
+  const mascots = Object.keys(bible().mascots ?? {}).filter((k) => k !== 'rules');
+  if (tokens.has('bg') || tokens.has('background')) return 'backgrounds';
+  if (tokens.has('mascot') || mascots.some((m) => tokens.has(m.toLowerCase()))) return 'mascot-sheets';
   return '2d-image';
 }
 

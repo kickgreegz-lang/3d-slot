@@ -502,6 +502,15 @@ class HfIngestTests(unittest.TestCase):
         self.assertEqual(self.ledger.read_bytes(), before)
         st = json.loads(self.run_tool("status", "--json").stdout)["batches"][0]["counts"]
         self.assertEqual((st["pending"], st["creditsSpent"], st["downloaded"]), (2, 4, 0))
+        # the same plan submitted again (new paid job ids) is kept under suffixed names, never dropped
+        resub = self.w / "resubmit.json"
+        resub.write_text(json.dumps({"jobs": [{"index": 0, "job_id": J[26], "status": "queued"}]}))
+        r = self.run_tool("record", "--plan", str(plan), "--from", str(resub))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["added"], ["t2/sym_H2_rig.r2"])
+        led = json.loads(self.ledger.read_text())
+        led["batches"][0]["jobs"] = [j for j in led["batches"][0]["jobs"] if j["job_id"] != J[26]]
+        self.ledger.write_text(json.dumps(led, indent=2) + "\n")
 
         # jobs_wait JSON as the MCP tool result wraps it (content[].text)
         u1 = self.serve("h2.png", cpng(2048, 2048))
@@ -564,6 +573,15 @@ class HfIngestTests(unittest.TestCase):
         jobs = json.loads(self.ledger.read_text())["batches"][0]["jobs"]
         self.assertEqual([(j["name"], j["index"], j["status"], j["credits"]) for j in jobs],
                          [("ab_B_H1", 10, "completed", 2), ("ab_B_W", 11, "submitted", 2)])
+        st = {j["job"]: j["stage"] for j in json.loads(self.run_tool("status", "--json").stdout)["batches"][0]["jobs"]}
+        self.assertEqual(st, {"ab_B_H1": "2d-image", "ab_B_W": "2d-image"})
+        # untemplated names: stage from name tokens (mascot ids from the art bible)
+        probe = self.w / "stages.mjs"
+        probe.write_text(f"import {{ stageFor }} from '{(GEN / 'lib' / 'hfledger.mjs').as_uri()}';\n"
+                         "console.log(JSON.stringify(['ab_bg_painted', 'D_gumbo', 'ab_croak_v2', 'mascot_x', 'ab_C_W', 'bgless']"
+                         ".map((n) => stageFor({ name: n }, n))));\n")
+        r = subprocess.run([NODE, str(probe)], cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(json.loads(r.stdout), ["backgrounds", "mascot-sheets", "mascot-sheets", "mascot-sheets", "2d-image", "2d-image"], r.stderr)
         r = self.run_tool()
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertTrue((self.raw / "ab_B_H1" / "v01" / "raw.png").is_file())

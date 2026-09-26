@@ -85,7 +85,7 @@ export class FeatureBanner {
     this.emblemHolder.addChild(this.emblem);
     this.ribbonHolder.addChild(this.ribbon);
     this.amount = new BitmapText({ text: '', style: { fontFamily: amountFont, fontSize: 150 }, anchor: 0.5 });
-    this.press = new PressPrompt(40, 0xffffff, SCREENS_TIMING.featureIntro.pressPeriod);
+    this.press = new PressPrompt(46, 0xffffff, SCREENS_TIMING.featureIntro.pressPeriod, SKINS.jukejam.accent);
     this.front.addChild(this.emblemHolder, this.ribbonHolder, this.titleHolder, this.amount, this.press);
     this.back.visible = this.front.visible = false;
   }
@@ -266,7 +266,8 @@ export class FeatureBanner {
   }
 
   showPress(text: string, delay: number): void {
-    this.press.text.text = text;
+    this.press.setText(text);
+    this.press.accent = SKINS[this.skin].accent;
     this.press.visible = true;
     this.press.alpha = 0;
     this.press.start();

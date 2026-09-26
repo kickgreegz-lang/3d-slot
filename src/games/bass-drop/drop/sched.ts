@@ -27,6 +27,12 @@ export class Sched {
   add<A extends gsap.core.Animation>(a: A): A {
     followSpeed(a);
     this.live.add(a);
+    // forget it once done (the caller's own onComplete still runs first)
+    const own = a.eventCallback('onComplete') as ((...args: unknown[]) => void) | undefined;
+    a.eventCallback('onComplete', (...args: unknown[]) => {
+      own?.(...args);
+      this.live.delete(a);
+    });
     return a;
   }
 
@@ -54,10 +60,5 @@ export class Sched {
     const waits = [...this.waits.values()];
     this.waits.clear();
     for (const r of waits) r();
-  }
-
-  /** Forget finished tweens added with add() (cheap; called by owners between runs). */
-  prune(): void {
-    for (const a of this.live) if (!a.isActive() && a.progress() >= 1) this.live.delete(a);
   }
 }

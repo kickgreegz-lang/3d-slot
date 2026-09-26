@@ -66,7 +66,7 @@ export const SCREENS_TIMING = registerTiming('bassDropScreens', {
   plate: { show: 400, hide: 250, punch: 260, punchScale: 1.22, retitle: 300 },
   /** ui_intro_cards (UI time): in 27 f, cards 4 f apart, card_land f12 / f16 / f20, title_hit f18 */
   introCards: {
-    dim: 0.62,
+    dim: 0.8,
     dimIn: 300,
     in: f(27),
     cardStagger: f(4),
@@ -83,7 +83,7 @@ export const SCREENS_TIMING = registerTiming('bassDropScreens', {
   },
   /** ui_buy_cards (UI time): in 18 f (card_land f10 / f14), select 12 f, hover 6 f, press 4 f, out 12 f */
   buy: {
-    dim: 0.7,
+    dim: 0.82,
     dimIn: 250,
     in: f(18),
     cardLand: [f(10), f(14)],
@@ -211,7 +211,7 @@ const INTRO_LANDSCAPE: IntroRects = {
     { x: 1280, y: 190, w: 480, h: 580 },
   ],
   press: { x: 960, y: 1034 },
-  toggle: { x: 160, y: 1034 },
+  toggle: { x: 164, y: 812 },
   k: 1,
 };
 
@@ -254,29 +254,35 @@ const BUY_PORTRAIT: BuyRects = {
 const moveRect = (r: Rect, dy: number, k: number): Rect => ({ x: r.x * k, y: (r.y + dy) * k, w: r.w * k, h: r.h * k });
 const movePt = (p: Pt, dy: number, k: number): Pt => ({ x: p.x * k, y: (p.y + dy) * k });
 
-const derive = <T extends { k: number }>(base: T, dy: number, k: number): T => {
-  const out: Record<string, unknown> = {};
-  for (const [key, v] of Object.entries(base)) {
-    if (key === 'k') out[key] = k;
-    else if (Array.isArray(v)) out[key] = v.map((r: Rect) => moveRect(r, dy, k));
-    else if (v && typeof v === 'object' && 'w' in v) out[key] = moveRect(v as Rect, dy, k);
-    else out[key] = movePt(v as Pt, dy, k);
-  }
-  return out as T;
-};
+const deriveIntro = (b: IntroRects, dy: number, k: number): IntroRects => ({
+  logo: moveRect(b.logo, dy, k),
+  cards: [moveRect(b.cards[0], dy, k), moveRect(b.cards[1], dy, k), moveRect(b.cards[2], dy, k)],
+  press: movePt(b.press, dy, k),
+  toggle: movePt(b.toggle, dy, k),
+  k,
+});
+
+const deriveBuy = (b: BuyRects, dy: number, k: number): BuyRects => ({
+  title: movePt(b.title, dy, k),
+  cards: [moveRect(b.cards[0], dy, k), moveRect(b.cards[1], dy, k)],
+  confirmCard: moveRect(b.confirmCard, dy, k),
+  buttons: movePt(b.buttons, dy, k),
+  close: movePt(b.close, dy, k),
+  k,
+});
 
 const INTRO: Record<LayoutKind, IntroRects> = {
   landscape: INTRO_LANDSCAPE,
   portrait: INTRO_PORTRAIT,
-  tablet: derive(INTRO_LANDSCAPE, 420, 1),
-  compact: derive(INTRO_LANDSCAPE, 0, 0.5),
+  tablet: deriveIntro(INTRO_LANDSCAPE, 420, 1),
+  compact: deriveIntro(INTRO_LANDSCAPE, 0, 0.5),
 };
 
 const BUY: Record<LayoutKind, BuyRects> = {
   landscape: BUY_LANDSCAPE,
   portrait: BUY_PORTRAIT,
-  tablet: derive(BUY_LANDSCAPE, 420, 1),
-  compact: derive(BUY_LANDSCAPE, 0, 0.5),
+  tablet: deriveBuy(BUY_LANDSCAPE, 420, 1),
+  compact: deriveBuy(BUY_LANDSCAPE, 0, 0.5),
 };
 
 export const introRects = (L: LayoutSpec): IntroRects => INTRO[L.kind];

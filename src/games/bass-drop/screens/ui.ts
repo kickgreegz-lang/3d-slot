@@ -1,5 +1,6 @@
 import { gsap } from 'gsap';
 import { BitmapText, Container, Sprite, Texture } from 'pixi.js';
+import { Plate } from '../../../present/common/Plate';
 import { uiBus } from '../../../ui/bus';
 import { buttonPlate, checkBox } from './art/chrome';
 import { screenArt, useBaked } from './art/ScreenArt';
@@ -29,7 +30,7 @@ const BUTTON_OFF: ButtonColors = { fill: 0x4a4466, light: 0x5e5880, shade: 0x2c2
  */
 export class ScreenButton extends Container {
   private readonly plate = new Sprite();
-  private readonly label: BitmapText;
+  private readonly caption: BitmapText;
   private readonly inner = new Container();
   private enabled = true;
   private hovered = false;
@@ -44,8 +45,8 @@ export class ScreenButton extends Container {
     private readonly timing: { hover: number; press: number; pressScale: number },
   ) {
     super({ label: 'screenButton' });
-    this.label = new BitmapText({ text: '', style: { fontFamily: SCR_NUM, fontSize: 40 }, anchor: 0.5 });
-    this.inner.addChild(this.plate, this.label);
+    this.caption = new BitmapText({ text: '', style: { fontFamily: SCR_NUM, fontSize: 40 }, anchor: 0.5 });
+    this.inner.addChild(this.plate, this.caption);
     this.addChild(this.inner);
     this.eventMode = 'static';
     this.cursor = 'pointer';
@@ -63,7 +64,7 @@ export class ScreenButton extends Container {
   }
 
   setText(text: string): void {
-    this.label.text = text;
+    this.caption.text = text;
     this.fitLabel();
   }
 
@@ -84,15 +85,15 @@ export class ScreenButton extends Container {
     const c = this.enabled ? this.colors : BUTTON_OFF;
     const key = `btn:${this.w}x${this.h}:${c.fill}`;
     useBaked(this.plate, screenArt.get(key, this.res, () => buttonPlate(this.w, this.h, c.fill, c.light, c.shade)));
-    this.label.tint = c.text;
+    this.caption.tint = c.text;
     this.fitLabel();
   }
 
   private fitLabel(): void {
     if (!this.h) return;
-    this.label.style.fontSize = Math.round(this.h * 0.44);
-    this.label.y = -this.h * 0.04;
-    fitText(this.label, this.w * 0.78);
+    this.caption.style.fontSize = Math.round(this.h * 0.44);
+    this.caption.y = -this.h * 0.04;
+    fitText(this.caption, this.w * 0.78);
   }
 
   private hover(on: boolean): void {
@@ -136,14 +137,30 @@ export class ScreenButton extends Container {
  */
 export class PressPrompt extends Container {
   readonly text: BitmapText;
+  private readonly plate: Plate | null;
   private t = 0;
   private running = false;
 
-  constructor(size: number, tint = 0xffffff, private period = 1000) {
+  /** `plateAccent`: sit the prompt on a Plate (reads over busy art such as the dimmed HUD). */
+  constructor(size: number, tint = 0xffffff, private period = 1000, plateAccent: number | null = null) {
     super({ label: 'pressPrompt' });
     this.text = new BitmapText({ text: '', style: { fontFamily: SCR_LABEL, fontSize: size }, anchor: 0.5 });
     this.text.tint = tint;
+    this.plate = plateAccent === null ? null : new Plate(plateAccent, 0.82);
+    if (this.plate) this.addChild(this.plate);
     this.addChild(this.text);
+  }
+
+  /** Set the copy (and fit the plate around it). */
+  setText(text: string): void {
+    this.text.text = text;
+    const size = Number(this.text.style.fontSize);
+    this.plate?.resize(this.text.width + size * 2.2, size * 1.55);
+  }
+
+  /** Re-tint the plate rim. */
+  set accent(c: number) {
+    if (this.plate) this.plate.accentColor = c;
   }
 
   start(): void {

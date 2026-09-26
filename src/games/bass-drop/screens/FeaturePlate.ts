@@ -35,7 +35,7 @@ export class FeaturePlate {
   private tweens: gsap.core.Tween[] = [];
 
   constructor() {
-    this.plate = new Plate(SKINS.jukejam.accent, 0.74);
+    this.plate = new Plate(SKINS.jukejam.accent, 0.88);
     this.caption = new BitmapText({ text: '', style: { fontFamily: SCR_LABEL, fontSize: 36 }, anchor: 0.5 });
     this.value = new BitmapText({ text: '', style: { fontFamily: SCR_NUM, fontSize: 46 }, anchor: 0.5 });
     this.body.addChild(this.glow, this.plate, this.icon, this.caption, this.value);

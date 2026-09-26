@@ -17,11 +17,10 @@ import type { DroppedWild, GrooveFeature, MeterMode, StickyWild } from './events
  *   meterUpdate    -> meter:update
  *   wildDrop       -> wild:drop, then board:transform 'drop' as reconcile (each wild REPLACES its cell)
  *   stickyWilds    -> wild:sticky, then board:transform 'morph' as reconcile
- *   featureTrigger -> feature:trigger, fs:trigger (engine free-spins intro + counter), mode:change freegame
- *   featureUpgrade -> feature:upgrade, fs:update (+addFs on the counter)
- * The reconcile transforms and fs:trigger are the minimal-boot presentation: once the Bass
- * Drop modules own the drop / intro, the reconcile is a no-op (cells already hold the wild)
- * and fs:trigger can go (DESIGN.md §10 owns the feature intro).
+ *   featureTrigger -> feature:trigger (screens/FeatureScreens: trigger, wipe, feature intro), mode:change freegame
+ *   featureUpgrade -> feature:upgrade (upgrade screen), fs:update (+addFs on the plate / meter chip)
+ * The reconcile transforms are the minimal-boot presentation: once the Bass Drop modules own
+ * the drop, the reconcile is a no-op (cells already hold the wild).
  */
 export interface MeterUpdateEvent {
   index: number;
@@ -138,8 +137,9 @@ export const gameBookHandlers: GameBookHandlers<GameBookEvent> = {
     enterFeature(state.game, e.feature);
     state.freeSpins = { current: 0, total: e.totalFs };
     env.hudChanged();
+    // FeatureScreens holds this until the feature intro is dismissed (the curtain still covers the
+    // screen), so the free-game switch below happens behind it
     await env.emit('feature:trigger', { feature: e.feature, meter: e.meter, totalFs: e.totalFs, bought: state.betMode !== 'BASE' });
-    await env.emit('fs:trigger', { total: e.totalFs, positions: [], retrigger: false });
     await env.setGameType('freegame');
   },
 

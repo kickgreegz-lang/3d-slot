@@ -16,8 +16,9 @@ const GOLDM = { base: GOLD, shade: 0xe2861a, light: 0xfff0a0 };
 
 /**
  * CARD FRAME: cypress-wood border (grain, hard light band top-left, shadow bottom-right),
- * deep indigo panel with a hard two-tone split, a neon edge in `accent` and gold speaker-bolt
- * corners, over a plum extrusion. `k` scales the border / ornaments (compact = 0.5).
+ * deep indigo panel with a hard two-tone split, a neon edge in `accent`, gold speaker-bolt
+ * corners and a speaker crest on the top border, over a plum extrusion. `k` scales the border
+ * / ornaments (compact = 0.5).
  */
 export const cardFrame = (w: number, h: number, accent: number, k = 1): Container => {
   const root = new Container({ label: 'cardFrame' });
@@ -72,8 +73,35 @@ export const cardFrame = (w: number, h: number, accent: number, k = 1): Containe
     g.circle(bx - 2.5 * k, by - 2.5 * k, 3 * k).fill(GOLDM.light);
     g.moveTo(bx - 4.5 * k, by + 4.5 * k).lineTo(bx + 4.5 * k, by - 4.5 * k).stroke({ width: 2 * k, color: INK });
   }
+  crest(g, 0, y0 + t * 0.35, accent, k);
   root.addChild(g);
   return root;
+};
+
+/** Speaker crest on the top border: a gold-rimmed cone with sound-wave arcs in the accent. */
+const crest = (g: Graphics, x: number, y: number, accent: number, k: number): void => {
+  const r = 25 * k;
+  for (const s of [-1, 1] as const) {
+    for (let i = 0; i < 2; i++) {
+      const rr = r + (11 + i * 10) * k;
+      const a0 = s < 0 ? Math.PI * 0.78 : -Math.PI * 0.22;
+      const a1 = s < 0 ? Math.PI * 1.22 : Math.PI * 0.22;
+      const arc = (w: number, color: number): void => {
+        g.moveTo(x + Math.cos(a0) * rr, y + Math.sin(a0) * rr)
+          .arc(x, y, rr, a0, a1)
+          .stroke({ width: w, color, cap: 'round' });
+      };
+      arc(8 * k, INK);
+      arc(4 * k, accent);
+    }
+  }
+  g.circle(x + 3 * k, y + 4 * k, r).fill(PLUM).stroke({ width: 4 * k, color: INK });
+  g.circle(x, y, r).fill(GOLDM.shade).stroke({ width: 4 * k, color: INK });
+  g.circle(x - 1.5 * k, y - 1.5 * k, r * 0.84).fill(GOLDM.base);
+  g.circle(x, y, r * 0.64).fill(0x1a1024).stroke({ width: 3 * k, color: INK });
+  g.circle(x, y, r * 0.44).fill(0x3a2d52);
+  g.circle(x, y, r * 0.22).fill(GOLDM.base).stroke({ width: 2.5 * k, color: INK });
+  g.circle(x - r * 0.07, y - r * 0.07, r * 0.07).fill(0xffffff);
 };
 
 /**

@@ -249,4 +249,391 @@
     "lightDirection": { "method": "Vision rubric on the rotated in-game composite.", "pass": "reads top-left" },
     "retryBudget": "2 automatic regenerations per asset, then best-of goes to human review."
   }
+,
+  "bassDrop": {
+    "$comment": "Bass Drop (docs/games/bass-drop) additions. Same world, locks, palette, key-colour rules and gates as SWAMP FUNK above; everything here is a per-asset brief for the Bass Drop-only visuals. Templates read these values as --var (art/plan/build_plan.py resolves them into art/plan/bass-drop.json; docs/games/bass-drop/ART_PLAN.md is the human plan). The SWAMP FUNK values above stay untouched so the probe hashes in art/ledger/higgsfield-jobs.json keep reproducing. No brand, studio, artist or game names here, and none of the words in mascots.rules.forbiddenPromptWords.",
+    "version": "0.1.0",
+    "updated": "2026-09-26",
+    "game": "bass-drop",
+    "look": "The SWAMP FUNK neon bayou juke joint turned up to party volume. The reels sit between a speaker stack on the left, whose huge woofer is the Groove Meter, and Baron Croak's DJ booth on the right; two brass horn speakers are bolted on the top corners of the cypress frame. Everything that booms is a speaker: cabinets in plum-black wood with gold bolts, charcoal cones and dark glass dust caps. Feature emblems: a gold-and-teal jukebox (Juke Jam) and a crowned hot-pink speaker stack (Mega Mix). Foreground art stays flat cel with pure-black outlines and no baked glow; all glow, rings, LEDs and neon pulses are runtime fx.",
+    "reuse": {
+      "symbols": "H1-H4 and W beauty masters use the SWAMP FUNK briefs unchanged (probe batch probe1). S (Golden Mic) is unused in Bass Drop.",
+      "royals": "L1-L5 stay vector (Lilita One / Titan One + resvg). royal_material_pass.txt only as a P2 test on L1.",
+      "frame": "The SWAMP FUNK cypress frame (frame_piece.txt beam / post / sill / corner cap); the horns bolt onto its top corners.",
+      "hud": "The SWAMP FUNK hex HUD, vector only (no generation).",
+      "background": "The SWAMP FUNK juke-joint plate (background.txt#A with the template defaults, probe1 bg_A_landscape) is the Bass Drop base plate."
+    },
+    "modes": {
+      "base": {"trim": "#35F2E0", "music": "100 BPM"},
+      "jukejam": {"trim": "#FFC629", "emblem": "jukebox", "music": "106 BPM"},
+      "megamix": {"trim": "#FF3FA8", "emblem": "mega_speaker", "music": "112 BPM"}
+    },
+    "symbols": {
+      "W": {
+        "note": "Keeps the SWAMP FUNK design (probe1 sym_W). Bass Drop adds separate pieces: a blank ribbon plate for the live WILD word (txt_wild), the multiplier badge plate (generated once in gold = t3; t1, t2, t4 and t5 are recoloured in code), a flame crown for t5, and the sticky clamp closed and open.",
+        "partList": "gold-capped alligator tooth with its teal enamel inlay, gold cap, short chain",
+        "badgeTiers": {"t1": "#35F2E0", "t2": "#A8F03A", "t3": "#FFC629", "t4": "#FF8A3D", "t5": "#FF3FA8"},
+        "badgeGeometryUnits": {
+          "plate": [192, 120],
+          "centreBelowRoot": 129,
+          "textCapHeight": 90
+        }
+      },
+      "H3": {
+        "eyeStates": {
+          "half": "both eyes half closed in a lazy blink",
+          "closed": "both eyes fully closed, each drawn as a thick curved black lid line",
+          "wide": "both eyes opened wide in surprise with slightly bigger pupils"
+        }
+      }
+    },
+    "props": {
+      "meter_cabinet": {
+        "rig": "ui_groove_meter",
+        "atlas": "bd_ui",
+        "keyHex": "#00FF00",
+        "authoringUnits": [704, 840],
+        "prop": "a tall chunky vintage speaker cabinet holding one huge round woofer",
+        "view": "orthographic front view with the woofer a perfect circle",
+        "detail": "Plum-black wood cabinet (#4B283D faces, black seams) with rounded corners, gold corner bolts and a strip of dark grill cloth above and below the woofer. The woofer fills 90% of the cabinet width: a chunky metal rim ring with eight gold bolts, a thin light-grey trim band just inside the rim, a dark recessed channel, a ribbed charcoal cone and a big glossy dark glass dust cap about half the woofer's diameter, left blank.",
+        "parts": [
+          "cabinet shell with an empty round opening",
+          "grill cloth panel",
+          "metal rim ring with bolts",
+          "light-grey trim band ring",
+          "rubber surround ring",
+          "ribbed cone ring",
+          "glossy dark glass dust cap disc"
+        ],
+        "slots": [
+          "cabinet_back + cabinet_front",
+          "grill",
+          "rim",
+          "rim_trim (trim_base / trim_jukejam / trim_megamix recoloured in code)",
+          "cone_surround",
+          "cone (mesh 6x6)",
+          "dust_cap"
+        ],
+        "geometry": "Fit radially to layout.json meterGeometry: rim 0.875-1.0 R, LED channel 0.70-0.85 R (code), cone 0.525-0.70 R, dust cap 0-0.525 R."
+      },
+      "lower_cabinet": {
+        "rig": "env_speaker_stack",
+        "atlas": "bd_env",
+        "keyHex": "#00FF00",
+        "authoringUnits": [608, 640],
+        "prop": "a squat chunky vintage bass speaker cabinet",
+        "view": "orthographic front view",
+        "detail": "The same plum-black wood, gold bolts and dark grill cloth as the reference cabinet; one large woofer (metal rim, ribbed charcoal cone, dark dust cap) in the upper two-thirds, two round bass ports side by side below it, and two thick black cables hanging from the top edge.",
+        "parts": [
+          "cabinet shell with empty round openings",
+          "woofer with rim, cone and dust cap",
+          "left bass port ring",
+          "right bass port ring",
+          "first thick cable",
+          "second thick cable"
+        ],
+        "slots": ["cabinet", "woofer (mesh)", "port_L", "port_R", "cable_1 (mesh)", "cable_2 (mesh)"]
+      },
+      "horn": {
+        "rig": "env_horn",
+        "atlas": "bd_env",
+        "keyHex": "#00FF00",
+        "authoringUnits": [232, 200],
+        "prop": "a vintage brass horn speaker on a black iron mounting bracket",
+        "view": "three-quarter view with the flared bell pointing up and to the left",
+        "detail": "Molten-gold horn body (#FFC629 with #E2861A and #9A4A0C shadow tones) flaring into a wide bell whose inside is dark plum (#4B283D), a round driver housing at the narrow end, and a black iron bracket with two big rivets at its base.",
+        "parts": ["iron mounting bracket", "horn body with its driver housing", "flared bell"],
+        "slots": ["bracket", "horn_body", "bell (mesh)"],
+        "mirrorNote": "The right horn is the left one flipped (scaleX -1), which moves its key light to the upper right; the P2 row bd_horn_R_master is the light-correct fix."
+      },
+      "horn_R": {
+        "rig": "env_horn",
+        "atlas": "bd_env",
+        "keyHex": "#00FF00",
+        "authoringUnits": [232, 200],
+        "prop": "a vintage brass horn speaker on a black iron mounting bracket, the same design as the reference",
+        "view": "three-quarter view with the flared bell pointing up and to the right",
+        "detail": "Identical materials and colours to the reference horn; key light still from the upper left."
+      },
+      "dj_booth": {
+        "rig": "env_dj_booth",
+        "atlas": "bd_env",
+        "keyHex": "#00FF00",
+        "authoringUnits": [460, 600],
+        "prop": "a DJ turntable booth built on a wooden crate",
+        "view": "front three-quarter view from slightly above so the turntable top reads, turned slightly toward the left side of the image",
+        "detail": "A weathered cypress plank crate (face #B8742F, underside #5A2A18) with black iron rivets; on top a black deck with a gold trim edge carrying one turntable (black record, blank hot-pink label, gold tonearm), a slider fader in a slot with a chunky knob, a row of four small round unlit lamps, and a big round glossy hot-pink push button at the front-left corner of the deck; a thick black cable hangs over the side.",
+        "parts": [
+          "crate",
+          "deck top",
+          "record platter",
+          "blank record label",
+          "tonearm",
+          "fader slot",
+          "fader knob",
+          "push button, raised",
+          "four small round lamps",
+          "thick cable"
+        ],
+        "slots": [
+          "crate",
+          "deck",
+          "platter",
+          "label",
+          "tonearm",
+          "fader_track",
+          "fader_knob",
+          "drop_button/button_up (button_down made in code)",
+          "led_1..4/led_off (led_on tinted in code)",
+          "cable (mesh)"
+        ]
+      },
+      "w_pieces": {
+        "rig": "sym_W",
+        "atlas": "symbols",
+        "keyHex": "#00FF00",
+        "pieces": [
+          "a blank ribbon banner plate in deep plum (#4B283D) with a gold edge and folded tails, its face left empty",
+          "a blank rounded-rectangle badge plate in molten gold (#FFC629) with a raised rim and an empty face",
+          "a small crown of chunky cartoon flames in orange, gold and hot pink, shaped to sit on top of that badge plate",
+          "a heavy gold clamp bracket with a black iron bolt, jaws closed",
+          "the same gold clamp bracket with its jaws open"
+        ],
+        "slots": [
+          "ribbon",
+          "badge/badge_t3 (t1, t2, t4 recoloured in code; t5 = recolour + flame crown)",
+          "badge/badge_t5 flame crown",
+          "clamp_L/clamp (clamp_R mirrored)",
+          "clamp_L/clamp_open (clamp_R mirrored)"
+        ]
+      }
+    },
+    "emblems": {
+      "jukebox": {
+        "rigs": ["ui_feature_intro (skin jukejam)", "ui_feature_outro (skin jukejam)", "ui_feature_upgrade (emblem_old)"],
+        "atlas": "bd_ui",
+        "keyHex": "#FF00FF",
+        "subject": "a chunky vintage jukebox with a rounded arched top, a thick gold frame, teal enamel side panels, a bright arched front window with a record visible behind it, stacked lit colour bands and a gold speaker grille at the bottom",
+        "palette": "molten gold (#FFC629) and teal enamel (#35F2E0) with cream-white (#FFF6D8) lit panels"
+      },
+      "mega_speaker": {
+        "rigs": ["ui_feature_intro (skin megamix)", "ui_feature_outro (skin megamix)", "ui_feature_upgrade (emblem_new)"],
+        "atlas": "bd_ui",
+        "keyHex": "#00FF00",
+        "subject": "a tall stack of three chunky speaker cabinets with big round woofer cones, the same cabinet design as the reference, topped with a heavy molten-gold crown",
+        "palette": "hot-pink enamel (#FF3FA8) cabinet faces, plum-black wood (#4B283D), charcoal cones and a molten-gold (#FFC629) crown and bolts"
+      },
+      "jukebox_cracked": {
+        "rigs": ["ui_feature_upgrade (emblem_old crack state)"],
+        "atlas": "bd_ui",
+        "keyHex": "#FF00FF",
+        "symbolName": "jukebox emblem",
+        "stateChange": "jagged black crack lines spread across the front window and the side panels as if it is about to shatter; nothing else changes"
+      },
+      "logo": {
+        "rigs": ["logo_bd (static, top right; ui_intro_cards logo region)"],
+        "atlas": "bd_ui",
+        "keyHex": "#0000FF",
+        "subject": "a chunky stacked badge built around a big speaker cone, flanked by two gold-capped teal alligator-tooth charms, with a gold rim and a pair of bold sound-wave arcs",
+        "palette": "molten gold (#FFC629), swamp green (#3F9D3A), hot pink (#FF3FA8) and plum-black (#4B283D)",
+        "wordMark": "SWAMP FUNK over BASS DROP, typeset as vector by a typographer on the blank banner (6-13 px black outline, 5-15 px plum extrusion, tri-band fill proposal swamp green / gold / hot pink); trademark search before release."
+      },
+      "notch_icons": {
+        "rigs": ["ui_groove_meter notch_1..6"],
+        "atlas": "bd_ui",
+        "keyHex": "#0000FF",
+        "icons": [
+          "a gold-capped teal alligator-tooth charm icon",
+          "a small gold jukebox glyph with an arched top",
+          "a small hot-pink speaker stack glyph wearing a gold crown"
+        ],
+        "slots": ["notch_w1 / notch_w2 / notch_w3 (pips drawn in code)", "notch_jj", "notch_mm"],
+        "states": "_off / _next / _lit / _spent are made in code (dim, outline pulse, full colour, gold ring)"
+      }
+    },
+    "cards": {
+      "art_meter": {
+        "rig": "ui_intro_cards card_1_art",
+        "atlas": "bd_ui",
+        "scene": "the chunky plum-black speaker cabinet with its huge woofer from the references, a gold-capped teal alligator-tooth charm bursting out of the woofer cone toward the viewer, three bold cel-shaded cyan sound-wave rings around the woofer.",
+        "backdrop": "the violet juke joint at night with string lights and cyan firefly jars"
+      },
+      "art_jukejam": {
+        "rig": "ui_intro_cards card_2_art (+ ui_buy_cards card_1_art crop until the P2 buy art exists)",
+        "atlas": "bd_ui",
+        "scene": "the gold-and-teal jukebox from the references with three gold-capped teal alligator-tooth charms in front of it, each wearing a blank teal or lime badge plate.",
+        "backdrop": "the juke joint after hours with low cyan fog and a moonlit window"
+      },
+      "art_megamix": {
+        "rig": "ui_intro_cards card_3_art (+ ui_buy_cards card_2_art crop until the P2 buy art exists)",
+        "atlas": "bd_ui",
+        "scene": "the crowned hot-pink speaker stack from the references with three gold-capped teal alligator-tooth charms held by heavy gold clamp brackets, each wearing a blank gold or pink badge plate.",
+        "backdrop": "the juke joint in party lights with hot-pink and gold spotlight beams"
+      },
+      "art_jukejam_buy": {
+        "rig": "ui_buy_cards card_1_art",
+        "atlas": "bd_ui",
+        "scene": "the gold-and-teal jukebox from the references shown big and bold on its own, a gold-capped teal alligator-tooth charm leaning on its side.",
+        "backdrop": "the juke joint after hours with low cyan fog"
+      },
+      "art_megamix_buy": {
+        "rig": "ui_buy_cards card_2_art",
+        "atlas": "bd_ui",
+        "scene": "the crowned hot-pink speaker stack from the references shown big and bold on its own, one gold clamp bracket resting at its base.",
+        "backdrop": "the juke joint in party lights with hot-pink and gold spotlight beams"
+      }
+    },
+    "backgrounds": {
+      "masters": {
+        "landscape": [3072, 1536],
+        "portrait": [1536, 3072]
+      },
+      "generate": "Landscape: 21:9 at 4K, centre-crop to 2:1. Portrait: 9:16 at 4K (background.txt#F), centre-crop the width to 1:2 (no outpaint). Variants (background.txt#E) are edits of the approved base plate of the same orientation, so crossfades keep every shape in place.",
+      "base": {"note": "background.txt#A with the SWAMP FUNK template defaults (probe1 bg_A_landscape)."},
+      "jukejam": {
+        "variantNote": "after hours, with denser low swamp fog rolling across the floor, one big moonlit window glowing pale cyan behind the cypress silhouettes, the string lights dimmed, and the whole palette shifted toward cyan and teal with warm gold accents on the far-left shelf."
+      },
+      "megamix": {
+        "variantNote": "party lights, with hot-pink and gold spotlight beams sweeping down from the top corners, scattered light specks across the walls, the string lights at full brightness, and the whole palette shifted toward magenta and gold."
+      },
+      "neon": "The additive neon layer per plate: background.txt#C for the base plates; for the variants, procedural extraction first (bright, saturated neon hues masked from the plate), background.txt#C only as P2.",
+      "parallax": "Cut: no back/mid/front generations; the runtime pulses only the neon layer."
+    },
+    "mascots": {
+      "gumbo": {
+        "rig": "chr_gumbo",
+        "atlas": "bd_chr_gumbo",
+        "authoringHeightUnits": 992,
+        "nearSide": "R",
+        "facing": "toward the right side of the image",
+        "character": "heavyset adult alligator bouncer in a tank top, with a gold tooth, a toothpick in the corner of his mouth and a gold chain",
+        "poseNote": "The thick tail rests on the ground behind the far leg, clear of both legs.",
+        "sheets": {
+          "body": [
+            {"piece": "bare torso with scaled chest and back, no clothing", "slot": "torso"},
+            {"piece": "tank top on its own, shaped to fit the torso", "slot": "tank_top"},
+            {"piece": "cream belly plate", "slot": "belly"},
+            {"piece": "neck", "slot": "neck"},
+            {"piece": "near upper arm", "slot": "upper_arm_R"},
+            {"piece": "near forearm", "slot": "forearm_R"},
+            {"piece": "far upper arm", "slot": "upper_arm_L"},
+            {"piece": "far forearm", "slot": "forearm_L"},
+            {"piece": "near thigh", "slot": "thigh_R"},
+            {"piece": "near shin", "slot": "shin_R"},
+            {"piece": "near foot", "slot": "foot_R"},
+            {"piece": "far thigh", "slot": "thigh_L"},
+            {"piece": "far shin", "slot": "shin_L"},
+            {"piece": "far foot", "slot": "foot_L"},
+            {"piece": "long thick tail", "slot": "tail"}
+          ],
+          "face": [
+            {"piece": "head with the skull and upper snout, no lower jaw", "slot": "head"},
+            {"piece": "lower jaw", "slot": "jaw"},
+            {"piece": "upper teeth row", "slot": "teeth_upper"},
+            {"piece": "lower teeth row", "slot": "teeth_lower"},
+            {"piece": "gold tooth", "slot": "gold_tooth"},
+            {"piece": "nostrils", "slot": "nostrils"},
+            {"piece": "near eye open", "slot": "eye_R/open"},
+            {"piece": "near eye half closed", "slot": "eye_R/half"},
+            {"piece": "near eye closed", "slot": "eye_R/closed"},
+            {"piece": "near eye wide", "slot": "eye_R/wide"},
+            {"piece": "far eye open", "slot": "eye_L/open"},
+            {"piece": "far eye half closed", "slot": "eye_L/half"},
+            {"piece": "far eye closed", "slot": "eye_L/closed"},
+            {"piece": "far eye wide", "slot": "eye_L/wide"},
+            {"piece": "two round pupils", "slot": "pupil_L + pupil_R"},
+            {"piece": "two heavy brow ridges", "slot": "brow_L + brow_R"},
+            {"piece": "mouth closed around a toothpick", "slot": "mouth/closed_pick"},
+            {"piece": "mouth in a toothy grin", "slot": "mouth/grin"},
+            {"piece": "mouth open", "slot": "mouth/open"},
+            {"piece": "mouth roaring", "slot": "mouth/roar"},
+            {"piece": "jowl fold", "slot": "jowl"}
+          ],
+          "hands": [
+            {"piece": "near hand open", "slot": "hand_R/open"},
+            {"piece": "near hand in a fist", "slot": "hand_R/fist"},
+            {"piece": "near hand pointing", "slot": "hand_R/point"},
+            {"piece": "far hand open", "slot": "hand_L/open"},
+            {"piece": "far hand in a fist", "slot": "hand_L/fist"},
+            {"piece": "far hand pointing", "slot": "hand_L/point"},
+            {"piece": "far hand resting flat as if leaning on a surface", "slot": "hand_L/lean"}
+          ],
+          "props": [
+            {"piece": "battered cherry-red cooler box with its lid removed", "slot": "cooler_body"},
+            {"piece": "cream cooler lid", "slot": "cooler_lid"},
+            {"piece": "toothpick", "slot": "toothpick"},
+            {"piece": "gold chain necklace", "slot": "chain"}
+          ]
+        },
+        "codeDrawn": ["fx_sweat"]
+      },
+      "croak": {
+        "rig": "chr_croak",
+        "atlas": "bd_chr_croak",
+        "authoringHeightUnits": 1260,
+        "nearSide": "L",
+        "facing": "toward the left side of the image",
+        "character": "lanky adult bullfrog DJ in an open-collar shirt, with headphones over his head, a gold chain and a throat pouch, olive yellow-green skin with hot-pink accents",
+        "poseNote": "The headphone cable hangs clear of the body and the throat pouch is relaxed.",
+        "sheets": {
+          "body": [
+            {"piece": "torso", "slot": "torso"},
+            {"piece": "open-collar shirt on its own, shaped to fit the torso", "slot": "shirt"},
+            {"piece": "throat pouch", "slot": "pouch"},
+            {"piece": "near upper arm", "slot": "upper_arm_L"},
+            {"piece": "near forearm", "slot": "forearm_L"},
+            {"piece": "far upper arm", "slot": "upper_arm_R"},
+            {"piece": "far forearm", "slot": "forearm_R"},
+            {"piece": "near thigh", "slot": "thigh_L"},
+            {"piece": "near shin", "slot": "shin_L"},
+            {"piece": "near foot", "slot": "foot_L"},
+            {"piece": "far thigh", "slot": "thigh_R"},
+            {"piece": "far shin", "slot": "shin_R"},
+            {"piece": "far foot", "slot": "foot_R"}
+          ],
+          "face": [
+            {"piece": "head without the eyes", "slot": "head"},
+            {"piece": "near eye bulge", "slot": "eye_bulge_L"},
+            {"piece": "far eye bulge", "slot": "eye_bulge_R"},
+            {"piece": "near eye open", "slot": "eye_L/open"},
+            {"piece": "near eye half closed", "slot": "eye_L/half"},
+            {"piece": "near eye closed", "slot": "eye_L/closed"},
+            {"piece": "near eye wide", "slot": "eye_L/wide"},
+            {"piece": "far eye open", "slot": "eye_R/open"},
+            {"piece": "far eye half closed", "slot": "eye_R/half"},
+            {"piece": "far eye closed", "slot": "eye_R/closed"},
+            {"piece": "far eye wide", "slot": "eye_R/wide"},
+            {"piece": "two round pupils", "slot": "pupil_L + pupil_R"},
+            {"piece": "near eyelid", "slot": "lid_L"},
+            {"piece": "far eyelid", "slot": "lid_R"},
+            {"piece": "mouth closed", "slot": "mouth/closed"},
+            {"piece": "mouth smiling", "slot": "mouth/smile"},
+            {"piece": "mouth open", "slot": "mouth/open"},
+            {"piece": "mouth pursed round as if saying oh", "slot": "mouth/O"}
+          ],
+          "hands": [
+            {"piece": "near hand open", "slot": "hand_L/open"},
+            {"piece": "near hand pointing", "slot": "hand_L/point"},
+            {"piece": "near hand in a fist", "slot": "hand_L/fist"},
+            {"piece": "near hand pinching a small slider knob", "slot": "hand_L/fader"},
+            {"piece": "far hand open", "slot": "hand_R/open"},
+            {"piece": "far hand pointing", "slot": "hand_R/point"},
+            {"piece": "far hand in a fist", "slot": "hand_R/fist"},
+            {"piece": "far hand with fingertips pressed down as if scratching a record", "slot": "hand_R/scratch"},
+            {"piece": "far hand pressing down flat, palm first", "slot": "hand_R/press"}
+          ],
+          "props": [
+            {"piece": "headphone band", "slot": "band"},
+            {"piece": "near headphone cup", "slot": "cup_L"},
+            {"piece": "far headphone cup", "slot": "cup_R"},
+            {"piece": "coiled headphone cable", "slot": "cable (mesh on phys_cable_1..3; slot to add in the rig)"},
+            {"piece": "small vintage gold stage microphone", "slot": "mic"},
+            {"piece": "gold chain necklace", "slot": "chain"}
+          ]
+        },
+        "codeDrawn": ["fx_note"]
+      },
+      "wardrobeRule": "If an approved design sheet disagrees with this wardrobe (for example no chain), the approved sheet wins: drop the item from the part lists and tell the animator."
+    }
+  }
 }

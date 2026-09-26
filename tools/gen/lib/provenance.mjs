@@ -105,7 +105,8 @@ export function readManifest(p) {
 
 const sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 
-function withLock(target, fn, timeoutMs = 30000) {
+/** O_EXCL lock file '<target>.lock' around fn() (stale after timeoutMs). Also used by the Higgsfield ledger. */
+export function withLock(target, fn, timeoutMs = 30000) {
   const lock = `${target}.lock`;
   fs.mkdirSync(path.dirname(lock), { recursive: true });
   const t0 = Date.now();
@@ -125,7 +126,8 @@ function withLock(target, fn, timeoutMs = 30000) {
   try { return fn(); } finally { fs.rmSync(lock, { force: true }); }
 }
 
-const writeAtomic = (p, doc) => {
+/** Write JSON (2-space, trailing newline) via a temp file + rename. */
+export const writeAtomic = (p, doc) => {
   const tmp = path.join(path.dirname(p), `.${path.basename(p)}.${process.pid}.tmp`);
   fs.writeFileSync(tmp, `${JSON.stringify(doc, null, 2)}\n`);
   fs.renameSync(tmp, p);

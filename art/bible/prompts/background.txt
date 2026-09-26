@@ -6,6 +6,10 @@
 #   {RIGHT_MASS} a neon gator-silhouette sign (icon only, no letters) above a magenta booth
 #   {TOP_DETAIL} sagging string lights and violet spotlight cones
 # Landscape: 21:9 at 4K -> crop to 2:1 (3072x1536). Portrait: 9:16 at 4K -> outpaint to 1:2 (1536x3072).
+# Portrait alternative (section F, no outpaint credits): 9:16 at 4K, centre-crop the width to 1:2, then Lanczos to 1536x3072.
+# E and F (Bass Drop, art/plan/bass-drop.json): E = feature variant as an edit of the approved base plate of the same
+# orientation, so base <-> variant crossfades keep every shape in place; {VARIANT_NOTE} = artbible.bassDrop.backgrounds.<mode>.variantNote.
+# F = portrait reframe as an edit of the approved landscape plate.
 
 ## SECTION A: full plate
 Game background of {SETTING}, wide establishing view at eye level, seen from behind the slot reels. {LEFT_MASS} at the far left edge; {RIGHT_MASS} at the far right edge; {TOP_DETAIL}; dark floor at the bottom. {VARIANT_NOTE}
@@ -20,3 +24,12 @@ Same scene as the reference, identical framing: only the neon tubes and glowing 
 
 ## SECTION D: game-tile plate (ACP Tile Editor; must be brighter than the Stake lobby, no dark edges)
 Same scene as the reference in brightly lit daytime, pastel neon, light edges all around, no dark vignette, no text.
+
+## SECTION E: feature variant (edit; the approved base plate of the same orientation is the only reference)
+Same scene as the reference, identical framing, layout, perspective and linework; every object stays where it is. Change only the mood and lighting: {VARIANT_NOTE}
+No characters, no UI elements, no text, no letters, no readable signage, no logos. Keep the darker, lower-detail central 60% where the reel grid sits and the brightest neon masses at the far left and far right edges.
+
+## SECTION F: portrait reframe (edit; the approved landscape plate is the reference). 9:16 at 4K, centre-crop the width to 1:2.
+Same place as the reference, reframed as a tall portrait view for a phone screen: {LEFT_MASS} on the left side and {RIGHT_MASS} on the right side of the upper half; {TOP_DETAIL} across the top; a darker, lower-detail central column over the middle 60% of the width from one third of the height down, where the reel grid sits; dark floor across the bottom fifth. Keep every important shape inside the central 88% of the width.
+{STYLE_FORMULA}
+No characters, no UI elements, no text, no letters, no readable signage, no logos. Thinner, lower-contrast linework than the foreground; soft depth layering.

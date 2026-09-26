@@ -1,0 +1,4 @@
+{
+  "$comment": "Art-director picks for docs/games/bass-drop/ART_PLAN.md. One entry per approved plan row (ids from art/plan/bass-drop.json): the chosen candidate's Higgsfield job_id (from art/ledger/higgsfield-jobs.json), or media_id for an uploaded local reference. 'python3 art/plan/build_plan.py spec --batch <id>' refuses to build a batch until every reference it uses is listed here. Shape: \"sym_H1\": {\"job_id\": \"f9263dd2-...\", \"by\": \"<name>\", \"date\": \"YYYY-MM-DD\", \"note\": \"...\"}. Empty until the probe1 images can be downloaded and reviewed (the CDN host is blocked by the egress policy today).",
+  "approvals": {}
+}

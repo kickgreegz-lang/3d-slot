@@ -1,0 +1,49 @@
+# TEMPLATE mascot_parts_sheet.txt: 2D Spine character parts (Bass Drop chr_gumbo / chr_croak,
+# docs/games/bass-drop/ANIMATION_SET.md section 5). Lines starting with '#' are comments; the renderer drops them.
+# Flow: approved design sheet (mascot_turnaround.txt#A) -> A rig master = the Spine setup pose (fixes view, facing
+#       and scale) -> B body, C head/face, D hands, E wardrobe/props sheets -> key matte (--no-fit) -> cut each sheet
+#       into pieces -> register every piece to the rig master -> hidden-area fill (symbol_parts_sheet.txt#C) -> Spine.
+# Placeholders (render with --mascot <id> so IDENTITY_LOCK and KEY_HEX come from the bible; the rest from
+# art/bible/artbible.json -> bassDrop.mascots.<id>, passed as --var by art/plan/build_plan.py):
+#   {IDENTITY_LOCK}  mascots.rules.identityLock
+#   {CHARACTER}      bassDrop.mascots.<id>.character (Bass Drop wardrobe, nothing held; overrides the Swamp Funk brief)
+#   {FACING}         bassDrop.mascots.<id>.facing
+#   {POSE_NOTE}      bassDrop.mascots.<id>.poseNote (A only)
+#   {PART_LIST}      bassDrop.mascots.<id>.sheets.<body|face|hands|props> joined with ", " (B-E)
+#   {STYLE_FORMULA}  artbible.styleFormula ; {KEY_HEX} mascots.<id>.keyHex (gumbo #FF00FF, croak #0000FF)
+# 'near' = the side closer to the viewer in the three-quarter view (gumbo faces screen-right: near = his right;
+# croak faces screen-left: near = his left). Spine _L/_R names are the character's own sides.
+# Never use: kid, child, cute, chibi, baby.
+# References: A = the approved design sheet; B-E = the approved rig master (view, scale) + the design sheet (identity).
+# Output: A 2k (4:5 gumbo, 2:3 croak); B and C 4k 16:9 (pieces must reach the 2x authoring size, never upscaled);
+# D and E 2k 3:2.
+
+## SECTION A: rig master (Spine setup pose)
+{IDENTITY_LOCK}
+{CHARACTER}, adult body proportions with the head about one quarter of total height. Single full-body figure in a three-quarter view turned {FACING}, standing in a neutral rig pose: both arms held slightly away from the torso with a clear gap, hands relaxed and open, legs slightly apart with both feet flat, mouth closed, eyes open and looking ahead. {POSE_NOTE} The figure fills about 80% of the frame height, centred, with empty margin on all four sides.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no floor, no cast shadow, no text, no labels.
+
+## SECTION B: body parts sheet
+{IDENTITY_LOCK}
+Cut-out animation parts sheet of the same character as the reference, in the same three-quarter view, scale, outline weight, colours and cel shading: {PART_LIST}. Every piece drawn separately and complete, including the area normally hidden where it joins its neighbour, which ends in a rounded overlap cap; pieces laid out in a loose grid with wide empty gaps so no two pieces touch, and each piece keeps its own closed black outline.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no text, no labels, no numbers, no grid lines, no shadows.
+
+## SECTION C: head and face parts sheet
+{IDENTITY_LOCK}
+Face parts sheet of the same character as the reference, in the same three-quarter view, scale, outline weight and colours: {PART_LIST}. Every piece drawn separately and complete; the variants of one feature are drawn at identical size and angle side by side so they can swap in place; wide empty gaps so no two pieces touch, and each piece keeps its own closed black outline.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no text, no labels, no numbers, no grid lines, no shadows.
+
+## SECTION D: hand poses sheet
+{IDENTITY_LOCK}
+Hand poses sheet of the same character as the reference, in the same three-quarter view, scale and colours: {PART_LIST}. Every hand ends at the wrist in a rounded overlap cap, with the same finger count as the reference in every pose, all hands at identical scale, laid out in a loose grid with wide empty gaps so no two pieces touch.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no text, no labels, no numbers, no shadows.
+
+## SECTION E: wardrobe and props sheet
+{IDENTITY_LOCK}
+Wardrobe and props sheet for the same character as the reference, in the same view, scale and colours: {PART_LIST}. Every item drawn separately and complete, including any part normally hidden behind the body, laid out with wide empty gaps so no two items touch, and each item keeps its own closed black outline.
+{STYLE_FORMULA}
+Solid uniform flat {KEY_HEX} background, no text, no labels, no numbers, no shadows.

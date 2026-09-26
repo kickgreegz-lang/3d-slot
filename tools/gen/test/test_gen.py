@@ -524,5 +524,8 @@ class ProvenanceTests(unittest.TestCase):
                           license_id="x")
 
 
+# Higgsfield MCP ingestion (tools/gen/hf-ingest.mjs): local CDN fixture, idempotency, resume, bad PNG, 403s
+from test_hf_ingest import HfIngestTests  # noqa: E402,F401
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

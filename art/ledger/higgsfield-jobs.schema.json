@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "art/ledger/higgsfield-jobs.schema.json",
+  "title": "Higgsfield MCP paid-job ledger",
+  "description": "art/ledger/higgsfield-jobs.json records every PAID Higgsfield MCP job (route higgsfield-mcp) so it survives container restarts. Written by 'pnpm gen:hf-ingest record' (from generate_image_batch / jobs_wait JSON); read by 'pnpm gen:hf-ingest' (download into art/_raw/<asset>/vNN + manifest rows), 'status' and 'check'. Unknown extra fields are allowed so the shape can grow; the fields below are checked. Prompts: a job with 'template' (+ 'vars') is re-rendered by tools/gen/lib/genlib.mjs and must hash to 'promptHash'; art/ledger/prompts/<promptHash>.txt is the stored copy used when the template no longer reproduces it (or when the job had no template).",
+  "type": "object",
+  "required": ["batches"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "$comment": { "type": "string" },
+    "batches": { "type": "array", "items": { "$ref": "#/$defs/batch" } }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "batch": {
+      "type": "object",
+      "required": ["id", "date", "model", "jobs"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$", "description": "Unique batch id, e.g. 'probe1', 'c1_symbols'." },
+        "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "purpose": { "type": "string" },
+        "model": { "type": "string", "description": "MCP model id as REQUESTED (e.g. 'nano_banana_pro'). Jobs may report another id ('nano_banana_2' for Nano Banana Pro): see job.model." },
+        "planTier": { "type": ["string", "null"], "description": "Account plan when generated, e.g. 'Higgsfield Plus'." },
+        "notes": { "type": ["string", "null"] },
+        "jobs": { "type": "array", "items": { "$ref": "#/$defs/job" } }
+      }
+    },
+    "job": {
+      "type": "object",
+      "required": ["name", "job_id", "status"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$" },
+        "index": { "type": "integer", "minimum": 0, "description": "Caller index in the generate_image_batch request." },
+        "job_id": { "type": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$" },
+        "status": { "type": "string", "description": "MCP status: completed, failed, nsfw, canceled, queued, in_progress ..." },
+        "type": { "type": "string", "description": "MCP job type ('image')." },
+        "model": { "type": "string", "description": "Model id as REPORTED by the job (jobs_wait 'model'); goes into the manifest row." },
+        "request_model": { "type": "string", "description": "Per-job override of batch.model (mixed-model batches)." },
+        "template": { "type": ["string", "null"], "pattern": "^[a-z0-9_]+\\.txt(#[A-Z0-9]+)?$" },
+        "vars": {
+          "type": "object",
+          "description": "Render context: lower-case keys are genlib options (symbol, mascot, rigReady); UPPER_CASE keys are placeholder overrides (--var NAME=value).",
+          "properties": {
+            "symbol": { "type": "string" },
+            "mascot": { "type": "string" },
+            "rigReady": { "type": "boolean" }
+          },
+          "additionalProperties": { "type": "string" }
+        },
+        "promptHash": { "$ref": "#/$defs/sha256" },
+        "resolution": { "type": "string" },
+        "aspect_ratio": { "type": "string", "pattern": "^\\d+:\\d+$" },
+        "credits": { "type": ["number", "null"], "minimum": 0 },
+        "result_url": { "type": ["string", "null"] },
+        "medias": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["value", "role"],
+            "properties": { "value": { "type": "string" }, "role": { "type": "string" }, "sha256": { "$ref": "#/$defs/sha256" } }
+          }
+        },
+        "refHashes": { "type": "array", "items": { "$ref": "#/$defs/sha256" } },
+        "asset": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$", "description": "art/_raw/<asset> folder override (default: genlib defaultAsset from template + vars, else the name)." },
+        "stage": { "type": "string", "description": "Manifest stage override (default by template: symbols 2d-image, mascot sheets mascot-sheets, backgrounds backgrounds)." },
+        "sha256": { "$ref": "#/$defs/sha256", "description": "sha256 of the downloaded result, set by the first successful ingest; later downloads must match." },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "bytes": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

@@ -43,6 +43,7 @@
     "test:blender": "bash tools/blender/tests/run_tests.sh",
     "licence:audit": "node tools/licence/audit.mjs",
     "gen:higgsfield": "node tools/gen/higgsfield.mjs",
+    "gen:hf-ingest": "node tools/gen/hf-ingest.mjs",
     "gen:nbp": "${PYTHON:-python3} tools/gen/nbp.py",
     "gen:scenario": "${PYTHON:-python3} tools/gen/scenario.py",
     "gen:sfx": "node tools/audio/gen-sfx.mjs",

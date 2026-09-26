@@ -8,6 +8,8 @@ Every generation prompt in this project is **rendered from these templates plus 
 
 Human-readable rationale: [docs/ART_BIBLE.md](../../../docs/ART_BIBLE.md). Where each template is used: [docs/PIPELINE.md](../../../docs/PIPELINE.md).
 
+Bass Drop per-asset values live in [`../artbible.json`](../artbible.json) → `bassDrop` and reach the templates as `--var`; every Bass Drop prompt, its hash and its render command are in [`art/plan/bass-drop.json`](../../plan/bass-drop.json) (plan: [docs/games/bass-drop/ART_PLAN.md](../../../docs/games/bass-drop/ART_PLAN.md)).
+
 | Template | Used for | Default model / route |
 |---|---|---|
 | `symbol.txt` | High-pay, wild and scatter masters (beauty version + rig-ready version) | Nano Banana Pro, or Scenario LoRA model |
@@ -15,8 +17,12 @@ Human-readable rationale: [docs/ART_BIBLE.md](../../../docs/ART_BIBLE.md). Where
 | `royal_material_pass.txt` | Optional surface pass on vector royals L1–L5 | Nano Banana Pro edit |
 | `mascot_turnaround.txt` | A design model sheet (approval); B one 3D-input view per image | Nano Banana Pro at 4K |
 | `mascot_expressions.txt` | A expressions, B mouth/eye, C hands, D key poses | Nano Banana Pro |
-| `background.txt` | A plate, B parallax layer, C neon-only layer, D bright game-tile plate | Nano Banana Pro at 4K |
+| `background.txt` | A plate, B parallax layer, C neon-only layer, D bright game-tile plate, E feature variant (edit of the approved plate), F portrait reframe (edit of the landscape plate) | Nano Banana Pro at 4K |
 | `frame_piece.txt` | Beam, post, sill and corner cap for 3-slice | Nano Banana Pro (or Recraft SVG) |
+| `prop.txt` | A stage-prop master (speaker cabinets, horns, DJ booth); B a sheet of new pieces that fit an approved object (badge plate, clamps, ribbon). Parts of a prop: `symbol_parts_sheet.txt#A` | Nano Banana Pro 2k |
+| `emblem.txt` | A feature emblem (UI intro/outro/upgrade); B logo emblem with a blank banner (no lettering); C small UI icon sheet | Nano Banana Pro 2k |
+| `card_art.txt` | Full-bleed intro / buy card illustration (no words; one 1:1 image serves both skins) | Nano Banana Pro 2k |
+| `mascot_parts_sheet.txt` | 2D Spine characters: A rig master (setup pose), B body, C head/face, D hands, E wardrobe/props sheets on the key colour | Nano Banana Pro (A, D, E 2k; B, C 4k) |
 | `vfx_keyframe.txt` | Look-dev frames for the FX style guide | Nano Banana Pro / NB2 |
 | `video_loop.txt` | Animatics and motion reference; Wan loops | Higgsfield `seedance_2_0` / `kling3_0`; Wan 2.x self-hosted |
 | `sfx.txt` | Sound effects (cue id = `SfxId`) | ElevenLabs SFX v2; Stable Audio |

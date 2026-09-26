@@ -30,7 +30,7 @@ const repeatTexture = (canvas: HTMLCanvasElement): Texture =>
   });
 
 /** Bass wave centre line (px from the strip centre) at x: one long hump + a small harmonic. */
-const waveY = (x: number): number => 8.6 * Math.sin((TAU * x) / WAVE_W) + 1.8 * Math.sin((3 * TAU * x) / WAVE_W + 0.6);
+const waveY = (x: number): number => 9.4 * Math.sin((TAU * x) / WAVE_W) + 1.6 * Math.sin((3 * TAU * x) / WAVE_W + 0.6);
 
 /**
  * 128 x 32 bass-waveform strip: a soft glow band, an audio-waveform envelope of thin bars
@@ -42,7 +42,7 @@ const drawWave = (): HTMLCanvasElement => {
   // tube body: a flat plateau over the inner ~60% with soft edges (reads as a lit neon tube)
   for (let y = 0; y < WAVE_H; y++) {
     const d = Math.abs(y + 0.5 - cy) / cy;
-    const a = d < 0.5 ? 0.5 : 0.5 * Math.max(0, 1 - (d - 0.5) / 0.5) ** 1.5;
+    const a = d < 0.5 ? 0.62 : 0.62 * Math.max(0, 1 - (d - 0.5) / 0.5) ** 1.5;
     g.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
     g.fillRect(0, y, WAVE_W, 1);
   }

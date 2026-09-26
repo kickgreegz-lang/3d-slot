@@ -3,7 +3,7 @@ import { Container } from 'pixi.js';
 import { BOARD_TIMING } from '../../../board/boardTiming';
 import { type Board as BoardIds, cloneBoard, planTumble } from '../../../board/model';
 import type { ClusterWin, Position } from '../../../book/types';
-import { SYMBOLS } from '../../../config/game';
+import { GRID, SYMBOLS } from '../../../config/game';
 import { clock } from '../../../core/clock';
 import { followSpeed, s, stagger } from '../../../core/timing';
 import type { GameContext, GameModule } from '../../../game/context';
@@ -29,13 +29,16 @@ const isWildId = (id: string | undefined): boolean => !!id && SYMBOLS[id]?.kind 
  *  - 'round:end' / 'board:reveal' fade leftover links (win cap: no tumble), 'round:start' /
  *    'board:set' clear everything.
  * A board mirror (reveal / tumble / transform / set) tells which cells hold a wild, so the
- * links through a W are gold. Links and pops share one holder in `layers.board` (above the
- * symbols, below the frame) that is attached to `winLayer` while anything shows and kept
- * last in it, so it draws above the win-elevated symbols (which join winLayer at their pop)
- * and below the cluster labels (overlay).
+ * links through a W are gold. The links' holder lives in `layers.board` (above the symbols,
+ * below the frame) and is attached to `winLayer` while links show, kept last in it, so it
+ * draws above the win-elevated symbols (which join winLayer at their pop) and below the
+ * cluster labels (overlay). The count pops sit on `overlay`, moved on top at each spawn: they
+ * start exactly where the cluster label floats away, and the "+N" must win that overlap
+ * (they only cross the frame and the meter cabinet, never the HUD).
  */
 export class Connections implements GameModule {
   private readonly holder = new Container({ label: 'connections' });
+  private readonly popHolder = new Container({ label: 'connectionPops' });
   private links!: LinkField;
   private pops!: CountPops;
   private board: BoardIds = [];
@@ -53,8 +56,10 @@ export class Connections implements GameModule {
     ensureConnectFonts(ctx.app.renderer);
     this.links = new LinkField();
     this.pops = new CountPops();
-    this.holder.addChild(this.links.view, this.pops.view);
+    this.holder.addChild(this.links.view);
+    this.popHolder.addChild(this.pops.view);
     ctx.layers.board.addChild(this.holder);
+    ctx.layers.overlay.addChild(this.popHolder);
 
     const g = ctx.game;
     this.offs.push(
@@ -90,6 +95,7 @@ export class Connections implements GameModule {
     this.links.destroy();
     this.pops.destroy();
     this.holder.destroy({ children: true });
+    this.popHolder.destroy({ children: true });
   }
 
   // ======================================================================= wins
@@ -150,13 +156,23 @@ export class Connections implements GameModule {
     for (const part of splitBurst(this.clusters, this.popped, positions)) {
       this.popped.add(part.index);
       if (!part.cells.length) continue;
+      // on top of the overlay: the pop starts where the cluster label floats away
+      this.ctx.layers.overlay.addChild(this.popHolder);
       let reel = 0;
       let row = 0;
       for (const c of part.cells) {
         reel += c.reel;
         row += c.row;
       }
-      this.pops.spawn(part.cells.length, reel / part.cells.length, row / part.cells.length);
+      reel /= part.cells.length;
+      row /= part.cells.length;
+      // the cluster label floats away from the overlay cell right now: a centroid on top of it
+      // starts just below it instead (above it on the bottom row), so the "+N" stays readable
+      const ov = this.clusters[part.index]?.meta.overlay;
+      if (ov && Math.hypot(reel - ov.reel, row - ov.row) < LOOK.popLabelClear) {
+        row = ov.row + (ov.row >= GRID.lastVisibleRow ? -LOOK.popLabelClear : LOOK.popLabelClear);
+      }
+      this.pops.spawn(part.cells.length, reel, row);
     }
     this.update(0);
   }
@@ -167,7 +183,7 @@ export class Connections implements GameModule {
     const L = this.ctx.layout;
     this.links.update(dt, L);
     this.pops.update(L);
-    this.setAttached(this.links.active || this.pops.active);
+    this.setAttached(this.links.active);
   }
 
   /**

@@ -5,7 +5,7 @@ import { followSpeed, s, speedScale, stagger } from '../../../core/timing';
 import { glowTexture } from '../../../fx/textures';
 import { lighten } from '../../../fx/util';
 import { BASS_DROP_TIMING, physK } from '../timing';
-import { WAVE_H, WAVE_W, linkTextures } from './art';
+import { WAVE_H, WAVE_W, destroyLinkTextures, linkTextures } from './art';
 import { type XY, cellXY } from './geometry';
 import type { ClusterGraph, LinkEdge } from './graph';
 import { CONNECT_LOOK as LOOK } from './look';
@@ -337,7 +337,7 @@ export class LinkField {
   update(dt: number, L: LayoutSpec): void {
     if (!this.live.length) return;
     this.time += dt * speedScale();
-    const phase = this.time * K.scrollWaves;
+    const phase = (this.time * K.scrollWaves) % 1;
     const period = K.pulsePeriod / 1000;
     for (const link of this.live) {
       const it = link.item;
@@ -367,5 +367,6 @@ export class LinkField {
     for (const link of this.pool) link.destroy();
     this.pool.length = 0;
     this.view.destroy({ children: true });
+    destroyLinkTextures();
   }
 }

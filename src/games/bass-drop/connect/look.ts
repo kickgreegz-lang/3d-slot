@@ -10,13 +10,13 @@ export const CONNECT_LOOK = registerTiming('bassDropConnect', {
   /** link body: tinted waveform strip alpha; white-hot core width (x k) and alpha */
   bodyAlpha: 0.9,
   coreWidth: 4,
-  coreAlpha: 0.95,
+  coreAlpha: 0.85,
   /** symbol colour -> link tint: lightened this much (DESIGN §7.3: 35%) */
   lighten: 0.35,
   /** soft tube glow around the strip: length / width factors (x the strip) and alpha */
   haloLength: 1.2,
-  haloWidth: 2.6,
-  haloAlpha: 0.4,
+  haloWidth: 3,
+  haloAlpha: 0.55,
   /** half-width taper per strip column along the visible segment (pinched ends) */
   taper: [0.34, 0.8, 1, 1, 1, 0.8, 0.34],
   /** draw-on head glow at the growing tip (x k) */
@@ -40,7 +40,9 @@ export const CONNECT_LOOK = registerTiming('bassDropConnect', {
   popOvershoot: 1.3,
   popRise: 16,
   popEndScale: 0.6,
+  /** a centroid closer than this (pitches) to the cluster label starts this far below it */
+  popLabelClear: 0.6,
   /** additive teal halo behind the pop (x k) and its alpha */
-  popHalo: 120,
-  popHaloAlpha: 0.55,
+  popHalo: 150,
+  popHaloAlpha: 0.8,
 });

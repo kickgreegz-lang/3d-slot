@@ -62,10 +62,53 @@ def save_rgba(path, rgb: np.ndarray, alpha: np.ndarray) -> None:
 
 
 def auto_key(rgb: np.ndarray, border: int = 4) -> np.ndarray:
-    """Median colour of the image border (the flat key background)."""
+    """Median colour of the image border (the flat key background). No uniformity check: use
+    measure_key() for that (the keyUniform gate)."""
     b = np.concatenate([rgb[:border].reshape(-1, 3), rgb[-border:].reshape(-1, 3),
                         rgb[:, :border].reshape(-1, 3), rgb[:, -border:].reshape(-1, 3)])
     return np.median(b, axis=0).astype(np.float32)
+
+
+# keyUniform gate (ART_PLAN: "the measured key background is uniform"), in 0-255 RGB distance units.
+# Calibrated on the 20 Higgsfield NBP raws of 2026-09-26: flat keys measure borderP95 4.6-20.6 and
+# patchSpread <= 6; painted plates (not keyable) measure borderP95 59-155.
+KEY_UNIFORM = {"border": 8, "patch": 48, "p95": 32.0, "patchSpread": 16.0, "drift": 64.0}
+
+
+class KeyNotUniform(ValueError):
+    """The image border is not one flat colour: the key matte would be guesswork."""
+
+    def __init__(self, report: dict):
+        self.report = report
+        pat = ", ".join(f"{k} {v}" for k, v in report["patches"].items())
+        if report.get("uniform", False):
+            why = (f"the background is a flat {report['key']} but {report.get('drift')} RGB units from the "
+                   f"requested {report.get('requested')} (> --max-key-drift {report['tolerance'].get('drift')})")
+        else:
+            why = (f"the background is not a uniform key (border p95 {report['borderP95']} > "
+                   f"{report['tolerance']['p95']} or patch spread {report['patchSpread']} > "
+                   f"{report['tolerance']['patchSpread']}, 0-255 RGB units; median {report['key']}; patches: {pat})")
+        super().__init__(f"keyUniform FAILED: {why}. Regenerate the image (retry budget), or matte it with "
+                         f"--alpha-from (external matte); --key RRGGBB forces a colour and skips this gate")
+
+
+def is_chroma_key(key: np.ndarray) -> bool:
+    """A clean chroma key: every channel clearly on (>= 0.6) or off (<= 0.4), both kinds present
+    (#00FF00, #FF00FF, #0000FF and their AI drifts such as #F530F6). Such keys use the classic
+    channel-split spill; anything else (e.g. the olive #95C445 D_H1 came back on) uses the hue axis."""
+    k = np.asarray(key, np.float32)
+    hi, lo = k[k >= 0.5], k[k < 0.5]
+    return bool(hi.size and lo.size and hi.min() >= 0.6 and lo.max() <= 0.4)
+
+
+def key_axis(key: np.ndarray) -> np.ndarray:
+    """Unit chroma direction of the key (zero-sum RGB vector): the hue the spill metric measures."""
+    k = np.asarray(key, np.float32)
+    c = k - k.mean()
+    n = float(np.linalg.norm(c))
+    if n < 0.08:
+        raise ValueError(f"key {to_hex(k)} is nearly grey: a colour key needs a saturated background")
+    return (c / n).astype(np.float32)
 
 
 def key_channels(key: np.ndarray) -> tuple[list[int], list[int]]:
@@ -76,22 +119,97 @@ def key_channels(key: np.ndarray) -> tuple[list[int], list[int]]:
     return hi, lo
 
 
+def check_key(key: np.ndarray) -> None:
+    """Raise ValueError when `key` cannot be keyed on (grey / unsaturated)."""
+    if not is_chroma_key(key):
+        key_axis(key)
+
+
 def spill(rgb: np.ndarray, key: np.ndarray) -> np.ndarray:
-    """How much a colour leans toward the key hue: min(key channels) - max(other channels)."""
-    hi, lo = key_channels(key)
-    return rgb[..., hi].min(-1) - rgb[..., lo].max(-1)
+    """How much a colour leans toward the key hue.
+    Chroma keys: min(key channels) - max(other channels) (classic).
+    Other keys (measured olive, teal, ...): chroma projected on the key's hue axis minus the chroma
+    orthogonal to it, so only colours whose hue is the key's score high (gold next to an olive key
+    scores ~0.13, the key itself ~0.36; the classic split would call gold 0.6 'key')."""
+    if is_chroma_key(key):
+        hi, lo = key_channels(key)
+        return rgb[..., hi].min(-1) - rgb[..., lo].max(-1)
+    k = key_axis(key)
+    c = rgb - rgb.mean(-1, keepdims=True)
+    along = c @ k
+    orth = np.linalg.norm(c - along[..., None] * k, axis=-1)
+    return along - orth
 
 
 def despill(rgb: np.ndarray, key: np.ndarray, mask: np.ndarray | None = None, mix: float = 1.0) -> np.ndarray:
-    """Classic spill suppression: pull the key channels down to the strongest other channel."""
-    hi, _ = key_channels(key)
+    """Spill suppression. Chroma keys: pull the key channels down to the strongest other channel.
+    Other keys: remove the excess key-hue chroma along the key axis (luminance kept: the axis sums to 0)."""
     s = np.clip(spill(rgb, key), 0, None) * mix
     if mask is not None:
         s = s * mask
     out = rgb.copy()
-    for c in hi:
-        out[..., c] = out[..., c] - s
+    if is_chroma_key(key):
+        hi, _ = key_channels(key)
+        for c in hi:
+            out[..., c] = out[..., c] - s
+    else:
+        out = out - s[..., None] * key_axis(key)
     return np.clip(out, 0, 1)
+
+
+def measure_key(rgb: np.ndarray, requested: np.ndarray | None = None, border: int | None = None,
+                patch: int | None = None, tol_p95: float | None = None, tol_patch: float | None = None,
+                max_drift: float | None = None) -> dict:
+    """keyUniform gate: sample the border strips and 8 patches (4 corners + 4 edge midpoints), take the
+    median as the key and require the background to be one flat colour: 95% of the border pixels within
+    `tol_p95` and every patch median within `tol_patch` of the key (0-255 RGB distance). The matte then
+    keys on this MEASURED colour, never on the requested hex (models drift: D_H1 came back olive).
+    `requested` (the prompt's KEY_HEX) only adds `drift`; `max_drift` makes a larger drift fail too.
+    Returns a JSON-able report; `uniform` / `passed` say whether the gate holds."""
+    H, W = rgb.shape[:2]
+    b = max(1, min(border or KEY_UNIFORM["border"], H // 8, W // 8))
+    p = max(2, min(patch or KEY_UNIFORM["patch"], H // 6, W // 6))
+    tol_p95 = KEY_UNIFORM["p95"] if tol_p95 is None else tol_p95
+    tol_patch = KEY_UNIFORM["patchSpread"] if tol_patch is None else tol_patch
+    strips = np.concatenate([rgb[:b].reshape(-1, 3), rgb[-b:].reshape(-1, 3),
+                             rgb[b:-b, :b].reshape(-1, 3), rgb[b:-b, -b:].reshape(-1, 3)])
+    key = np.median(strips, axis=0).astype(np.float32)
+    dist = np.linalg.norm(strips - key, axis=-1) * 255.0
+    cx, cy = W // 2 - p // 2, H // 2 - p // 2
+    boxes = {"topLeft": (0, 0), "top": (cx, 0), "topRight": (W - p, 0), "right": (W - p, cy),
+             "bottomRight": (W - p, H - p), "bottom": (cx, H - p), "bottomLeft": (0, H - p), "left": (0, cy)}
+    patches, spread = {}, 0.0
+    for name, (x, y) in boxes.items():
+        m = np.median(rgb[y:y + p, x:x + p].reshape(-1, 3), axis=0)
+        patches[name] = to_hex(m)
+        spread = max(spread, float(np.linalg.norm(m - key)) * 255.0)
+    p95 = float(np.percentile(dist, 95))
+    uniform = p95 <= tol_p95 and spread <= tol_patch
+    rep = {"key": to_hex(key), "keyRgb": [round(float(v), 6) for v in key], "uniform": bool(uniform),
+           "borderP95": round(p95, 2), "borderP99": round(float(np.percentile(dist, 99)), 2),
+           "patchSpread": round(spread, 2), "patchPx": p, "borderPx": b, "patches": patches,
+           "chroma": is_chroma_key(key),
+           "tolerance": {"p95": tol_p95, "patchSpread": tol_patch, "drift": max_drift}}
+    passed = uniform
+    if requested is not None:
+        drift = float(np.linalg.norm(key - np.asarray(requested, np.float32))) * 255.0
+        rep["requested"] = to_hex(requested)
+        rep["drift"] = round(drift, 1)
+        rep["driftWarning"] = drift > KEY_UNIFORM["drift"]
+        if max_drift is not None and drift > max_drift:
+            passed = False
+    rep["passed"] = bool(passed)
+    return rep
+
+
+def adaptive_hole_dist(key: np.ndarray, report: dict | None, default: float = 90 / 255) -> float:
+    """Key-likeness radius for enclosed holes and the key flood. Chroma keys keep the default (they sit
+    far from any subject colour). A measured non-chroma key (olive, teal) can sit near subject colours
+    (gold shading next to olive), so the radius shrinks to what the background noise needs: 6x its border
+    p95, at least 24/255."""
+    if is_chroma_key(key) or not report:
+        return default
+    return float(min(default, max(24 / 255, 6 * report["borderP95"] / 255)))
 
 
 # ----------------------------------------------------------------------------- matte
@@ -158,7 +276,7 @@ def _classify(dark: np.ndarray, keylike: np.ndarray, s: int, min_hole: int, near
 def matte(rgb: np.ndarray, p: MatteParams) -> MatteResult:
     H, W = rgb.shape[:2]
     key = p.key if p.key is not None else auto_key(rgb)
-    key_channels(key)
+    check_key(key)
     dark = rgb.max(-1) < p.dark
     if not dark.any():
         raise ValueError("no ink pixels found: the art needs a closed dark outline (or pass --alpha-from)")
@@ -212,7 +330,12 @@ def matte(rgb: np.ndarray, p: MatteParams) -> MatteResult:
     out = bleed(out, alpha > 0)
     info = {"key": to_hex(key), "ink": to_hex(ink), "seal": seal, "leakBySeal": leaks, "band": p.band,
             "erode": p.erode, "softEdgePx": int(np.count_nonzero(blended)),
-            "fgFraction": round(float(alpha.mean()), 5)}
+            "fgFraction": round(float(alpha.mean()), 5), "holeDist": round(p.hole_dist * 255, 1),
+            "chromaKey": is_chroma_key(key),
+            # subject pixels (opaque, away from the edge) that look like the key: a key too close to
+            # the subject's own colours (holes / flood could eat them); review when > 0.01
+            "keyLikeFgFraction": round(float(np.count_nonzero(keylike & (d_in > p.band + 2)) /
+                                             max(1, np.count_nonzero(d_in > p.band + 2))), 5)}
     return MatteResult(alpha=alpha, rgb=out, key=key, ink=ink, seal=seal, info=info)
 
 

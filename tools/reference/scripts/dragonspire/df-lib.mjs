@@ -13,14 +13,14 @@ const REPO = process.env.DF_REPO ?? path.resolve(path.dirname(new URL(import.met
 const { decodePng, downsample } = await import(pathToFileURL(path.join(REPO, 'tools/reference/lib/png.mjs')).href);
 
 export const POINTS = {
-  intro: [0.5, 0.955], // "PRESS TO CONTINUE" (intro screen, any click probably works)
-  spin: [0.751, 0.914], // big round spin button, HUD right
-  autoplay: [0.817, 0.873], // small circle above the lightning
-  turbo: [0.817, 0.942], // lightning circle (turbo / quick spin)
-  betUp: [0.684, 0.885],
-  betDown: [0.684, 0.934],
-  menu: [0.275, 0.906], // hamburger in the HUD bar
-  buy: [0.196, 0.909], // big yellow paperclip square left of the HUD bar: bonus buy OR publisher button (unverified)
+  intro: [0.5, 0.958], // "PRESS TO CONTINUE" (blinking text under the intro cards)
+  spin: [0.735, 0.915], // big round spin button, HUD right
+  autoplay: [0.797, 0.884], // small circle (play arrow in a ring), upper
+  turbo: [0.797, 0.946], // small circle (lightning), lower
+  betUp: [0.671, 0.896],
+  betDown: [0.671, 0.938],
+  menu: [0.29, 0.915], // hamburger in the HUD bar
+  buy: [0.214, 0.915], // big yellow paperclip square left of the HUD bar
   cont: [0.5, 0.45], // "continue" tap on feature screens (centre)
   close: [0.95, 0.07],
 };

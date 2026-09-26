@@ -5,7 +5,11 @@
   python tools/matte/outline_matte.py raw.png out.png --kind special --key FF00FF --emit-master master_2048.png
 
 Steps (tools/matte/README.md has the rationale):
-  1. key colour: --key (the SAME hex that went into the prompt) or auto = border median;
+  1. key colour: --key auto (default) MEASURES the background: border strips + 8 patches must be one flat
+     colour (keyUniform gate, else exit 1: regenerate) and the matte keys on that measured colour, never on
+     the requested hex (models drift: D_H1 came back olive). --expect-key <prompt KEY_HEX> reports the drift
+     (--max-key-drift N fails on it). --key RRGGBB forces a colour (skips the gate; warns if the border
+     measures something else);
   2. background = regions the (sealed) outline separates from the border + enclosed key holes;
      the seal radius closing outline gaps is chosen automatically (--seal N to force);
   3. soft edge: alpha unmixed along the ink->key line, edge colour = ink (zero spill),
@@ -48,7 +52,12 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("src", help="RGB image on a flat key colour (PNG/JPEG/WebP)")
     ap.add_argument("dst", help="output RGBA PNG (canvas-fitted unless --no-fit)")
-    ap.add_argument("--key", default="auto", help="RRGGBB, or 'auto' (border median). Use the prompt's KEY_HEX")
+    ap.add_argument("--key", default="auto",
+                    help="'auto' (default): measure the background + keyUniform gate; RRGGBB forces a colour")
+    ap.add_argument("--expect-key", help="the prompt's KEY_HEX: report how far the measured key drifted from it")
+    ap.add_argument("--max-key-drift", type=float, help="fail keyUniform when the drift exceeds this (0-441 RGB units)")
+    ap.add_argument("--key-tol", help="keyUniform tolerances 'P95,SPREAD' in 0-255 RGB units (default "
+                    f"{ml.KEY_UNIFORM['p95']:g},{ml.KEY_UNIFORM['patchSpread']:g})")
     size = ap.add_mutually_exclusive_group()
     size.add_argument("--symbol", help="symbol id: content = cellScale x 300 px from src/games/$GAME/config.ts")
     size.add_argument("--kind", choices=["royal", "high", "special", "wild", "scatter"], help="bible cellFill midpoint")
@@ -60,7 +69,8 @@ def main(argv=None) -> int:
     ap.add_argument("--emit-master", help="also write the full-resolution straight-alpha matte here")
     ap.add_argument("--alpha-from", help="use this image's alpha (external matting model) instead of the key matte")
     ap.add_argument("--dark", type=int, default=70, help="ink threshold on max(R,G,B) (0-255), default 70")
-    ap.add_argument("--hole-dist", type=int, default=90, help="RGB distance to the key that marks a hole (0-441)")
+    ap.add_argument("--hole-dist", type=int, help="RGB distance to the key that marks a hole (0-441); default 90, "
+                    "or adaptive (6x the border noise, >= 24) for a measured non-chroma key")
     ap.add_argument("--seal", default="auto", help="outline-gap closing radius in px, or 'auto' (0..--max-seal)")
     ap.add_argument("--max-seal", type=int, default=4)
     ap.add_argument("--band", type=int, default=2, help="soft-edge band (px each side)")
@@ -77,18 +87,47 @@ def main(argv=None) -> int:
 
     try:
         src = Path(a.src)
+        dst = Path(a.dst)
+        qa_dir = Path(a.qa_dir) if a.qa_dir else prov.REPO / "build" / "qa" / "matte" / dst.stem
         rgb = ml.load_rgb(src)
-        key = ml.auto_key(rgb) if a.key == "auto" else ml.parse_hex(a.key)
+        tol = [float(v) for v in a.key_tol.split(",")] if a.key_tol else [None, None]
+        if len(tol) != 2:
+            raise ValueError("--key-tol takes 'P95,SPREAD'")
+        expected = ml.parse_hex(a.expect_key) if a.expect_key else None
+        keyrep = ml.measure_key(rgb, requested=expected, tol_p95=tol[0], tol_patch=tol[1], max_drift=a.max_key_drift)
+        if a.key == "auto":
+            keyrep["mode"] = "measured"
+            if not keyrep["passed"]:
+                qa_dir.mkdir(parents=True, exist_ok=True)
+                fail = {"tool": TOOL, "version": tool_version(), "src": prov.rel(src), "keyUniform": keyrep,
+                        "passed": False}
+                (qa_dir / "qa.json").write_text(json.dumps(fail, indent=2) + "\n", encoding="utf-8")
+                raise ml.KeyNotUniform(keyrep)
+            key = np.asarray(keyrep["keyRgb"], np.float32)
+        else:
+            key = ml.parse_hex(a.key)
+            keyrep["mode"] = "forced"
+            keyrep["forced"] = ml.to_hex(key)
+            keyrep["passed"], keyrep["skipped"] = True, True   # the operator chose the colour: gate not applied
+            off = float(np.linalg.norm(key - np.asarray(keyrep["keyRgb"], np.float32))) * 255
+            keyrep["forcedVsMeasured"] = round(off, 1)
+            if keyrep["uniform"] and off > ml.KEY_UNIFORM["drift"]:
+                print(f"warning: --key {ml.to_hex(key)} but the background measures {keyrep['key']} "
+                      f"({off:.0f} RGB units away): key on the measured colour (--key auto)", file=sys.stderr)
+        if keyrep.get("driftWarning"):
+            print(f"warning: the background measures {keyrep['key']}, {keyrep['drift']:.0f} RGB units from the "
+                  f"requested {keyrep['requested']}: keying on the measured colour; check the subject keeps clear "
+                  f"of it (matte.keyLikeFgFraction)", file=sys.stderr)
+        hole = a.hole_dist / 255 if a.hole_dist is not None else (
+            ml.adaptive_hole_dist(key, keyrep) if a.key == "auto" else 90 / 255)
         if a.alpha_from:
             res = ml.matte_from_alpha(rgb, ml.load_alpha(a.alpha_from), key, erode=a.erode)
         else:
-            p = ml.MatteParams(key=key, dark=a.dark / 255, hole_dist=a.hole_dist / 255,
+            p = ml.MatteParams(key=key, dark=a.dark / 255, hole_dist=hole,
                                seal=None if a.seal == "auto" else int(a.seal), max_seal=a.max_seal, band=a.band,
                                erode=a.erode)
             res = ml.matte(rgb, p)
-        dst = Path(a.dst)
-        qa_dir = Path(a.qa_dir) if a.qa_dir else prov.REPO / "build" / "qa" / "matte" / dst.stem
-        qa = {"tool": TOOL, "version": tool_version(), "src": prov.rel(src), "matte": res.info}
+        qa = {"tool": TOOL, "version": tool_version(), "src": prov.rel(src), "keyUniform": keyrep, "matte": res.info}
         if a.emit_master:
             ml.save_rgba(a.emit_master, res.rgb, res.alpha)
         if a.no_fit:
@@ -112,7 +151,7 @@ def main(argv=None) -> int:
         ml.save_rgba(dst, out_rgb, out_a)
         halo = ml.halo_report(out_rgb, out_a, res.key)
         qa["halo"] = halo
-        passed = halo["keyTintedEdgePx"] == 0 and qa["canvas"]["canvasOk"]
+        passed = halo["keyTintedEdgePx"] == 0 and qa["canvas"]["canvasOk"] and keyrep["passed"]
         qa["passed"] = passed
         qa_dir.mkdir(parents=True, exist_ok=True)
         for name, bgc in (("qa_on_black.png", 0.0), ("qa_on_white.png", 1.0)):
@@ -127,12 +166,19 @@ def main(argv=None) -> int:
             vendor="self", model=TOOL, version=tool_version(), license_id=lic, route="code",
             ref_hashes=[prov.sha256_file(src)] + ([prov.sha256_file(a.alpha_from)] if a.alpha_from else []),
             parents=a.parent_id, qa={"passed": passed, "report": prov.rel(qa_dir / "qa.json")},
-            notes=f"key {res.info['key']}, seal {res.seal}, content {qa['canvas'].get('contentPx')} px")
+            notes=f"key {res.info['key']} ({keyrep['mode']}"
+                  + (f", requested {keyrep['requested']}, drift {keyrep['drift']:.0f}" if "requested" in keyrep else "")
+                  + f"), seal {res.seal}, content {qa['canvas'].get('contentPx')} px")
         prov.record([row], sidecar=qa_dir / "manifest.json", manifest=a.manifest, generated_by=TOOL)
+    except ml.KeyNotUniform as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
     except (ValueError, FileNotFoundError, OSError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
-    print(json.dumps({"out": prov.rel(dst), "passed": passed, "key": res.info["key"], "seal": res.seal,
+    print(json.dumps({"out": prov.rel(dst), "passed": passed, "key": res.info["key"],
+                      "keyUniform": {k: keyrep.get(k) for k in ("mode", "uniform", "borderP95", "patchSpread",
+                                                                 "requested", "drift", "passed")}, "seal": res.seal,
                       "canvas": qa["canvas"], "halo": halo, "qa": prov.rel(qa_dir / "qa.json")}, indent=2))
     if not passed and not a.no_strict:
         print("error: QA gate failed (see qa.json)", file=sys.stderr)

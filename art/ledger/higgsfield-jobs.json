@@ -23,7 +23,11 @@
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115042_f9263dd2-697b-49c6-9952-b1f96bdff2b1.png",
           "status": "completed",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "adf82b7800cf8c994f0e05d606ac70facadf88bd26446e4c7ec54bcef0fbe19c",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4838953
         },
         {
           "name": "sym_H2",
@@ -39,7 +43,11 @@
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_edeabb64-063c-4c2b-8dad-0a3a34a7c160.png",
           "status": "completed",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "e840bd4744c0e21a4ebf5ceb38e03f0e4faa348b26e16c1ef05d8089aface5cb",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4569821
         },
         {
           "name": "sym_H3",
@@ -55,7 +63,11 @@
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_687a256b-611b-4ae8-b8fe-b7009ccd6cde.png",
           "status": "completed",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "60562ccccb4c0c4ca6563b42bb88927f00be9bee2624cdc0950ab7d8197ef06c",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5045492
         },
         {
           "name": "sym_H4",
@@ -71,7 +83,11 @@
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_d2ed0952-5cf6-40c9-8a69-6f2cf0d08dea.png",
           "status": "completed",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "7c2e38ef18eef291ba510cd53baeb1ae8a38de8e147ec8b19896bf01352d61c2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5303023
         },
         {
           "name": "sym_W",
@@ -87,7 +103,11 @@
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_99ee9b64-fc4b-4181-b8ed-e81861d9508b.png",
           "status": "completed",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "82029beabd10216042c3e9c2ee204998d49e612bb547c3407b7ae8df3348274e",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5176113
         },
         {
           "name": "mascot_gumbo_sheetA",
@@ -103,7 +123,11 @@
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_210017de-2d34-4853-b8cb-6187289f9368.png",
           "status": "completed",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "d5437437b0c5e1ce53c7cb67260c4ba14c08b6df529ed486ff2ef69bbd3871ba",
+          "width": 6336,
+          "height": 2688,
+          "bytes": 20363725
         },
         {
           "name": "mascot_croak_sheetA",
@@ -119,7 +143,11 @@
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115249_b05efcf1-24cc-411b-b74b-73c1eba5ce43.png",
           "status": "completed",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "482aff87fdc971c4c775e414f7ccd5f5092febbf14bb5d2bc2129636b312bc8f",
+          "width": 6336,
+          "height": 2688,
+          "bytes": 21300447
         },
         {
           "name": "bg_A_landscape",
@@ -133,7 +161,11 @@
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_115248_06e37c08-9a5e-4c4a-8bae-c5c3a4bebae5.png",
           "status": "completed",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "3ab967d20fc942e91fd54bdd344685ea6b20e432bdbbe4e6965f74282ea74883",
+          "width": 6336,
+          "height": 2688,
+          "bytes": 21858428
         }
       ]
     },
@@ -156,7 +188,11 @@
           "credits": 2,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_437c03a6-8c69-47e5-87a5-735eafdb8f55.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "1ec3205e8cd9d19d503e890554f49caf5375da65031fe8accb5f6361bc035149",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 6182299
         },
         {
           "name": "ab_B_H3",
@@ -170,7 +206,11 @@
           "credits": 2,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_b32b33be-2330-4a51-9cf4-5df55f8104e1.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "9573fad440028c8fd585a63fa021ea88d35f803b1b4bda5bcd4c0c99daab9676",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5591098
         },
         {
           "name": "ab_B_W",
@@ -184,7 +224,11 @@
           "credits": 2,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_b2db210e-30c4-4f85-8d82-0e74c23c4851.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "4fa9ffa9f61bd7276e65dbaf6e86f4edfe50f6af74bb889ae1a97cd44edb17c8",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4986856
         },
         {
           "name": "ab_C_H1",
@@ -198,7 +242,11 @@
           "credits": 2,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_393e3e3d-f11b-4a1b-98a7-e1283ee05fd2.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "098e4f8d46ed507d48e08fdea8aa8ca574afac93dd3514d69266e68478746484",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5966284
         },
         {
           "name": "ab_C_H3",
@@ -212,7 +260,11 @@
           "credits": 2,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_404343d8-ad21-4bb7-b0f0-3eee2196d6a1.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "11c0f4384bff65760930a81c17085f5bf9ef0ab5ca818328613d96f01e7c9edd",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5650849
         },
         {
           "name": "ab_C_W",
@@ -226,7 +278,11 @@
           "credits": 2,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_b979a4aa-30de-4d10-bdbe-6ef6440357c1.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "8472ec0128f4af5b73c84fb53d5ff3fc274f4f4e31dfb4d41e9fa4fc03005d0b",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5345195
         },
         {
           "name": "ab_bg_painted",
@@ -240,7 +296,11 @@
           "credits": 4,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_924d3637-ba19-46de-9384-7260679fa353.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "649241eb74c4e4b1e32651552a9813db79c95b80f1acc73b3b14f7a2906d93c4",
+          "width": 6336,
+          "height": 2688,
+          "bytes": 24961105
         },
         {
           "name": "ab_croak_v2",
@@ -254,7 +314,11 @@
           "credits": 4,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121437_23387c1a-08e0-48e8-a11f-1fde33df94fa.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "2961c75eb2237008f503a58bfd3f58421ea662da25987f4d9acb3d0f1a44cda6",
+          "width": 6336,
+          "height": 2688,
+          "bytes": 22520706
         }
       ]
     },
@@ -277,7 +341,11 @@
           "credits": 2,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121655_577c5994-a49f-487d-a1e9-f5fd386c7867.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "1d29d6813f81b68b630de41f945c4c6dc41e9aee55097351e942c5882d0d6a12",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5285693
         },
         {
           "name": "D_H3",
@@ -291,7 +359,11 @@
           "credits": 2,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121655_44034344-f29e-4004-a999-8b7b8c7f328c.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "ca7bf96a872412b237a98864c9b2cc610cf7d83e1a342430e20aead9bfa2c5fd",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5584253
         },
         {
           "name": "D_W",
@@ -305,7 +377,11 @@
           "credits": 2,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121656_61232bf0-67d9-47b7-b32f-af5e587e4c31.png",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "9056d1a4c4fef88c048c5b3e7e6e4cddb07643f75bbdf133a114d002eafc8cb6",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5080160
         },
         {
           "name": "D_gumbo",
@@ -319,7 +395,367 @@
           "credits": 4,
           "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_121655_93e002fa-cf13-42ce-86d1-96359077b355.png",
           "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "94cfaaec61eb10ac9eecd766b69bbe5a9242534f543540a579da2592791273e6",
+          "width": 6336,
+          "height": 2688,
+          "bytes": 22107519
+        }
+      ]
+    },
+    {
+      "id": "bd_c01",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c01: sym_H2, sym_H4, sym_H1_rig, sym_H3_rig",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "sym_H2.c1",
+          "index": 0,
+          "job_id": "122f2cc9-dbb5-4840-9014-75b21189089b",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H2",
+            "SUBJECT": "a glossy black vinyl record half out of a hot-pink sleeve, with a blank label and two or three fine groove lines.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "2e7d81f3dc23351ef657f0f26951a1264bba0f174201eb01f1592305a63ac7da",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_142453_122f2cc9-dbb5-4840-9014-75b21189089b.png",
+          "medias": [
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "44034344-f29e-4004-a999-8b7b8c7f328c",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H2",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "d93c8c50f499dd14be61716681ac7bbedb8730e01c5e9b12e981eca57fe80d60",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4864738
+        },
+        {
+          "name": "sym_H2.c2",
+          "index": 1,
+          "job_id": "b157706d-1e0f-4f63-bc27-440ab383899c",
+          "status": "in_progress",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H2",
+            "SUBJECT": "a glossy black vinyl record half out of a hot-pink sleeve, with a blank label and two or three fine groove lines.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "2e7d81f3dc23351ef657f0f26951a1264bba0f174201eb01f1592305a63ac7da",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": null,
+          "medias": [
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "44034344-f29e-4004-a999-8b7b8c7f328c",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H2",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
           "type": "image"
+        },
+        {
+          "name": "sym_H4.c1",
+          "index": 2,
+          "job_id": "a24a9273-c76d-4cbd-b30e-b03364464844",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H4",
+            "SUBJECT": "a bayou hot-sauce bottle with deep red sauce, a cork cap, a blank label with a chili pictogram and a small cartoon flame wisp.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "b1f67a1b8b8cd2a2745dc61671b14cf975984cc6af88f742f76f9e1e8859d54a",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_142452_a24a9273-c76d-4cbd-b30e-b03364464844.png",
+          "medias": [
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "44034344-f29e-4004-a999-8b7b8c7f328c",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H4",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "1ff64b0fcf1680abf200be7762ee2f583159c301abe7080fab1575b62525faf9",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4411045
+        },
+        {
+          "name": "sym_H4.c2",
+          "index": 3,
+          "job_id": "a70e4dfb-dc04-4ad6-a207-0b528fad8aed",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H4",
+            "SUBJECT": "a bayou hot-sauce bottle with deep red sauce, a cork cap, a blank label with a chili pictogram and a small cartoon flame wisp.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "b1f67a1b8b8cd2a2745dc61671b14cf975984cc6af88f742f76f9e1e8859d54a",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_142455_a70e4dfb-dc04-4ad6-a207-0b528fad8aed.png",
+          "medias": [
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "44034344-f29e-4004-a999-8b7b8c7f328c",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H4",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "249bdc946a17135916c429ce938b31eb74b2cc86c4be4612a9100d33c130fbd3",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4756394
+        },
+        {
+          "name": "sym_H1_rig.c1",
+          "index": 4,
+          "job_id": "ae6053be-6e34-4715-9b4b-e4375c29387f",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H1",
+            "rigReady": true,
+            "SUBJECT": "a chunky retro boombox in polished solid gold with two big round black speaker cones, a carry handle and a cassette door.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "15ce023d0176f86fcc2f5c566425908135dc027086c8dabcc4ec9ffefd986b85",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_142453_ae6053be-6e34-4715-9b4b-e4375c29387f.png",
+          "medias": [
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "44034344-f29e-4004-a999-8b7b8c7f328c",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H1_rig",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "700dc15965d8d425eb529a30ba6d40ee921d4af5115c8b59717c736b1f166aaf",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5759678
+        },
+        {
+          "name": "sym_H3_rig.c1",
+          "index": 5,
+          "job_id": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H3",
+            "rigReady": true,
+            "SUBJECT": "an adult-proportioned cartoon crawfish with a red-orange shell, a sleeveless denim vest and a swaggering attitude, big claws raised, two long antennae, confident smirk.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "2ac0e811d058952fd309b4924cf3f09a9b95488b719c5d9451c0e861f1fe3700",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_142453_0d5d1a66-2b34-4807-bc7c-188ab5935ceb.png",
+          "medias": [
+            {
+              "value": "44034344-f29e-4004-a999-8b7b8c7f328c",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H3_rig",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "7be68e80d17246363cdbc77f42af1ee82f51ace424dc7a40bc8e435978a190aa",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4406860
+        }
+      ]
+    },
+    {
+      "id": "bd_c03",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c03: sym_W_rig, sym_W_pieces",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "sym_W_rig.c1",
+          "index": 0,
+          "job_id": "b24eb73e-3506-4423-b6aa-420cbc521646",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "W",
+            "rigReady": true,
+            "SUBJECT": "a heraldic wild charm: one big curved alligator fang with a polished gold cap and a short gold chain loop, teal enamel inlay on the fang, bold and precious.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "282039b6eb96d8ab9582eaea39443aed8ba93cb516639d85a84c355bcdb58011",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_142546_b24eb73e-3506-4423-b6aa-420cbc521646.png",
+          "medias": [
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_W_rig",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "c44c749e83534f8206d1fa68c4976678c4006a6d617346edf9a4249207576687",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 2825573
+        },
+        {
+          "name": "sym_W_pieces.c1",
+          "index": 1,
+          "job_id": "3c70a485-0c96-4faa-a0a5-98f2d916d029",
+          "status": "completed",
+          "template": "prop.txt#B",
+          "vars": {
+            "PIECES": "a blank ribbon banner plate in deep plum (#4B283D) with a polished gold edge and folded tails, its face left empty; a blank rounded-rectangle badge plate in polished solid gold (#FFC629) with a raised rim and an empty face; a small crown of chunky cartoon flames in orange, gold and hot pink, shaped to sit on top of that badge plate; a heavy polished gold clamp bracket with a black iron bolt, jaws closed; the same gold clamp bracket with its jaws open",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#00FF00"
+          },
+          "promptHash": "f33c6c5fdfd5ccc9802c608edbf4c0dc30fe23862a13defc944bf35e6aec9d75",
+          "resolution": "2k",
+          "aspect_ratio": "16:9",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_142546_3c70a485-0c96-4faa-a0a5-98f2d916d029.png",
+          "medias": [
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_W_pieces",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "bb94597f5ace18c9e199909ecacd98684032ac0e7ad7e96acbee28844bd195ef",
+          "width": 2752,
+          "height": 1536,
+          "bytes": 4997497
+        },
+        {
+          "name": "sym_W_pieces.c2",
+          "index": 2,
+          "job_id": "feca48d6-a643-44a5-85ac-a94f0f8074c0",
+          "status": "completed",
+          "template": "prop.txt#B",
+          "vars": {
+            "PIECES": "a blank ribbon banner plate in deep plum (#4B283D) with a polished gold edge and folded tails, its face left empty; a blank rounded-rectangle badge plate in polished solid gold (#FFC629) with a raised rim and an empty face; a small crown of chunky cartoon flames in orange, gold and hot pink, shaped to sit on top of that badge plate; a heavy polished gold clamp bracket with a black iron bolt, jaws closed; the same gold clamp bracket with its jaws open",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#00FF00"
+          },
+          "promptHash": "f33c6c5fdfd5ccc9802c608edbf4c0dc30fe23862a13defc944bf35e6aec9d75",
+          "resolution": "2k",
+          "aspect_ratio": "16:9",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_142546_feca48d6-a643-44a5-85ac-a94f0f8074c0.png",
+          "medias": [
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_W_pieces",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "35fe8e16358f02c77f4a2dcce199db53785da519fc1c52afd5568764a0b7ade5",
+          "width": 2752,
+          "height": 1536,
+          "bytes": 4724665
         }
       ]
     }

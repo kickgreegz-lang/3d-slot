@@ -81,7 +81,10 @@ class KeyNotUniform(ValueError):
     def __init__(self, report: dict):
         self.report = report
         pat = ", ".join(f"{k} {v}" for k, v in report["patches"].items())
-        if report.get("uniform", False):
+        if report.get("uniform", False) and not report.get("keyable", True):
+            why = (f"the background is a flat {report['key']}, which is not a colour key (white, grey or black: "
+                   f"white highlights or ivory enamel enclosed by ink would be keyed out as holes)")
+        elif report.get("uniform", False):
             why = (f"the background is a flat {report['key']} but {report.get('drift')} RGB units from the "
                    f"requested {report.get('requested')} (> --max-key-drift {report['tolerance'].get('drift')})")
         else:
@@ -185,12 +188,18 @@ def measure_key(rgb: np.ndarray, requested: np.ndarray | None = None, border: in
         spread = max(spread, float(np.linalg.norm(m - key)) * 255.0)
     p95 = float(np.percentile(dist, 95))
     uniform = p95 <= tol_p95 and spread <= tol_patch
+    try:
+        check_key(key)
+        keyable = True
+    except ValueError:
+        keyable = False       # white / grey / black: the key matte cannot tell it from highlights or ink
     rep = {"key": to_hex(key), "keyRgb": [round(float(v), 6) for v in key], "uniform": bool(uniform),
+           "keyable": keyable,
            "borderP95": round(p95, 2), "borderP99": round(float(np.percentile(dist, 99)), 2),
            "patchSpread": round(spread, 2), "patchPx": p, "borderPx": b, "patches": patches,
            "chroma": is_chroma_key(key),
            "tolerance": {"p95": tol_p95, "patchSpread": tol_patch, "drift": max_drift}}
-    passed = uniform
+    passed = uniform and keyable
     if requested is not None:
         drift = float(np.linalg.norm(key - np.asarray(requested, np.float32))) * 255.0
         rep["requested"] = to_hex(requested)

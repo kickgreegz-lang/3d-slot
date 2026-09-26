@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedBy": "tools/gen/hf-ingest.mjs",
+  "generatedBy": "c0107-bg",
   "rows": [
     {
       "id": "d_h1.raw.v01",
@@ -897,6 +897,2351 @@
       "sha256": "c44c749e83534f8206d1fa68c4976678c4006a6d617346edf9a4249207576687",
       "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c03 job sym_W_rig.c1; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
       "route": "higgsfield-mcp"
+    },
+    {
+      "id": "sym_h2.raw.v03",
+      "path": "art/_raw/sym_H2/v03/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "b157706d-1e0f-4f63-bc27-440ab383899c",
+      "promptPath": "art/_raw/sym_H2/v03/prompt.txt",
+      "promptHash": "2e7d81f3dc23351ef657f0f26951a1264bba0f174201eb01f1592305a63ac7da",
+      "template": "art/bible/prompts/symbol.txt",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T14:37:00Z",
+      "sha256": "cc6ee188376602cc886cbdb24f4e4ddbae50f955d490f7d518d4395c913f0ad3",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c01 job sym_H2.c2; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "sym_h4_full.matte.66371286",
+      "path": "art/_work/c0107/sym_H4/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "1ff64b0fcf1680abf200be7762ee2f583159c301abe7080fab1575b62525faf9"
+      ],
+      "parents": [
+        "sym_h4.raw.v02"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:43:14Z",
+      "sha256": "66371286b2af03af18493097282ac3ccd201dacda0c40e98b33c23e2684fb4c3",
+      "notes": "key #04FB03 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/sym_H4/matte/qa.json"
+      }
+    },
+    {
+      "id": "sym_h4.matte.19db87ad",
+      "path": "build/pack/symbols{tps}/sym_H4.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "1ff64b0fcf1680abf200be7762ee2f583159c301abe7080fab1575b62525faf9"
+      ],
+      "parents": [
+        "sym_h4.raw.v02"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:43:21Z",
+      "sha256": "19db87adc52b1805c762d914960765529258aeca72a572e266ad2ca4654658a5",
+      "notes": "key #04FB03 (measured), seal 0, content 284 px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/sym_H4/board/qa.json"
+      }
+    },
+    {
+      "id": "sym_h4.blur.81cd8aa1",
+      "path": "build/pack/symbols{tps}/sym_H4_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "19db87adc52b1805c762d914960765529258aeca72a572e266ad2ca4654658a5"
+      ],
+      "parents": [
+        "sym_h4.matte.19db87ad"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:43:23Z",
+      "sha256": "81cd8aa1a57d437acf098c1625806c524fee8b844f8288dab5bbe829ace3bb48",
+      "notes": "blur variant, restAngle -12.0",
+      "route": "code"
+    },
+    {
+      "id": "sym_h4.glow.56e8b3d1",
+      "path": "build/pack/symbols{tps}/sym_H4_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "19db87adc52b1805c762d914960765529258aeca72a572e266ad2ca4654658a5"
+      ],
+      "parents": [
+        "sym_h4.matte.19db87ad"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:43:23Z",
+      "sha256": "56e8b3d1ff25f388a995882721ac3801dbf60d87ee9fc8b5d57a646113ca126f",
+      "notes": "glow variant, restAngle -12.0",
+      "route": "code"
+    },
+    {
+      "id": "sym_h4.source.24870a5a",
+      "path": "art/source/symbols/H4/master_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "66371286b2af03af18493097282ac3ccd201dacda0c40e98b33c23e2684fb4c3"
+      ],
+      "parents": [
+        "sym_h4_full.matte.66371286"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:43:24Z",
+      "sha256": "24870a5a4bd439769c98b2d3d13f66a457d2e1b9b11e5fe83326e660d26f06cb",
+      "notes": "art/source master: full-res key matte sym_h4_full.matte.66371286 downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/sym_H4/v02/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "sym_h2_full.matte.368b0444",
+      "path": "art/_work/c0107/sym_H2/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "d93c8c50f499dd14be61716681ac7bbedb8730e01c5e9b12e981eca57fe80d60"
+      ],
+      "parents": [
+        "sym_h2.raw.v02"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:45:40Z",
+      "sha256": "368b0444b44448c36f659bc582c91fc740f2d92e639f41d3f7480cdee5c06853",
+      "notes": "key #03FB03 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/sym_H2/matte/qa.json"
+      }
+    },
+    {
+      "id": "sym_h2.matte.03730c95",
+      "path": "build/pack/symbols{tps}/sym_H2.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "d93c8c50f499dd14be61716681ac7bbedb8730e01c5e9b12e981eca57fe80d60"
+      ],
+      "parents": [
+        "sym_h2.raw.v02"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:45:48Z",
+      "sha256": "03730c95b1118d4fca3e82b8c3eb17e3c34356adfd206aef7e71708bed10844d",
+      "notes": "key #03FB03 (measured), seal 0, content 288 px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/sym_H2/board/qa.json"
+      }
+    },
+    {
+      "id": "sym_h2.blur.25790ab9",
+      "path": "build/pack/symbols{tps}/sym_H2_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "03730c95b1118d4fca3e82b8c3eb17e3c34356adfd206aef7e71708bed10844d"
+      ],
+      "parents": [
+        "sym_h2.matte.03730c95"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:45:50Z",
+      "sha256": "25790ab9a59f51eaf1b7b2a75d540d3b5e3cd26e120ad2119fcf1c88fcbc0817",
+      "notes": "blur variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "sym_h2.glow.b83b77b7",
+      "path": "build/pack/symbols{tps}/sym_H2_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "03730c95b1118d4fca3e82b8c3eb17e3c34356adfd206aef7e71708bed10844d"
+      ],
+      "parents": [
+        "sym_h2.matte.03730c95"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:45:50Z",
+      "sha256": "b83b77b7dd3e3f901fe636bcd5c237558a3afcfbba96eb50ddcbfbf9be19ba5c",
+      "notes": "glow variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "sym_h2.source.294d8456",
+      "path": "art/source/symbols/H2/master_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "368b0444b44448c36f659bc582c91fc740f2d92e639f41d3f7480cdee5c06853"
+      ],
+      "parents": [
+        "sym_h2_full.matte.368b0444"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:45:52Z",
+      "sha256": "294d8456101f70a2a04c9e9ca2b4bad46bc93df6cc7b3ccf8777cff92c377a11",
+      "notes": "art/source master: full-res key matte sym_h2_full.matte.368b0444 downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/sym_H2/v02/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "sym_h1_rig_full.matte.42b93d0f",
+      "path": "art/_work/c0107/sym_H1_rig/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "700dc15965d8d425eb529a30ba6d40ee921d4af5115c8b59717c736b1f166aaf"
+      ],
+      "parents": [
+        "sym_h1_rig.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:46:22Z",
+      "sha256": "42b93d0f45b8fd29f85a1ef0cf53a64176689503c1f75e12fd5ffe79deda1016",
+      "notes": "key #02FB03 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/sym_H1_rig/matte/qa.json"
+      }
+    },
+    {
+      "id": "sym_h1_rig.source.77c52c1d",
+      "path": "art/source/symbols/H1/master_rig_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "42b93d0f45b8fd29f85a1ef0cf53a64176689503c1f75e12fd5ffe79deda1016"
+      ],
+      "parents": [
+        "sym_h1_rig_full.matte.42b93d0f"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:46:24Z",
+      "sha256": "77c52c1dc1ffb99897d8a99fb009c5d2ca2b58fce2e27ca3998482ae2908017a",
+      "notes": "art/source master: full-res key matte sym_h1_rig_full.matte.42b93d0f downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/sym_H1_rig/v01/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "sym_h3_rig_full.matte.c2539da3",
+      "path": "art/_work/c0107/sym_H3_rig/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "7be68e80d17246363cdbc77f42af1ee82f51ace424dc7a40bc8e435978a190aa"
+      ],
+      "parents": [
+        "sym_h3_rig.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:46:44Z",
+      "sha256": "c2539da32cec6f2c47c3dfd8ea211cbc6fb0b3d54e78ce894dc4c238ae896f74",
+      "notes": "key #91C53E (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/sym_H3_rig/matte/qa.json"
+      }
+    },
+    {
+      "id": "sym_h3_rig.source.f6c6d717",
+      "path": "art/source/symbols/H3/master_rig_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "c2539da32cec6f2c47c3dfd8ea211cbc6fb0b3d54e78ce894dc4c238ae896f74"
+      ],
+      "parents": [
+        "sym_h3_rig_full.matte.c2539da3"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:46:45Z",
+      "sha256": "f6c6d717959421327d4179518857a636d803f96aea191ee06de694757246c392",
+      "notes": "art/source master: full-res key matte sym_h3_rig_full.matte.c2539da3 downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/sym_H3_rig/v01/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "sym_h3_rig.source.957992f0",
+      "path": "art/source/symbols/H3/master_rig_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b0cc84228014cb270b4861826e7fcdf2a6f2d143f956d5a20291e0ba6f36859e"
+      ],
+      "parents": [
+        "sym_h3_rig_full.matte.c2539da3"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:49:34Z",
+      "sha256": "957992f067f1eced5d8c41779d27bd580195f0b16ef3a7ed2369682552cf849b",
+      "notes": "second hole pass: 2 enclosed key sliver(s), 363 px made transparent (key #91C53E); art/source master: full-res key matte sym_h3_rig_full.matte.c2539da3 downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/sym_H3_rig/v01/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "sym_h2_rig.raw.v01",
+      "path": "art/_raw/sym_H2_rig/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "434527a1-ae53-4b11-bf93-358d052ee42c",
+      "promptPath": "art/_raw/sym_H2_rig/v01/prompt.txt",
+      "promptHash": "2ec5996b7c10ae28af4e3eecb5d85d975b40f4ac0c41d24b08127c48b6301409",
+      "template": "art/bible/prompts/symbol.txt",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T14:49:54Z",
+      "sha256": "51d4e6867959ee10934bdfd6ad4d43774f80edaee1cdf34b44fd00dbedd366dc",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c02 job sym_H2_rig.c1; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "sym_h4_rig.raw.v01",
+      "path": "art/_raw/sym_H4_rig/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "c4528095-1491-465b-acd5-a201367aca9a",
+      "promptPath": "art/_raw/sym_H4_rig/v01/prompt.txt",
+      "promptHash": "cf2ed40e760df3f29b29de914ef560f2d3a6b411630ff66b36096f7883616e4a",
+      "template": "art/bible/prompts/symbol.txt",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T14:49:56Z",
+      "sha256": "1c3fa41e2aeb0406dd20cb366933e465c84cf52fb030e2bbba5e985d981ded9b",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c02 job sym_H4_rig.c1; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "sym_w_rig.raw.v02",
+      "path": "art/_raw/sym_W_rig/v02/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "7f0557f2-2aa2-43e7-8677-907f56e48cd4",
+      "promptPath": "art/_raw/sym_W_rig/v02/prompt.txt",
+      "promptHash": "282039b6eb96d8ab9582eaea39443aed8ba93cb516639d85a84c355bcdb58011",
+      "template": "art/bible/prompts/symbol.txt",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T14:49:59Z",
+      "sha256": "3b76e1cc24e0df72fc314cce93b54436733e05d20226eac73021fd7294383959",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c03_r2 job sym_W_rig.r2.c1; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "sym_w_rig_full.matte.55226a2f",
+      "path": "art/_work/c0107/sym_W_rig/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3b76e1cc24e0df72fc314cce93b54436733e05d20226eac73021fd7294383959"
+      ],
+      "parents": [
+        "sym_w_rig.raw.v02"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:53:18Z",
+      "sha256": "55226a2fd2bde4bdcb35c474174c7c226524dbf82c07d9d6b8d905bb6a473bdc",
+      "notes": "key #FD02F7 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": false,
+        "report": "build/qa/c0107/sym_W_rig/matte/qa.json"
+      }
+    },
+    {
+      "id": "sym_w_rig.source.b411179c",
+      "path": "art/source/symbols/W/master_rig_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b56f381938bc90bd3bf4f0de1e6aecb2cb8d767608884e66d30b4520e85d945f"
+      ],
+      "parents": [
+        "sym_w_rig_full.matte.55226a2f"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:53:32Z",
+      "sha256": "b411179c00b59f3d1e5aa470a1eed1a0e70272145b33a9395ac4182945a19428",
+      "notes": "outline ink despilled on 16635 px (key-tinted ink, matte halo 5669 -> 0); art/source master: full-res key matte sym_w_rig_full.matte.55226a2f downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/sym_W_rig/v02/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "sym_h2_rig_full.matte.eb1924bf",
+      "path": "art/_work/c0107/sym_H2_rig/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "51d4e6867959ee10934bdfd6ad4d43774f80edaee1cdf34b44fd00dbedd366dc"
+      ],
+      "parents": [
+        "sym_h2_rig.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:54:37Z",
+      "sha256": "eb1924bf9870279fac08c8914c732e5605d286f30cbc3ee718ea22b96e52a493",
+      "notes": "key #05F903 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/sym_H2_rig/matte/qa.json"
+      }
+    },
+    {
+      "id": "sym_h2_rig.source.3f68b52e",
+      "path": "art/source/symbols/H2/master_rig_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "eb1924bf9870279fac08c8914c732e5605d286f30cbc3ee718ea22b96e52a493"
+      ],
+      "parents": [
+        "sym_h2_rig_full.matte.eb1924bf"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:54:53Z",
+      "sha256": "3f68b52e210bfd356c5c03ed61a618c64dae5cde85713b4fa63b73f9a54f11b6",
+      "notes": "art/source master: full-res key matte sym_h2_rig_full.matte.eb1924bf downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/sym_H2_rig/v01/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "sheet_v01.matte.4118f197",
+      "path": "art/_work/sym_W_pieces/sheet_v01.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "bb94597f5ace18c9e199909ecacd98684032ac0e7ad7e96acbee28844bd195ef"
+      ],
+      "parents": [
+        "sym_w_pieces.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:56:56Z",
+      "sha256": "4118f197e0c081778574ad22749cb9cf25c228cbe46cf4cde24c36c7e2d0f31f",
+      "notes": "key #10FB03 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/sym_W_pieces/matte_v01/qa.json"
+      }
+    },
+    {
+      "id": "sheet_v02.matte.6c8a057a",
+      "path": "art/_work/sym_W_pieces/sheet_v02.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "35fe8e16358f02c77f4a2dcce199db53785da519fc1c52afd5568764a0b7ade5"
+      ],
+      "parents": [
+        "sym_w_pieces.raw.v02"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:57:19Z",
+      "sha256": "6c8a057a97918c5f3c6de665be89bb401ff797dbbd02bc5c94fc4fbb07342371",
+      "notes": "key #02F905 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": false,
+        "report": "build/qa/c0107/sym_W_pieces/matte_v02/qa.json"
+      }
+    },
+    {
+      "id": "sym_w_ribbon.cut.96c81577",
+      "path": "art/source/symbols/W/pieces/ribbon.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "6c8a057a97918c5f3c6de665be89bb401ff797dbbd02bc5c94fc4fbb07342371"
+      ],
+      "parents": [
+        "sheet_v02.matte.6c8a057a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:59:04Z",
+      "sha256": "96c815774272f17533b18ea2f591e2ee7bf2c3915a51e6c0b61d070cdd60b23e",
+      "notes": "piece 'ribbon' cut from art/_work/sym_W_pieces/sheet_v02.png bbox [82, 301, 1170, 497] x0.875 (connected alpha components, 4 px pad); Higgsfield job feca48d6-a643-44a5-85ac-a94f0f8074c0",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_badge_t3.cut.9383b485",
+      "path": "art/source/symbols/W/pieces/badge_t3.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "6c8a057a97918c5f3c6de665be89bb401ff797dbbd02bc5c94fc4fbb07342371"
+      ],
+      "parents": [
+        "sheet_v02.matte.6c8a057a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:59:04Z",
+      "sha256": "9383b48533f93382af71139136111e1e9038f014fc061bfe7c1ddf54362f57e3",
+      "notes": "piece 'badge_t3' cut from art/_work/sym_W_pieces/sheet_v02.png bbox [243, 882, 813, 475] x0.875 (connected alpha components, 4 px pad); Higgsfield job feca48d6-a643-44a5-85ac-a94f0f8074c0",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_badge_flame.cut.87420704",
+      "path": "art/source/symbols/W/pieces/badge_flame.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "6c8a057a97918c5f3c6de665be89bb401ff797dbbd02bc5c94fc4fbb07342371"
+      ],
+      "parents": [
+        "sheet_v02.matte.6c8a057a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:59:04Z",
+      "sha256": "87420704ecaaac49a9bef2832141156a235ab75c2777fbe2152495e10f166b5c",
+      "notes": "piece 'badge_flame' cut from art/_work/sym_W_pieces/sheet_v02.png bbox [1386, 77, 594, 310] x0.875 (connected alpha components, 4 px pad); Higgsfield job feca48d6-a643-44a5-85ac-a94f0f8074c0",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_clamp.cut.8ef8ed1c",
+      "path": "art/source/symbols/W/pieces/clamp.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "4118f197e0c081778574ad22749cb9cf25c228cbe46cf4cde24c36c7e2d0f31f"
+      ],
+      "parents": [
+        "sheet_v01.matte.4118f197"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:59:04Z",
+      "sha256": "8ef8ed1cf571bb87bac29f8bc444b925bc46ef6bc906a0cfb3b12f654ad9a2bb",
+      "notes": "piece 'clamp' cut from art/_work/sym_W_pieces/sheet_v01.png bbox [379, 792, 835, 633] x1.0 (connected alpha components, 4 px pad); Higgsfield job 3c70a485-0c96-4faa-a0a5-98f2d916d029",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_clamp_open.cut.9c54f4d5",
+      "path": "art/source/symbols/W/pieces/clamp_open.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "4118f197e0c081778574ad22749cb9cf25c228cbe46cf4cde24c36c7e2d0f31f"
+      ],
+      "parents": [
+        "sheet_v01.matte.4118f197"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:59:04Z",
+      "sha256": "9c54f4d557571fa8f87f4ac2bcf7366a2cd279af419e4ce9b67dac7e79cd8eb4",
+      "notes": "piece 'clamp_open' cut from art/_work/sym_W_pieces/sheet_v01.png bbox [1450, 794, 933, 631] x1.0 (connected alpha components, 4 px pad); Higgsfield job 3c70a485-0c96-4faa-a0a5-98f2d916d029",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_badge_t1.tier.30c5d27e",
+      "path": "art/source/symbols/W/pieces/badge_t1.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-tiers",
+      "version": "hsv-map-median-face",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9383b48533f93382af71139136111e1e9038f014fc061bfe7c1ddf54362f57e3"
+      ],
+      "parents": [
+        "sym_w_badge_t3.cut.9383b485"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:59:04Z",
+      "sha256": "30c5d27eaffd56cd8ba704ae2dc5cbcfe685b00081226a85719e528f8dcdf621",
+      "notes": "badge tier t1: gold plate hue-mapped so its median face colour = #35F2E0 (DESIGN §9)",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_badge_t2.tier.6f60f7e0",
+      "path": "art/source/symbols/W/pieces/badge_t2.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-tiers",
+      "version": "hsv-map-median-face",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9383b48533f93382af71139136111e1e9038f014fc061bfe7c1ddf54362f57e3"
+      ],
+      "parents": [
+        "sym_w_badge_t3.cut.9383b485"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:59:04Z",
+      "sha256": "6f60f7e030449e545855a2b9692311108aa167a6e35c611cd8b2b05f6cefbaa1",
+      "notes": "badge tier t2: gold plate hue-mapped so its median face colour = #A8F03A (DESIGN §9)",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_badge_t4.tier.9dd16b7a",
+      "path": "art/source/symbols/W/pieces/badge_t4.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-tiers",
+      "version": "hsv-map-median-face",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9383b48533f93382af71139136111e1e9038f014fc061bfe7c1ddf54362f57e3"
+      ],
+      "parents": [
+        "sym_w_badge_t3.cut.9383b485"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:59:04Z",
+      "sha256": "9dd16b7a33763db013c45331d3c44a6d2ac2972ea150aba0805cd14738718015",
+      "notes": "badge tier t4: gold plate hue-mapped so its median face colour = #FF8A3D (DESIGN §9)",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_badge_t5.tier.2b6ddc5e",
+      "path": "art/source/symbols/W/pieces/badge_t5.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-tiers",
+      "version": "hsv-map-median-face",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9383b48533f93382af71139136111e1e9038f014fc061bfe7c1ddf54362f57e3"
+      ],
+      "parents": [
+        "sym_w_badge_t3.cut.9383b485",
+        "sym_w_badge_flame.cut.87420704"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T14:59:04Z",
+      "sha256": "2b6ddc5e3b117f6323f70d71b0f266b9fb5a7be2dec356c1ed946fe1317f09a2",
+      "notes": "badge tier t5: gold plate hue-mapped so its median face colour = #FF3FA8 (DESIGN §9); flame crown on top",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_parts.raw.v01",
+      "path": "art/_raw/sym_W_parts/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "a53e975f-ed6c-4a9b-82a6-8b3c4d97b56a",
+      "promptPath": "art/_raw/sym_W_parts/v01/prompt.txt",
+      "promptHash": "393b19786ad5847642c322e8ec42c213bfeddaa722d12950a44a31693b419a73",
+      "template": "art/bible/prompts/symbol_parts_sheet.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T14:59:48Z",
+      "sha256": "903149d22539c4b8933d1713937b28a5dfa7749f31a006c5571143937a909b34",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c04 job sym_W_parts.c1; 2752x1536 (2k 16:9); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_meter_master.raw.v01",
+      "path": "art/_raw/bd_meter_master/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "80be379d-01ae-4c4e-a84c-47061fe35a4b",
+      "promptPath": "art/_raw/bd_meter_master/v01/prompt.txt",
+      "promptHash": "ecbdbcf62ee793ca508f742e93d217b227b8e3eba2f542f11d64c0e05381ee73",
+      "template": "art/bible/prompts/prop.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T14:59:49Z",
+      "sha256": "67da5d372f79a9f8a14acb8017ce9d7272850bad6334cc82440d33cfab675c2d",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c04 job bd_meter_master.c1; 1856x2304 (2k 4:5); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_meter_master.raw.v02",
+      "path": "art/_raw/bd_meter_master/v02/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "30fac2bb-636c-42e9-9959-8ad38a7a3aed",
+      "promptPath": "art/_raw/bd_meter_master/v02/prompt.txt",
+      "promptHash": "ecbdbcf62ee793ca508f742e93d217b227b8e3eba2f542f11d64c0e05381ee73",
+      "template": "art/bible/prompts/prop.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T14:59:50Z",
+      "sha256": "2d2c69a0761e7b782ab0900d28c6cc30b818223fda9c888868f340b0ebc55be3",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c04 job bd_meter_master.c2; 1856x2304 (2k 4:5); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "sym_h4_rig.raw.v02",
+      "path": "art/_raw/sym_H4_rig/v02/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "50ae4481-39d4-43d5-aedd-145544737538",
+      "promptPath": "art/_raw/sym_H4_rig/v02/prompt.txt",
+      "promptHash": "cf2ed40e760df3f29b29de914ef560f2d3a6b411630ff66b36096f7883616e4a",
+      "template": "art/bible/prompts/symbol.txt",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T14:59:53Z",
+      "sha256": "fcac18aa55dbe340d478e9d2e174171f25c5ad67226cbc0e532db823fdfed730",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c02_r2 job sym_H4_rig.r2.c1; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_meter_master_full.matte.3e443493",
+      "path": "art/_work/c0107/bd_meter_master/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "67da5d372f79a9f8a14acb8017ce9d7272850bad6334cc82440d33cfab675c2d"
+      ],
+      "parents": [
+        "bd_meter_master.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:07:51Z",
+      "sha256": "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558",
+      "notes": "key #03FB04 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/bd_meter_master/matte/qa.json"
+      }
+    },
+    {
+      "id": "bd_meter_master.source.0be9b5f3",
+      "path": "art/source/ui/bass-drop/groove_meter/master.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:08:11Z",
+      "sha256": "0be9b5f34b80b2d4602e99637199db91e5a2f07e6342a605f33ca71aa6ef6da5",
+      "notes": "art/source master: full-res key matte bd_meter_master_full.matte.3e443493 downsampled x0.4444 to 825x1024 (repo size policy); raw art/_raw/bd_meter_master/v01/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "sheet_matte.matte.be6ac1a0",
+      "path": "art/_work/sym_W_parts/sheet_matte.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "903149d22539c4b8933d1713937b28a5dfa7749f31a006c5571143937a909b34"
+      ],
+      "parents": [
+        "sym_w_parts.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:08:47Z",
+      "sha256": "be6ac1a036d104fa54dde4f1cf0d981fccf0221d6631a8c3bd6d5922e5d1a724",
+      "notes": "key #FD03F8 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": false,
+        "report": "build/qa/c0107/sym_W_parts/matte/qa.json"
+      }
+    },
+    {
+      "id": "sym_w_parts_chain.cut.e13afcf2",
+      "path": "art/source/symbols/W/parts/chain.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "793bf575e52c3d64c1fc707b25820776a06224165a2394939aa5414a9b581fcc"
+      ],
+      "parents": [
+        "sheet_matte.matte.be6ac1a0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:09:23Z",
+      "sha256": "e13afcf26490ec768610a82b5fb908f326fca1c2c748d3afe8570567f5d12b96",
+      "notes": "piece 'chain' cut from art/_work/sym_W_parts/sheet.png bbox [598, 63, 720, 498] x0.92 (connected alpha components, 4 px pad); Higgsfield job a53e975f-ed6c-4a9b-82a6-8b3c4d97b56a; outline ink despilled (key-tinted purple ink, matte halo 10529 -> 0)",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_parts_tooth_main.cut.54ca5ed0",
+      "path": "art/source/symbols/W/parts/tooth_main.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "793bf575e52c3d64c1fc707b25820776a06224165a2394939aa5414a9b581fcc"
+      ],
+      "parents": [
+        "sheet_matte.matte.be6ac1a0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:09:23Z",
+      "sha256": "54ca5ed07c63c9363a77e15e51e3dbcf3da518251eabd6efd930f9b9ea5649da",
+      "notes": "piece 'tooth_main' cut from art/_work/sym_W_parts/sheet.png bbox [1426, 68, 1109, 1051] x0.92 (connected alpha components, 4 px pad); Higgsfield job a53e975f-ed6c-4a9b-82a6-8b3c4d97b56a; outline ink despilled (key-tinted purple ink, matte halo 10529 -> 0)",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_parts_tooth_stripe.cut.257fba39",
+      "path": "art/source/symbols/W/parts/tooth_stripe.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "793bf575e52c3d64c1fc707b25820776a06224165a2394939aa5414a9b581fcc"
+      ],
+      "parents": [
+        "sheet_matte.matte.be6ac1a0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:09:23Z",
+      "sha256": "257fba39d70727cd07727988d43ed9773b4df4bb456b34552653ff748a834d56",
+      "notes": "piece 'tooth_stripe' cut from art/_work/sym_W_parts/sheet.png bbox [1417, 917, 1098, 574] x0.92 (connected alpha components, 4 px pad); Higgsfield job a53e975f-ed6c-4a9b-82a6-8b3c4d97b56a; outline ink despilled (key-tinted purple ink, matte halo 10529 -> 0)",
+      "route": "code"
+    },
+    {
+      "id": "sym_w_parts_cap_underside.cut.b9173b06",
+      "path": "art/source/symbols/W/parts/cap_underside.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "793bf575e52c3d64c1fc707b25820776a06224165a2394939aa5414a9b581fcc"
+      ],
+      "parents": [
+        "sheet_matte.matte.be6ac1a0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:09:23Z",
+      "sha256": "b9173b06230713d986cedbd4ff9838b5394d289d922b8fb00caeb061800d77d1",
+      "notes": "piece 'cap_underside' cut from art/_work/sym_W_parts/sheet.png bbox [239, 494, 1035, 949] x0.92 (connected alpha components, 4 px pad); Higgsfield job a53e975f-ed6c-4a9b-82a6-8b3c4d97b56a; outline ink despilled (key-tinted purple ink, matte halo 10529 -> 0)",
+      "route": "code"
+    },
+    {
+      "id": "sym_h4_rig.raw.v03",
+      "path": "art/_raw/sym_H4_rig/v03/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "3432f2f5-b229-48b1-b766-2db51d8538fc",
+      "promptPath": "art/_raw/sym_H4_rig/v03/prompt.txt",
+      "promptHash": "cf2ed40e760df3f29b29de914ef560f2d3a6b411630ff66b36096f7883616e4a",
+      "template": "art/bible/prompts/symbol.txt",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T15:10:18Z",
+      "sha256": "4edf3456fc331a4690dfdce78fba803f887a2cb0213d8827dbc33ae977b0d6f8",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c02_r3 job sym_H4_rig.r3.c1; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "sym_h4_rig_full.matte.78cab34b",
+      "path": "art/_work/c0107/sym_H4_rig/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "4edf3456fc331a4690dfdce78fba803f887a2cb0213d8827dbc33ae977b0d6f8"
+      ],
+      "parents": [
+        "sym_h4_rig.raw.v03"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:10:51Z",
+      "sha256": "78cab34bb6899b3be49add7d01b2ff469a2d0bbc88a2ef4297cef041128454db",
+      "notes": "key #0CF504 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/sym_H4_rig/matte/qa.json"
+      }
+    },
+    {
+      "id": "sym_h4_rig.source.2c47ca90",
+      "path": "art/source/symbols/H4/master_rig_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "78cab34bb6899b3be49add7d01b2ff469a2d0bbc88a2ef4297cef041128454db"
+      ],
+      "parents": [
+        "sym_h4_rig_full.matte.78cab34b"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:10:59Z",
+      "sha256": "2c47ca9053c770089f2f9e604eb2fceddc19bb2dbb1333f9566a7e326b20f7d2",
+      "notes": "art/source master: full-res key matte sym_h4_rig_full.matte.78cab34b downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/sym_H4_rig/v03/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "bd_emblem_jukebox.raw.v01",
+      "path": "art/_raw/bd_emblem_jukebox/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "966f1950-f9ed-4b5f-87cd-2024cba16925",
+      "promptPath": "art/_raw/bd_emblem_jukebox/v01/prompt.txt",
+      "promptHash": "5bfc9d9528d3617e6e2151a833a1f234efb36b88a427ee33d5df3dc7e763933b",
+      "template": "art/bible/prompts/emblem.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T15:11:41Z",
+      "sha256": "6f7642f5cff12968f41de19af925013e77bdd07948bdf9b0e9c85bcb7b87b014",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c05 job bd_emblem_jukebox.c1; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_emblem_jukebox.raw.v02",
+      "path": "art/_raw/bd_emblem_jukebox/v02/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "d0bde978-fdda-48c0-a819-553348ced56c",
+      "promptPath": "art/_raw/bd_emblem_jukebox/v02/prompt.txt",
+      "promptHash": "5bfc9d9528d3617e6e2151a833a1f234efb36b88a427ee33d5df3dc7e763933b",
+      "template": "art/bible/prompts/emblem.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T15:11:42Z",
+      "sha256": "dbe3c83978b945dc4ab1f0f2477506eca6a222d2d6a94d259cd5c3a95a76a914",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c05 job bd_emblem_jukebox.c2; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_emblem_jukebox_full.matte.6eb28acf",
+      "path": "art/_work/c0107/bd_emblem_jukebox/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "6f7642f5cff12968f41de19af925013e77bdd07948bdf9b0e9c85bcb7b87b014"
+      ],
+      "parents": [
+        "bd_emblem_jukebox.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:14:22Z",
+      "sha256": "6eb28acf7e65ef0ed281c0c5a22260f9359589e7e38d91b0960c93a6a057d754",
+      "notes": "key #FD02FA (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": false,
+        "report": "build/qa/c0107/bd_emblem_jukebox/matte/qa.json"
+      }
+    },
+    {
+      "id": "bd_emblem_jukebox.source.ac851568",
+      "path": "art/source/ui/bass-drop/emblems/jukebox.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "15de1c12b61824cbd05a934a220a5cdc4e0a2206ead1ba68a30a251bc48e1f33"
+      ],
+      "parents": [
+        "bd_emblem_jukebox_full.matte.6eb28acf"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:14:42Z",
+      "sha256": "ac85156877fd0fabfff19e03ba7cdf5fc14df5bd134911acd1901ac934a61b46",
+      "notes": "outline ink despilled on 6534 px (key-tinted ink, matte halo 5663 -> 0); art/source master: full-res key matte bd_emblem_jukebox_full.matte.6eb28acf downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/bd_emblem_jukebox/v01/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "bd_meter_parts.raw.v01",
+      "path": "art/_raw/bd_meter_parts/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "46f0db21-fc9a-4d9f-98aa-5e12838ab1d4",
+      "promptPath": "art/_raw/bd_meter_parts/v01/prompt.txt",
+      "promptHash": "44ead7c89383a5ab93c38640de69ca0750709b6ae5f51400397f33f046a1256a",
+      "template": "art/bible/prompts/symbol_parts_sheet.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T15:15:41Z",
+      "sha256": "5fc34fc3415772d5ef75b3885cb7f2ba46258bf5af92d9c6d6345dc8368c92f8",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c05 job bd_meter_parts.c1; 2752x1536 (2k 16:9); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_emblem_mega_speaker.raw.v01",
+      "path": "art/_raw/bd_emblem_mega_speaker/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "2b480e0e-1d77-4a61-a903-399dcbc2f2ce",
+      "promptPath": "art/_raw/bd_emblem_mega_speaker/v01/prompt.txt",
+      "promptHash": "5f8f531e69f79733b55d8b76ef5b7536107576f6cbc804cb8dd1f2b755a98d5e",
+      "template": "art/bible/prompts/emblem.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T15:17:21Z",
+      "sha256": "70df5c1d7b57a3d2f7e3920b86a086b484ad8f762456abff000b1db44c84e6f7",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c06 job bd_emblem_mega_speaker.c1; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_emblem_mega_speaker.raw.v02",
+      "path": "art/_raw/bd_emblem_mega_speaker/v02/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "900b336e-a875-44e7-93ac-6694f8e3a440",
+      "promptPath": "art/_raw/bd_emblem_mega_speaker/v02/prompt.txt",
+      "promptHash": "5f8f531e69f79733b55d8b76ef5b7536107576f6cbc804cb8dd1f2b755a98d5e",
+      "template": "art/bible/prompts/emblem.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T15:17:41Z",
+      "sha256": "87959822d81ddaed8d68b6c79a5b35ffbf06d4757ee5b9761561ecb65eb88094",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c06 job bd_emblem_mega_speaker.c2; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_emblem_mega_speaker_full.matte.c5db3813",
+      "path": "art/_work/c0107/bd_emblem_mega_speaker/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "70df5c1d7b57a3d2f7e3920b86a086b484ad8f762456abff000b1db44c84e6f7"
+      ],
+      "parents": [
+        "bd_emblem_mega_speaker.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:24:30Z",
+      "sha256": "c5db3813e8233ee634a04598b4700ce1f7e44469dbc426abe4590ebd49f46037",
+      "notes": "key #02FC03 (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": false,
+        "report": "build/qa/c0107/bd_emblem_mega_speaker/matte/qa.json"
+      }
+    },
+    {
+      "id": "bd_emblem_mega_speaker.source.34607c30",
+      "path": "art/source/ui/bass-drop/emblems/mega_speaker.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "723a1bea11759bd65ea50ea8ef782f537e6b0c85f4c8763122fe8874d3b8e728"
+      ],
+      "parents": [
+        "bd_emblem_mega_speaker_full.matte.c5db3813"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:24:54Z",
+      "sha256": "34607c30776f9634689a0c5181fd308198c5a79fae49b22a1bf4523219464951",
+      "notes": "outline ink despilled on 353 px (key-tinted ink, matte halo 50 -> 0); art/source master: full-res key matte bd_emblem_mega_speaker_full.matte.c5db3813 downsampled x0.5000 to 1024x1024 (repo size policy); raw art/_raw/bd_emblem_mega_speaker/v01/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "bd_notch_icons.raw.v01",
+      "path": "art/_raw/bd_notch_icons/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "c11954bf-f5f4-4dd4-83e1-080e100ffc0e",
+      "promptPath": "art/_raw/bd_notch_icons/v01/prompt.txt",
+      "promptHash": "443719ff5d583fb11a0dddcdfc0376ae30c738f7fe80e8100407be42abf02479",
+      "template": "art/bible/prompts/emblem.txt#C",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T15:27:16Z",
+      "sha256": "a83ce6010f0342fca46fbbb2b5648902d4aa834c1e5e62035c6b265227752f9d",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c07 job bd_notch_icons.c1; 2752x1536 (2k 16:9); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_notch_icons_full.matte.ba9168c6",
+      "path": "art/_work/c0107/bd_notch_icons/matte_full.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/outline_matte.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a83ce6010f0342fca46fbbb2b5648902d4aa834c1e5e62035c6b265227752f9d"
+      ],
+      "parents": [
+        "bd_notch_icons.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:30:08Z",
+      "sha256": "ba9168c607578d73340c251ce48f03d51545275a2b6edec8b21ecc3a230684b9",
+      "notes": "key #020AFD (measured), seal 0, content None px",
+      "route": "code",
+      "qa": {
+        "passed": false,
+        "report": "build/qa/c0107/bd_notch_icons/matte/qa.json"
+      }
+    },
+    {
+      "id": "bd_notch_icons.source.95bae514",
+      "path": "art/source/ui/bass-drop/emblems/notch_icons.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-downsample",
+      "version": "pil-lanczos-premultiplied",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "cf30a776b2d5ef4fbb29d61a48c8964f265c385da155e4d4247a97cde4c27a99"
+      ],
+      "parents": [
+        "bd_notch_icons_full.matte.ba9168c6"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:30:20Z",
+      "sha256": "95bae514623110a9d1f39c768a27f7dbf741209967cab36d5e258a9351d79b44",
+      "notes": "outline ink despilled on 11293 px (key-tinted ink, matte halo 6807 -> 0); art/source master: full-res key matte bd_notch_icons_full.matte.ba9168c6 downsampled x0.3721 to 1024x572 (repo size policy); raw art/_raw/bd_notch_icons/v01/raw.png",
+      "route": "code"
+    },
+    {
+      "id": "bd_notch_icons_notch_w.cut.3fd64287",
+      "path": "art/source/ui/bass-drop/emblems/notch/notch_w.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "cf30a776b2d5ef4fbb29d61a48c8964f265c385da155e4d4247a97cde4c27a99"
+      ],
+      "parents": [
+        "bd_notch_icons_full.matte.ba9168c6"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:30:42Z",
+      "sha256": "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce",
+      "notes": "piece 'notch_w' cut from art/_work/c0107/bd_notch_icons/matte_fixed.png bbox [144, 391, 703, 769] x1.0 (connected alpha components, 4 px pad); Higgsfield job c11954bf-f5f4-4dd4-83e1-080e100ffc0e",
+      "route": "code"
+    },
+    {
+      "id": "bd_notch_icons_notch_jj.cut.887d73ab",
+      "path": "art/source/ui/bass-drop/emblems/notch/notch_jj.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "cf30a776b2d5ef4fbb29d61a48c8964f265c385da155e4d4247a97cde4c27a99"
+      ],
+      "parents": [
+        "bd_notch_icons_full.matte.ba9168c6"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:30:42Z",
+      "sha256": "887d73ab221f2e4fa0edfabf5f4d993738e6a96573bf6576918166fff146f457",
+      "notes": "piece 'notch_jj' cut from art/_work/c0107/bd_notch_icons/matte_fixed.png bbox [1027, 366, 699, 801] x1.0 (connected alpha components, 4 px pad); Higgsfield job c11954bf-f5f4-4dd4-83e1-080e100ffc0e",
+      "route": "code"
+    },
+    {
+      "id": "bd_notch_icons_notch_mm.cut.dbd0694a",
+      "path": "art/source/ui/bass-drop/emblems/notch/notch_mm.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-cut",
+      "version": "cc-alpha-components",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "cf30a776b2d5ef4fbb29d61a48c8964f265c385da155e4d4247a97cde4c27a99"
+      ],
+      "parents": [
+        "bd_notch_icons_full.matte.ba9168c6"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:30:42Z",
+      "sha256": "dbd0694a1fd7f4f56e82e408d870bf387cacab0ae7c0d8ef4f5b1fc90d181948",
+      "notes": "piece 'notch_mm' cut from art/_work/c0107/bd_notch_icons/matte_fixed.png bbox [1891, 364, 728, 780] x1.0 (connected alpha components, 4 px pad); Higgsfield job c11954bf-f5f4-4dd4-83e1-080e100ffc0e",
+      "route": "code"
+    },
+    {
+      "id": "bd_bg_base_portrait.raw.v01",
+      "path": "art/_raw/bd_bg_base_portrait/v01/raw.png",
+      "stage": "backgrounds",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-09-26",
+      "seed": null,
+      "jobId": "01d29fe8-0f33-4f1c-8b74-5ec8f1d1d193",
+      "promptPath": "art/_raw/bd_bg_base_portrait/v01/prompt.txt",
+      "promptHash": "ad4fb0c674a6a1209336f95bcfd2d9b54f07a78368f34a16eda6020ee8946b3b",
+      "template": "art/bible/prompts/background.txt#F",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 4,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-09-26T15:31:03Z",
+      "sha256": "74accac017134bb731716f0d85d342d8e5273b6e70e651303fe3d41b7b8b0a35",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c07 job bd_bg_base_portrait.c1; 3072x5504 (4k 9:16); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "bd_bg_base_portrait.source.2488a355",
+      "path": "art/source/backgrounds/bass-drop/base_portrait.webp",
+      "stage": "backgrounds",
+      "shipped": false,
+      "vendor": "self",
+      "model": "c0107-crop",
+      "version": "pil-centre-crop-lanczos-webp",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "74accac017134bb731716f0d85d342d8e5273b6e70e651303fe3d41b7b8b0a35"
+      ],
+      "parents": [
+        "bd_bg_base_portrait.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-26T15:32:05Z",
+      "sha256": "2488a3554f2b75081cae06363740d87702fe826b846d18c77a993379b0ec8742",
+      "notes": "centre crop 2752x5504 (9:16 -> 1:2) of art/_raw/bd_bg_base_portrait/v01/raw.png, Lanczos to 1536x3072, WebP q92 (225772 bytes); darker centre {'gridBand': [934, 2233], 'centreLum': 0.1974, 'leftLum': 0.2459, 'rightLum': 0.1906, 'belowThirdCentre': 0.1984, 'belowThirdEdges': 0.2114, 'darkerCentre': True}",
+      "route": "code",
+      "qa": {
+        "passed": true,
+        "report": "build/qa/c0107/bd_bg_base_portrait/qa.json"
+      }
     }
   ]
 }

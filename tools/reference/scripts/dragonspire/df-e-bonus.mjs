@@ -18,6 +18,7 @@ export default async function (ref) {
         await ref.screenshot(`buy-${k + 1}-${pt}`, { grid: true });
       }
     }
+    await ref.move([0.5, 0.03], {}); // park the mouse off the HUD (spin-button state detection)
     await capture(ref, 'bonus-bought', { playsBefore, endsBefore, every: 2, forceFeature: true, minMs: 5000, featureMaxMs: 420_000, notes: 'bought Dragon Bonus: trigger, intro, free spins, outro' });
     await ref.screenshot('after-bonus', { grid: true });
     return;

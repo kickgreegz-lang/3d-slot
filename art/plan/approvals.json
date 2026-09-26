@@ -36,6 +36,90 @@
       "by": "Claude (art director, per the user brief)",
       "date": "2026-09-26",
       "note": "ab1 painted juke joint: atmospheric depth, speaker stage in the back, calm dark centre."
+    },
+    "sym_H2": {
+      "job_id": "122f2cc9-dbb5-4840-9014-75b21189089b",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c01 c1 (raw v02): glossy black record half out of a rigid hot-pink sleeve, blank cream label, record slides out to the right (suits the win slide). Key #03FB03 uniform, matte halo 1 px. Reads at 124 px. Weakest finish of the set: the sleeve is loose streaky brushwork without lacquer hotspots; the rig-ready master (c02) should carry the board sprite, sleeve is a paintover candidate. c2 rejected: pillow-like sleeve."
+    },
+    "sym_H4": {
+      "job_id": "a24a9273-c76d-4cbd-b30e-b03364464844",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c01 c1 (raw v02): round glass bottle, deep red sauce, cork, parchment label with chili + flame pictogram (no letters). Key #04FB03 uniform, matte halo 0. Distinct tall silhouette at 124 px; no baked flame wisp outside the bottle (fx_flame stays a runtime slot). c2 (v03) rejected: squarer, dark-brown cork outline leaves a 57 px key-tinted edge."
+    },
+    "sym_H1_rig": {
+      "job_id": "ae6053be-6e34-4715-9b4b-e4375c29387f",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c01 (raw v01): gold boombox, handle, two woofers + two tweeters, cassette door with blank cassette, knobs; clean single-weight outline, thin cool rim. Key #02FB03 uniform, matte halo 0. Same object family as the adopted beauty but more detailed (not a pixel match): use this rig-ready master as the board sprite and the paytable image (ART_PLAN open decision 1). No antenna (ANIMATION_SET 2.1 lists one: add as a part or drop the slot)."
+    },
+    "sym_H3_rig": {
+      "job_id": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c01 (raw v01): near pixel-identical to the adopted D_H3 (passes the flip test), adult proportions, smirk, denim vest. Background came back olive #91C53E instead of #00FF00 but uniform (border 100%, bg p99 4.9): matte keyed on the measured colour, halo 0. Right claw overlaps the body/tail: the split needs a fill there."
+    },
+    "sym_H2_rig": {
+      "job_id": "434527a1-ae53-4b11-bf93-358d052ee42c",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c02 (raw v01): same object as the approved sym_H2 beauty (alpha IoU 0.998, flip test passes), label now white, sleeve still loose brushwork (paintover candidate with the beauty). Key #05F903 uniform, matte halo 0, no enclosed key left. Disc and sleeve read as separate parts for the win slide."
+    },
+    "sym_W_rig": {
+      "job_id": "7f0557f2-2aa2-43e7-8677-907f56e48cd4",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c03_r2 (raw v02, retry 1): same object as the adopted D_W (alpha IoU 1.000): teal fang, gold cap, chain loop. c1 (b24eb73e) rejected: white background, not a colour key. Key #FD02F7 uniform; the model tinted the outline purple (#2F002B) so the matte flagged 5669 key-tinted edge px: outline ink despilled -> halo 0. Chain stays attached to the cap as in the beauty; the parts sheet (c04) supplies separated pieces."
+    },
+    "sym_W_pieces": {
+      "job_id": "feca48d6-a643-44a5-85ac-a94f0f8074c0",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c03 c2 (raw v02): blank plum ribbon with gold edge, blank gold badge plate (1.72:1, closest to the 192x120 plate), a separate chunky flame crown (orange/gold/pink) with a clear gap above its plate, all with closed outlines and wide gaps. Its clamps are inconsistent (closed U-bracket vs a different C-clamp), so clamp + clamp_open are cut from c1 (3c70a485, raw v01: same bracket closed/open); c1's plate (2.7:1) is too wide for the badge geometry. Key #03F905/#11FB03 uniform; no letters."
+    },
+    "bd_meter_master": {
+      "job_id": "80be379d-01ae-4c4e-a84c-47061fe35a4b",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c04 c1 (raw v01): plum-black cabinet, four slotted gold corner screws, grill strips above/below, silver rim ring with exactly eight gold bolts, light-grey trim band (recolour per mode), ribbed charcoal cone, big blank glossy dust cap; nothing glows, no text. Cabinet 1696x2133 (0.80, target 704x840 = 0.84). Key #03FB04, halo 0. Woofer measured ~2% out of round (grey-band ellipse 0.976): the parts sheet / vector rings must restore a true circle for the code LED arc. c2 rejected: 16 bolts and corner protectors (off brief), 0.75 aspect, 94 px halo."
+    },
+    "sym_W_parts": {
+      "job_id": "a53e975f-ed6c-4a9b-82a6-8b3c4d97b56a",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c04 (raw v01): complete chain with end loops (good for the phys_chain mesh), fang with the hidden top painted in (overlap cap), but the model split the fang's lower enamel stripe into a separate crescent and drew the cap from below (interior visible), which will not register to the master. Use: tooth = main fang + stripe merged, chain from this sheet, cap cut from master_rig (fully visible there). Key #FD03F8 uniform; purple-tinted outline despilled (halo 10529 -> 0). Pieces separated by wide gaps, no text."
+    },
+    "sym_H4_rig": {
+      "job_id": "3432f2f5-b229-48b1-b766-2db51d8538fc",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c02_r3 (raw v03, retry 2 = the last the bible allows): same object as the approved sym_H4 beauty (alpha IoU 1.000). c1 (c4528095) rejected: white background, not a colour key; r2 (50ae4481) rejected: square-shouldered bottle, fails the flip test against the round beauty. Key #0CF504 uniform, halo 0, no enclosed key left."
+    },
+    "bd_emblem_jukebox": {
+      "job_id": "966f1950-f9ed-4b5f-87cd-2024cba16925",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c05 c1 (raw v01): arched gold jukebox, teal side pillars, domed window with a record (blank label), five glossy lit colour bands, gold grille arch; iconic silhouette that reads instantly at 120 and 60 px; no text or pseudo-letters. Key #FD02FA uniform; purple-tinted outline despilled (matte halo 5663 -> 0). Lit bands are rainbow, not the gold/teal/cream palette (palette-ΔE will flag them: accepted as the lamp read). c2 (d0bde978) rejected: flatter, paler cream/teal bands, weaker read; key drifted to #F738FC."
+    },
+    "bd_emblem_mega_speaker": {
+      "job_id": "2b480e0e-1d77-4a61-a903-399dcbc2f2ce",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c06 c1 (raw v01): 2x3 wall of hot-pink speaker cabinets in the meter's design (grill strips, slotted gold screws, silver bolted rims, dark glass caps) under a heavy gold crown; reads as a crowned speaker stack at 120 px and differs from the jukebox in silhouette (block + crown vs arch). Off brief: a wall of six, not a tall stack of three. The crown is outlined dark brown, not black: the default matte (--dark 70) keyed the whole crown out (210901 px lost, halo gate did not notice); matted with --dark 110 -> crown intact, halo 50 -> 0 after the outline despill. Key #02FC03 uniform. c2 (900b336e) rejected: filigree crown with open outlines is lost in any matte, and the grill slots are painted key-green (#082A0C)."
+    },
+    "bd_notch_icons": {
+      "job_id": "c11954bf-f5f4-4dd4-83e1-080e100ffc0e",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c07 (raw v01): fang (no chain), jukebox and crowned speaker wall as small copies of the approved W and emblems, equal height, wide gaps, no text; shapes differ (curve / arch / block + crown) as DESIGN asks. Not the simplified glyphs the brief wanted: at 40 px the fang and jukebox read, the speaker wall is busy but identifiable by the crown (a retry would repeat the references; the plan fallback is the same downscale). Key #020AFD uniform; the crown's brown outline needs --dark 110 (default lost 33568 px of crown); blue-tinted ink despilled (halo 6807 -> 0). The jukebox's blue lamp band is key-hued: never run a whole-image despill on this sheet."
+    },
+    "bd_bg_base_portrait": {
+      "job_id": "01d29fe8-0f33-4f1c-8b74-5ec8f1d1d193",
+      "by": "Claude (art director)",
+      "date": "2026-09-26",
+      "note": "bd_c07 (raw v01, 3072x5504): same juke joint as the landscape plate (firefly-jar shelves left, gator neon icon over the magenta booth right, string lights, violet haze), painterly finish matches; no letters (booth posters blank, sign is an icon). Darker centre under the portrait grid band passes narrowly (centre lum 0.197 vs left 0.246 / right 0.191; below-third centre 0.198 < edges 0.211). Odd dark plank slab in the centre column, hidden by the reels. The gator sign sits at 92.5% of the 9:16 width (inside the 88% rule) but at the right edge after the 1:2 crop: phones taller than 1:2 will clip it. Delivered as the planned 1:2 centre crop, 1536x3072 WebP q92 (226 KB)."
     }
   }
 }

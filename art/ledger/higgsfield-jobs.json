@@ -453,7 +453,7 @@
           "name": "sym_H2.c2",
           "index": 1,
           "job_id": "b157706d-1e0f-4f63-bc27-440ab383899c",
-          "status": "in_progress",
+          "status": "completed",
           "template": "symbol.txt",
           "vars": {
             "symbol": "H2",
@@ -464,7 +464,7 @@
           "resolution": "2k",
           "aspect_ratio": "1:1",
           "credits": 2,
-          "result_url": null,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_142453_b157706d-1e0f-4f63-bc27-440ab383899c.png",
           "medias": [
             {
               "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
@@ -482,7 +482,11 @@
           "asset": "sym_H2",
           "stage": "2d-image",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "cc6ee188376602cc886cbdb24f4e4ddbae50f955d490f7d518d4395c913f0ad3",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4733873
         },
         {
           "name": "sym_H4.c1",
@@ -756,6 +760,650 @@
           "width": 2752,
           "height": 1536,
           "bytes": 4724665
+        }
+      ]
+    },
+    {
+      "id": "bd_c02",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c02: sym_H2_rig, sym_H4_rig",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "sym_H2_rig.c1",
+          "index": 0,
+          "job_id": "434527a1-ae53-4b11-bf93-358d052ee42c",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H2",
+            "rigReady": true,
+            "SUBJECT": "a glossy black vinyl record half out of a hot-pink sleeve, with a blank label and two or three fine groove lines.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "2ec5996b7c10ae28af4e3eecb5d85d975b40f4ac0c41d24b08127c48b6301409",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_143938_434527a1-ae53-4b11-bf93-358d052ee42c.png",
+          "medias": [
+            {
+              "value": "122f2cc9-dbb5-4840-9014-75b21189089b",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H2_rig",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "51d4e6867959ee10934bdfd6ad4d43774f80edaee1cdf34b44fd00dbedd366dc",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4746985
+        },
+        {
+          "name": "sym_H4_rig.c1",
+          "index": 1,
+          "job_id": "c4528095-1491-465b-acd5-a201367aca9a",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H4",
+            "rigReady": true,
+            "SUBJECT": "a bayou hot-sauce bottle with deep red sauce, a cork cap, a blank label with a chili pictogram and a small cartoon flame wisp.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "cf2ed40e760df3f29b29de914ef560f2d3a6b411630ff66b36096f7883616e4a",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_143939_c4528095-1491-465b-acd5-a201367aca9a.png",
+          "medias": [
+            {
+              "value": "a24a9273-c76d-4cbd-b30e-b03364464844",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H4_rig",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "1c3fa41e2aeb0406dd20cb366933e465c84cf52fb030e2bbba5e985d981ded9b",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 3314901
+        }
+      ]
+    },
+    {
+      "id": "bd_c03_r2",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c03 retry 2: sym_W_rig",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "sym_W_rig.r2.c1",
+          "index": 0,
+          "job_id": "7f0557f2-2aa2-43e7-8677-907f56e48cd4",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "W",
+            "rigReady": true,
+            "SUBJECT": "a heraldic wild charm: one big curved alligator fang with a polished gold cap and a short gold chain loop, teal enamel inlay on the fang, bold and precious.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "282039b6eb96d8ab9582eaea39443aed8ba93cb516639d85a84c355bcdb58011",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_144131_7f0557f2-2aa2-43e7-8677-907f56e48cd4.png",
+          "medias": [
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_W_rig",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "3b76e1cc24e0df72fc314cce93b54436733e05d20226eac73021fd7294383959",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4862718
+        }
+      ]
+    },
+    {
+      "id": "bd_c02_r2",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c02 retry 2: sym_H4_rig",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "sym_H4_rig.r2.c1",
+          "index": 0,
+          "job_id": "50ae4481-39d4-43d5-aedd-145544737538",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H4",
+            "rigReady": true,
+            "SUBJECT": "a bayou hot-sauce bottle with deep red sauce, a cork cap, a blank label with a chili pictogram and a small cartoon flame wisp.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "cf2ed40e760df3f29b29de914ef560f2d3a6b411630ff66b36096f7883616e4a",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_145514_50ae4481-39d4-43d5-aedd-145544737538.png",
+          "medias": [
+            {
+              "value": "a24a9273-c76d-4cbd-b30e-b03364464844",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H4_rig",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "fcac18aa55dbe340d478e9d2e174171f25c5ad67226cbc0e532db823fdfed730",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4674398
+        }
+      ]
+    },
+    {
+      "id": "bd_c04",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c04: sym_W_parts, bd_meter_master",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "sym_W_parts.c1",
+          "index": 0,
+          "job_id": "a53e975f-ed6c-4a9b-82a6-8b3c4d97b56a",
+          "status": "completed",
+          "template": "symbol_parts_sheet.txt#A",
+          "vars": {
+            "symbol": "W",
+            "PART_LIST": "curved alligator fang with its teal enamel inlay, polished gold cap, short gold chain loop",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "393b19786ad5847642c322e8ec42c213bfeddaa722d12950a44a31693b419a73",
+          "resolution": "2k",
+          "aspect_ratio": "16:9",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_145546_a53e975f-ed6c-4a9b-82a6-8b3c4d97b56a.png",
+          "medias": [
+            {
+              "value": "7f0557f2-2aa2-43e7-8677-907f56e48cd4",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_W_parts",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "903149d22539c4b8933d1713937b28a5dfa7749f31a006c5571143937a909b34",
+          "width": 2752,
+          "height": 1536,
+          "bytes": 5203489
+        },
+        {
+          "name": "bd_meter_master.c1",
+          "index": 1,
+          "job_id": "80be379d-01ae-4c4e-a84c-47061fe35a4b",
+          "status": "completed",
+          "template": "prop.txt#A",
+          "vars": {
+            "PROP": "a tall chunky vintage speaker cabinet holding one huge round woofer",
+            "VIEW": "orthographic front view with the woofer a perfect circle",
+            "DETAIL": "Dark plum-black wood cabinet (#4B283D) with rounded corners, polished gold corner bolts and a strip of dark grill cloth above and below the woofer. The woofer fills 90% of the cabinet width: a chunky metal rim ring with eight gold bolts, a thin light-grey trim band just inside the rim, a dark recessed channel, a ribbed charcoal cone and a big glossy dark glass dust cap about half the woofer's diameter, left blank.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#00FF00"
+          },
+          "promptHash": "ecbdbcf62ee793ca508f742e93d217b227b8e3eba2f542f11d64c0e05381ee73",
+          "resolution": "2k",
+          "aspect_ratio": "4:5",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_145547_80be379d-01ae-4c4e-a84c-47061fe35a4b.png",
+          "medias": [
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "122f2cc9-dbb5-4840-9014-75b21189089b",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            }
+          ],
+          "asset": "bd_meter_master",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "67da5d372f79a9f8a14acb8017ce9d7272850bad6334cc82440d33cfab675c2d",
+          "width": 1856,
+          "height": 2304,
+          "bytes": 5422658
+        },
+        {
+          "name": "bd_meter_master.c2",
+          "index": 2,
+          "job_id": "30fac2bb-636c-42e9-9959-8ad38a7a3aed",
+          "status": "completed",
+          "template": "prop.txt#A",
+          "vars": {
+            "PROP": "a tall chunky vintage speaker cabinet holding one huge round woofer",
+            "VIEW": "orthographic front view with the woofer a perfect circle",
+            "DETAIL": "Dark plum-black wood cabinet (#4B283D) with rounded corners, polished gold corner bolts and a strip of dark grill cloth above and below the woofer. The woofer fills 90% of the cabinet width: a chunky metal rim ring with eight gold bolts, a thin light-grey trim band just inside the rim, a dark recessed channel, a ribbed charcoal cone and a big glossy dark glass dust cap about half the woofer's diameter, left blank.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#00FF00"
+          },
+          "promptHash": "ecbdbcf62ee793ca508f742e93d217b227b8e3eba2f542f11d64c0e05381ee73",
+          "resolution": "2k",
+          "aspect_ratio": "4:5",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_145546_30fac2bb-636c-42e9-9959-8ad38a7a3aed.png",
+          "medias": [
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "122f2cc9-dbb5-4840-9014-75b21189089b",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            }
+          ],
+          "asset": "bd_meter_master",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "2d2c69a0761e7b782ab0900d28c6cc30b818223fda9c888868f340b0ebc55be3",
+          "width": 1856,
+          "height": 2304,
+          "bytes": 5716434
+        }
+      ]
+    },
+    {
+      "id": "bd_c02_r3",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c02 retry 3: sym_H4_rig",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "sym_H4_rig.r3.c1",
+          "index": 0,
+          "job_id": "3432f2f5-b229-48b1-b766-2db51d8538fc",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "symbol": "H4",
+            "rigReady": true,
+            "SUBJECT": "a bayou hot-sauce bottle with deep red sauce, a cork cap, a blank label with a chili pictogram and a small cartoon flame wisp.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "cf2ed40e760df3f29b29de914ef560f2d3a6b411630ff66b36096f7883616e4a",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_150402_3432f2f5-b229-48b1-b766-2db51d8538fc.png",
+          "medias": [
+            {
+              "value": "a24a9273-c76d-4cbd-b30e-b03364464844",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            }
+          ],
+          "asset": "sym_H4_rig",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "4edf3456fc331a4690dfdce78fba803f887a2cb0213d8827dbc33ae977b0d6f8",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4339893
+        }
+      ]
+    },
+    {
+      "id": "bd_c05",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c05: bd_meter_parts, bd_emblem_jukebox",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "bd_meter_parts.c1",
+          "index": 0,
+          "job_id": "46f0db21-fc9a-4d9f-98aa-5e12838ab1d4",
+          "status": "completed",
+          "template": "symbol_parts_sheet.txt#A",
+          "vars": {
+            "SYMBOL_NAME": "a tall chunky vintage speaker cabinet holding one huge round woofer",
+            "PART_LIST": "cabinet shell with an empty round opening, grill cloth panel, metal rim ring with bolts, light-grey trim band ring, rubber surround ring, ribbed cone ring, glossy dark glass dust cap disc",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#00FF00"
+          },
+          "promptHash": "44ead7c89383a5ab93c38640de69ca0750709b6ae5f51400397f33f046a1256a",
+          "resolution": "2k",
+          "aspect_ratio": "16:9",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_150954_46f0db21-fc9a-4d9f-98aa-5e12838ab1d4.png",
+          "medias": [
+            {
+              "value": "80be379d-01ae-4c4e-a84c-47061fe35a4b",
+              "role": "image_references"
+            }
+          ],
+          "asset": "bd_meter_parts",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "5fc34fc3415772d5ef75b3885cb7f2ba46258bf5af92d9c6d6345dc8368c92f8",
+          "width": 2752,
+          "height": 1536,
+          "bytes": 4951429
+        },
+        {
+          "name": "bd_emblem_jukebox.c1",
+          "index": 1,
+          "job_id": "966f1950-f9ed-4b5f-87cd-2024cba16925",
+          "status": "completed",
+          "template": "emblem.txt#A",
+          "vars": {
+            "EMBLEM": "a chunky vintage jukebox with a rounded arched top, a thick polished gold frame, teal enamel side panels, a bright arched front window with a record visible behind it, stacked lit colour bands and a gold speaker grille at the bottom",
+            "PALETTE": "polished solid gold (#FFC629) and teal enamel (#35F2E0) with cream-white (#FFF6D8) lit panels",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#FF00FF"
+          },
+          "promptHash": "5bfc9d9528d3617e6e2151a833a1f234efb36b88a427ee33d5df3dc7e763933b",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_150954_966f1950-f9ed-4b5f-87cd-2024cba16925.png",
+          "medias": [
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "122f2cc9-dbb5-4840-9014-75b21189089b",
+              "role": "image_references"
+            }
+          ],
+          "asset": "bd_emblem_jukebox",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "6f7642f5cff12968f41de19af925013e77bdd07948bdf9b0e9c85bcb7b87b014",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5466330
+        },
+        {
+          "name": "bd_emblem_jukebox.c2",
+          "index": 2,
+          "job_id": "d0bde978-fdda-48c0-a819-553348ced56c",
+          "status": "completed",
+          "template": "emblem.txt#A",
+          "vars": {
+            "EMBLEM": "a chunky vintage jukebox with a rounded arched top, a thick polished gold frame, teal enamel side panels, a bright arched front window with a record visible behind it, stacked lit colour bands and a gold speaker grille at the bottom",
+            "PALETTE": "polished solid gold (#FFC629) and teal enamel (#35F2E0) with cream-white (#FFF6D8) lit panels",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#FF00FF"
+          },
+          "promptHash": "5bfc9d9528d3617e6e2151a833a1f234efb36b88a427ee33d5df3dc7e763933b",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_150954_d0bde978-fdda-48c0-a819-553348ced56c.png",
+          "medias": [
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "122f2cc9-dbb5-4840-9014-75b21189089b",
+              "role": "image_references"
+            }
+          ],
+          "asset": "bd_emblem_jukebox",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "dbe3c83978b945dc4ab1f0f2477506eca6a222d2d6a94d259cd5c3a95a76a914",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 6059132
+        }
+      ]
+    },
+    {
+      "id": "bd_c06",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c06: bd_emblem_mega_speaker",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "bd_emblem_mega_speaker.c1",
+          "index": 0,
+          "job_id": "2b480e0e-1d77-4a61-a903-399dcbc2f2ce",
+          "status": "completed",
+          "template": "emblem.txt#A",
+          "vars": {
+            "EMBLEM": "a tall stack of three chunky speaker cabinets with big round woofer cones, the same cabinet design as the reference, topped with a heavy polished gold crown",
+            "PALETTE": "hot-pink enamel (#FF3FA8) cabinet faces, dark plum-black wood (#4B283D), charcoal cones and a polished solid gold (#FFC629) crown and bolts",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#00FF00"
+          },
+          "promptHash": "5f8f531e69f79733b55d8b76ef5b7536107576f6cbc804cb8dd1f2b755a98d5e",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_151509_2b480e0e-1d77-4a61-a903-399dcbc2f2ce.png",
+          "medias": [
+            {
+              "value": "80be379d-01ae-4c4e-a84c-47061fe35a4b",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "966f1950-f9ed-4b5f-87cd-2024cba16925",
+              "role": "image_references"
+            }
+          ],
+          "asset": "bd_emblem_mega_speaker",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "70df5c1d7b57a3d2f7e3920b86a086b484ad8f762456abff000b1db44c84e6f7",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 6932313
+        },
+        {
+          "name": "bd_emblem_mega_speaker.c2",
+          "index": 1,
+          "job_id": "900b336e-a875-44e7-93ac-6694f8e3a440",
+          "status": "completed",
+          "template": "emblem.txt#A",
+          "vars": {
+            "EMBLEM": "a tall stack of three chunky speaker cabinets with big round woofer cones, the same cabinet design as the reference, topped with a heavy polished gold crown",
+            "PALETTE": "hot-pink enamel (#FF3FA8) cabinet faces, dark plum-black wood (#4B283D), charcoal cones and a polished solid gold (#FFC629) crown and bolts",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#00FF00"
+          },
+          "promptHash": "5f8f531e69f79733b55d8b76ef5b7536107576f6cbc804cb8dd1f2b755a98d5e",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_151510_900b336e-a875-44e7-93ac-6694f8e3a440.png",
+          "medias": [
+            {
+              "value": "80be379d-01ae-4c4e-a84c-47061fe35a4b",
+              "role": "image_references"
+            },
+            {
+              "value": "577c5994-a49f-487d-a1e9-f5fd386c7867",
+              "role": "image_references"
+            },
+            {
+              "value": "966f1950-f9ed-4b5f-87cd-2024cba16925",
+              "role": "image_references"
+            }
+          ],
+          "asset": "bd_emblem_mega_speaker",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "87959822d81ddaed8d68b6c79a5b35ffbf06d4757ee5b9761561ecb65eb88094",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 6147605
+        }
+      ]
+    },
+    {
+      "id": "bd_c07",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c07: bd_notch_icons, bd_bg_base_portrait",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "bd_notch_icons.c1",
+          "index": 0,
+          "job_id": "c11954bf-f5f4-4dd4-83e1-080e100ffc0e",
+          "status": "completed",
+          "template": "emblem.txt#C",
+          "vars": {
+            "ICONS": "a gold-capped teal alligator fang icon; a small gold jukebox glyph with an arched top; a small hot-pink speaker stack glyph wearing a gold crown",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#0000FF"
+          },
+          "promptHash": "443719ff5d583fb11a0dddcdfc0376ae30c738f7fe80e8100407be42abf02479",
+          "resolution": "2k",
+          "aspect_ratio": "16:9",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_152522_c11954bf-f5f4-4dd4-83e1-080e100ffc0e.png",
+          "medias": [
+            {
+              "value": "61232bf0-67d9-47b7-b32f-af5e587e4c31",
+              "role": "image_references"
+            },
+            {
+              "value": "966f1950-f9ed-4b5f-87cd-2024cba16925",
+              "role": "image_references"
+            },
+            {
+              "value": "2b480e0e-1d77-4a61-a903-399dcbc2f2ce",
+              "role": "image_references"
+            }
+          ],
+          "asset": "bd_notch_icons",
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "a83ce6010f0342fca46fbbb2b5648902d4aa834c1e5e62035c6b265227752f9d",
+          "width": 2752,
+          "height": 1536,
+          "bytes": 5687184
+        },
+        {
+          "name": "bd_bg_base_portrait.c1",
+          "index": 1,
+          "job_id": "01d29fe8-0f33-4f1c-8b74-5ec8f1d1d193",
+          "status": "completed",
+          "template": "background.txt#F",
+          "vars": {
+            "LEFT_MASS": "a shelf of glowing firefly jars",
+            "RIGHT_MASS": "a neon alligator-head sign (icon only, no letters) above a magenta booth",
+            "TOP_DETAIL": "sagging string lights, violet volumetric haze and spotlight cones",
+            "STYLE_FORMULA": "Hand-painted premium slot-game environment, painterly soft brushwork, atmospheric perspective with softer and bluer detail in the distance, rich violet-indigo and teal night palette with warm amber and magenta neon accents, cinematic lighting, high detail at the edges."
+          },
+          "promptHash": "ad4fb0c674a6a1209336f95bcfd2d9b54f07a78368f34a16eda6020ee8946b3b",
+          "resolution": "4k",
+          "aspect_ratio": "9:16",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_152523_01d29fe8-0f33-4f1c-8b74-5ec8f1d1d193.png",
+          "medias": [
+            {
+              "value": "924d3637-ba19-46de-9384-7260679fa353",
+              "role": "image_references"
+            }
+          ],
+          "asset": "bd_bg_base_portrait",
+          "stage": "backgrounds",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "74accac017134bb731716f0d85d342d8e5273b6e70e651303fe3d41b7b8b0a35",
+          "width": 3072,
+          "height": 5504,
+          "bytes": 21605965
         }
       ]
     }

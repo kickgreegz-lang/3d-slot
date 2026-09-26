@@ -5,6 +5,9 @@
 Gates asserted (art bible §10): zero key-tinted edge pixels (on black, on white, and in the
 straight-alpha texels), alpha IoU vs ground truth > 0.98 at master and canvas resolution,
 360x360 canvas with the content at cellScale x 300 px, centred; straight alpha; idempotent.
+keyUniform (ART_PLAN): --key auto measures the key (an olive background the prompt asked to be
+#00FF00 mattes on the olive), fails loudly (exit 1) on a non-uniform background and on
+--max-key-drift; on the real D_H1 raw when it has been downloaded (pnpm gen:hf-ingest).
 Scratch: art/_work/test-matte/ (gitignored).
 """
 from __future__ import annotations
@@ -207,6 +210,125 @@ class MatteTests(unittest.TestCase):
         r = run(MATTE / "outline_matte.py", d / "art.png", d / "out_ext.png", "--key", "FF00FF", "--content-px", "300",
                 "--alpha-from", ext, "--qa-dir", d / "qa_ext")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+
+class MeasuredKeyTests(unittest.TestCase):
+    """--key auto = measured key + keyUniform gate (the model does not always obey the requested hex)."""
+
+    OLIVE = "95C445"    # what ab2/D_H1 came back on instead of #00FF00
+
+    @classmethod
+    def setUpClass(cls):
+        cls.d = WORK / "measured"
+        shutil.rmtree(cls.d, ignore_errors=True)
+        r = run(MATTE / "make_synthetic.py", cls.d / "olive", "--key", cls.OLIVE, "--palette", "gold", "--size", "640")
+        assert r.returncode == 0, r.stderr
+
+    def test_olive_key_measured(self):
+        d = self.d / "olive"
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "out.png", "--content-px", "300", "--expect-key", "00FF00",
+                "--emit-master", d / "master.png", "--qa-dir", d / "qa")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("warning: the background measures #95C445", r.stderr)
+        qa = json.loads((d / "qa" / "qa.json").read_text())
+        k = qa["keyUniform"]
+        self.assertEqual((k["mode"], k["key"], k["uniform"], k["passed"], k["chroma"]), ("measured", "#95C445", True, True, False))
+        self.assertEqual(k["requested"], "#00FF00")
+        self.assertGreater(k["drift"], 150)
+        self.assertLess(qa["matte"]["keyLikeFgFraction"], 0.01)       # gold stays clear of the olive
+        gt = np.asarray(Image.open(d / "gt_alpha.png"), np.float32) / 255.0
+        rgb, m = rgba(d / "master.png")
+        self.assertGreater(ml.iou(m, gt), 0.98)
+        rgb, a = rgba(d / "out.png")
+        key = ml.parse_hex(self.OLIVE)
+        self.assertEqual(ml.halo_report(rgb, a, key)["keyTintedEdgePx"], 0)
+        vis = a > 0.05
+        self.assertEqual(int(np.count_nonzero(vis & (np.linalg.norm(rgb - key, axis=-1) < 0.2))), 0)
+        # the gold fill keeps its colour: the general (hue-axis) despill does not touch it
+        gtj = json.loads((d / "gt.json").read_text())
+        tf = qa["transform"]
+        px, py = gtj["baseProbe"]
+        cx, cy = int(round((px - tf["srcOrigin"][0]) * tf["scale"])), int(round((py - tf["srcOrigin"][1]) * tf["scale"]))
+        self.assertLess(float(np.abs(rgb[cy - 2:cy + 3, cx - 2:cx + 3] - ml.parse_hex("FFC629")).max()), 3 / 255)
+
+    def test_spill_axis_for_non_chroma_keys(self):
+        olive = ml.parse_hex(self.OLIVE)
+        self.assertFalse(ml.is_chroma_key(olive))
+        self.assertTrue(all(ml.is_chroma_key(ml.parse_hex(h)) for h in ("00FF00", "FF00FF", "0000FF", "F530F6", "06FB25")))
+        cols = np.array([olive, ml.parse_hex("FFC629"), ml.parse_hex("E2861A"), [0, 0, 0], [1, 1, 1]], np.float32)
+        s = ml.spill(cols, olive)
+        self.assertGreater(s[0], 0.3)                                   # the key itself
+        self.assertTrue(np.all(s[1:] < 24 / 255 + 0.12), s)             # gold, deep gold, ink, white
+        self.assertTrue(np.all(np.abs(s[3:]) < 1e-6))
+        with self.assertRaises(ValueError):
+            ml.key_axis(ml.parse_hex("808080"))
+
+    def test_non_uniform_background_fails_loudly(self):
+        d = self.d / "gradient"
+        d.mkdir(parents=True, exist_ok=True)
+        rgb = np.asarray(Image.open(self.d / "olive" / "art.png").convert("RGB")).astype(np.float32)
+        h, w = rgb.shape[:2]
+        ramp = np.linspace(-60, 60, w, dtype=np.float32)[None, :, None]    # a lit/vignetted "key"
+        bg = np.linalg.norm(rgb - ml.parse_hex(self.OLIVE) * 255, axis=-1) < 12
+        rgb = np.where(bg[..., None], np.clip(rgb + ramp, 0, 255), rgb)
+        Image.fromarray(rgb.astype(np.uint8)).save(d / "art.png")
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "out.png", "--content-px", "300", "--qa-dir", d / "qa")
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("keyUniform FAILED", r.stderr)
+        self.assertFalse((d / "out.png").exists())
+        qa = json.loads((d / "qa" / "qa.json").read_text())
+        self.assertFalse(qa["passed"])
+        self.assertFalse(qa["keyUniform"]["uniform"])
+        # a forced key skips the gate (operator's call) and says so in the report
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "out.png", "--content-px", "300", "--key", self.OLIVE,
+                "--qa-dir", d / "qa_forced", "--no-strict")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertTrue(json.loads((d / "qa_forced" / "qa.json").read_text())["keyUniform"]["skipped"])
+
+    def test_max_key_drift(self):
+        d = self.d / "olive"
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "drift.png", "--content-px", "300", "--expect-key", "00FF00",
+                "--max-key-drift", "60", "--qa-dir", d / "qa_drift")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("from the requested #00FF00", r.stderr)
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "drift.png", "--content-px", "300", "--expect-key", "95C445",
+                "--max-key-drift", "10", "--qa-dir", d / "qa_drift")
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_white_background_is_not_a_key(self):
+        # sym_W_rig of batch c03 came back on flat white: uniform, but not keyable -> fail loudly
+        d = self.d / "white"
+        r = run(MATTE / "make_synthetic.py", d, "--key", "FFFFFF", "--palette", "teal", "--size", "320")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "out.png", "--content-px", "150", "--qa-dir", d / "qa")
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("not a colour key", r.stderr)
+        k = json.loads((d / "qa" / "qa.json").read_text())["keyUniform"]
+        self.assertEqual((k["uniform"], k["keyable"], k["passed"]), (True, False, False))
+
+    def test_forced_wrong_key_warns(self):
+        d = self.d / "olive"
+        r = run(MATTE / "outline_matte.py", d / "art.png", d / "forced.png", "--content-px", "300", "--key", "00FF00",
+                "--qa-dir", d / "qa_forced", "--no-strict")
+        self.assertIn("but the background measures #95C445", r.stderr)
+
+    def test_real_d_h1_raw(self):
+        raw = REPO / "art" / "_raw" / "D_H1" / "v01" / "raw.png"
+        if not raw.exists():
+            self.skipTest("art/_raw/D_H1/v01/raw.png not downloaded (pnpm gen:hf-ingest --job D_H1)")
+        d = self.d / "D_H1"
+        r = run(MATTE / "outline_matte.py", raw, d / "sym_H1.png", "--symbol", "H1", "--expect-key", "00FF00",
+                "--emit-master", d / "master.png", "--qa-dir", d / "qa")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        qa = json.loads((d / "qa" / "qa.json").read_text())
+        k = qa["keyUniform"]
+        self.assertTrue(k["uniform"])
+        self.assertLess(np.linalg.norm(ml.parse_hex(k["key"]) - ml.parse_hex(self.OLIVE)) * 255, 8)
+        self.assertEqual(qa["halo"]["keyTintedEdgePx"], 0)
+        _, m = rgba(d / "master.png")
+        self.assertEqual(float(m[450, 1085]), 0.0)                     # the handle opening is keyed out
+        self.assertEqual(float(m[1100, 1024]), 1.0)                    # the cassette door is opaque
+        self.assertEqual(float(m[:8].max() + m[-8:].max()), 0.0)
 
 
 class VariantTests(unittest.TestCase):

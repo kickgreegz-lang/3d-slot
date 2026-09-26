@@ -1,0 +1,69 @@
+{
+ "$comment": "Raw cuts of the approved sym_W_parts sheet (bd_c04), NOT yet registered to master_rig_1024.png and not the Spine parts.json (that is the split stage, PIPELINE 3.1). tooth = tooth_main + tooth_stripe merged along the gold divider; chain -> phys_chain_1..4 mesh; cap_underside is drawn from below and will not register: cut the cap from master_rig instead (fully visible there).",
+ "approvedRow": "sym_W_parts",
+ "jobId": "a53e975f-ed6c-4a9b-82a6-8b3c4d97b56a",
+ "sheet": "art/_work/sym_W_parts/sheet.png",
+ "matteRow": "sheet_matte.matte.be6ac1a0",
+ "pieces": {
+  "chain": {
+   "file": "chain.png",
+   "sheetBBox": [
+    598,
+    63,
+    720,
+    498
+   ],
+   "scale": 0.92,
+   "size": [
+    662,
+    458
+   ],
+   "row": "sym_w_parts_chain.cut.e13afcf2"
+  },
+  "tooth_main": {
+   "file": "tooth_main.png",
+   "sheetBBox": [
+    1426,
+    68,
+    1109,
+    1051
+   ],
+   "scale": 0.92,
+   "size": [
+    1020,
+    967
+   ],
+   "row": "sym_w_parts_tooth_main.cut.54ca5ed0"
+  },
+  "tooth_stripe": {
+   "file": "tooth_stripe.png",
+   "sheetBBox": [
+    1417,
+    917,
+    1098,
+    574
+   ],
+   "scale": 0.92,
+   "size": [
+    1010,
+    528
+   ],
+   "row": "sym_w_parts_tooth_stripe.cut.257fba39"
+  },
+  "cap_underside": {
+   "file": "cap_underside.png",
+   "sheetBBox": [
+    239,
+    494,
+    1035,
+    949
+   ],
+   "scale": 0.92,
+   "size": [
+    952,
+    873
+   ],
+   "row": "sym_w_parts_cap_underside.cut.b9173b06"
+  }
+ }
+}

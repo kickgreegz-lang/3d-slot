@@ -1,0 +1,122 @@
+{
+ "": "Wild pieces for the sym_W rig (ANIMATION_SET 2.6): ribbon, badge_t1..t5, clamp, clamp_open, badge_flame. Cut from the approved sym_W_pieces sheet (bd_c03 c2) and, for the clamps, the c1 sheet; tiers t1/t2/t4/t5 are hue maps of badge_t3 (DESIGN 9). clamp_R = mirrored clamp at runtime. Fit the badge to 192x120 units, centred 129 units below root. Masters, not atlas-ready: scale at pack time.",
+ "approvedRow": "sym_W_pieces",
+ "pieces": {
+  "ribbon": {
+   "jobId": "feca48d6-a643-44a5-85ac-a94f0f8074c0",
+   "sheet": "art/_work/sym_W_pieces/sheet_v02.png",
+   "sheetBBox": [
+    82,
+    301,
+    1170,
+    497
+   ],
+   "scale": 0.875,
+   "size": [
+    1024,
+    435
+   ],
+   "row": "sym_w_ribbon.cut.96c81577"
+  },
+  "badge_t3": {
+   "jobId": "feca48d6-a643-44a5-85ac-a94f0f8074c0",
+   "sheet": "art/_work/sym_W_pieces/sheet_v02.png",
+   "sheetBBox": [
+    243,
+    882,
+    813,
+    475
+   ],
+   "scale": 0.875,
+   "size": [
+    711,
+    416
+   ],
+   "row": "sym_w_badge_t3.cut.9383b485"
+  },
+  "badge_flame": {
+   "jobId": "feca48d6-a643-44a5-85ac-a94f0f8074c0",
+   "sheet": "art/_work/sym_W_pieces/sheet_v02.png",
+   "sheetBBox": [
+    1386,
+    77,
+    594,
+    310
+   ],
+   "scale": 0.875,
+   "size": [
+    520,
+    271
+   ],
+   "row": "sym_w_badge_flame.cut.87420704"
+  },
+  "clamp": {
+   "jobId": "3c70a485-0c96-4faa-a0a5-98f2d916d029",
+   "sheet": "art/_work/sym_W_pieces/sheet_v01.png",
+   "sheetBBox": [
+    379,
+    792,
+    835,
+    633
+   ],
+   "scale": 1.0,
+   "size": [
+    835,
+    633
+   ],
+   "row": "sym_w_clamp.cut.8ef8ed1c"
+  },
+  "clamp_open": {
+   "jobId": "3c70a485-0c96-4faa-a0a5-98f2d916d029",
+   "sheet": "art/_work/sym_W_pieces/sheet_v01.png",
+   "sheetBBox": [
+    1450,
+    794,
+    933,
+    631
+   ],
+   "scale": 1.0,
+   "size": [
+    933,
+    631
+   ],
+   "row": "sym_w_clamp_open.cut.9c54f4d5"
+  },
+  "badge_t1": {
+   "from": "badge_t3",
+   "target": "#35F2E0",
+   "size": [
+    711,
+    416
+   ],
+   "row": "sym_w_badge_t1.tier.30c5d27e"
+  },
+  "badge_t2": {
+   "from": "badge_t3",
+   "target": "#A8F03A",
+   "size": [
+    711,
+    416
+   ],
+   "row": "sym_w_badge_t2.tier.6f60f7e0"
+  },
+  "badge_t4": {
+   "from": "badge_t3",
+   "target": "#FF8A3D",
+   "size": [
+    711,
+    416
+   ],
+   "row": "sym_w_badge_t4.tier.9dd16b7a"
+  },
+  "badge_t5": {
+   "from": "badge_t3 + badge_flame",
+   "target": "#FF3FA8",
+   "size": [
+    711,
+    614
+   ],
+   "row": "sym_w_badge_t5.tier.2b6ddc5e"
+  }
+ }
+}

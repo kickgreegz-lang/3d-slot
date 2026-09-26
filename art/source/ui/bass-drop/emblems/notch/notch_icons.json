@@ -1,0 +1,54 @@
+{
+ "$comment": "Groove Meter notch icons (ui_groove_meter notch_1..6, ANIMATION_SET 3): notch_w (W fang), notch_jj (jukebox), notch_mm (crowned speaker stack). States _off/_next/_lit/_spent are made in code; icons carry no text. Cut from the approved bd_notch_icons sheet (bd_c07) after the --dark 110 matte + outline despill.",
+ "approvedRow": "bd_notch_icons",
+ "jobId": "c11954bf-f5f4-4dd4-83e1-080e100ffc0e",
+ "sheet": "art/_work/c0107/bd_notch_icons/matte_fixed.png",
+ "matteRow": "bd_notch_icons_full.matte.ba9168c6",
+ "pieces": {
+  "notch_w": {
+   "file": "notch_w.png",
+   "sheetBBox": [
+    144,
+    391,
+    703,
+    769
+   ],
+   "scale": 1.0,
+   "size": [
+    703,
+    769
+   ],
+   "row": "bd_notch_icons_notch_w.cut.3fd64287"
+  },
+  "notch_jj": {
+   "file": "notch_jj.png",
+   "sheetBBox": [
+    1027,
+    366,
+    699,
+    801
+   ],
+   "scale": 1.0,
+   "size": [
+    699,
+    801
+   ],
+   "row": "bd_notch_icons_notch_jj.cut.887d73ab"
+  },
+  "notch_mm": {
+   "file": "notch_mm.png",
+   "sheetBBox": [
+    1891,
+    364,
+    728,
+    780
+   ],
+   "scale": 1.0,
+   "size": [
+    728,
+    780
+   ],
+   "row": "bd_notch_icons_notch_mm.cut.dbd0694a"
+  }
+ }
+}

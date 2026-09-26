@@ -1,6 +1,8 @@
 import { gsap } from 'gsap';
 import { BitmapText, Container, Sprite, Texture } from 'pixi.js';
+import { reducedMotion } from '../../../fx/motion';
 import { Plate } from '../../../present/common/Plate';
+import type { Title } from '../../../present/common/Title';
 import { uiBus } from '../../../ui/bus';
 import { buttonPlate, checkBox } from './art/chrome';
 import { screenArt, useBaked } from './art/ScreenArt';
@@ -316,4 +318,26 @@ export const onScreenKey = (fn: (key: 'confirm' | 'escape') => void): (() => voi
   };
   window.addEventListener('keydown', handler);
   return () => window.removeEventListener('keydown', handler);
+};
+
+/**
+ * Whole-word title entrance on `tl` at `at` (s): every glyph shows at once and each word
+ * scales from `from` x its fitted scale to 1 x with a quick fade (reduced motion: fade only).
+ * A Spine `txt_*` slot animates its BitmapText as one object, and unlike a letter-by-letter
+ * pop any frame mid-animation still reads as clean words (checked on slow, stepped captures).
+ */
+export const wordSlam = (tl: gsap.core.Timeline, title: Title, at: number, dur: number, from = 1.35): void => {
+  const still = reducedMotion();
+  for (const g of title.glyphs) {
+    g.sprite.alpha = 1;
+    g.sprite.scale.set(1);
+    g.dx = g.dy = 0;
+  }
+  for (const w of title.words) {
+    const base = w.scale.x;
+    w.alpha = 0;
+    w.scale.set(base * (still ? 1 : from));
+    tl.to(w, { alpha: 1, duration: Math.min(dur, 0.09) }, at);
+    if (!still) tl.to(w.scale, { x: base, y: base, duration: dur, ease: 'back.out(2.2)' }, at);
+  }
 };

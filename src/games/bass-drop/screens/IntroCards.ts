@@ -17,7 +17,7 @@ import { clamp, jukebox, speakerStack, woofer } from './art/emblems';
 import { screenArt, useBaked } from './art/ScreenArt';
 import { SCR_NUM, bodyText, fitText } from './fonts';
 import { HOT_PINK, type IntroRects, JAM_GOLD, SCREENS_TIMING, centreOf } from './look';
-import { PressPrompt, Toggle } from './ui';
+import { PressPrompt, Toggle, wordSlam } from './ui';
 
 type CardKey = 'meter' | 'jukeJam' | 'megaMix';
 
@@ -442,19 +442,8 @@ export class IntroCards {
       tl.call(() => onLand(i), undefined, land);
       const title = c.title;
       if (title) {
-        // the title slams in as whole words on card_land (never letter by letter: any frame
-        // mid-animation still reads as a clean word), settled 260 ms after the land
-        for (const g of title.glyphs) {
-          g.sprite.alpha = 1;
-          g.sprite.scale.set(1);
-          g.dx = g.dy = 0;
-        }
-        for (const w of title.words) {
-          w.alpha = 0;
-          w.scale.set(still ? 1 : I.titleFrom);
-          tl.to(w, { alpha: 1, duration: sec(90) }, land);
-          if (!still) tl.to(w.scale, { x: 1, y: 1, duration: sec(I.titleSlam), ease: 'back.out(2.2)' }, land);
-        }
+        // the title slams in as whole words on card_land, settled titleSlam ms after the land
+        wordSlam(tl, title, land, sec(I.titleSlam), I.titleFrom);
       }
     });
     // logo 0.6 -> 1.05 -> 1.0 over f6 - f18

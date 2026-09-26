@@ -12,6 +12,7 @@ import { cracks, ribbon, shard } from './art/chrome';
 import { jukebox, speakerStack } from './art/emblems';
 import { screenArt, useBaked } from './art/ScreenArt';
 import { HOT_PINK, JAM_GOLD, SCREENS_TIMING, SKINS } from './look';
+import { wordSlam } from './ui';
 
 export type UpgradeEvent = 'crack' | 'shatter' | 'title_hit' | 'count_hit';
 
@@ -59,7 +60,6 @@ export class UpgradeBanner {
   private add: Title | null = null;
   private sub: Title | null = null;
   private tl: gsap.core.Timeline | null = null;
-  private extra: Array<gsap.core.Tween | gsap.core.Timeline> = [];
   private flying = false;
 
   constructor() {
@@ -186,10 +186,7 @@ export class UpgradeBanner {
     this.ribbonHolder.scale.set(0, 1);
     tl.to(this.ribbonHolder.scale, { x: 1, duration: ms(200), ease: 'back.out(1.7)' }, hit);
     const title = this.title;
-    if (title) {
-      for (const g of title.glyphs) g.sprite.alpha = 0;
-      tl.call(() => void this.track(title.popIn({ duration: ms(300), stagger: ms(26), lineDelay: 0 })), undefined, hit + ms(40));
-    }
+    if (title) wordSlam(tl, title, hit + ms(40), ms(260));
     // "+4" and FREE SPINS slam (f34)
     for (const t of [this.add, this.sub]) {
       if (!t) continue;
@@ -203,12 +200,6 @@ export class UpgradeBanner {
     for (const t of [title, this.add, this.sub]) if (t) tl.to(t, { waveAmp: 5, duration: ms(700) }, ms(U.in));
     this.tl = followSpeed(tl);
     return tl;
-  }
-
-  private track<A extends gsap.core.Tween | gsap.core.Timeline>(a: A): A {
-    followSpeed(a);
-    this.extra.push(a);
-    return a;
   }
 
   /** Per frame (game dt): shard ballistics + title waves. */
@@ -244,8 +235,6 @@ export class UpgradeBanner {
   clear(): void {
     this.tl?.kill();
     this.tl = null;
-    for (const t of this.extra) t.kill();
-    this.extra = [];
     for (const t of [this.title, this.add, this.sub]) t?.destroy();
     this.title = this.add = this.sub = null;
     this.flying = false;

@@ -12,7 +12,7 @@ import { ribbon } from './art/chrome';
 import { jukebox, speakerStack } from './art/emblems';
 import { type Baked, screenArt, useBaked } from './art/ScreenArt';
 import { type FeatureSkin, HOT_PINK, JAM_GOLD, SCREENS_TIMING, SKINS } from './look';
-import { PressPrompt } from './ui';
+import { PressPrompt, wordSlam } from './ui';
 
 export type BannerMode = 'intro' | 'outro';
 /** Timeline events of the rig (ANIMATION_SET §6.3 / §6.5); the owner turns them into shake, FX and SFX. */
@@ -207,16 +207,13 @@ export class FeatureBanner {
     tl.set(this.emblemHolder.scale, { x: 1.16, y: 0.8 }, hit);
     tl.to(this.emblemHolder.scale, { x: 1, y: 1, duration: ms(420), ease: 'elastic.out(1.1, 0.4)' }, hit);
     tl.call(() => onEvent('title_hit'), undefined, hit);
-    // banner unfurls (f10 - f18), title letters pop on it
+    // banner unfurls (f10 - f18), the title slams on it
     const bFrom = T ? ms(T.bannerFrom) : hit;
     const bTo = T ? ms(T.bannerTo) : hit + ms(270);
     this.ribbonHolder.scale.set(0, 1);
     tl.to(this.ribbonHolder.scale, { x: 1, duration: bTo - bFrom, ease: 'back.out(1.7)' }, bFrom);
     const title = this.title;
-    if (title) {
-      for (const g of title.glyphs) g.sprite.alpha = 0;
-      tl.call(() => void this.extraTween(title.popIn({ duration: ms(360), stagger: ms(34), lineDelay: 0 })), undefined, bFrom + ms(60));
-    }
+    if (title) wordSlam(tl, title, bFrom + ms(60), ms(300));
     if (this.mode === 'intro' && T) {
       const count = this.count;
       const sub = this.sub;
@@ -229,18 +226,12 @@ export class FeatureBanner {
         tl.to(count.scale, { x: 1.08, y: 0.92, duration: ms(60), yoyo: true, repeat: 1, ease: 'sine.out' }, cHit);
       }
       tl.call(() => onEvent('count_hit'), undefined, cHit);
-      if (sub) {
-        for (const g of sub.glyphs) g.sprite.alpha = 0;
-        tl.call(() => void this.extraTween(sub.popIn({ duration: ms(380), stagger: ms(30), lineDelay: 0 })), undefined, cHit + ms(60));
-      }
+      if (sub) wordSlam(tl, sub, cHit + ms(60), ms(300));
       tl.call(() => onEvent('shine'), undefined, ms(T.shine));
       tl.to({}, { duration: ms(T.in) - ms(T.shine) }, ms(T.shine));
     } else {
       const sub = this.sub;
-      if (sub) {
-        for (const g of sub.glyphs) g.sprite.alpha = 0;
-        tl.call(() => void this.extraTween(sub.popIn({ duration: ms(380), stagger: ms(30), lineDelay: 0 })), undefined, hit + ms(120));
-      }
+      if (sub) wordSlam(tl, sub, hit + ms(120), ms(300));
       tl.to(this.amount, { alpha: 1, duration: ms(200) }, hit + ms(200));
       tl.to({}, { duration: ms(O.in) - hit }, hit);
     }

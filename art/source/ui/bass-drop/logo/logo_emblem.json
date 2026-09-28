@@ -1,0 +1,13 @@
+{
+ "$comment": "logo_bd emblem, no letters (tools/bdart/logo.py). textBox = the blank banner face [x, y, w, h] in image px, where the typeset SWAMP FUNK / BASS DROP word-mark goes (typographer, vector; trademark search before release). Region sizes: landscape logo 428 x 236 design px, intro 400 x 270.",
+ "size": [
+  960,
+  855
+ ],
+ "textBox": [
+  110,
+  510,
+  738,
+  260
+ ]
+}

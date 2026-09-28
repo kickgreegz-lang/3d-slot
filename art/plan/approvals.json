@@ -128,10 +128,11 @@
    "note": "bd_c08 (raw v01, 6336x2688): the adopted v2 design re-made in formula D: backwards black cap with pink brim/strap, open hot-pink lightning bowling shirt over a black tank, black cargo shorts, over-ear headphones around the neck, gold chain with a vinyl pendant, pink toe pads; clean single-weight outline, painterly shading, thin cool rim. Eyes fully open, golden with narrow horizontal pupils, and a toothy grin: no meme-frog read. Four fingers, three toes, adult proportions (head+cap ~0.25 of height, head alone ~0.21). The 3/4 and profile views face screen-RIGHT (the prompt said 'left'); identity is what this row is for, the rig master sets the facing. Key #0406F0 (measured), uniform (border p95 5.4, drift 16.6); outline ink is blue-tinted (#000033): despill the ink band after the matte."
   },
   "chr_gumbo_rig_master": {
-   "job_id": "156d6517-b845-4ab2-a618-66747120bb5b",
+   "job_id": "44daef4c-bd59-4532-9b4d-1abbac690d85",
    "by": "Claude (art director)",
    "date": "2026-09-26",
-   "note": "bd_c08 c2 (raw v02, 1856x2304): same Gumbo as the D sheet (heavy-lidded yellow eyes, gold teeth, toothpick, maroon tank, belted jeans, rubber boots), neutral rig pose, long tail flat on the ground behind the far leg and clear of both legs, arms away from the torso. BOTH candidates came back facing screen-LEFT (prompt: right); a retry repeats the same prompt, so the rig uses the master mirrored (the part sheets reference this raw and are mirrored the same way; the raw's key light reads upper right, so the mirrored rig reads upper left as the bible wants). Head ~0.21 of height. Key #FD15FA uniform (p95 15.3, drift 21.7); purple-tinted outline ink (halo 9146) despilled in the ink band. c1 (44daef4c, v01) rejected: tail curls up into the far hand's grip, worse for the tail spring chain; otherwise equivalent."
+   "note": "bd_c08 c2 (raw v02, 1856x2304): same Gumbo as the D sheet (heavy-lidded yellow eyes, gold teeth, toothpick, maroon tank, belted jeans, rubber boots), neutral rig pose, long tail flat on the ground behind the far leg and clear of both legs, arms away from the torso. BOTH candidates came back facing screen-LEFT (prompt: right); a retry repeats the same prompt, so the rig uses the master mirrored (the part sheets reference this raw and are mirrored the same way; the raw's key light reads upper right, so the mirrored rig reads upper left as the bible wants). Head ~0.21 of height. Key #FD15FA uniform (p95 15.3, drift 21.7); purple-tinted outline ink (halo 9146) despilled in the ink band. c1 (156d6517, v01) rejected: tail curls up into the far hand's grip, worse for the tail spring chain; otherwise equivalent.",
+   "correction": "2026-09-28, Claude (art director, phase C review): job_id corrected from 156d6517 to 44daef4c. The ledger (bd_c08: c1 = 156d6517, c2 = 44daef4c), the manifest raw rows (raw.v01 = 156d6517, raw.v02 = 44daef4c, sha256-verified) and the image content (v02 = tail flat on the ground; v01 = tail curled into the far hand) agree: the picked image, and the one the rig is cut from (art/source/mascots/gumbo/spine2d/cut.yaml), is raw v02 = 44daef4c. The earlier entry swapped the two ids. Consequence: batch bd_c10 was specced from the wrong id, so the four Gumbo part sheets were generated with the rejected curled-tail master as their view reference (already paid; the used sheets are face / hands / props, placed by point pairs, so the rig is unaffected)."
   },
   "chr_croak_rig_master": {
    "job_id": "6b18395f-3064-4813-97df-b7843827ba3c",
@@ -180,6 +181,62 @@
    "by": "Claude (art director)",
    "date": "2026-09-26",
    "note": "bd_c11 (raw v01), NBP @2k. Olive key uniform. Big round surprised eyes that also bulge the head outline near the near eye (IoU 0.996); the model also opened the mouth, which is NOT used: only the eye region is cut as the 'wide' patch (bass_react / win)."
+  },
+  "chr_gumbo_parts_face": {
+   "job_id": "10ed3cfd-d540-49d1-a224-e1ceb938daf8",
+   "by": "Claude (art director)",
+   "date": "2026-09-28",
+   "note": "bd_c10 (raw v01, 5504x3072), key #F407F3 measured (requested #FF00FF, border p95 5.4, uniform). Same Gumbo, formula D finish, no text. The model drew whole heads per mouth shape instead of separate features, so it cannot register as cut-outs: the rig uses only the ROAR head's mouth interior (tongue, teeth rows, gold tooth; warped by the jaw hinge and snout tip onto the mirrored rig master and clipped to the jaw gap at 3/9/18/28 deg = mouth closed_pick/grin/open/roar). Eye states are painted from the master's own eyes (identical size and centre), not taken from this sheet (its eyes are a different angle)."
+  },
+  "chr_gumbo_parts_hands": {
+   "job_id": "2d441cd7-a63b-42f4-bce0-f36bd749ec45",
+   "by": "Claude (art director)",
+   "date": "2026-09-28",
+   "note": "bd_c10 (raw v01, 2528x1696), key #FD20F9 measured (border p95 14.4, uniform). Four clawed fingers per hand like the master, olive scales, same outline weight; every hand ends in a wrist cap; no text. Used: near fist + point (comps 2, 7), far fist + point + lean (comps 4, 6, 9), each placed by wrist and knuckle points onto the rig master's wrist landmark and colour-matched to the master hand (strength 0.9). The setup (open) hands are the master's own."
+  },
+  "chr_gumbo_parts_props": {
+   "job_id": "51942690-c26b-4418-bea2-5951550f3099",
+   "by": "Claude (art director)",
+   "date": "2026-09-28",
+   "note": "bd_c10 (raw v01, 2528x1696), key #FC2FF9 measured (border p95 9.1, uniform). Red cooler body with the lid off (comp 2) and the white lid (comp 3) are clean, closed outlines, no text or logo; used as cooler_body / cooler_lid, affine-placed at hip height at the near side under the slam fist. The toothpick (comp 4) is not used: the master's own toothpick is cut from the mouth."
+  },
+  "chr_croak_parts_face": {
+   "job_id": "acb45dd4-0f9f-40a5-92e6-82d0e34c3d41",
+   "by": "Claude (art director)",
+   "date": "2026-09-28",
+   "note": "bd_c10 (raw v01, 5504x3072), key #0304EE measured (border p95 6.2, uniform). Same Croak, golden eyes with slit pupils, formula D. Mouths came back as whole lower faces (frontal), usable as swaps: smile (comp 12), open (13) and O (14) are warped by the mouth corners onto the master grin and clipped below the master's upper-lip line (clipSoft 2.5); the rest mouth (closed) is the master grin itself. No meme-frog read in any shape (eyes stay open and round). Eye states are painted from the master eyes (this sheet's eyes are frontal)."
+  },
+  "chr_croak_parts_hands": {
+   "job_id": "e6c3c2d4-5280-4a0e-b6b7-f336483f3651",
+   "by": "Claude (art director)",
+   "date": "2026-09-28",
+   "note": "bd_c10 (raw v01, 2528x1696), key #0406FD measured (border p95 7.5, uniform). Four fingers with pink pads in every pose, wrist caps, no text. Used: near point / fist / fader (comps 4, 7, 8; the fader knob's stem is erased, the booth draws the fader), far point / fist / scratch / press (comps 5, 6, 3, 10). The scratch hand's record (comp 9) is not used (the booth's turntable is its own rig). Colour-matched to the master hands (strength 0.8)."
+  },
+  "chr_croak_parts_props": {
+   "job_id": "95f4515e-9f0c-4ac6-893b-b5b0301c48e4",
+   "by": "Claude (art director)",
+   "date": "2026-09-28",
+   "note": "bd_c10 (raw v01, 2528x1696), key #0305FD measured (border p95 8.1, uniform). Clean props, no text or logos. Used: the gold stage mic (comp 6) as the hidden mic slot for fs_trigger. Not used: cap, headphones, cable, chain (the rig keeps the master's own cap, cups and chain, which match the setup pose exactly; the master has no cable, so the rig has no cable slot)."
+  }
+ },
+ "notApproved": {
+  "chr_gumbo_parts_body": {
+   "jobs": [
+    "b369e03b-aabb-4ce2-9efe-65d53bddd0af",
+    "2d7567c9-9b84-42a8-b926-9db679cbee9a"
+   ],
+   "by": "Claude (art director)",
+   "date": "2026-09-28",
+   "note": "bd_c10 c1+c2 (raw v02, v01; keys #F51BF6 / #F62FF7 uniform). Formula D and identity are right, but both sheets RE-DRAW the body in other views (frontal torso and tank top, straight limbs, a curled or straight tail), so no piece registers onto the rig master (the same failure tools/split reported on sym_W_parts). Not used and not regenerated (a retry repeats the redraw, 8+ credits for nothing): the setup pose is cut from the rig master itself (art/source/mascots/pipeline/mastercut.py) and the hidden areas (armpit, tail root, crotch, far upper arm) are filled and outlined there."
+  },
+  "chr_croak_parts_body": {
+   "jobs": [
+    "3ff26048-250d-47d8-a632-ed3a45c6d009",
+    "85485027-e783-46a8-adcf-7a1cdf2c9fa8"
+   ],
+   "by": "Claude (art director)",
+   "date": "2026-09-28",
+   "note": "bd_c10 c1+c2 (raw v01, v02; keys #060BF1 / #0505EE uniform). Identity right, but re-drawn: frontal shirt and shorts, limbs in other poses, and c2 adds a whole head with cap and a second chain on the tank. Nothing registers on the rig master. Not used and not regenerated; the master cut supplies every body piece."
   }
  }
 }

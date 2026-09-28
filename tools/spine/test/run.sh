@@ -16,7 +16,8 @@ for arg in "$@"; do
 done
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../../.." && pwd)"
-PY="${PYTHON:-python3}"
+# default: the tools venv when it exists (it has shapely / PyYAML / Pillow from tools/requirements-spine.txt)
+if [ -x "$REPO/tools/.venv/bin/python" ]; then PY="${PYTHON:-$REPO/tools/.venv/bin/python}"; else PY="${PYTHON:-python3}"; fi
 export PYTHONDONTWRITEBYTECODE=1
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 cd "$REPO"

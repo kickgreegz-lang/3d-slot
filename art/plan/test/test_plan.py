@@ -232,19 +232,16 @@ class PlanTests(unittest.TestCase):
 
     def test_spec_export_and_ingest_compat(self):
         WORK.mkdir(parents=True, exist_ok=True)
-        empty = WORK / "approvals_empty.json"
-        empty.write_text('{"approvals": {}}\n')
-        r = subprocess.run([PY, str(PLAN_DIR / "build_plan.py"), "spec", "--batch", "c01", "--approvals", str(empty)],
-                           cwd=REPO, capture_output=True, text=True)
-        self.assertEqual(r.returncode, 3, r.stderr)
-        self.assertIn("sym_H2 -> sym_H1", r.stderr)
-        appr = {"approvals": {a["id"]: {"job_id": a["jobIds"][0]} for a in ANCHORS}}
-        ok = WORK / "approvals_anchors.json"
-        ok.write_text(json.dumps(appr))
-        r = subprocess.run([PY, str(PLAN_DIR / "build_plan.py"), "spec", "--batch", "c01", "--approvals", str(ok)],
-                           cwd=REPO, capture_output=True, text=True)
-        self.assertEqual(r.returncode, 0, r.stderr)
-        spec = json.loads(r.stdout)
+        # production has started (bd_c01 is in the real ledger and 'spec' rightly refuses it), so these checks run
+        # against the pre-production ledger: the real one without the bd_* batches
+        pre = self._pre_production_ledger()
+        code, _, err = self._spec("--batch", "c01", ledger=pre, approvals={})
+        self.assertEqual(code, 3, err)
+        self.assertIn("sym_H2 -> sym_H1", err)
+        appr = {a["id"]: {"job_id": a["jobIds"][0]} for a in ANCHORS}
+        code, out, err = self._spec("--batch", "c01", ledger=pre, approvals=appr)
+        self.assertEqual(code, 0, err)
+        spec = json.loads(out)
         self.assertEqual(spec["model"], "nano_banana_pro")
         self.assertEqual(len(spec["jobs"]), 6)
         self.assertEqual(len({j["name"] for j in spec["jobs"]}), 6)
@@ -263,6 +260,12 @@ class PlanTests(unittest.TestCase):
         plan = json.loads(out.read_text())
         for j in plan["jobs"]:
             self.assertEqual(j["promptHash"], BY_ID[j["name"].rsplit(".c", 1)[0]]["promptHash"], j["name"])
+
+    @staticmethod
+    def _pre_production_ledger() -> dict:
+        """The real ledger as it was before the Bass Drop production batches (anchors / probe / A-B rounds only)."""
+        real = json.loads(bp.LEDGER_PATH.read_text(encoding="utf-8"))
+        return {**real, "batches": [b for b in real["batches"] if not b["id"].startswith("bd_")]}
 
     def _spec(self, *args, ledger=None, approvals=None):
         """Run build_plan.cmd_spec in-process against a scratch ledger / approvals file: (exit, stdout, stderr)."""
@@ -284,7 +287,7 @@ class PlanTests(unittest.TestCase):
 
     def test_spec_rejects_bad_approvals_and_supports_retries(self):
         WORK.mkdir(parents=True, exist_ok=True)
-        real = json.loads(bp.LEDGER_PATH.read_text(encoding="utf-8"))
+        real = self._pre_production_ledger()  # bd_c01 is recorded in the real ledger since production started
         anchors = {a["id"]: {"job_id": a["jobIds"][0]} for a in ANCHORS}
         # a pick that is not a ledger job, or a job of another row (a probe1 image for sym_H1), is never sent
         code, _, err = self._spec("--batch", "c01", ledger=real, approvals={**anchors, "sym_H1": {"job_id": "00000000-0000-4000-8000-000000000000"}})

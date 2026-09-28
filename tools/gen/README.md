@@ -93,7 +93,10 @@ What ingest does for every `completed` job without a local copy:
    into `art/_raw/.incoming/<job_id>.part`, resuming with `Range` after an interruption (`--retries`, `--timeout-s`).
    The **egress-policy 403** (`x-deny-reason`, or a refused proxy CONNECT) stops at the first job, names the host
    and says to allow it in the environment's Network access settings (exit 6); a CloudFront 403/404 says the URL
-   expired: refresh it with `jobs_wait` + `record`.
+   expired: refresh it with `jobs_wait` + `record`. **Behind an agent proxy** (`HTTPS_PROXY` set, e.g. the Claude
+   Code cloud container) Node's built-in `fetch` ignores the proxy unless `NODE_USE_ENV_PROXY=1`, and the direct
+   connection gets `403 host_not_allowed` even for allowed hosts: run `NODE_USE_ENV_PROXY=1 pnpm gen:hf-ingest …`
+   (the egress message says so when it sees `HTTPS_PROXY` without it).
 3. **Verify:** PNG signature, IHDR first, every chunk CRC, IDAT, IEND (truncation); size vs the job
    (exact once the ledger knows it, else aspect within 3 % and ~1024·k px per side or long edge for `k`k);
    sha256 vs the ledger/manifest. A failure keeps the bytes as `.incoming/<job_id>.rejected` and exits 7

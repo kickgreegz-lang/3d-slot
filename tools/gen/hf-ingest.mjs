@@ -143,6 +143,10 @@ export class EgressBlocked extends GenError {
       + `  -> Ask the user to allow ${host}: cloud environment menu in the session title bar -> Edit -> Network access,\n`
       + `     add ${host} to the allowed domains (or pick a broader access level; https://code.claude.com/docs/en/claude-code-on-the-web).\n`
       + '     On your own machine or runner: allow it in your proxy/firewall. Then re-run: pnpm gen:hf-ingest\n'
+      + (process.env.HTTPS_PROXY && process.env.NODE_USE_ENV_PROXY !== '1'
+        ? '  -> HTTPS_PROXY is set but Node\'s fetch ignores it unless NODE_USE_ENV_PROXY=1: a direct connection is refused\n'
+          + '     even for allowed hosts. Try first: NODE_USE_ENV_PROXY=1 pnpm gen:hf-ingest\n'
+        : '')
       + '  Nothing was written for these jobs; they stay recorded in the ledger. Do not route around the block.', 6);
     this.host = host;
   }

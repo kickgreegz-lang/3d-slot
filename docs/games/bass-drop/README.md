@@ -6,6 +6,8 @@ The second game in the Swamp Funk world: a 6×6 cluster tumble with a **Groove M
 |---|---|
 | [DESIGN.md](DESIGN.md) | Binding game/presentation spec: mechanics, event contract, states, meter UX, bass-drop choreography, screens, layouts, mascots, audio, speed profiles, accessibility, Stake notes, QA acceptance |
 | [ANIMATION_SET.md](ANIMATION_SET.md) | Every Spine rig, flipbook and code-drawn effect: parts, animations, frames, events, budgets, contract deltas |
+| [ART_PLAN.md](ART_PLAN.md) · [STYLE_DECISION.md](STYLE_DECISION.md) | The phase-C art plan (68 rows, budget, gates) and the adopted finish (formula D + painted environment) |
+| [ART_STATUS.md](ART_STATUS.md) | Phase-C art as built: what exists and where, verdict per asset, what is missing or unfunded, clearance, and the runtime integration list |
 | [layout.json](layout.json) | Machine-readable layout rects for the 4 design spaces, plus the intro and buy screens |
 | [wireframes/](wireframes/) | SVG wireframes rendered from `layout.json` (`python3 docs/games/bass-drop/wireframes/render.py`) |
 

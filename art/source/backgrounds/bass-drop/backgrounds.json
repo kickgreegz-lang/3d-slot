@@ -1,0 +1,465 @@
+{
+ "$comment": "tools/bdart/backgrounds.py: Bass Drop background set from the two approved plates (0 credits).",
+ "outputs": {
+  "base_landscape": {
+   "path": "art/source/backgrounds/bass-drop/base_landscape.webp",
+   "size": [
+    2560,
+    1280
+   ],
+   "bytes": 220898,
+   "source": {
+    "raw": "art/_raw/ab_bg_painted/v01/raw.png",
+    "rawSize": [
+     6336,
+     2688
+    ],
+    "crop": [
+     480,
+     0,
+     5856,
+     2688
+    ],
+    "size": [
+     2560,
+     1280
+    ]
+   },
+   "row": "bg_base_landscape",
+   "rawGate": {
+    "centre": 0.3007,
+    "left": 0.2734,
+    "right": 0.2804,
+    "edges": 0.2769,
+    "darkerCentre": false,
+    "band": null
+   },
+   "grade": "calm centre: linear x(1 - 0.42 gx gy), gx full inside |x-0.5|<0.16, 0 past 0.33",
+   "darkerCentre": {
+    "centre": 0.2453,
+    "left": 0.2732,
+    "right": 0.2801,
+    "edges": 0.2766,
+    "darkerCentre": true,
+    "band": null
+   },
+   "darkerCentreReelBand": {
+    "centre": 0.258,
+    "left": 0.3067,
+    "right": 0.2848,
+    "edges": 0.2958,
+    "darkerCentre": true,
+    "band": [
+     0.14,
+     0.85
+    ]
+   },
+   "meanL": 0.2579
+  },
+  "base_landscape_neon": {
+   "path": "art/source/backgrounds/bass-drop/base_landscape_neon.webp",
+   "size": [
+    2560,
+    1280
+   ],
+   "bytes": 139028,
+   "source": {
+    "raw": "art/_raw/ab_bg_painted/v01/raw.png",
+    "rawSize": [
+     6336,
+     2688
+    ],
+    "crop": [
+     480,
+     0,
+     5856,
+     2688
+    ],
+    "size": [
+     2560,
+     1280
+    ]
+   },
+   "row": "bd_bg_base_landscape_neon",
+   "litFraction": 0.0217
+  },
+  "jukejam_landscape": {
+   "path": "art/source/backgrounds/bass-drop/jukejam_landscape.webp",
+   "size": [
+    2560,
+    1280
+   ],
+   "bytes": 182358,
+   "source": {
+    "raw": "art/_raw/ab_bg_painted/v01/raw.png",
+    "rawSize": [
+     6336,
+     2688
+    ],
+    "crop": [
+     480,
+     0,
+     5856,
+     2688
+    ],
+    "size": [
+     2560,
+     1280
+    ]
+   },
+   "row": "bd_bg_jukejam_landscape",
+   "fogMaxAlpha": 0.7,
+   "bulbDim": 0.62,
+   "darkerCentre": {
+    "centre": 0.2688,
+    "left": 0.2957,
+    "right": 0.2999,
+    "edges": 0.2978,
+    "darkerCentre": true,
+    "band": null
+   },
+   "darkerCentreReelBand": {
+    "centre": 0.2731,
+    "left": 0.3153,
+    "right": 0.2897,
+    "edges": 0.3025,
+    "darkerCentre": true,
+    "band": [
+     0.14,
+     0.85
+    ]
+   },
+   "meanL": 0.2804,
+   "layoutMatch": 0.7192
+  },
+  "megamix_landscape": {
+   "path": "art/source/backgrounds/bass-drop/megamix_landscape.webp",
+   "size": [
+    2560,
+    1280
+   ],
+   "bytes": 213756,
+   "source": {
+    "raw": "art/_raw/ab_bg_painted/v01/raw.png",
+    "rawSize": [
+     6336,
+     2688
+    ],
+    "crop": [
+     480,
+     0,
+     5856,
+     2688
+    ],
+    "size": [
+     2560,
+     1280
+    ]
+   },
+   "row": "bd_bg_megamix_landscape",
+   "beams": 6,
+   "specks": 150,
+   "darkerCentre": {
+    "centre": 0.2371,
+    "left": 0.3089,
+    "right": 0.3296,
+    "edges": 0.3193,
+    "darkerCentre": true,
+    "band": null
+   },
+   "darkerCentreReelBand": {
+    "centre": 0.2466,
+    "left": 0.3464,
+    "right": 0.3385,
+    "edges": 0.3425,
+    "darkerCentre": true,
+    "band": [
+     0.14,
+     0.85
+    ]
+   },
+   "meanL": 0.27,
+   "layoutMatch": 0.8164
+  },
+  "jukejam_landscape_neon": {
+   "path": "art/source/backgrounds/bass-drop/jukejam_landscape_neon.webp",
+   "size": [
+    2560,
+    1280
+   ],
+   "bytes": 126244,
+   "source": {
+    "raw": "art/_raw/ab_bg_painted/v01/raw.png",
+    "rawSize": [
+     6336,
+     2688
+    ],
+    "crop": [
+     480,
+     0,
+     5856,
+     2688
+    ],
+    "size": [
+     2560,
+     1280
+    ]
+   },
+   "row": "bd_bg_jukejam_landscape_neon",
+   "litFraction": 0.0203
+  },
+  "megamix_landscape_neon": {
+   "path": "art/source/backgrounds/bass-drop/megamix_landscape_neon.webp",
+   "size": [
+    2560,
+    1280
+   ],
+   "bytes": 333726,
+   "source": {
+    "raw": "art/_raw/ab_bg_painted/v01/raw.png",
+    "rawSize": [
+     6336,
+     2688
+    ],
+    "crop": [
+     480,
+     0,
+     5856,
+     2688
+    ],
+    "size": [
+     2560,
+     1280
+    ]
+   },
+   "row": "bd_bg_megamix_landscape_neon",
+   "litFraction": 0.1148
+  },
+  "tile_landscape": {
+   "path": "art/source/backgrounds/bass-drop/tile_landscape.webp",
+   "size": [
+    2560,
+    1280
+   ],
+   "bytes": 212436,
+   "source": {
+    "raw": "art/_raw/ab_bg_painted/v01/raw.png",
+    "rawSize": [
+     6336,
+     2688
+    ],
+    "crop": [
+     480,
+     0,
+     5856,
+     2688
+    ],
+    "size": [
+     2560,
+     1280
+    ]
+   },
+   "row": "bd_bg_tile",
+   "darkerCentre": {
+    "centre": 0.6825,
+    "left": 0.6968,
+    "right": 0.6879,
+    "edges": 0.6923,
+    "darkerCentre": true,
+    "band": null
+   },
+   "darkerCentreReelBand": {
+    "centre": 0.6788,
+    "left": 0.713,
+    "right": 0.6813,
+    "edges": 0.6972,
+    "darkerCentre": true,
+    "band": [
+     0.14,
+     0.85
+    ]
+   },
+   "meanL": 0.6864,
+   "layoutMatch": 0.7999
+  },
+  "base_portrait_neon": {
+   "path": "art/source/backgrounds/bass-drop/base_portrait_neon.webp",
+   "size": [
+    1536,
+    3072
+   ],
+   "bytes": 165022,
+   "source": {
+    "raw": "art/_raw/bd_bg_base_portrait/v01/raw.png",
+    "rawSize": [
+     3072,
+     5504
+    ],
+    "crop": [
+     160,
+     0,
+     2912,
+     5504
+    ],
+    "size": [
+     1536,
+     3072
+    ]
+   },
+   "row": "bd_bg_base_portrait_neon",
+   "litFraction": 0.0185
+  },
+  "jukejam_portrait": {
+   "path": "art/source/backgrounds/bass-drop/jukejam_portrait.webp",
+   "size": [
+    1536,
+    3072
+   ],
+   "bytes": 203076,
+   "source": {
+    "raw": "art/_raw/bd_bg_base_portrait/v01/raw.png",
+    "rawSize": [
+     3072,
+     5504
+    ],
+    "crop": [
+     160,
+     0,
+     2912,
+     5504
+    ],
+    "size": [
+     1536,
+     3072
+    ]
+   },
+   "row": "bd_bg_jukejam_portrait",
+   "fogMaxAlpha": 0.7,
+   "bulbDim": 0.62,
+   "darkerCentre": {
+    "centre": 0.2742,
+    "left": 0.2919,
+    "right": 0.2839,
+    "edges": 0.2879,
+    "darkerCentre": true,
+    "band": null
+   },
+   "darkerCentreReelBand": {
+    "centre": 0.215,
+    "left": 0.268,
+    "right": 0.2027,
+    "edges": 0.2353,
+    "darkerCentre": true,
+    "band": [
+     0.3,
+     0.73
+    ]
+   },
+   "meanL": 0.2797,
+   "layoutMatch": 0.7372
+  },
+  "megamix_portrait": {
+   "path": "art/source/backgrounds/bass-drop/megamix_portrait.webp",
+   "size": [
+    1536,
+    3072
+   ],
+   "bytes": 220582,
+   "source": {
+    "raw": "art/_raw/bd_bg_base_portrait/v01/raw.png",
+    "rawSize": [
+     3072,
+     5504
+    ],
+    "crop": [
+     160,
+     0,
+     2912,
+     5504
+    ],
+    "size": [
+     1536,
+     3072
+    ]
+   },
+   "row": "bd_bg_megamix_portrait",
+   "beams": 6,
+   "specks": 130,
+   "darkerCentre": {
+    "centre": 0.2519,
+    "left": 0.2904,
+    "right": 0.2864,
+    "edges": 0.2884,
+    "darkerCentre": true,
+    "band": null
+   },
+   "darkerCentreReelBand": {
+    "centre": 0.2175,
+    "left": 0.2736,
+    "right": 0.2168,
+    "edges": 0.2452,
+    "darkerCentre": true,
+    "band": [
+     0.3,
+     0.73
+    ]
+   },
+   "meanL": 0.2665,
+   "layoutMatch": 0.8025
+  },
+  "jukejam_portrait_neon": {
+   "path": "art/source/backgrounds/bass-drop/jukejam_portrait_neon.webp",
+   "size": [
+    1536,
+    3072
+   ],
+   "bytes": 154602,
+   "source": {
+    "raw": "art/_raw/bd_bg_base_portrait/v01/raw.png",
+    "rawSize": [
+     3072,
+     5504
+    ],
+    "crop": [
+     160,
+     0,
+     2912,
+     5504
+    ],
+    "size": [
+     1536,
+     3072
+    ]
+   },
+   "row": "bd_bg_jukejam_portrait_neon",
+   "litFraction": 0.0175
+  },
+  "megamix_portrait_neon": {
+   "path": "art/source/backgrounds/bass-drop/megamix_portrait_neon.webp",
+   "size": [
+    1536,
+    3072
+   ],
+   "bytes": 356206,
+   "source": {
+    "raw": "art/_raw/bd_bg_base_portrait/v01/raw.png",
+    "rawSize": [
+     3072,
+     5504
+    ],
+    "crop": [
+     160,
+     0,
+     2912,
+     5504
+    ],
+    "size": [
+     1536,
+     3072
+    ]
+   },
+   "row": "bd_bg_megamix_portrait_neon",
+   "litFraction": 0.0801
+  }
+ }
+}

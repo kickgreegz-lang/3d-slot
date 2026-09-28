@@ -1,0 +1,44 @@
+# env_speaker_stack: the lower speaker cabinet behind Gumbo (docs/games/bass-drop/ANIMATION_SET.md 4.1).
+# Parts: parts.json (tools/bdart/env_speaker_stack.py: cabinet 9-sliced from the approved bd_meter_master, the meter
+# rig's woofer, ports from its rim, procedural cables + fx). Canvas 720 x 1440 at 2x the 304 x 320 landscape design
+# size, image space (y down); root = canvas centre = the cabinet's bottom centre (360, 720), the rig's anchor.
+# Build: tools/bdart/build_env.sh speaker_stack [--capture dir]. Validator kind: env (CR-8).
+# 9 slots / 13 bones / 2 physics (ANIMATION_SET 4.1: <= 12 slots, <= 20 bones; env budget 3 physics).
+symbol: env_speaker_stack
+skeleton: env_speaker_stack
+parts: parts.json
+kind: any
+
+bones:
+  - {name: cabinet, parent: root, joint: [360.0, 720.0], tip: [360.0, 680.0]}      # pivot: the bottom centre
+  - {name: woofer, parent: cabinet, joint: [360.0, 322.0]}
+  - {name: port_L, parent: cabinet, joint: [246.0, 606.0]}
+  - {name: port_R, parent: cabinet, joint: [474.0, 606.0]}
+  - {name: cable_1, parent: cabinet, joint: [176.0, 90.0], tip: [70.0, 86.0]}       # where it leaves the top edge
+  - {name: phys_cable_1, parent: cable_1, joint: [52.0, 140.0], tip: [66.0, 372.0]}  # the hanging run (floppy)
+  - {name: cable_2, parent: cabinet, joint: [560.0, 90.0], tip: [656.0, 104.0]}
+  - {name: phys_cable_2, parent: cable_2, joint: [666.0, 140.0], tip: [660.0, 292.0]}
+  - {name: fx_glow, parent: root, joint: [360.0, 322.0]}
+  - {name: fx_floor, parent: root, joint: [360.0, 736.0]}
+
+meshes:
+  woofer: {type: grid, cols: 2, rows: 2}        # rebuilt as a polar mesh by bassdrop.yaml radial_weights.polar
+  cable_1: {type: trace, spacing: 34, weights: {mode: idw, bones: [cable_1, phys_cable_1], power: 3}}
+  cable_2: {type: trace, spacing: 34, weights: {mode: idw, bones: [cable_2, phys_cable_2], power: 3}}
+
+physics:
+  - {bone: phys_cable_1, preset: floppy, x: 0.5, y: 0.3, rotate: 1, inertia: 0.6}
+  - {bone: phys_cable_2, preset: floppy, x: 0.5, y: 0.3, rotate: 1, inertia: 0.6}
+
+motion:                                          # env rig: every clip comes from bassdrop.yaml
+  idle: false
+  land: false
+  win: false
+  win_loop: false
+  anticipation: false
+  anticipation_intro: false
+  anticipation_out: false
+  explode: false
+  appear: false
+  blur: false
+  blink: false

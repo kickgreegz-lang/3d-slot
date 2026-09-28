@@ -1,0 +1,116 @@
+{
+ "$comment": "env_speaker_stack parts (ANIMATION_SET 4.1), tools/bdart/env_speaker_stack.py: cabinet 9-sliced from the approved bd_meter_master (80be379d), woofer = the ui_groove_meter woofer parts, ports from its rim, procedural cables + fx. Canvas 720 x 1440 at 2x landscape; root = canvas centre = the cabinet's bottom centre (360, 720).",
+ "symbol": "env_speaker_stack",
+ "canvas": [
+  720,
+  1440
+ ],
+ "images": "../spine/images",
+ "parts": [
+  {
+   "name": "cabinet",
+   "bbox": [
+    56,
+    80,
+    608,
+    640
+   ],
+   "z": 0.1,
+   "bone": "cabinet"
+  },
+  {
+   "name": "woofer_rim",
+   "bbox": [
+    159,
+    121,
+    402,
+    402
+   ],
+   "z": 0.3,
+   "bone": "cabinet"
+  },
+  {
+   "name": "woofer",
+   "bbox": [
+    211,
+    173,
+    298,
+    298
+   ],
+   "z": 0.35,
+   "bone": "woofer"
+  },
+  {
+   "name": "port_L",
+   "bbox": [
+    181,
+    541,
+    131,
+    131
+   ],
+   "z": 0.2,
+   "bone": "port_L"
+  },
+  {
+   "name": "port_R",
+   "bbox": [
+    409,
+    541,
+    131,
+    131
+   ],
+   "z": 0.2,
+   "bone": "port_R"
+  },
+  {
+   "name": "cable_1",
+   "bbox": [
+    34,
+    53,
+    150,
+    380
+   ],
+   "z": 0.5,
+   "bone": "cable_1"
+  },
+  {
+   "name": "cable_2",
+   "bbox": [
+    554,
+    60,
+    127,
+    293
+   ],
+   "z": 0.5,
+   "bone": "cable_2"
+  },
+  {
+   "name": "floor_light",
+   "bbox": [
+    0,
+    652,
+    720,
+    200
+   ],
+   "z": 0.05,
+   "bone": "fx_floor",
+   "slot": "floor_light",
+   "blend": "additive",
+   "color": "ffffff00"
+  },
+  {
+   "name": "glow_ring",
+   "bbox": [
+    229,
+    191,
+    262,
+    262
+   ],
+   "z": 0.9,
+   "bone": "fx_glow",
+   "slot": "fx_glow",
+   "blend": "additive",
+   "color": "ffffff00"
+  }
+ ]
+}

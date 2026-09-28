@@ -1,0 +1,11 @@
+{
+  "$comment": "Bass Drop reel frame pieces (tools/frame/build_frame.py, 0 credits, formula-D stand-in for the unfunded c12/c13 frame rows). Runtime: ART_MANIFEST.env keys below; src/games/swamp-funk/scene/Frame.ts prodPart() draws each as a NineSliceSprite with 20% fixed ends (texture px) and the middle stretched; load them as @2x (resolution 2). Geometry per layout comes from Frame.ts geometry() (beam = frame rect top x frameParts.beam; posts frameParts.post wide from beam-6u to sill+6u; sill overhangs the posts by 0.3 post). Landscape sizes are the exact 2x of the design rects, so landscape draws unstretched.",
+  "scale": 2,
+  "pieces": {
+    "frame_beam": {"file": "frame_beam.png", "size": [1876, 132], "slice": "horizontal", "fixedEnds": 375, "landscapeRect": [491, 72, 938, 66], "bolts": "over both posts (x 104 / 1772) and beside the two plank seams"},
+    "frame_post": {"file": "frame_post.png", "size": [100, 1606], "slice": "vertical", "fixedEnds": 321, "landscapeRect": [518, 132, 50, 803], "bolts": "brass straps 70 px from each end (inside the fixed ends)"},
+    "frame_sill": {"file": "frame_sill.png", "size": [1828, 130], "slice": "horizontal", "fixedEnds": 366, "landscapeRect": [503, 929, 914, 65], "bolts": "under both posts (x 80 / 1748)"}
+  },
+  "notNeeded": "The code keeps the neon tube under the beam, the panel glass (env key 'panel' unused) and the rope wraps only in its procedural path (prodPart draws none).",
+  "replaceWhenFunded": "frame_beam / frame_post / frame_sill / frame_cap rows of art/plan/bass-drop.json (c12 / c13): same file names, same slicing."
+}

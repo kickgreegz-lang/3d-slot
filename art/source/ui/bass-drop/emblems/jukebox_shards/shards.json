@@ -1,0 +1,121 @@
+{
+ "$comment": "Juke Jam emblem shards for ui_feature_upgrade shard_1..6 (ANIMATION_SET 6.4), cut along the crack lines of jukebox_cracked.png (same 1024 canvas as jukebox.png). bbox = [x, y, w, h] on that canvas; centroid; burst = unit vector from the impact point through the centroid.",
+ "canvas": [
+  1024,
+  1024
+ ],
+ "impact": [
+  556.0,
+  318.0
+ ],
+ "shards": [
+  {
+   "name": "shard_1",
+   "bbox": [
+    394,
+    318,
+    553,
+    637
+   ],
+   "centroid": [
+    686.2,
+    683.4
+   ],
+   "burst": [
+    0.336,
+    0.942
+   ],
+   "area": 220558
+  },
+  {
+   "name": "shard_2",
+   "bbox": [
+    86,
+    319,
+    470,
+    670
+   ],
+   "centroid": [
+    304.2,
+    677.9
+   ],
+   "burst": [
+    -0.573,
+    0.819
+   ],
+   "area": 198250
+  },
+  {
+   "name": "shard_3",
+   "bbox": [
+    86,
+    130,
+    470,
+    412
+   ],
+   "centroid": [
+    269.0,
+    327.5
+   ],
+   "burst": [
+    -0.999,
+    0.033
+   ],
+   "area": 102293
+  },
+  {
+   "name": "shard_4",
+   "bbox": [
+    234,
+    53,
+    323,
+    265
+   ],
+   "centroid": [
+    429.2,
+    163.6
+   ],
+   "burst": [
+    -0.635,
+    -0.773
+   ],
+   "area": 39696
+  },
+  {
+   "name": "shard_5",
+   "bbox": [
+    503,
+    44,
+    328,
+    274
+   ],
+   "centroid": [
+    641.1,
+    157.4
+   ],
+   "burst": [
+    0.468,
+    -0.884
+   ],
+   "area": 53277
+  },
+  {
+   "name": "shard_6",
+   "bbox": [
+    557,
+    150,
+    391,
+    419
+   ],
+   "centroid": [
+    797.5,
+    344.8
+   ],
+   "burst": [
+    0.994,
+    0.11
+   ],
+   "area": 76927
+  }
+ ]
+}

@@ -33,7 +33,7 @@ Snapshot 2026-09-24. **exists** means the tool is committed and its own test sui
 | `art/bible/*`, `licenses/*`, `art/manifest.schema.json`, `.mcp.json.example` | none | **exists** | Style lock, prompt templates, licence governance, MCP config |
 | [`tools/gen/`](../tools/gen/README.md): `higgsfield.mjs`, `nbp.py`, `scenario.py`, `genlib` | `gen:higgsfield`, `gen:nbp`, `gen:scenario` | **exists** | Prompt rendered from the art bible → vendor request → `art/_raw/<asset>/vNN/` + manifest rows. Licence gate (exit 3), fail-closed cost caps (exit 4), `--dry-run` |
 | [`tools/matte/`](../tools/matte/README.md): `outline_matte.py`, `variants.py`, `rembg_matte.sh` | `matte`, `matte:variants` | **exists** | Key-colour + closed-outline matte, fit onto the 360×360 @2x canvas, halo and canvas gates; `_blur` / `_glow` variants |
-| `tools/split/*.py` | none | planned | SAM 3.1 part masks, hidden-area fill, tagged PSD (step 3.1) |
+| [`tools/split/`](../tools/split/README.md): `split.py` (cut / build / preview) | none | **exists** | Part-sheet cut on the measured key, registration onto the rig master (SIFT/NCC + ECC), cap joints, biped landmarks, `parts.json` (step 3.1). Master-cut route (production for Bass Drop): `tools/spine/examples/bass_drop/cut/*.py` (symbols, meter), `art/source/mascots/pipeline/mastercut.py` (characters). SAM 3.1 masks, NB2 hidden-area fill and the tagged PSD stay planned |
 | [`tools/spine/`](../tools/spine/README.md): `gen.py`, `validate.mjs`, `pack.py`, `make_blur.py`, `export.sh`, `preview/capture.mjs`, `contract.json` | `spine:gen`, `spine:validate`, `spine:pack`, `spine:blur`, `spine:export`, `spine:preview`, `spine:capture`, `spine:demo`, `spine:test` | **exists** | `rig.yaml` → Spine 4.3 JSON, contract gate on spine-core 4.3.13, deterministic test atlas, blur parts, Spine CLI wrapper, contact sheets on spine-pixi-v8. `capture.mjs` replaces the planned `preview.ts` on spine-canvaskit |
 | [`tools/blender/`](../tools/blender/README.md): `render_symbol.py`, `turntable.py`, `cleanup_mascot.py`, `build_actions.py`, `export_glb.py` | `blender:symbol`, `blender:turntable`, `blender:cleanup`, `blender:actions`, `blender:export`, `anim:check`, `test:blender` | **exists** | Baked toon symbol inserts with QA gates, bake-off turntables, vendor-mesh cleanup, animation JSON → Actions, GLB export with the runtime bone names |
 | `tools/blender/rig_mascot.py` | none | planned | Rigify or vendor rig, procedural eyes, face shape keys, spring and squash bones (step 4.2) |
@@ -248,7 +248,21 @@ Tools: [tools/spine](../tools/spine/README.md). Steps 3.2, 3.3 and 3.5 run in a 
 
 **3.1 Matte and split into parts** · [W]
 - **In:** the rig-ready `master_2048.png`.
-- **Do** (`tools/split/*.py`, planned):
+- **Do** (`tools/split/split.py`, CPU only; [tools/split/README.md](../tools/split/README.md)): `cut` each Higgsfield part sheet
+  (measured-key matte + numbered components) → the operator names the components in a mapping file →
+  `build --lock-visible`: SIFT/NCC + ECC registration onto the rig master (front to back, claims,
+  twins, reassembly slide), canvas placement, cap joints + biped landmarks → `parts.json` for
+  tools/spine/gen.py + preview / landmarks / variants sheets. UNVERIFIED pieces get `near` / `at` /
+  `like` hints. The SAM route stays planned for splitting a master that has no part sheet.
+- **What production actually used (Bass Drop phase C, 2026-09-28).** Every Higgsfield parts sheet *re-drew* its object
+  (other views, poses or scale), so its pieces do not register onto the rig master (split.py reports them
+  UNVERIFIED, NCC 0.48–0.70). The production rigs are therefore **master cuts**: every pixel visible at rest comes
+  from the approved rig-ready master, partitioned along its painted outlines, with the areas a motion uncovers
+  filled underneath (inpaint / painted gradient + an ink stroke); sheet pieces are used only for alternates placed by
+  2–3 point pairs (hands, mouths, eye states, props). Scripts: `tools/spine/examples/bass_drop/cut/cut_<ID>.py`
+  (symbols, meter), `art/source/mascots/pipeline/mastercut.py` (characters). Reassembly measured SSIM 0.996–0.9999,
+  alpha IoU 0.998–1.0. The generic steps below remain the reference for games whose sheets register.
+- **Generic steps** (reference):
   1. **Matte.** ToonOut by default; A/B against Lucida and `rembg -m birefnet-general -dc` (`tools/matte/rembg_matte.sh`). Never the default rembg model.
   2. **Plan.** Claude writes **`parts.json`** against the taxonomy: `body`, `head`, `eye_L/R`, `pupil_L/R`, `lid_L/R`, `mouth_{closed,open,smile}`, `prop`, `fx_glow`, plus the per-symbol parts in the art bible. Each part has a parent, z-index, bbox, 2–5 positive/negative points and a joint guess. The file format is in the [tools/spine README](../tools/spine/README.md#rigyaml-reference). In the production layout `parts.json` sits in `art/source/symbols/<ID>/` with `"images": "../../spine/images"`.
   3. **Masks.** **SAM 3.1** from those boxes and points, resolved into one exclusive partition by z-order, with edges refined by BiRefNet on each crop.

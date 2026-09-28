@@ -1,0 +1,57 @@
+# env_speaker_stack clips (ANIMATION_SET 4.1), applied by tools/spine/examples/bass_drop/bdgen.py through
+# tools/bdart/envgen.py (adds the CR-8 `env` budgets). Frames at 30 fps; 100 BPM = one beat per 18 frames.
+# Tracks (ANIMATION_SET 0): 0 state (idle / boom_follow / feature_follow), 1 one-shot overlay (pump; starts and ends on
+# the setup pose). No events: env rigs are garnish; the runtime fires every gameplay beat from BASS_DROP_TIMING.
+# The cables are physics (floppy) children of the cabinet, so the hop in boom_follow / feature_follow whips them.
+kind: env
+
+radial_weights:
+  # the cone as 5 rings x 20 spokes: the dust cap (r <= 106) pushes out rigidly, the ribbed band stretches, the edge holds
+  woofer: {centre: [360, 322], inner: [woofer, 106], outer: [cabinet, 142], polar: {radii: [148, 140, 128, 116, 106], spokes: 20}}
+region_scale: {glow_ring: 2}
+
+clips:
+  idle:                        # 4 beats: the cone breathes 1.00 -> 1.02 per beat; dim glow; floor pool steady
+    frames: 72
+    loop: true
+    bones:
+      woofer: {scale: [[0, 1, quad_out], [3, 1.02, sine_in_out], [12, 1], [18, 1, quad_out], [21, 1.02, sine_in_out], [30, 1],
+                       [36, 1, quad_out], [39, 1.02, sine_in_out], [48, 1], [54, 1, quad_out], [57, 1.02, sine_in_out], [66, 1], [72, 1]]}
+    slots:
+      fx_glow: {alpha: [[0, 0.12], [72, 0.12]]}
+      floor_light: {alpha: [[0, 0.28], [72, 0.28]]}
+  pump:                        # overlay (track 1): woofer 1.06, ports puff
+    frames: 6
+    track: 1
+    bones:
+      woofer: {scale: [[0, 1, expo_out], [2, 1.06, sine_in_out], [6, 1]]}
+      port_L: {scale: [[0, 1, expo_out], [2, 1.04, sine_in_out], [6, 1]]}
+      port_R: {scale: [[0, 1, expo_out], [2, 1.04, sine_in_out], [6, 1]]}
+  boom_follow:                 # the woofer punches at f2 (2 frames behind the meter), the cabinet hops 6 units, cables whip
+    frames: 18
+    bones:
+      woofer: {scale: [[0, 1], [1, 1, expo_out], [2, 1.18, sine_in_out], [6, 0.97, sine_in_out], [9, 1.03, sine_in_out], [14, 1], [18, 1]]}
+      cabinet:
+        translate: [[0, [0, 0]], [2, [0, 0], quad_out], [5, [0, 6], quad_in], [8, [0, 0], quad_out], [10, [0, 1.2], quad_in], [12, [0, 0]], [18, [0, 0]]]
+        scale: [[0, 1], [2, 1, quad_out], [5, [0.99, 1.02], quad_in], [8, [1.03, 0.96], sine_in_out], [11, [0.99, 1.01], sine_in_out], [14, 1], [18, 1]]
+      port_L: {scale: [[0, 1], [2, 1, expo_out], [4, 1.1, sine_in_out], [10, 1], [18, 1]]}
+      port_R: {scale: [[0, 1], [2, 1, expo_out], [4, 1.1, sine_in_out], [10, 1], [18, 1]]}
+      fx_glow: {scale: [[0, 1], [2, 1, expo_out], [3, 1.1, sine_in_out], [12, 1], [18, 1]]}
+    slots:
+      fx_glow: {alpha: [[0, 0.12], [2, 0.12, expo_out], [3, 0.7, quad_in], [14, 0.12], [18, 0.12]]}
+      floor_light: {alpha: [[0, 0.28], [2, 0.28, expo_out], [3, 0.95, quad_in], [15, 0.28], [18, 0.28]]}
+  feature_follow:              # three pumps at f2, f20, f38 (the meter's feature_trigger beats), the last one biggest
+    frames: 54
+    bones:
+      woofer: {scale: [[0, 1], [1, 1, expo_out], [2, 1.14, sine_in_out], [6, 0.98, sine_in_out], [11, 1], [19, 1, expo_out], [20, 1.14, sine_in_out],
+                       [24, 0.98, sine_in_out], [29, 1], [37, 1, expo_out], [38, 1.2, sine_in_out], [42, 0.97, sine_in_out], [46, 1.03, sine_in_out], [51, 1], [54, 1]]}
+      cabinet:
+        translate: [[0, [0, 0]], [2, [0, 0], quad_out], [5, [0, 4], quad_in], [8, [0, 0]], [20, [0, 0], quad_out], [23, [0, 4], quad_in], [26, [0, 0]],
+                    [38, [0, 0], quad_out], [41, [0, 7], quad_in], [44, [0, 0], quad_out], [46, [0, 1.4], quad_in], [48, [0, 0]], [54, [0, 0]]]
+      port_L: {scale: [[0, 1], [2, 1, expo_out], [4, 1.08], [9, 1], [20, 1, expo_out], [22, 1.08], [27, 1], [38, 1, expo_out], [40, 1.12], [46, 1], [54, 1]]}
+      port_R: {scale: [[0, 1], [2, 1, expo_out], [4, 1.08], [9, 1], [20, 1, expo_out], [22, 1.08], [27, 1], [38, 1, expo_out], [40, 1.12], [46, 1], [54, 1]]}
+    slots:
+      fx_glow: {alpha: [[0, 0.12], [2, 0.12, expo_out], [3, 0.6, quad_in], [12, 0.15], [20, 0.15, expo_out], [21, 0.6, quad_in], [30, 0.2],
+                        [38, 0.2, expo_out], [39, 0.75, quad_in], [52, 0.12], [54, 0.12]]}
+      floor_light: {alpha: [[0, 0.28], [2, 0.28, expo_out], [3, 0.8, quad_in], [13, 0.3], [20, 0.3, expo_out], [21, 0.85, quad_in], [31, 0.3],
+                            [38, 0.3, expo_out], [39, 1, quad_in], [52, 0.28], [54, 0.28]]}

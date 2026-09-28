@@ -1,405 +1,886 @@
 {
-  "$comment": "Dragonspire Frostfall (Paperclip Gaming) demo, re-measure protocol of DESIGN.md s.22. Numbers only: no frames, pixels, assets or text of the reference. Captures stay in the gitignored art/_reference/. \"ours\" = DESIGN.md s.18.1/s.19 values for comparison; adopt a measured value only if it differs by > 15% and passes ANIMATION_CONTRACT s.9 feel gates.",
-  "schema": 1,
-  "status": "not_measured",
-  "statusNote": "No Dragonspire frames exist yet. The only capture attempt (probe1) got HTTP 400 \"session not found\" from the RGS authenticate call: the demo sessionID had expired, so the game never left its loading screen. Every reference value is null until a run with a fresh demo URL is analysed.",
-  "label": null,
-  "generatedAt": "2026-09-26T12:55:43.453Z",
-  "generator": "df-analyse.mjs (study scripts kept outside the repo) on top of tools/reference/timings.mjs",
+  "$comment": "Dragonspire Frostfall (Paperclip Gaming) demo, DESIGN.md s.22 re-measure. Numbers only: no frames, pixels, assets or text of the reference; captures stay in the gitignored art/_reference/. \"ours\" = DESIGN.md s.18.1/s.19 spec values; \"oursBuild\" = our build measured with the same instruments (DESIGN 22.1 rule 3). Nothing here is adopted: adoption is a DESIGN.md s.22 step-4 decision.",
+  "schema": 2,
+  "status": "partial",
+  "statusNote": "Base game (normal, turbo, quick stop), wild summons, one big win in the base game, and one full bonus round (resumed) are measured. Missing: a bought bonus, big-win tier thresholds (2 samples), intro cards in (boot is real time).",
+  "generatedAt": "2026-09-28T16:03:48+00:00",
+  "generator": "study scripts (per-cell energy, dim windows, template and SAD trackers) + tools/reference/timings.mjs and scripts/dragonspire/df-analyse.mjs on both sides",
   "capture": {
-    "runs": [],
-    "skipped": [
+    "reference": [
       {
-        "run": "probe1",
-        "reason": "0 frames (status error, authenticate HTTP 400)"
+        "run": "s2-a-intro-idle",
+        "frames": 810,
+        "use": "intro out (every frame), 30 s idle"
+      },
+      {
+        "run": "s2-b-normal",
+        "frames": 2179,
+        "use": "5 every-frame normal spins (4 loss, 1 win with 2 tumbles), bonus trigger (every 2nd)"
+      },
+      {
+        "run": "s2-b-normal-2",
+        "frames": 3902,
+        "use": "full resumed bonus round (every 2nd), 14 normal spins every 3rd (11 loss, 3 win, 1 summon)"
+      },
+      {
+        "run": "s2-c-turbo",
+        "frames": 2106,
+        "use": "20 turbo + 10 turbo-with-slam spins (8 + 5 every frame), 2 summons"
+      },
+      {
+        "run": "s2-d-quickstop",
+        "frames": 1748,
+        "use": "5 quick-stop spins every frame (metadata rebuilt from the log and RGS frames): 3 loss, x11.5 big win, summon"
+      },
+      {
+        "run": "s2-i-explore",
+        "frames": 489,
+        "use": "controls, 1 win spin every 3rd"
       }
     ],
+    "ours": [
+      {
+        "run": "loss",
+        "book": "loss",
+        "segments": "intro out (every frame), 6 s idle (every 3rd), normal spin (every frame)"
+      },
+      {
+        "run": "loss-fast",
+        "book": "loss",
+        "segments": "turbo, super turbo (every frame)"
+      },
+      {
+        "run": "small_win",
+        "book": "small_win",
+        "segments": "normal / turbo / super turbo, every frame"
+      },
+      {
+        "run": "meter_10",
+        "book": "meter_10",
+        "segments": "normal / turbo / super turbo, every 2nd frame"
+      },
+      {
+        "run": "tumble_chain",
+        "book": "tumble_chain",
+        "segments": "normal every 3rd, turbo every 3rd, super every 2nd"
+      },
+      {
+        "run": "meter_30",
+        "book": "meter_30",
+        "segments": "normal / turbo / super turbo, every 3rd frame"
+      }
+    ],
+    "clock": "after-boot virtual clock, 60 fps, 1280x720, JPEG 85, canvas clip (both sides)",
     "regions": {
-      "grid": [
-        0.302,
-        0.123,
+      "refGrid": [
+        0.3,
+        0.141,
         0.402,
-        0.733
+        0.705
       ],
-      "meter": [
+      "oursGrid": [
+        0.30104,
+        0.13796,
+        0.39792,
+        0.70741
+      ],
+      "refMeter": [
         0.095,
         0.17,
         0.14,
         0.27
       ],
-      "mini": [
-        0.105,
-        0.5,
-        0.125,
-        0.3
-      ],
-      "hud": [
-        0.24,
-        0.84,
-        0.62,
-        0.16
+      "oursMeter": [
+        0.0458,
+        0.1463,
+        0.1667,
+        0.2963
       ]
     },
-    "shakePatches": {
-      "stage": [
-        0.255,
-        0.3,
-        0.04,
-        0.3
-      ],
-      "logo": [
-        0.76,
-        0.1,
-        0.18,
-        0.2
-      ],
-      "hud": [
-        0.3,
-        0.87,
-        0.28,
-        0.09
-      ]
-    },
-    "regionSource": "fractions of the game canvas read off the user's two stills (ref_dragon_2.png base game, ref_dragon_1.png intro), not verified on a live probe"
+    "regionSource": "reference: verified on the live grid shots (pitch 102.8 x 101.4 px at 1280); ours: layout.json landscape space"
   },
-  "units": "ms of virtual game time (60 fps, frame-exact) unless noted; px converted to a 1920-wide canvas",
+  "units": "ms of virtual game time after the spin input (60 fps, frame-exact) unless noted; px at a 1920-wide canvas",
   "confidenceScale": {
     "none": "no data",
-    "low": "heuristic on motion energy: confirm on the contact sheets",
-    "medium": "direct energy measurement, +-1 frame on every-frame segments",
-    "high": "confirmed frame by frame"
+    "low": "few samples or read off every-2nd/3rd-frame sheets",
+    "medium": "measured, +-1..3 frames, few samples",
+    "high": "every-frame, consistent across samples, confirmed on sheets"
   },
   "measurements": {
     "spin.pressToFirstMotion": {
-      "status": "not_measured",
       "row": null,
-      "ours": null,
-      "ref": {
-        "normal": null,
-        "turbo": null,
-        "quick": null
-      },
       "unit": "ms",
-      "method": "first burst start over grid.c1..c5 energy after the spin input (timings.mjs bursts, capture timeline); RGS answers within 1-2 frames (net-sync), so this is the game's own start latency",
-      "confidence": "none",
-      "plannedConfidence": "medium"
+      "ref": {
+        "normal": 33,
+        "turbo": 33,
+        "quick": 34
+      },
+      "refN": {
+        "normal": 4,
+        "turbo": 7,
+        "quick": 3
+      },
+      "oursBuild": {
+        "normal": 33,
+        "turbo": 33,
+        "super": 33
+      },
+      "ours": null,
+      "timingsMjs": {
+        "ref": {
+          "normal": [
+            16,
+            17
+          ],
+          "turbo": [
+            16,
+            17
+          ]
+        },
+        "oursBuild": {
+          "normal": 16,
+          "turbo": 16,
+          "super": 16
+        },
+        "note": "timings.mjs firstMotionMs counts from the first captured frame (press + 17 ms)"
+      },
+      "method": "first frame whose grid-cell energy exceeds the burst threshold after the spin input (per-cell instrument, every-frame segments); the RGS answers within 1-2 frames (net-sync), so this is the game's own latency",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": 0,
+        "turbo": 0,
+        "super": 0
+      }
+    },
+    "spin.cameraPunch": {
+      "row": null,
+      "unit": "% stage scale / ms",
+      "ref": {
+        "scalePct": 1.9,
+        "peakMs": 67,
+        "restMs": 317,
+        "meterRingPx1920": 12.6,
+        "turboSame": true
+      },
+      "oursBuild": {
+        "scalePct": 0,
+        "normal": 0
+      },
+      "method": "SAD block match of static stage patches (meter ring, frame post, logo) and a HUD patch, every frame; opposite displacements about the screen centre = a zoom; HUD static",
+      "confidence": "high",
+      "note": "the reference's spin-click feedback: the whole stage punches in ~2% and eases back; the spin button only greys out. Ours has no stage punch (button icon changes instead)",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
     },
     "fallOut.wholeBoard": {
-      "status": "not_measured",
       "row": "Fall-out (whole board)",
+      "unit": "ms",
+      "ref": {
+        "normal": 517,
+        "turbo": 17,
+        "quick": 467
+      },
+      "refDetail": {
+        "normalEndMs": 550,
+        "normalEndEvery3Ms": 567,
+        "turboNote": "old board cut within one frame",
+        "quickNote": "the fall-out in flight keeps its normal pace"
+      },
       "ours": {
         "normal": 510,
         "turbo": 130,
         "super": 87
       },
-      "ref": {
-        "normal": null,
-        "turbo": null
+      "oursBuild": {
+        "normal": 500,
+        "turbo": 134,
+        "super": 84
       },
-      "unit": "ms",
-      "method": "loss rounds where every column shows two bursts 17..400 ms apart: first burst = old symbols leaving (first start -> last end over the 5 columns); if the game drops without a gap this stays null and must be read off the every-frame sheets",
-      "confidence": "none",
-      "note": null,
-      "plannedConfidence": "medium",
       "compareAgainst": {
         "normal": 460,
         "turbo": 130,
         "super": 87,
-        "why": "ours re-derived for a 5x5 board (4 column and 4 row gaps): 260 + 35x4 + 15x4; adopt per gap, then re-derive our 6x6 total (DESIGN.md s.22.1 rule 1)"
+        "why": "ours re-derived for 5x5 (DESIGN 22.1 rule 1)"
+      },
+      "method": "loss rounds, per-cell energy: first motion -> end of the first burst (board empty); our build is split at the energy valley between fall-out and drop-in",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": -3,
+        "turbo": 688,
+        "super": 394
       }
     },
-    "column.stagger": {
-      "status": "not_measured",
-      "row": "Drop-in stagger (column)",
-      "ours": {
-        "normal": 60,
-        "turbo": 0,
-        "super": 0
-      },
+    "fallOut.stagger": {
+      "row": null,
+      "unit": "ms per gap",
       "ref": {
-        "normal": null,
-        "turbo": null,
-        "turboB": null,
-        "quick": null
+        "rowGapNormal": 67,
+        "columnGapNormal": 0,
+        "order": "bottom row first, all columns together"
       },
+      "oursBuild": {
+        "columnGapNormal": 33,
+        "rowGapSpec": 15
+      },
+      "timingsMjs": {
+        "ref": {
+          "columnStopsGapNormal": 0
+        },
+        "oursBuild": {
+          "columnStopsGapNormal": 33
+        }
+      },
+      "method": "row onsets from per-row energy (every-frame spins) and timings.mjs column stops of the first burst",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
+    "reveal.emptyBoard": {
+      "row": null,
       "unit": "ms",
-      "method": "median gap between consecutive columnStops (end of each column's first >=150 ms burst), every-frame spins +-1 frame, every-2nd/3rd +-2/3 frames",
-      "confidence": "none",
-      "plannedConfidence": "medium"
+      "ref": {
+        "normal": 1350,
+        "turbo": 50,
+        "quick": 17,
+        "tileAppearMs": [
+          350,
+          750,
+          1167
+        ],
+        "tiles": 3
+      },
+      "oursBuild": {
+        "normal": 17,
+        "turbo": 16,
+        "super": 16
+      },
+      "method": "gap between the fall-out burst and the drop-in burst (loss rounds); tile times = small energy pulses on the empty board, confirmed on the contact sheets",
+      "confidence": "high",
+      "status": "structural",
+      "note": "the reference spends ~1.35 s on an empty board revealing 3 power-up cells per spin (wild / clear / freeze), mirrored on the mini 5x5 map; ours has no equivalent phase",
+      "deltaPctOursBuildVsRef": {
+        "normal": -99,
+        "turbo": -68,
+        "super": -68
+      }
     },
     "dropIn.firstMoveToLastSettle": {
-      "status": "not_measured",
       "row": "Drop-in: first move -> last settle",
+      "unit": "ms",
+      "ref": {
+        "normal": 833,
+        "turbo": 67,
+        "quick": 100
+      },
+      "refDetail": {
+        "normalLastMotionMs": 967,
+        "turboNote": "whole board drops as one block 67->133 ms, eased to rest by 367-400",
+        "quickNote": "block 517->617, still by 700-783"
+      },
       "ours": {
         "normal": 950,
         "turbo": 265,
         "super": 175
       },
-      "ref": {
-        "normal": null,
-        "turbo": null
+      "oursBuild": {
+        "normal": 717,
+        "turbo": 267,
+        "super": 184
       },
-      "unit": "ms",
-      "method": "split loss rounds: second burst first start -> last end over the 5 columns; otherwise median(last column settleT) - median(first motion), flagged includesFallOut",
-      "confidence": "none",
-      "plannedConfidence": "low",
       "compareAgainst": {
         "normal": 865,
         "turbo": 265,
         "super": 175,
-        "why": "ours re-derived for a 5x5 board: 950 - one column gap (60) - one row gap (25); staggers are 0 in turbo"
+        "why": "ours re-derived for 5x5 (DESIGN 22.1 rule 1)"
+      },
+      "method": "first drop-in motion -> last column settled (median of the column's cells below the burst threshold), every-frame loss rounds",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": -14,
+        "turbo": 299,
+        "super": 175
       }
     },
+    "column.stagger": {
+      "row": "Drop-in stagger (column)",
+      "unit": "ms per gap",
+      "ref": {
+        "normal": 117,
+        "turbo": 0,
+        "quick": 0
+      },
+      "refDetail": {
+        "every3rd": 100,
+        "settleGapNormal": 116
+      },
+      "ours": {
+        "normal": 60,
+        "turbo": 0,
+        "super": 0
+      },
+      "oursBuild": {
+        "normal": 50,
+        "turbo": 0,
+        "super": 0
+      },
+      "method": "median gap between consecutive columns' drop-in entry (and settle), per-column median cell energy, every-frame spins",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": -57,
+        "turbo": null,
+        "super": null
+      }
+    },
+    "dropIn.rowStagger": {
+      "row": null,
+      "unit": "ms per row",
+      "ref": {
+        "normal": 67
+      },
+      "ours": {
+        "normal": 25
+      },
+      "method": "symbols of one column land one after another bottom-up; spacing of per-cell landing times (template tracking)",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
     "land.settleTail": {
-      "status": "not_measured",
       "row": "Land settle (per symbol)",
+      "unit": "ms",
+      "ref": {
+        "normal": 125,
+        "turbo": 250
+      },
+      "refDetail": {
+        "normalRange": [
+          117,
+          133
+        ]
+      },
       "ours": {
         "normal": 150,
         "turbo": 75,
         "super": 50
       },
-      "ref": {
-        "normal": null,
-        "turbo": null
+      "oursBuild": {
+        "normal": 225,
+        "turbo": 133,
+        "super": 92
       },
-      "unit": "ms",
-      "method": "timings.mjs landing tail: low-energy motion after the column stop until a >=50 ms quiet gap",
-      "confidence": "none",
-      "plannedConfidence": "medium"
+      "method": "vertical template tracking of single cells: first contact -> back at rest (+-0.5 px at half scale)",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": 80,
+        "turbo": -47,
+        "super": -63
+      }
     },
     "land.bouncePeaks": {
-      "status": "not_measured",
       "row": null,
+      "unit": "count / % of pitch",
+      "ref": {
+        "normal": 1,
+        "reboundPctPitch": 6.8,
+        "reboundPx1920": 10.5
+      },
       "ours": {
         "normal": 1
       },
-      "ref": {
-        "normal": null
+      "oursBuild": {
+        "normal": 1,
+        "reboundPctPitch": 3.7,
+        "reboundPx1920": 5.7,
+        "dipBeforeReboundMs": 67
       },
-      "unit": "count",
-      "method": "local energy maxima inside the landing tail, every-frame spins only; a bounce shows as 1-2 peaks (down and back): confirm on frames",
-      "confidence": "none",
-      "plannedConfidence": "low"
+      "method": "same cell tracks: rebounds above rest after contact; px converted to 1920 and to the cell pitch (154 px ref, 128 px ours)",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": 0
+      }
+    },
+    "loss.roundStill": {
+      "row": null,
+      "unit": "ms",
+      "ref": {
+        "normal": 2775,
+        "turbo": 383,
+        "quick": 767
+      },
+      "refDetail": {
+        "spinButtonBackNormal": 2500,
+        "spinButtonBackTurbo": 250,
+        "turboSlam": 367
+      },
+      "oursBuild": {
+        "normal": 1267,
+        "turbo": 467,
+        "super": 333
+      },
+      "oursRoundEnd": {
+        "normal": 1417,
+        "turbo": 467,
+        "super": 333
+      },
+      "oursRoundEndByBook": {
+        "order": [
+          "normal",
+          "turbo",
+          "super"
+        ],
+        "loss": [
+          1417,
+          467,
+          333
+        ],
+        "small_win": [
+          4083,
+          1733,
+          1200
+        ],
+        "meter_10": [
+          10133,
+          4617,
+          3183
+        ],
+        "tumble_chain": [
+          14583,
+          6633,
+          4517
+        ],
+        "meter_30": [
+          20250,
+          9217,
+          6300
+        ]
+      },
+      "timingsMjs": {
+        "ref": {
+          "normal": 2817,
+          "turbo": 317,
+          "quick": 633
+        },
+        "oursBuild": {
+          "normal": 1250,
+          "turbo": 450,
+          "super": 317
+        }
+      },
+      "ours": {
+        "normal": 1500,
+        "turbo": 400,
+        "super": 260
+      },
+      "method": "press -> last frame with grid energy > 3 (per-cell instrument); timingsMjs = timings.mjs lastMotionMs (df-analyse lossRoundMs)",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": -54,
+        "turbo": 22,
+        "super": -13
+      }
+    },
+    "win.landToPresent": {
+      "row": null,
+      "unit": "ms",
+      "ref": {
+        "normal": 50,
+        "turbo": 250
+      },
+      "refRange": {
+        "normal": [
+          33,
+          67
+        ],
+        "turbo": [
+          200,
+          250
+        ]
+      },
+      "oursBuild": {
+        "normal": 400,
+        "turbo": 150,
+        "super": 100
+      },
+      "method": "last symbol contact -> first frame of the present (dim cut / highlight); ours from the last land sfx event to board:showWins, cross-checked on frames",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": 700,
+        "turbo": -40,
+        "super": -60
+      }
+    },
+    "win.present": {
+      "row": "Cluster present (winInfo resolves)",
+      "unit": "ms",
+      "ref": {
+        "normal": 950,
+        "turbo": 800,
+        "quick": 967
+      },
+      "refRange": {
+        "normal": [
+          950,
+          1000
+        ],
+        "turbo": [
+          800,
+          833
+        ]
+      },
+      "refN": {
+        "normal": 6,
+        "turbo": 4,
+        "quick": 2
+      },
+      "ours": {
+        "normal": 1000,
+        "turbo": 500,
+        "super": 333
+      },
+      "oursBuild": {
+        "normal": 950,
+        "turbo": 483,
+        "super": 333
+      },
+      "method": "reference: dim-on cut -> dim-off cut (1-frame luminance steps of the non-winning cells); ours: board:showWins -> board:tumble (events) = dim onset -> explode squeeze on frames",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": 0,
+        "turbo": -40,
+        "super": -58
+      }
+    },
+    "win.dim": {
+      "row": null,
+      "unit": "brightness ratio / ms",
+      "ref": {
+        "level": 0.44,
+        "inMs": 17,
+        "outMs": 17
+      },
+      "oursBuild": {
+        "level": 0.54,
+        "inMs": 130,
+        "outMs": 130,
+        "winCellsPeak": 1.75
+      },
+      "method": "mean luminance of the non-winning cells vs the settled board",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
+    "explode.duration": {
+      "row": "Explode (squeeze + burst + hit-stop)",
+      "unit": "ms",
+      "ref": {
+        "normal": 660,
+        "turbo": 516
+      },
+      "refRange": {
+        "normal": [
+          633,
+          684
+        ]
+      },
+      "ours": {
+        "normal": 360,
+        "turbo": 130,
+        "super": 87
+      },
+      "oursBuild": {
+        "normal": 400,
+        "turbo": 133,
+        "super": 100
+      },
+      "method": "reference: dim-off -> the last ice orb gone (winning cells still); ours: board:tumble -> winning cells empty and the dim lifted",
+      "confidence": "high",
+      "note": "reference explode = sequential freeze into ice orbs that dissolve in place; the meter ticks with each freeze",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": -39,
+        "turbo": -74,
+        "super": -81
+      }
+    },
+    "refill.duration": {
+      "row": "Refill: typical / worst",
+      "unit": "ms",
+      "ref": {
+        "normal": 700,
+        "turbo": 117
+      },
+      "refRange": {
+        "normal": [
+          667,
+          733
+        ],
+        "turbo": [
+          100,
+          133
+        ]
+      },
+      "ours": {
+        "normal": 800,
+        "turbo": 235,
+        "super": 157
+      },
+      "oursBuild": {
+        "normal": 733,
+        "turbo": 333,
+        "super": 250
+      },
+      "method": "first refill motion -> board still (grid energy < 1.5 for 100 ms)",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": 5,
+        "turbo": 185,
+        "super": 114
+      }
     },
     "tumble.stepAfterLand": {
-      "status": "not_measured",
       "row": "Tumble step (explode + refill)",
+      "unit": "ms",
+      "ref": {
+        "normal": 2617,
+        "turbo": 1733
+      },
+      "refRange": {
+        "normal": [
+          2583,
+          2650
+        ]
+      },
+      "refN": {
+        "normal": 2,
+        "turbo": 1
+      },
+      "refDetail": {
+        "presentStartToRefillSettle": 2350
+      },
       "ours": {
         "normal": 1250,
         "turbo": 410,
         "super": 275
       },
-      "ref": {
-        "normal": null,
-        "turbo": null
+      "oursBuild": {
+        "normal": 2100,
+        "turbo": 967,
+        "super": 667,
+        "range": {
+          "normal": [
+            1983,
+            2167
+          ],
+          "turbo": [
+            900,
+            1000
+          ],
+          "super": [
+            617,
+            683
+          ]
+        },
+        "withBassDropBetween": {
+          "normal": [
+            3616,
+            3700
+          ],
+          "turbo": [
+            1683,
+            1733
+          ],
+          "super": [
+            1150,
+            1167
+          ]
+        },
+        "n": 8
       },
-      "unit": "ms",
-      "method": "(last grid motion - board settle) / number of win events in the round's book; includes win present, explode and refill, so compare with present + explode + refill, not the step row alone",
-      "confidence": "none",
-      "plannedConfidence": "low",
       "compareAgainst": {
         "normal": 2250,
         "turbo": 910,
         "super": 608,
-        "build": {
-          "normal": [
-            2000,
-            2133
-          ],
-          "turbo": [
-            900,
-            966
-          ],
-          "super": [
-            617,
-            650
-          ]
-        },
-        "why": "the measurement spans win present + explode + refill: cluster present 1000/500/333 + tumble step 1250/410/275; build = docs/games/bass-drop/README.md measured round timings"
+        "why": "cluster present + tumble step (DESIGN 22.1 row map)"
+      },
+      "method": "present start -> next present start inside one round (reference: 2 cycles every frame + 1 every 3rd; ours: tumble_chain / meter_30 books)",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": -20,
+        "turbo": -44,
+        "super": -62
       }
     },
+    "meter.perSymbolOrCluster": {
+      "row": "Meter increment granularity (s.6.3 check)",
+      "unit": "increments",
+      "ref": {
+        "perSymbol": true,
+        "incrementsPerExplodedSymbol": 1,
+        "thingsFlyingToMeter": 0,
+        "resetsEachRound": true,
+        "bonusAt": 35
+      },
+      "ours": {
+        "model": "one orb per winning symbol, counter +1 per orb"
+      },
+      "method": "counter digit changes (1-frame energy spikes in the counter patch) vs the RGS bonusMeter deltas (= exploded symbols) and the contact sheets",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
     "meter.reaction": {
-      "status": "not_measured",
-      "row": "Orb flight (meter lag after the first post-land grid burst)",
+      "row": "Orb flight (meter lag)",
+      "unit": "ms",
+      "ref": {
+        "normal": 34,
+        "turbo": 16,
+        "fromPresentStartNormal": 1017,
+        "fromPresentStartTurbo": 816
+      },
+      "oursBuild": {
+        "normal": 783,
+        "turbo": 350,
+        "super": 233,
+        "fromPresentStartNormal": 1750,
+        "fromPresentStartTurbo": 833,
+        "fromPresentStartSuper": 566
+      },
       "ours": {
         "normal": 610,
         "turbo": 305,
         "super": 203
       },
-      "ref": {
-        "normal": null,
-        "turbo": null
-      },
-      "unit": "ms",
-      "method": "start of the first meter-region burst after the first post-land grid burst (ours = pop-out 90 + flight 520)",
-      "confidence": "none",
-      "plannedConfidence": "low",
       "compareAgainst": {
         "normal": 1790,
         "turbo": 845,
         "super": 563,
-        "why": "our first orb arrival counted from the start of the win presentation: cluster present + explode squeeze 80 + pop-out 90 + flight 520 (+ the 100 ms explode hit-stop in normal only). The \"ours\" 610 (pop-out + flight) applies only if the frames show the reference has no separate present phase"
+        "why": "first orb arrival from the start of the win presentation (DESIGN 22.1 row map); the reference has no flight, so compare fromPresentStart"
+      },
+      "method": "explode start (reference dim-off; ours board:tumble) -> first counter change",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": 2203,
+        "turbo": 2088,
+        "super": 1356
+      }
+    },
+    "meter.tickSpacing": {
+      "row": "Meter tick (LED in / settle / punch)",
+      "unit": "ms between +1 ticks",
+      "ref": {
+        "normal": 83,
+        "turbo": 17
+      },
+      "refRange": {
+        "normal": [
+          50,
+          117
+        ]
+      },
+      "ours": {
+        "normal": 45,
+        "turbo": 25,
+        "super": 16
+      },
+      "oursBuild": {
+        "normal": 17,
+        "turbo": 17,
+        "super": 17
+      },
+      "method": "spacing of counter digit changes in the counter patch (every-frame segments)",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": -80,
+        "turbo": 0,
+        "super": 0
       }
     },
     "meter.counterBurst": {
-      "status": "not_measured",
-      "row": "Meter tick (LED in / settle / punch)",
+      "row": "Meter tick (sum)",
+      "unit": "ms",
+      "ref": {
+        "normal": 242,
+        "turbo": 333
+      },
       "ours": {
         "normal": 270,
         "turbo": 135,
         "super": 90
       },
-      "ref": {
-        "normal": null,
-        "turbo": null
-      },
-      "unit": "ms",
-      "method": "median duration of meter-region bursts after the first post-land grid burst; per-symbol vs per-cluster from burst count vs book clusters/winSymbols (see segments[].meterBursts)",
-      "confidence": "none",
-      "plannedConfidence": "low"
-    },
-    "winFlash.peakSpacing": {
-      "status": "not_measured",
-      "row": null,
-      "ours": null,
-      "ref": {
-        "normal": null
-      },
-      "unit": "ms",
-      "method": "timings.mjs flashPeakSpacingMs (a blink cycle is 2x)",
-      "confidence": "none",
-      "plannedConfidence": "low"
-    },
-    "speed.turboOverNormal": {
-      "status": "not_measured",
-      "row": "turbo ratio per phase",
-      "ours": {
-        "factor": 0.5
-      },
-      "ref": null,
-      "unit": "ratio",
-      "method": "median(turbo state A) / median(normal) per metric",
-      "confidence": "none",
-      "plannedConfidence": "medium"
-    },
-    "speed.turboBOverNormal": {
-      "status": "not_measured",
-      "row": "second turbo state ratio (super turbo if the button cycles)",
-      "ours": {
-        "factor": 0.333
-      },
-      "ref": null,
-      "unit": "ratio",
-      "method": "median(turbo state B) / median(normal); state B is super turbo only if the df-c turbo-A/B/C shots show 3 states",
-      "confidence": "none",
-      "plannedConfidence": "low"
-    },
-    "speed.quickStopOverNormal": {
-      "status": "not_measured",
-      "row": "quick stop (second press at +150 ms)",
-      "ours": null,
-      "ref": null,
-      "unit": "ratio",
-      "method": "median(quick) / median(normal); boardSettle ratio < 0.8 means a slam stop exists",
-      "confidence": "none",
-      "plannedConfidence": "medium"
-    },
-    "meter.perSymbolOrCluster": {
-      "status": "not_measured",
-      "row": "Meter increment granularity (s.6.3 check)",
-      "ours": {
-        "model": "one orb per winning symbol, counter +1 per orb"
-      },
-      "ref": null,
-      "unit": "bursts per cluster / per symbol, x100",
-      "method": "meter-region bursts after the first post-land grid burst divided by clusters and winning symbols in the book; ~100 per cluster = per-cluster increments, ~100 per symbol = per-symbol; rolls merge bursts, so confirm on frames",
-      "confidence": "none",
-      "plannedConfidence": "low"
+      "status": "heuristic",
+      "method": "df-analyse meterBurstMs (median meter-region burst) - heuristic, kept for continuity; see meter.tickSpacing",
+      "confidence": "low",
+      "deltaPctOursBuildVsRef": null
     },
     "wild.summon": {
-      "status": "not_measured",
       "row": "Dragon / wild summon (duration, shake)",
+      "unit": "ms / px at 1920",
+      "ref": {
+        "normal": 1300,
+        "turbo": 600,
+        "normalRangeMs": [
+          1150,
+          1450
+        ],
+        "stompPx1920": 21,
+        "stompMs": 300,
+        "stompPeakAtMs": 83,
+        "stompsPerWild": 1,
+        "stompSpacingMs": 233,
+        "turboStompsPerEvent": 1,
+        "shakeSpeedScaled": false,
+        "n": 3
+      },
       "ours": {
         "oneWildMs": 1580,
         "threeWildsMs": 1880,
         "boomPx": 4.5
       },
-      "ref": null,
-      "unit": "ms / px at 1920",
-      "method": "rounds whose book has wild/dragon/multiplier events: longest full-canvas burst after the board settles, plus shake episodes of the static patches; beat-by-beat split read off the frames",
-      "confidence": "none",
-      "plannedConfidence": "low"
-    },
-    "miniPanel.activity": {
-      "status": "not_measured",
-      "row": "Mini 5-column panel under the meter (function unknown)",
-      "ours": null,
-      "ref": null,
-      "unit": "count / ms",
-      "method": "mini-region bursts per spin; activity in loss rounds = reacts to every spin (reel/column display), only after wins = win/meter linked; the function itself is read off the frames",
-      "confidence": "none",
-      "plannedConfidence": "low"
-    },
-    "intro.cardsOut": {
-      "status": "not_measured",
-      "row": "Intro cards in / out",
-      "ours": {
-        "out": 400,
-        "in": 900
+      "oursBuild": {
+        "normal": 1600,
+        "turbo": 767,
+        "super": 517,
+        "chargeMs": 483,
+        "boomToImpactMs": 750,
+        "afterRefillLandMs": 267,
+        "boomShakePx1920": 5.6,
+        "boomShakeMs": 100,
+        "impactTrauma": 0.2,
+        "fullScreenFlash": true,
+        "n": 7
       },
-      "ref": {
-        "out": null
-      },
-      "unit": "ms",
-      "method": "intro-dismiss segment (every frame): click -> last full-canvas motion; \"in\" happens during boot in real time and is not measurable frame-exact",
-      "confidence": "none",
-      "plannedConfidence": "medium"
-    },
-    "idle.loops": {
-      "status": "not_measured",
-      "row": null,
-      "ours": null,
-      "ref": null,
-      "unit": "ms",
-      "method": "median spacing of burst starts per region during 30 s of idle",
-      "confidence": "none",
-      "plannedConfidence": "low"
-    },
-    "bigWin.tiers": {
-      "status": "not_measured",
-      "row": "Big win tiers",
-      "ours": {
-        "tiersS": [
-          5,
-          7,
-          9,
-          13,
-          18
-        ]
-      },
-      "ref": null,
-      "unit": "ms / x bet",
-      "method": "segments whose play payout >= DF_BIGWIN x bet: payout multiplier from the RGS body, duration = press -> last full-canvas motion (continue taps after 4 s of stillness). Tier names and thresholds must be read off the frames",
-      "confidence": "none",
-      "plannedConfidence": "low"
-    },
-    "bonus.flow": {
-      "status": "not_measured",
-      "row": "Feature trigger / intro / outro",
-      "ours": {
-        "triggerMs": 1800,
-        "introMs": 2600,
-        "outroMs": 4000
-      },
-      "ref": null,
-      "unit": "ms",
-      "method": "whole bought/hunted bonus segment; trigger -> intro -> first spin -> outro split must be read off the every-2nd-frame sheets",
-      "confidence": "none",
-      "plannedConfidence": "low"
+      "method": "grid energy from the summon onset to the settled wild; stage-patch SAD tracking for the shake (HUD patch static); beat split on contact sheets",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": {
+        "normal": 23,
+        "turbo": 28,
+        "super": -14
+      }
     },
     "shake.peak": {
-      "status": "not_measured",
       "row": "Shake peaks (s.19)",
+      "unit": "px at 1920",
+      "ref": {
+        "summonStomp": 21,
+        "bigExplode": 37,
+        "spinPunchZoomPct": 1.9,
+        "ordinaryLandOrExplode": 0,
+        "hudMoves": false
+      },
       "ours": {
         "boomPx": 4.5,
         "chainMaxPx": 9.3,
@@ -409,26 +890,477 @@
           14
         ]
       },
+      "oursBuild": {
+        "boomPx1920": 5.6,
+        "boomOn": "frame/board (logo < 1.4 px, neon sign 0)",
+        "explodePx1920": 0.1,
+        "landPx1920": 0.1,
+        "spinPunchPct": 0
+      },
+      "method": "SAD block match (+-24..30 px, parabolic sub-pixel) of static stage patches every frame; validated by identical offsets on 3 patches",
+      "confidence": "high",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
+    "speed.turboOverNormal": {
+      "row": "turbo ratio per phase",
+      "unit": "ratio",
+      "ref": {
+        "pressToFirstMotion": 1.0,
+        "cameraPunch": 1.0,
+        "fallOut": 0.03,
+        "emptyBoard": 0.04,
+        "dropIn": 0.08,
+        "landSettle": 2.0,
+        "lossRound": 0.14,
+        "present": 0.84,
+        "explode": 0.78,
+        "refill": 0.17,
+        "refillWithSettle": 0.38,
+        "tumbleCycle": 0.66,
+        "summon": 0.5,
+        "meterReaction": 0.47,
+        "tickSpacing": 0.2,
+        "summonShake": 1.0,
+        "turboStates": 2
+      },
+      "ours": {
+        "factor": 0.5
+      },
+      "oursBuild": {
+        "fallOut": 0.27,
+        "dropIn": 0.37,
+        "landSettle": 0.59,
+        "lossRound": 0.37,
+        "present": 0.51,
+        "explode": 0.33,
+        "refill": 0.45,
+        "tumbleCycle": 0.46,
+        "summon": 0.48,
+        "meterReaction": 0.45
+      },
+      "method": "phase medians turbo / normal (same instrument on each side)",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
+    "speed.turboBOverNormal": {
+      "row": "second turbo state",
+      "unit": "ratio",
       "ref": null,
-      "unit": "px at 1920 wide",
-      "method": "SAD block match (+-20 px, parabolic sub-pixel) of static patches (stage frame, logo, HUD) against the segment's first frame; episodes = runs of |offset| >= 0.75 px; validated on synthetic shifts (--shake-selftest)",
-      "confidence": "none",
-      "plannedConfidence": "medium"
+      "status": "not_applicable",
+      "ours": {
+        "factor": 0.333
+      },
+      "oursBuild": {
+        "fallOut": 0.17,
+        "dropIn": 0.26,
+        "landSettle": 0.41,
+        "lossRound": 0.26,
+        "present": 0.35,
+        "explode": 0.25,
+        "refill": 0.34,
+        "tumbleCycle": 0.32,
+        "summon": 0.32,
+        "meterReaction": 0.3
+      },
+      "method": "the reference turbo button has 2 states (no super turbo)",
+      "confidence": "high",
+      "deltaPctOursBuildVsRef": null
+    },
+    "speed.quickStopOverNormal": {
+      "row": "quick stop (Space at +150 ms)",
+      "unit": "ratio",
+      "ref": {
+        "lossRound": 0.28,
+        "fallOutInFlight": 1.0,
+        "emptyBoard": 0.03,
+        "dropIn": 0.12,
+        "present": 1.0,
+        "slamInTurbo": "no change"
+      },
+      "ours": null,
+      "method": "quick / normal phase medians; our slam plays the rest of the round at super turbo (not captured here)",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
+    "bigWin.tiers": {
+      "row": "Big win tiers",
+      "unit": "ms / x bet",
+      "ref": {
+        "samples": [
+          {
+            "xBet": 11.5,
+            "titled": false,
+            "totalMs": 1333,
+            "countMs": 500
+          },
+          {
+            "xBet": 20.3,
+            "titled": true,
+            "totalMs": 1400,
+            "countMs": 470
+          }
+        ],
+        "tapNeeded": false
+      },
+      "ours": {
+        "tiersS": [
+          5,
+          7,
+          9,
+          13,
+          18
+        ],
+        "thresholdsX": [
+          15,
+          30,
+          50,
+          100
+        ]
+      },
+      "status": "partial",
+      "method": "overlay onset -> gone, every-frame (x11.5) and every-2nd-frame (x20.3) segments; payout from the RGS body",
+      "confidence": "low",
+      "deltaPctOursBuildVsRef": null
+    },
+    "bonus.flow": {
+      "row": "Feature trigger / intro / outro",
+      "unit": "ms",
+      "ref": {
+        "meterFullToTransition": 1100,
+        "transitionToCardReadable": 735,
+        "transitionToTapReady": 930,
+        "tapToFeatureScene": 700,
+        "lastLandToTotalWinPlaque": 1200,
+        "totalWinCountUp": false,
+        "tapToBaseGame": 1100,
+        "freeSpins": 4,
+        "n": 1
+      },
+      "ours": {
+        "triggerMs": 1800,
+        "introMs": 2600,
+        "outroMs": 4000
+      },
+      "status": "partial",
+      "method": "resumed bonus round (every 2nd frame, 86.7 s); beats read off contact sheets (+-33 ms)",
+      "confidence": "low",
+      "deltaPctOursBuildVsRef": null
+    },
+    "intro.cardsOut": {
+      "row": "Intro cards in / out",
+      "unit": "ms",
+      "ref": {
+        "out": 1450,
+        "outLastMotion": 2100
+      },
+      "timingsMjs": {
+        "ref": {
+          "out": 1733
+        },
+        "oursBuild": {
+          "out": 500
+        }
+      },
+      "ours": {
+        "out": 400,
+        "in": 900
+      },
+      "oursBuild": {
+        "out": 500
+      },
+      "method": "click -> end of the main full-canvas motion (every frame); timingsMjs = click -> last full-canvas motion",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
+    "idle.loops": {
+      "row": null,
+      "unit": "ms",
+      "ref": {
+        "boardHighSymbolsPeriod": 1000,
+        "lowSymbolsStatic": true,
+        "logoPeriod": 850,
+        "meterDragonPeriod": 850,
+        "cornerCharacterCycle": 10000,
+        "cornerActsPerCycle": [
+          3,
+          6
+        ],
+        "miniMapStatic": true,
+        "attractWithin30s": false,
+        "gridMeanEnergy": 4.9,
+        "meterMeanEnergy": 0.8
+      },
+      "oursBuild": {
+        "gridMeanEnergy": 0.74,
+        "meterMeanEnergy": 1.74,
+        "meterPulsePeriod": 600,
+        "hornsPeriod": 600,
+        "logoMeanEnergy": 1.43,
+        "mascotsContinuous": true,
+        "lowSymbolsStatic": false
+      },
+      "method": "per-region energy bursts and autocorrelation over 30 s (reference) / 6 s (ours) of idle, every 3rd frame",
+      "confidence": "medium",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
+    "miniPanel.activity": {
+      "row": "Mini 5x5 panel",
+      "unit": "-",
+      "ref": {
+        "isPowerupPositionMap": true,
+        "marksPerSpin": 3,
+        "updatesWithReveal": true,
+        "activeInLossRounds": true
+      },
+      "method": "contact sheets: the panel lights the 3 power-up cells as each tile lands on the empty board",
+      "confidence": "high",
+      "note": "function = per-spin power-up position map (R-4)",
+      "status": "measured",
+      "deltaPctOursBuildVsRef": null
+    },
+    "winFlash.peakSpacing": {
+      "row": null,
+      "unit": "ms",
+      "ref": {
+        "normal": 113
+      },
+      "status": "heuristic",
+      "method": "timings.mjs flashPeakSpacingMs; the reference has no blink cycle (win symbols pulse once), so this is animation texture only",
+      "confidence": "low",
+      "deltaPctOursBuildVsRef": null
     }
   },
-  "profiles": {
-    "normal": null,
-    "turboA": null,
-    "turboB": null,
-    "quick": null
+  "timingsMjsReference": {
+    "normal": {
+      "n": 19,
+      "firstMotionMs": {
+        "median": 66,
+        "min": 33,
+        "max": 67,
+        "n": 19
+      },
+      "exitStaggerMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 19
+      },
+      "firstStopMs": {
+        "median": 550,
+        "min": 516,
+        "max": 567,
+        "n": 19
+      },
+      "stopGapMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 19
+      },
+      "tailMs": {
+        "median": 0,
+        "min": 0,
+        "max": 50,
+        "n": 19
+      },
+      "boardSettleMs": {
+        "median": 917,
+        "min": 883,
+        "max": 1117,
+        "n": 19
+      },
+      "lossRoundMs": {
+        "median": 2817,
+        "min": 2800,
+        "max": 2867,
+        "n": 15
+      },
+      "perWinStepMs": null,
+      "meterLagMs": {
+        "median": 1692,
+        "min": 1650,
+        "max": 1700,
+        "n": 4
+      },
+      "meterBurstMs": {
+        "median": 242,
+        "min": 0,
+        "max": 500,
+        "n": 4
+      },
+      "tailPeaks": {
+        "median": 0,
+        "min": 0,
+        "max": 7,
+        "n": 25
+      },
+      "splitExitDropShare": 0,
+      "fallOutMs": null,
+      "dropInSplitMs": null,
+      "flashPeakSpacingMs": {
+        "median": 113,
+        "min": 52,
+        "max": 250,
+        "n": 12
+      }
+    },
+    "turboA": {
+      "n": 20,
+      "firstMotionMs": {
+        "median": 50,
+        "min": 33,
+        "max": 50,
+        "n": 20
+      },
+      "exitStaggerMs": {
+        "median": 0,
+        "min": -8,
+        "max": 0,
+        "n": 20
+      },
+      "firstStopMs": {
+        "median": 250,
+        "min": 184,
+        "max": 317,
+        "n": 15
+      },
+      "stopGapMs": {
+        "median": 0,
+        "min": -33,
+        "max": 300,
+        "n": 10
+      },
+      "tailMs": {
+        "median": 350,
+        "min": 200,
+        "max": 733,
+        "n": 15
+      },
+      "boardSettleMs": {
+        "median": 2350,
+        "min": 1050,
+        "max": 3650,
+        "n": 2
+      },
+      "lossRoundMs": {
+        "median": 317,
+        "min": 150,
+        "max": 350,
+        "n": 17
+      },
+      "perWinStepMs": null,
+      "meterLagMs": {
+        "median": 0,
+        "min": 0,
+        "max": 1150,
+        "n": 17
+      },
+      "meterBurstMs": {
+        "median": 333,
+        "min": 17,
+        "max": 434,
+        "n": 17
+      },
+      "tailPeaks": {
+        "median": 7,
+        "min": 6,
+        "max": 10,
+        "n": 3
+      },
+      "splitExitDropShare": 0,
+      "fallOutMs": null,
+      "dropInSplitMs": null,
+      "flashPeakSpacingMs": {
+        "median": 246,
+        "min": 124,
+        "max": 367,
+        "n": 2
+      }
+    },
+    "quick": {
+      "n": 5,
+      "firstMotionMs": {
+        "median": 33,
+        "min": 33,
+        "max": 50,
+        "n": 5
+      },
+      "exitStaggerMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 5
+      },
+      "firstStopMs": {
+        "median": 450,
+        "min": 450,
+        "max": 450,
+        "n": 5
+      },
+      "stopGapMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 5
+      },
+      "tailMs": {
+        "median": 300,
+        "min": 0,
+        "max": 433,
+        "n": 5
+      },
+      "boardSettleMs": {
+        "median": 1133,
+        "min": 883,
+        "max": 2683,
+        "n": 5
+      },
+      "lossRoundMs": {
+        "median": 633,
+        "min": 617,
+        "max": 683,
+        "n": 3
+      },
+      "perWinStepMs": null,
+      "meterLagMs": {
+        "median": 1359,
+        "min": 950,
+        "max": 1767,
+        "n": 2
+      },
+      "meterBurstMs": {
+        "median": 150,
+        "min": 16,
+        "max": 284,
+        "n": 2
+      },
+      "tailPeaks": {
+        "median": 3,
+        "min": 0,
+        "max": 44,
+        "n": 25
+      },
+      "splitExitDropShare": 0,
+      "fallOutMs": null,
+      "dropInSplitMs": null,
+      "flashPeakSpacingMs": {
+        "median": 56,
+        "min": 46,
+        "max": 66,
+        "n": 2
+      }
+    }
   },
-  "segments": [],
-  "shake": [],
   "decisions": [
     {
-      "date": "2026-09-26",
+      "date": "2026-09-28",
       "step": "DESIGN.md s.22 step 4",
-      "result": "no change: nothing measured, no [RM] row adopted (DESIGN.md s.22.1)",
+      "result": "measured; no row adopted by this study (adoption is a design decision, see deltaPctOursBuildVsRef and the study notes)",
       "adopted": []
     }
   ]

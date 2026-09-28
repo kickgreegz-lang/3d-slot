@@ -7,11 +7,49 @@ import { BakedWord, type GlyphStyle } from '../../../present/common/glyphs';
 import { label } from '../../../present/common/text';
 import { LOGO_ART, LOGO_CYAN, LOGO_PINK, SCENE_LOOK } from './look';
 
-/** The word-mark type: the intro logo's title face and extrusion (screens/IntroCards). */
-const TYPE = { family: FONTS.title, extrude: 0.1 } as const;
-/** Glyph bake size (design px) before fitting; the composite is baked again at display resolution. */
-const TOP_SIZE = 64;
-const MAIN_SIZE = 120;
+/** The word-mark type: the intro logo's title face, outline and extrusion (screens/IntroCards). */
+const TOP_STYLE: Omit<GlyphStyle, 'size'> = { family: FONTS.title, extrude: 0.1, palette: LOGO_CYAN, outline: 0.08, tracking: 0.03 };
+const MAIN_STYLE: Omit<GlyphStyle, 'size'> = { family: FONTS.title, extrude: 0.1, palette: LOGO_PINK, outline: 0.07, tracking: 0.02 };
+
+let measureCtx: CanvasRenderingContext2D | null = null;
+
+/** Width (advances, as BakedWord sets them) and cap height of `text` at `size` px. */
+const measure = (text: string, st: Omit<GlyphStyle, 'size'>, size: number): { w: number; cap: number } => {
+  measureCtx ??= document.createElement('canvas').getContext('2d');
+  const g = measureCtx;
+  if (!g) return { w: text.length * size * 0.7, cap: size * 0.72 };
+  g.font = `${size}px "${st.family}"`;
+  const track = size * (st.tracking ?? 0.02);
+  let w = 0;
+  for (const ch of text) w += ch === ' ' ? size * 0.32 : g.measureText(ch).width + track;
+  return { w: w - track, cap: g.measureText('H').actualBoundingBoxAscent };
+};
+
+/**
+ * A baked word sized to a cap height (design px), smaller if it would pass `maxW`. The glyphs are
+ * baked at that size (a residual scale <= 1 absorbs measuring differences), so the glyph cache
+ * only holds small, display-sized glyphs.
+ */
+const word = (text: string, st: Omit<GlyphStyle, 'size'>, cap: number, maxW: number, res: number): BakedWord => {
+  const probe = measure(text, st, 100);
+  let size = (100 * cap) / Math.max(1, probe.cap);
+  const w = (probe.w * size) / 100;
+  if (w > maxW) size *= maxW / w;
+  const out = new BakedWord(text, { ...st, size: Math.max(6, Math.round(size)) }, res);
+  out.scale.set(Math.min(1, maxW / Math.max(1, out.textWidth)));
+  return out;
+};
+
+/** Bend a word's glyphs along a circle of `radius` design px whose top is the word's centre line. */
+const bend = (w: BakedWord, radius: number): void => {
+  const k = w.scale.x;
+  for (const g of w.glyphs) {
+    const x = g.homeX * k;
+    const drop = radius - Math.sqrt(Math.max(0, radius * radius - x * x));
+    g.sprite.position.set(g.homeX, g.homeY + drop / k);
+    g.sprite.rotation = Math.asin(Math.max(-0.9, Math.min(0.9, x / radius)));
+  }
+};
 
 /**
  * LOGO — the Bass Drop crest (art/source/ui/bass-drop/logo, tools/bdart/logo.py: speaker, horns and
@@ -65,7 +103,7 @@ export class Logo implements GameModule {
     const key = `${L.kind}@${res}`;
     if (key === this.key) return;
     this.key = key;
-    const comp = this.compose(L.logo);
+    const comp = this.compose(L.logo, res);
     const frame = comp.getLocalBounds().rectangle.clone().pad(4);
     const tex = ctx.app.renderer.generateTexture({ target: comp, frame, resolution: res, antialias: true });
     comp.destroy({ children: true });
@@ -93,14 +131,11 @@ export class Logo implements GameModule {
 
   // ======================================================================= composition
 
-  /** Emblem + word-mark in design px around the rect centre (0, 0). */
-  private compose(r: Rect): Container {
+  /** Emblem + word-mark in design px around the rect centre (0, 0); glyphs baked at `res`. */
+  private compose(r: Rect, res: number): Container {
     const comp = new Container();
     const top = label('bd.intro.logoTop', 'SWAMP FUNK');
     const main = label('bd.intro.logoMain', 'BASS DROP');
-    const res = 2;
-    const topWord = new BakedWord(top, { ...TYPE, size: TOP_SIZE, palette: LOGO_CYAN, outline: 0.08, tracking: 0.03 } as GlyphStyle, res);
-    const mainWord = new BakedWord(main, { ...TYPE, size: MAIN_SIZE, palette: LOGO_PINK, outline: 0.07, tracking: 0.02 } as GlyphStyle, res);
     const E = LOGO_ART.size;
     const wide = r.w / r.h >= 3 || !this.emblem;
 
@@ -118,12 +153,12 @@ export class Logo implements GameModule {
       // circle through the banner bow: sagitta `bannerRise` over the face half-width
       const half = tb.w / 2;
       const radius = ((half * half + LOGO_ART.bannerRise ** 2) / (2 * LOGO_ART.bannerRise)) * k;
-      this.fitWord(topWord, bh * 0.25, bw * 0.8);
-      this.fitWord(mainWord, bh * 0.44, Math.min(r.w * 0.98, bw * 1.24));
+      const topWord = word(top, TOP_STYLE, bh * 0.25, bw * 0.8, res);
+      const mainWord = word(main, MAIN_STYLE, bh * 0.44, Math.min(r.w * 0.98, bw * 1.24), res);
       topWord.position.set(bx, by + bh * 0.3);
       mainWord.position.set(bx, by + bh * 0.68);
-      this.bend(topWord, radius * 0.94);
-      this.bend(mainWord, radius);
+      bend(topWord, radius * 0.94);
+      bend(mainWord, radius);
       comp.addChild(topWord, mainWord);
       return comp;
     }
@@ -131,15 +166,17 @@ export class Logo implements GameModule {
     // wide lock-up: [emblem] [SWAMP FUNK / BASS DROP]
     const h = r.h;
     const em = this.emblem ? new Sprite({ texture: this.emblem, anchor: 0.5 }) : null;
-    const ew = em ? (h * 1.04 * E.w) / E.h : 0;
+    const eh = h * 1.04;
+    const ew = em ? (eh * E.w) / E.h : 0;
     const gap = em ? h * 0.12 : 0;
     const textMax = r.w - ew - gap;
-    this.fitWord(mainWord, h * 0.4, textMax);
-    this.fitWord(topWord, h * 0.22, Math.min(textMax, mainWord.textWidth * mainWord.scale.x * 0.9));
-    const textW = Math.max(mainWord.textWidth * mainWord.scale.x, topWord.textWidth * topWord.scale.x);
+    const mainWord = word(main, MAIN_STYLE, h * 0.4, textMax, res);
+    const mainW = mainWord.textWidth * mainWord.scale.x;
+    const topWord = word(top, TOP_STYLE, h * 0.22, Math.min(textMax, mainW * 0.9), res);
+    const textW = Math.max(mainW, topWord.textWidth * topWord.scale.x);
     const x0 = -(ew + gap + textW) / 2;
     if (em) {
-      em.scale.set((h * 1.04) / E.h);
+      em.scale.set(eh / E.h);
       em.position.set(x0 + ew / 2, 0);
       comp.addChild(em);
     }
@@ -148,25 +185,6 @@ export class Logo implements GameModule {
     mainWord.position.set(tx, h * 0.15);
     comp.addChild(topWord, mainWord);
     return comp;
-  }
-
-  /** Scale a baked word (never up) to a cap height, then down again to a maximum width. */
-  private fitWord(w: BakedWord, cap: number, maxW: number): void {
-    let k = cap / Math.max(1, w.capHeight);
-    if (w.textWidth * k > maxW) k = maxW / Math.max(1, w.textWidth);
-    w.scale.set(k);
-  }
-
-  /** Bend a word's glyphs along a circle of `radius` design px whose top is the word's centre line. */
-  private bend(w: BakedWord, radius: number): void {
-    const k = w.scale.x;
-    for (const g of w.glyphs) {
-      const x = g.homeX * k;
-      const a = Math.asin(Math.max(-0.9, Math.min(0.9, x / radius)));
-      const drop = radius - Math.sqrt(Math.max(0, radius * radius - x * x));
-      g.sprite.position.set(g.homeX, g.homeY + drop / k);
-      g.sprite.rotation = a;
-    }
   }
 
   // ======================================================================= shine

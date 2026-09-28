@@ -12,11 +12,12 @@ import { reducedMotion } from '../fx/motion';
 import { BodyOverlay } from './bodyOverlay';
 import { measureContent } from './contentBounds';
 import { type JellyFrame, type JellyMesh, acquireJelly, releaseJelly } from './JellyMesh';
-import { SPINE_ANIM, SPINE_EVENT, type SpineCue, SpineRig } from './SpinePool';
+import { symbolMounts } from './mounts';
+import { SPINE_ANIM, SPINE_EVENT, type SpineCue, SpineRig, spinePool } from './SpinePool';
 import { FrameLoop, Spring } from './spring';
 import type { SymbolFxParams } from './symbolFxShader';
 import { SYMBOL_TIMING as T } from './symbolTiming';
-import type { ExplodeOptions, LandOptions, SymbolState, SymbolView } from './types';
+import type { ExplodeOptions, LandOptions, SymbolLook, SymbolPlayOptions, SymbolState, SymbolView } from './types';
 
 const DEG = Math.PI / 180;
 const clamp = (v: number, a: number, b: number): number => Math.min(b, Math.max(a, v));
@@ -75,12 +76,20 @@ type Hold = 'win' | 'explode' | 'anticipation' | 'glint';
  *    └ body  origin at the FEET: squash/stretch spring, hop, rock wobble (weight)
  *            + additive overlay channels (bass_react, drop impact, neighbour push)
  *       └ pose  origin at the content centre: pop / pulse / breathe / sway / burst
- *          ├ art    fit scale + restAngle; children: glow (add) · sprite | jelly mesh | spine
+ *          ├ art    fit scale + restAngle; children: glow (add) · sprite | jelly mesh | spine · slotMounts
  *          └ decor  Board decorations (badges, clamps; design px, origin = cell centre at rest)
  *
  * Static = one batched Sprite. While animating, a pooled JellyMesh (and, for win /
  * explode / glint, the FX shader) or a pooled Spine instance replaces the sprite,
  * and a clock-driven loop steps the springs; the loop stops once everything settles.
+ * The board sprite IS the rig's setup pose (Bass Drop board sprites), so the swap cannot pop.
+ *
+ * Live slot mounts (symbolMounts registry, e.g. the W's "WILD" in `txt_wild`, and a look's
+ * mounts, e.g. its "×N" in `txt_mult`) ride the rig's slot while a Spine instance is on, and sit on
+ * the static sprite at the slot bone's setup transform (slotMounts, spine space) otherwise.
+ * A LOOK (setLook: skin, attachments, mounts, bone channels) keeps the rig for as long as it is
+ * set and loops its rest clip between actions. Every rig action carries an id: only the latest
+ * one may settle the rig (a sticky_lock cutting into drop_impact is not undone by the impact's end).
  */
 export class SymbolRig implements SymbolView {
   readonly view = new Container({ label: 'symbol' });
@@ -91,6 +100,16 @@ export class SymbolRig implements SymbolView {
   private readonly sprite = new Sprite();
   /** Board decorations hang here: they squash / pop / explode with the symbol, above the art. */
   readonly decor = new Container({ label: 'decor', sortableChildren: true });
+  /** live slot mounts on the static sprite: spine-space transform (same as a placed rig) */
+  private readonly slotLayer = new Container({ label: 'slotMounts' });
+  /** persistent rig look (null = none) */
+  private look: SymbolLook | null = null;
+  /** symbol-level mounts created by this view, per `${id}|${slot}` (destroyed with the view) */
+  private readonly ownMounts = new Map<string, Container>();
+  /** slot -> live object this view shows now (symbol mounts + look mounts) */
+  private readonly wanted = new Map<string, Container>();
+  /** bumped by every rig action: only the latest one settles the rig */
+  private actionId = 0;
 
   private _id = '';
   private _state: SymbolState = 'static';
@@ -161,7 +180,7 @@ export class SymbolRig implements SymbolView {
     this.glow.blendMode = 'add';
     this.glow.anchor.set(0.5);
     this.glow.visible = false;
-    this.art.addChild(this.glow, this.sprite);
+    this.art.addChild(this.glow, this.sprite, this.slotLayer);
     this.pose.addChild(this.art, this.decor);
     this.body.addChild(this.pose);
     this.view.addChild(this.body);
@@ -180,6 +199,8 @@ export class SymbolRig implements SymbolView {
   // ───────────────────────────── identity / layout ─────────────────────────────
 
   setSymbol(id: string): void {
+    // a new identity is a recycle: the look (skin, badge, clamps) belonged to the old one
+    this.look = null;
     this.reset();
     this._id = id;
     this.def = getSymbolDef(id);
@@ -188,6 +209,7 @@ export class SymbolRig implements SymbolView {
     this.glow.texture = this.ctx.art.symbol(id, 'glow');
     this.glow.tint = this.def.color;
     this.fit();
+    this.syncMounts();
     this.startBreath();
   }
 
@@ -219,6 +241,9 @@ export class SymbolRig implements SymbolView {
     this.glow.position.set(tex.width / 2 - cx, tex.height / 2 - cy);
     this.pose.position.set(0, -feet);
     this.jelly?.bind(this.sprite.texture, this.frame);
+    // static mounts live in spine space: same placement as a borrowed rig
+    this.slotLayer.scale.set(tex.width / T.spine.canvasPx);
+    this.slotLayer.position.set(tex.width / 2 - cx, tex.height / 2 - cy);
     if (this.rig) this.placeSpine(this.rig);
     this.applyBody();
   }
@@ -239,14 +264,16 @@ export class SymbolRig implements SymbolView {
     this.jelly?.bind(tex, this.frame);
     if (on) {
       this.fadeGlow(0);
-      const ref = this.spineRef();
-      if (ref && SpineRig.supports(ref, 'blur')) {
-        void this.useSpine(ref).play('blur', true);
+      // the rig's blur pose only on a view that already holds its rig (a look): borrowing an
+      // instance per falling symbol would spend the pool on a 1-frame pose the _blur sprite shows
+      if (this.rig?.has('blur')) {
+        this.actionId++;
+        void this.rig.play('blur', true);
       }
       if (this._state === 'static' || this._state === 'land') this._state = 'blur';
     } else if (this._state === 'blur') {
       this._state = 'static';
-      if (this.rig && !this.holds.size) this.releaseSpine();
+      if (this.rig && !this.holds.size) this.settleRig();
     }
     this.squash.target = on ? T.blur.stretch : 0;
     this.loop.start();
@@ -275,12 +302,13 @@ export class SymbolRig implements SymbolView {
     const ref = this.spineRef();
     const rig = ref && SpineRig.supports(ref, 'land') ? this.useSpine(ref) : null;
     if (rig) {
+      const id = ++this.actionId;
       this.squashGain = T.spine.squashScale;
       rig.impact(T.spine.physicsImpulse * m);
       if (rig.hasEvent(SPINE_EVENT.impact)) rig.once(SPINE_EVENT.impact, () => this.landFeedback(weight, m, !!opts.tumble, !!opts.silent));
       else this.landFeedback(weight, m, !!opts.tumble, !!opts.silent);
       void rig.play('land', false, true).then(() => {
-        if (this.rig === rig && (this._state === 'land' || this._state === 'static')) this.releaseSpine();
+        if (id === this.actionId && this.rig === rig && (this._state === 'land' || this._state === 'static')) this.settleRig();
       });
     } else {
       this.releaseSpine();
@@ -322,6 +350,7 @@ export class SymbolRig implements SymbolView {
     const ref = this.spineRef();
     const rig = ref && SpineRig.supports(ref, 'win') ? this.useSpine(ref) : null;
     if (rig) {
+      this.actionId++;
       void rig.play('win');
       if (rig.has('win_loop')) rig.queueLoop('win_loop');
     } else {
@@ -412,7 +441,11 @@ export class SymbolRig implements SymbolView {
     const burstAt = s(E.anticipateDuration);
     const burst = s(E.burstDuration);
     const power = (opts.power ?? 1) * (this.def.kind === 'royal' ? 0.8 : 1);
+    let burstDone = false;
     const emitBurst = () => {
+      if (burstDone) return;
+      burstDone = true;
+      opts.onBurst?.();
       const c = this.toRoot(this.pose, 0, 0);
       this.ctx.game.broadcast('fx:burst', {
         kind: 'explode',
@@ -433,6 +466,7 @@ export class SymbolRig implements SymbolView {
     const rig = ref && SpineRig.supports(ref, 'explode') ? this.useSpine(ref) : null;
     this.hold('explode');
     if (rig) {
+      this.actionId++;
       const hasBurst = rig.hasEvent(SPINE_EVENT.burst);
       if (hasBurst) rig.once(SPINE_EVENT.burst, emitBurst);
       const finish = () => {
@@ -499,6 +533,7 @@ export class SymbolRig implements SymbolView {
       const ref = this.spineRef();
       const loopName = ref ? SpineRig.pick(ref, SPINE_ANIM.anticipationLoop) : null;
       const rig = ref && loopName ? this.useSpine(ref) : null;
+      if (rig) this.actionId++;
       this.glowState.s = 0.9;
       this.track(
         gsap.to(this.glowState, {
@@ -560,15 +595,18 @@ export class SymbolRig implements SymbolView {
       if (this._state !== 'anticipation') return;
       this.killAnims();
       this.release('anticipation');
-      if (this.rig?.has('anticipation_out')) void this.rig.play('anticipation_out');
+      if (this.rig?.has('anticipation_out')) {
+        this.actionId++;
+        void this.rig.play('anticipation_out');
+      }
       const out = s(A.outroDuration);
       this.track(gsap.to(this.pose.scale, { x: 1, y: 1, duration: out, ease: 'power2.out' }));
       this.track(gsap.to(this.pose, { rotation: 0, duration: out, ease: 'power2.out' }));
       this.track(gsap.to(this.glowState, { a: 0, s: 1, duration: out, ease: 'power2.in', onUpdate: this.onGlow }));
       this.track(
         gsap.delayedCall(out, () => {
-          if (this.rig) this.releaseSpine();
           this._state = 'static';
+          if (this.rig) this.settleRig();
           if (!this.loop.running) this.startBreath();
         }),
       );
@@ -600,14 +638,19 @@ export class SymbolRig implements SymbolView {
   }
 
   idleAccent(): void {
-    if (this._state !== 'static' || this.loop.running || this.destroyed) return;
+    // a look-holder already loops its rest clip
+    if (this._state !== 'static' || this.loop.running || this.destroyed || this.look) return;
     ensureEases();
     const I = T.idle;
     const ref = this.spineRef();
-    if (ref && SpineRig.supports(ref, 'idle')) {
-      const rig = this.useSpine(ref);
+    const rig = ref && SpineRig.supports(ref, 'idle') ? this.useSpine(ref) : null;
+    if (rig) {
+      this.stopBreath();
+      const id = ++this.actionId;
       void rig.play('idle').then(() => {
-        if (this.rig === rig && this._state === 'static') this.releaseSpine();
+        if (id !== this.actionId || this.rig !== rig || this._state !== 'static') return;
+        this.settleRig();
+        if (!this.rig) this.startBreath();
       });
       return;
     }
@@ -659,8 +702,9 @@ export class SymbolRig implements SymbolView {
     this.holds.clear();
     this.loop.stop();
     this.dropJelly();
-    this.releaseSpine();
     this.blurred = false;
+    if (this.look && this.spineRef()) this.restartLook();
+    else this.releaseSpine();
     this.antOn = false;
     if (this.staticTex) this.sprite.texture = this.staticTex;
     this.glowState.a = 0;
@@ -684,14 +728,113 @@ export class SymbolRig implements SymbolView {
 
   destroy(): void {
     if (this.destroyed) return;
+    this.look = null;
     this.reset();
     this.stopBreath();
     this.destroyed = true;
     this.offLayout();
     this.setElevated(false);
-    // decorations belong to their owners: detach, never destroy
+    // decorations and look mounts belong to their owners: detach, never destroy
     this.decor.removeChildren();
+    this.wanted.clear();
+    this.slotLayer.removeChildren();
+    for (const m of this.ownMounts.values()) m.destroy({ children: true });
+    this.ownMounts.clear();
     this.view.destroy({ children: true });
+  }
+
+  // ───────────────────────── rig looks / clips (Board 'board:look' / 'board:play') ─────────────────────────
+
+  setLook(look: SymbolLook | null): boolean {
+    if (this.destroyed) return false;
+    if (!look) {
+      if (!this.look) return true;
+      this.look = null;
+      if (this.rig) {
+        this.rig.applyLook(null);
+        // resting (or gone): back to the sprite now; an action in flight settles later
+        if (this._state === 'static' || this._state === 'hidden') this.releaseSpine();
+        else this.syncMounts();
+      } else this.syncMounts();
+      return true;
+    }
+    const ref = this.spineRef();
+    if (!ref) return false;
+    this.look = look;
+    const rig = this.useSpine(ref, true);
+    if (!rig) return false;
+    this.stopBreath();
+    rig.applyLook(look);
+    this.syncMounts();
+    if (!rig.busy && (this._state === 'static' || this._state === 'land')) this.playRest(rig);
+    rig.applyNow();
+    return true;
+  }
+
+  has(clip: string): boolean {
+    const ref = this.spineRef();
+    return !!ref && SpineRig.supports(ref, clip);
+  }
+
+  play(clip: string, opts: SymbolPlayOptions = {}): Promise<void> {
+    const ref = this.spineRef();
+    if (this.destroyed || !ref || !SpineRig.supports(ref, clip)) return Promise.resolve();
+    if (this._state === 'explode' || this._state === 'hidden') return Promise.resolve();
+    const track = opts.track ?? 0;
+    if (track > 0) {
+      // additive overlay over whatever track 0 plays (a borrowed rig goes back once it is done)
+      const own = !this.rig;
+      const rig = this.useSpine(ref, true);
+      if (!rig) return Promise.resolve();
+      const done = this.bindEvents(rig, opts.events, rig.playOverlay(clip, track));
+      rig.applyNow();
+      if (own) {
+        this.stopBreath();
+        const id = this.actionId;
+        void done.then(() => {
+          if (id !== this.actionId || this.rig !== rig || this._state !== 'static' || this.look) return;
+          this.releaseSpine();
+          this.startBreath();
+        });
+      }
+      return done;
+    }
+    const id = ++this.actionId;
+    this.stopBreath();
+    const rig = this.useSpine(ref, true);
+    if (!rig) return Promise.resolve();
+    // a clip takes over from a land / drop impact still settling (sticky_lock cuts into drop_impact)
+    if (this._state === 'land') this._state = 'static';
+    const loop = !!opts.loop;
+    const done = this.bindEvents(rig, opts.events, rig.play(clip, loop));
+    if (!loop) {
+      const next = opts.next === undefined ? this.restName(rig) : opts.next;
+      if (next && rig.has(next)) rig.queueLoop(next);
+      else if (opts.next === undefined) {
+        void done.then(() => {
+          if (id === this.actionId && this.rig === rig && this._state === 'static') this.settleRig();
+        });
+      }
+    }
+    rig.applyNow();
+    return done;
+  }
+
+  /** Register once-handlers for a clip's events; any that did not fire run when the clip ends / is cut. */
+  private bindEvents(rig: SpineRig, events: SymbolPlayOptions['events'], done: Promise<void>): Promise<void> {
+    if (!events) return done;
+    const pending = new Map<string, () => void>();
+    for (const [name, fn] of Object.entries(events)) {
+      const run = (): void => {
+        if (!pending.delete(name)) return;
+        fn();
+      };
+      pending.set(name, run);
+      if (rig.hasEvent([name])) rig.once([name], run);
+    }
+    return done.then(() => {
+      for (const run of [...pending.values()]) run();
+    });
   }
 
   // ───────────────────────── board reactions (additive) ─────────────────────────
@@ -708,11 +851,12 @@ export class SymbolRig implements SymbolView {
       return;
     }
     const ref = this.spineRef();
-    if (!this.rig && ref && this._state === 'static' && SpineRig.supports(ref, 'bass_react')) {
+    const rig = !this.rig && ref && this._state === 'static' && SpineRig.supports(ref, 'bass_react') ? this.useSpine(ref) : null;
+    if (rig) {
       this.stopBreath();
-      const rig = this.useSpine(ref);
+      const id = this.actionId;
       void rig.playOverlay('bass_react').then(() => {
-        if (this.rig !== rig || this._state !== 'static') return;
+        if (id !== this.actionId || this.rig !== rig || this._state !== 'static' || this.look) return;
         this.releaseSpine();
         this.startBreath();
       });
@@ -743,11 +887,13 @@ export class SymbolRig implements SymbolView {
     this.hop.active = false;
     this.hop.h = 0;
     const ref = this.spineRef();
-    const rig = ref && SpineRig.supports(ref, 'drop_impact') ? this.useSpine(ref) : null;
+    const rig = ref && SpineRig.supports(ref, 'drop_impact') ? this.useSpine(ref, true) : null;
+    const id = ++this.actionId;
     let motion: Promise<void>;
     if (rig) {
       rig.impact(T.spine.maxImpulse);
       motion = rig.play('drop_impact');
+      rig.applyNow();
     } else {
       this.releaseSpine();
       this.ensureJelly();
@@ -762,7 +908,7 @@ export class SymbolRig implements SymbolView {
         if (!this.pending.includes(resolve)) return;
         this.pending = this.pending.filter((p) => p !== resolve);
         if (this._state === 'land') this._state = 'static';
-        if (rig && this.rig === rig && this._state === 'static') this.releaseSpine();
+        if (rig && id === this.actionId && this.rig === rig && this._state === 'static') this.settleRig();
         resolve();
       });
     });
@@ -995,20 +1141,104 @@ export class SymbolRig implements SymbolView {
 
   /**
    * Borrow (or keep) the Spine rig for a new action. Physics stop inheriting container
-   * motion for every action; only `land` re-arms it (SpineRig.impact).
+   * motion for every action; only `land` re-arms it (SpineRig.impact). A transient borrow is
+   * refused (null: the caller runs its procedural path) once SYMBOL_TIMING.spine.maxActive
+   * instances are out; looks, impacts and explicit plays (`force`) always get one.
    */
-  private useSpine(ref: SpineRef): SpineRig {
+  private useSpine(ref: SpineRef, force = false): SpineRig | null {
     if (!this.rig) {
+      if (!force && !this.look && spinePool.activeCount >= this.spineCap()) return null;
       this.dropJelly();
       const rig = new SpineRig(ref);
       rig.onCue(this.onSpineCue);
       this.placeSpine(rig);
-      this.art.addChild(rig.spine);
+      this.art.addChildAt(rig.spine, this.art.getChildIndex(this.slotLayer));
       this.sprite.visible = false;
       this.rig = rig;
+      rig.applyLook(this.look);
+      this.syncMounts();
     }
     this.rig.detachPhysics();
     return this.rig;
+  }
+
+  /** Transient Spine instances allowed at once (ANIMATION_SET §2.7: 24, low tier 12). */
+  private spineCap(): number {
+    return this.ctx.budget.idleShaders ? T.spine.maxActive : T.spine.maxActiveLow;
+  }
+
+  /** The look's rest loop (default `idle`) if the rig has it. */
+  private restName(rig: SpineRig): string | null {
+    if (!this.look) return null;
+    const r = this.look.rest ?? 'idle';
+    return rig.has(r) ? r : null;
+  }
+
+  private playRest(rig: SpineRig): void {
+    const rest = this.restName(rig);
+    if (rest) void rig.play(rest, true);
+  }
+
+  /** An action is over: a look-holder loops its rest clip, anything else goes back to the sprite. */
+  private settleRig(): void {
+    const rig = this.rig;
+    if (!rig) return;
+    if (this.look) this.playRest(rig);
+    else this.releaseSpine();
+  }
+
+  /** reset() of a look-holder: keep (or take) the rig, setup pose in the look's skin, rest loop. */
+  private restartLook(): void {
+    const ref = this.spineRef();
+    const rig = ref ? this.useSpine(ref, true) : null;
+    if (!rig) return;
+    rig.clearEvents();
+    rig.spine.state.clearTracks();
+    rig.spine.skeleton.setupPose();
+    rig.applyLook(this.look);
+    this.syncMounts();
+    this.playRest(rig);
+    rig.applyNow();
+  }
+
+  /**
+   * Put every wanted live mount (symbolMounts of this id + the look's) where it shows now: in its
+   * slot on the rig, else on the static sprite at the slot bone's setup transform. Unwanted ones
+   * leave (owner objects are only detached).
+   */
+  private syncMounts(): void {
+    const ref = this.spineRef();
+    this.wanted.clear();
+    if (ref && !this.destroyed) {
+      const reg = symbolMounts.get(this._id);
+      if (reg) {
+        for (const [slot, make] of reg) {
+          const key = `${this._id}|${slot}`;
+          let obj = this.ownMounts.get(key);
+          if (!obj) {
+            obj = make();
+            this.ownMounts.set(key, obj);
+          }
+          this.wanted.set(slot, obj);
+        }
+      }
+      if (this.look?.mounts) for (const [slot, obj] of Object.entries(this.look.mounts)) this.wanted.set(slot, obj);
+    }
+    const keep = new Set(this.wanted.values());
+    for (const c of [...this.slotLayer.children]) if (!keep.has(c)) this.slotLayer.removeChild(c);
+    if (this.rig) {
+      this.rig.syncMounts(this.wanted);
+      return;
+    }
+    if (!ref) return;
+    for (const [slot, obj] of this.wanted) {
+      const m = SpineRig.slotSetup(ref, slot);
+      if (!m) continue;
+      if (obj.parent !== this.slotLayer) this.slotLayer.addChild(obj);
+      obj.setFromMatrix(m);
+      obj.visible = true;
+      obj.alpha = 1;
+    }
   }
 
   private placeSpine(rig: SpineRig): void {
@@ -1023,6 +1253,8 @@ export class SymbolRig implements SymbolView {
     this.rig = null;
     this.sprite.visible = !this.jelly;
     this.squashGain = 1;
+    // the pool detached the mounts: back onto the static sprite
+    this.syncMounts();
   }
 
   // ── feedback ──

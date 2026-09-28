@@ -1,4 +1,4 @@
-import { Container } from 'pixi.js';
+import { Container, Point } from 'pixi.js';
 import { planTumble, slotPos } from '../../../board/model';
 import type { Position } from '../../../book/types';
 import { GRID } from '../../../config/game';
@@ -6,6 +6,8 @@ import type { LayoutSpec } from '../../../config/layout';
 import { s } from '../../../core/timing';
 import { pentaRate } from '../../../audio/mix';
 import type { GameContext } from '../../../game/context';
+import { SpineRig } from '../../../symbols/SpinePool';
+import type { SymbolPlayOptions } from '../../../symbols/types';
 import type { DroppedWild } from '../events';
 import { BASS_DROP_TIMING, multTier, physK } from '../timing';
 import type { DropArt } from './art';
@@ -14,9 +16,12 @@ import type { DropFx } from './fx';
 import { cellKey } from './geometry';
 import { DROP_LOOK as LOOK } from './look';
 import { Sched } from './sched';
+import { RigWild } from './wildRig';
 
 const T = BASS_DROP_TIMING;
 const WILD = 'W';
+/** the W rig clips the rig path drives (else the phase-B code badge + clamps stay) */
+const RIG_CLIPS = ['drop_impact', 'sticky_lock', 'sticky_idle', 'mult_up', 'sticky_unlock'] as const;
 
 /** A Mega Mix home (DESIGN §9.1): keyed by the cell its sticky wild dropped on. */
 export interface Home {
@@ -43,6 +48,8 @@ export interface WildEntity {
   home: Home | null;
   badge: MultBadge | null;
   clamps: StickyClamps | null;
+  /** rig path: the W view's own badge / clamps (skin, tier, live "×N"), see RigWild */
+  rig: RigWild | null;
   alive: boolean;
 }
 
@@ -56,6 +63,13 @@ export interface WildEntity {
  * Pools: badges, clamps and home markers are reused. A display leaves its entity when the
  * wild explodes / falls out / is replaced; it only returns to the pool once the Board has
  * detached it (parent null), so a fading explode is never robbed of its badge.
+ *
+ * RIG PATH (the sym_W rig is loaded: ART_STATUS §7.5): no code badge / clamps. The wild's own rig
+ * shows them: a RigWild per entity gives the view its look (skin `mult` -> `sticky`, badge tier,
+ * the live "×N" in `txt_mult`, the plate-scale channel) through 'board:transform' cells /
+ * 'board:look', and the lock / growth / release are the rig's clips through 'board:play'
+ * (sticky_lock + `lock_snap`, mult_up + `mult_swap`, sticky_unlock). The slam / appear / maxed
+ * punch tween the plate channel. Without the rig (a build without the art) the code path runs.
  */
 export class WildRegistry {
   readonly homes = new Map<string, Home>();
@@ -64,6 +78,10 @@ export class WildRegistry {
   private readonly badges: MultBadge[] = [];
   private readonly clampsPool: StickyClamps[] = [];
   private readonly markers: HomeMarker[] = [];
+  private readonly rigs: RigWild[] = [];
+  private readonly tmp = new Point();
+  /** the W rig is loaded with every clip the rig path plays */
+  readonly rigged: boolean;
   /** decoration beats (slam, lock, returns): killed on board:set / reset */
   readonly sched = new Sched();
   private board: string[][] | null = null;
@@ -74,7 +92,10 @@ export class WildRegistry {
     private readonly ctx: GameContext,
     private readonly art: DropArt,
     private readonly fx: DropFx,
-  ) {}
+  ) {
+    const ref = ctx.art.spine(WILD);
+    this.rigged = !!ref && RIG_CLIPS.every((c) => SpineRig.supports(ref, c));
+  }
 
   // =========================================================================== board mirror
 
@@ -97,6 +118,7 @@ export class WildRegistry {
     for (const e of this.entities) {
       if (!e.alive) continue;
       if (gone.has(cellKey(e))) {
+        // code clamps spring open; the rig's own `explode` does it on skin sticky (f0-f2)
         e.clamps?.play('release');
         this.kill(e, false);
       } else byCell.set(cellKey(e), e);
@@ -163,7 +185,7 @@ export class WildRegistry {
   }
 
   private create(reel: number, row: number, mult: number): WildEntity {
-    const e: WildEntity = { id: this.nextId++, reel, row, mult, home: null, badge: null, clamps: null, alive: true };
+    const e: WildEntity = { id: this.nextId++, reel, row, mult, home: null, badge: null, clamps: null, rig: null, alive: true };
     this.entities.push(e);
     return e;
   }
@@ -173,11 +195,15 @@ export class WildRegistry {
    * at multSlamDelay, the clamps lock at stickyLockDelay (the view exists from contact).
    * `placed` (reduced motion 'drop' transform): decorate once the Board has placed the view.
    */
-  land(w: DroppedWild, placed: Promise<void> | null): WildEntity {
+  land(w: DroppedWild, placed: Promise<void> | null, rig: RigWild | null = null): WildEntity {
     const old = this.entityAt(w.reel, w.row);
     if (old) this.kill(old, false);
     if (this.board?.[w.reel]) this.board[w.reel][w.row] = WILD;
     const e = this.create(w.reel, w.row, w.multiplier);
+    if (rig) {
+      rig.owner = this.token;
+      e.rig = rig;
+    }
     if (w.sticky) {
       const h = this.homes.get(cellKey(w)) ?? this.addHome(w.reel, w.row, w.multiplier, -1);
       h.mult = w.multiplier;
@@ -198,6 +224,25 @@ export class WildRegistry {
   }
 
   /**
+   * Rig path: the look a dropped wild takes the cell with (the Board applies it to the new view
+   * before its drop_impact): skin `mult`, its tier plate and live "×N", plate hidden until the
+   * slam. Null for a plain wild (x1, not sticky: the default skin, nothing to show) or without the rig.
+   */
+  prepare(w: DroppedWild): RigWild | null {
+    if (!this.rigged || (w.multiplier <= 1 && !w.sticky)) return null;
+    const r = this.acquireRig();
+    r.skin = 'mult';
+    r.setValue(w.multiplier);
+    r.setBadge(w.multiplier > 1 ? 0 : 1);
+    return r;
+  }
+
+  /** A prepared look whose flight never landed (abort): back to the pool once detached. */
+  unprepare(r: RigWild | null): void {
+    if (r && r.owner === this.token && !this.entities.some((e) => e.rig === r)) r.owner = null;
+  }
+
+  /**
    * Bind an entity to the W already standing at a home (a return after the reveal, a resume).
    * instant: badge + closed clamps at once; otherwise the caller plays the return clips.
    */
@@ -210,8 +255,14 @@ export class WildRegistry {
     e.home = h;
     h.entity = e;
     if (instant) {
-      this.attachBadge(e).rest();
-      this.attachClamps(e).lockNow();
+      if (this.rigged) {
+        // resume: the sticky W is set without a drop -> `appear` (9 f), then sticky_idle
+        const r = this.attachRig(e, 'sticky', 1);
+        if (r) this.playOn(e, 'appear', { next: 'sticky_idle' });
+      } else {
+        this.attachBadge(e).rest();
+        this.attachClamps(e).lockNow();
+      }
     }
     return e;
   }
@@ -226,8 +277,13 @@ export class WildRegistry {
     }
     if (e.badge) e.badge.owner = null;
     if (e.clamps) e.clamps.owner = null;
+    if (e.rig) {
+      if (undecorate) this.ctx.game.broadcast('board:look', { reel: e.reel, row: e.row, look: null });
+      e.rig.owner = null;
+    }
     e.badge = null;
     e.clamps = null;
+    e.rig = null;
     if (e.home?.entity === e) e.home.entity = null;
     const i = this.entities.indexOf(e);
     if (i >= 0) this.entities.splice(i, 1);
@@ -264,12 +320,12 @@ export class WildRegistry {
   /** Multiplier slam (DESIGN §8.1 +120): badge 2.2 -> 1 back.out(3), tier spark ring, wild_mult by tier. */
   slam(e: WildEntity): Promise<void> {
     if (!e.alive) return Promise.resolve();
-    const b = this.attachBadge(e);
     const tier = multTier(e.mult).tier;
     const p = this.badgePoint(e);
     this.fx.sparks(p.x, p.y, physK(this.ctx.layout), LOOK.multSparks, multTier(e.mult).color, LOOK.multSparkMs);
     this.sfx('wild_mult', pentaRate(tier - 1));
-    return b.play('slam');
+    if (e.rig) return e.rig.slam();
+    return this.attachBadge(e).play('slam');
   }
 
   /**
@@ -278,8 +334,8 @@ export class WildRegistry {
    */
   lock(e: WildEntity): Promise<void> {
     if (!e.alive) return Promise.resolve();
-    const c = this.attachClamps(e);
-    return c.play('sticky_lock', () => {
+    const onSnap = (): void => {
+      if (!e.alive) return;
       const L = this.ctx.layout;
       const p = slotPos(L, e.reel, e.row);
       this.sfx('sticky_lock');
@@ -287,14 +343,110 @@ export class WildRegistry {
       this.fx.glints(p.x, p.y, L.cell, physK(L));
       const h = e.home;
       if (h && !h.marker.visible) h.marker.show(T.sticky.homeMarkerIn);
-    });
+    };
+    if (this.rigged) {
+      // lands in `mult`, switches to `sticky` as sticky_lock starts (it keys the clamps in from +-210)
+      if (!this.attachRig(e, 'sticky')) return Promise.resolve();
+      return this.playOn(e, 'sticky_lock', { next: 'sticky_idle', events: { lock_snap: onSnap } });
+    }
+    return this.attachClamps(e).play('sticky_lock', onSnap);
+  }
+
+  /** A home's return (§9.3.3): the plate pops in, the clamps lock (sticky_lock). */
+  returnDecor(e: WildEntity): void {
+    if (!e.alive) return;
+    if (this.rigged) {
+      const r = this.attachRig(e, 'sticky', 0);
+      if (r) void r.appear();
+      void this.lock(e);
+      return;
+    }
+    void this.attachBadge(e).play('appear');
+    void this.lock(e);
+  }
+
+  /** mult_up (§9.3.4): squash, value + tier swap on the `mult_swap` frame (f4), punch, sticky_idle. */
+  multUp(e: WildEntity, to: number, onSwap: () => void): Promise<void> {
+    if (!e.alive) return Promise.resolve();
+    const r = e.rig;
+    if (r) {
+      return this.playOn(e, 'mult_up', {
+        next: 'sticky_idle',
+        events: {
+          mult_swap: () => {
+            if (!e.alive || e.rig !== r) return;
+            r.setValue(to);
+            this.ctx.game.broadcast('board:look', { reel: e.reel, row: e.row, look: r.look() });
+            onSwap();
+          },
+        },
+      });
+    }
+    return e.badge ? e.badge.play('mult_up', to, onSwap) : Promise.resolve();
+  }
+
+  /** Cap x25 (§9.4): the maxed shimmer / punch, no number change. */
+  maxed(e: WildEntity): Promise<void> {
+    if (!e.alive) return Promise.resolve();
+    if (e.rig) return e.rig.punch();
+    return e.badge ? e.badge.play('maxed') : Promise.resolve();
+  }
+
+  /** Feature end (§9.4): the clamps release (sticky_unlock; the rig holds its end pose). */
+  unlock(e: WildEntity): Promise<void> {
+    if (!e.alive) return Promise.resolve();
+    if (e.rig) return this.playOn(e, 'sticky_unlock', { next: null });
+    return e.clamps ? e.clamps.play('sticky_unlock') : Promise.resolve();
+  }
+
+  /**
+   * Rig path: the entity's look in `skin` (badge scale `badge` when given) onto its current view.
+   * Null without the rig.
+   */
+  private attachRig(e: WildEntity, skin: 'mult' | 'sticky', badge?: number): RigWild | null {
+    if (!this.rigged) return null;
+    const r = e.rig ?? this.acquireRig();
+    r.owner = this.token;
+    r.skin = skin;
+    r.setValue(e.mult);
+    if (badge !== undefined) r.setBadge(badge);
+    e.rig = r;
+    this.ctx.game.broadcast('board:look', { reel: e.reel, row: e.row, look: r.look() });
+    return r;
+  }
+
+  /** A rig clip on the entity's view; resolves when it ends / is cut. */
+  private playOn(e: WildEntity, clip: string, opts: SymbolPlayOptions): Promise<void> {
+    return new Promise((done) => this.ctx.game.broadcast('board:play', { reel: e.reel, row: e.row, clip, ...opts, done }));
+  }
+
+  private acquireRig(): RigWild {
+    let r = this.rigs.find((x) => x.owner === null && !x.text.parent);
+    if (!r) {
+      r = new RigWild();
+      this.rigs.push(r);
+    }
+    r.owner = this.token;
+    r.rest();
+    return r;
   }
 
   /** Design-space centre of an entity's badge (the view may be popped / squashed: close enough). */
   badgePoint(e: WildEntity): { x: number; y: number } {
+    const t = e.rig?.text;
+    if (t?.parent && t.visible) {
+      t.getGlobalPosition(this.tmp);
+      this.ctx.layers.root.toLocal(this.tmp, undefined, this.tmp);
+      return { x: this.tmp.x, y: this.tmp.y };
+    }
     const L = this.ctx.layout;
     const p = slotPos(L, e.reel, e.row);
     return { x: p.x, y: p.y + LOOK.badgeY * L.cell };
+  }
+
+  /** The display carrying an entity's value on its view (code badge or the rig's live text), or null. */
+  badgeDisplay(e: WildEntity): Container | null {
+    return e.badge ?? e.rig?.text ?? null;
   }
 
   private decorate(e: WildEntity, key: string, display: Container | null): void {
@@ -364,7 +516,7 @@ export class WildRegistry {
     out.length = 0;
     for (const h of this.homes.values()) {
       const e = h.entity;
-      if (e?.alive && e.reel === h.reel && e.row === h.row && e.badge?.parent) out.push({ reel: h.reel, row: h.row, id: WILD });
+      if (e?.alive && e.reel === h.reel && e.row === h.row && this.badgeDisplay(e)?.parent) out.push({ reel: h.reel, row: h.row, id: WILD });
     }
     return out;
   }
@@ -419,6 +571,10 @@ export class WildRegistry {
     for (const c of this.clampsPool) {
       c.removeFromParent();
       c.destroy();
+    }
+    for (const r of this.rigs) {
+      r.text.removeFromParent();
+      r.destroy();
     }
     this.markerLayer.destroy({ children: true });
   }

@@ -7,8 +7,7 @@ import { WinPresenter } from '../../present/WinPresenter';
 import { Sound } from '../../audio/Sound';
 import { Hud } from '../../ui/hud/Hud';
 import { DomUi } from '../../ui/dom/DomUi';
-// Same neon bayou juke joint as Swamp Funk: its scene modules are shared.
-import { Background } from '../swamp-funk/scene/Background';
+// Swamp Funk's Frame (glass, neon tube, 3-slice pieces) with Bass Drop's painted frame art (manifest/env.ts).
 import { Frame } from '../swamp-funk/scene/Frame';
 import { Connections } from './connect/Connections';
 import { BassDrop } from './drop/BassDrop';
@@ -16,6 +15,8 @@ import { GrooveMeter } from './meter/GrooveMeter';
 import { BuyScreen } from './screens/BuyScreen';
 import { FeatureScreens } from './screens/FeatureScreens';
 import { IntroScreen } from './screens/IntroScreen';
+import { Background } from './scene/Background';
+import { Logo } from './scene/Logo';
 import { Stage } from './stage/Stage';
 
 /**
@@ -26,7 +27,8 @@ import { Stage } from './stage/Stage';
  */
 export const createModules = (ctx: GameContext): GameModule[] => [
   new Background(ctx),
-  new Frame(ctx, { logoText: 'BASS DROP' }),
+  new Frame(ctx, { logo: false }),
+  new Logo(ctx),
   new Stage(ctx),
   new GrooveMeter(ctx),
   new Board(ctx),

@@ -14,6 +14,7 @@ import { DropFx } from './fx';
 import { MultSumDirector } from './multSum';
 import { WildRegistry } from './registry';
 import { StickyDirector } from './sticky';
+import { registerWildWord } from './wildRig';
 import { WildProxy } from './WildProxy';
 
 /** Proxies / reticles created up front (a drop carries at most 3 wilds). */
@@ -33,6 +34,10 @@ const FOCUS_GRACE = 60;
  *                    'external') and the Mega Mix "+1" previews;
  *  - 'wild:sticky'   Mega Mix homes: markers on the tiles, returns, mult_up, the x25 shimmer,
  *                    and the board:hold set before every free-spin reveal (StickyDirector).
+ * With the sym_W rig loaded the wild's badge, clamps, drop and sticky motion are the rig's own
+ * (skins / clips through 'board:look' / 'board:play', registry rig path) and every W view carries
+ * the live ribbon word "WILD" in its txt_wild slot (symbolMounts, registered at construction so
+ * no W view is ever built without it).
  * The Groove Meter plays its own charge / boom / rings from the same BASS_DROP_TIMING beats.
  *
  * Layers: home markers on `tiles`; reticles + shadows on `board` above the masked symbols
@@ -67,8 +72,11 @@ export class BassDrop implements GameModule {
   private focused = false;
   private offs: Array<() => void> = [];
   private host!: DropHost;
+  private readonly offWord: () => void;
 
-  constructor(private readonly ctx: GameContext) {}
+  constructor(private readonly ctx: GameContext) {
+    this.offWord = registerWildWord();
+  }
 
   init(): void {
     const { ctx } = this;
@@ -280,6 +288,7 @@ export class BassDrop implements GameModule {
   destroy(): void {
     for (const off of this.offs) off();
     this.offs = [];
+    this.offWord();
     this.abortRuns();
     for (const p of this.proxies) this.unmountProxy(p);
     this.focusCall?.kill();

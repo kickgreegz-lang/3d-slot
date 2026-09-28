@@ -15,7 +15,10 @@ type ProxyClip = 'drop_launch' | 'drop_fall';
  * are runtime-owned, ANIMATION_SET §2.6); this class plays the body clips on top:
  *   drop_launch (8 f)  f0 compressed sy 0.8 / sx 1.15, f2 released sy 1.25 / sx 0.86, glow flare 1.4;
  *   drop_fall (12 f)   stretch pulses sy 1.10 <-> 1.14 along the body axis (loop).
- * When the W Spine rig lands, `sym` plays those clips itself and the procedural keys go.
+ * With the sym_W rig loaded, `sym` plays those clips itself (SymbolView.play: drop_launch -> the
+ * drop_fall loop, mix 0; its own fx_glow flare and fx_trail streak; the live "WILD" rides its
+ * ribbon slot) and the procedural body keys go; the code halo stays, dimmer, behind the rig.
+ * The Spine instance is stepped by the symbol pool on the game clock (hit-stop, slam retiming).
  */
 export class WildProxy {
   readonly view = new Container({ label: 'wildProxy' });
@@ -28,6 +31,8 @@ export class WildProxy {
   /** world-space trail points, [x0, y0, x1, y1, ...], tail first (written by the flight) */
   private readonly hist = new Float32Array(LOOK.trailPoints * 2);
   private readonly texH: number;
+  /** the W rig plays drop_launch / drop_fall (else the procedural keys below) */
+  private readonly rigged: boolean;
   private clip: ProxyClip = 'drop_fall';
   /** clip time (ms, game time scaled by the speed profile) */
   private t = 0;
@@ -42,6 +47,7 @@ export class WildProxy {
     this.sym = createSymbolView(ctx, 'W');
     // a static rig: no idle breath / shaders while pooled
     this.sym.reset();
+    this.rigged = this.sym.has('drop_launch') && this.sym.has('drop_fall');
     this.glow = new Sprite({ texture: art.tex.glow, anchor: 0.5, blendMode: 'add', alpha: 0 });
     this.body.addChild(this.sym.view);
     this.view.addChild(this.glow, this.body);
@@ -68,6 +74,7 @@ export class WildProxy {
     }
     this.place(x, y, 0.001, 0);
     this.play('drop_launch');
+    if (this.rigged) void this.sym.play('drop_launch', { next: 'drop_fall' });
   }
 
   play(clip: ProxyClip): void {
@@ -90,7 +97,11 @@ export class WildProxy {
     let sx = 1;
     let sy = 1;
     let flare = 0;
-    if (this.clip === 'drop_launch') {
+    if (this.rigged) {
+      // the rig owns the stretch; the halo follows the same beats, dimmer (its fx_glow flares too)
+      const f = this.t / clipMs(1);
+      flare = f < W_CLIPS.drop_launch ? 0.7 * Math.min(1, f / 2) : 0.5;
+    } else if (this.clip === 'drop_launch') {
       const f = this.t / clipMs(1);
       if (f < 2) {
         // f0 compressed -> f2 released

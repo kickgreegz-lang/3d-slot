@@ -200,6 +200,15 @@ export const SYMBOL_TIMING = registerTiming('symbol', {
     maxInheritStep: 40,
     /** Cap on the land kick (skeleton units) however fast the drop was. */
     maxImpulse: 36,
+    /**
+     * Transient Spine instances at once (land, idle, bass_react, win, explode); above it a symbol
+     * runs its procedural rig for that action (ANIMATION_SET §2.7: 24, low tier 12). Looks, drop
+     * impacts and explicit clips (the W's drop / sticky set, flying proxies) are never refused.
+     */
+    maxActive: 24,
+    maxActiveLow: 12,
+    /** Idle instances created at boot per rig (Board.init), so the first reveal never allocates. */
+    prewarm: 4,
     /** docs/ANIMATION_CONTRACT.md §3 mixes (seconds). '*' = from any animation. */
     mix: 0.08,
     mixes: [
@@ -209,6 +218,18 @@ export const SYMBOL_TIMING = registerTiming('symbol', {
       ['*', 'explode', 0.05],
       ['blur', 'idle', 0],
       ['idle', 'blur', 0],
+      // ANIMATION_SET §2.6 (the W's drop / sticky set)
+      ['drop_launch', 'drop_fall', 0],
+      ['drop_fall', 'drop_impact', 0.03],
+      ['idle', 'drop_impact', 0],
+      ['drop_impact', 'idle', 0.1],
+      ['drop_impact', 'sticky_lock', 0],
+      ['sticky_lock', 'sticky_idle', 0],
+      ['sticky_idle', 'win', 0.06],
+      ['win_loop', 'mult_up', 0.05],
+      ['mult_up', 'sticky_idle', 0.05],
+      ['sticky_idle', 'mult_up', 0.05],
+      ['appear', 'sticky_idle', 0],
     ] as ReadonlyArray<readonly [string, string, number]>,
   },
 } as const);

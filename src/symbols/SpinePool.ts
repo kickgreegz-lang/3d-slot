@@ -282,6 +282,22 @@ export class SpineRig {
   private readonly listener: AnimationStateListener;
   private readonly meta: SpineMeta;
   private cue: SpineCue | null = null;
+  /** skin applied by the current look (null = the ref's default) */
+  private skin: string | null = null;
+  /** live objects mounted in slots (slot -> object) */
+  private readonly mounted = new Map<string, Container>();
+  /** runtime bone channels of the current look */
+  private drives: Array<readonly [Bone, SymbolBoneDrive]> = [];
+  private readonly applyDrives = (): void => {
+    for (const [bone, d] of this.drives) {
+      const p = bone.pose;
+      if (d.x !== undefined) p.x = d.x;
+      if (d.y !== undefined) p.y = d.y;
+      if (d.rotation !== undefined) p.rotation = d.rotation;
+      if (d.scaleX !== undefined) p.scaleX = d.scaleX;
+      if (d.scaleY !== undefined) p.scaleY = d.scaleY;
+    }
+  };
 
   constructor(private readonly ref: SpineRef) {
     this.meta = spinePool.describe(ref);
@@ -309,6 +325,11 @@ export class SpineRig {
 
   static supports(ref: SpineRef, animation: string): boolean {
     return spinePool.describe(ref).animations.has(animation);
+  }
+
+  /** The slot bone's setup transform in the Spine container's local space (static mounts), or null. */
+  static slotSetup(ref: SpineRef, slot: string): Matrix | null {
+    return spinePool.describe(ref).slotSetup.get(slot) ?? null;
   }
 
   has(animation: string): boolean {
@@ -343,6 +364,11 @@ export class SpineRig {
     });
   }
 
+  /** Whether track 0 has an entry (an action or a rest loop is playing / holding its last pose). */
+  get busy(): boolean {
+    return !!this.spine.state.getTrack(0);
+  }
+
   /**
    * One-shot ADDITIVE overlay on `track` (contract: overlays live on track 1, e.g. `bass_react`),
    * layered over whatever track 0 plays; the track is emptied when it ends. Resolves on
@@ -369,6 +395,59 @@ export class SpineRig {
     this.spine.state.addAnimation(0, animation, true, 0);
   }
 
+  /** Apply the current track state now (no setup-pose frame between a skin swap and its clip). */
+  applyNow(): void {
+    this.spine.update(0);
+  }
+
+  /**
+   * Look state: skin (a change re-poses the slots from setup), attachment overrides (missing
+   * names are skipped, never thrown), bone channels. Mounts go through syncMounts.
+   */
+  applyLook(look: SymbolLook | null): void {
+    const sk = this.spine.skeleton;
+    const want = look?.skin && this.meta.skins.has(look.skin) ? look.skin : null;
+    if (want !== this.skin) {
+      this.skin = want;
+      const skin = want ? sk.data.findSkin(want) : this.ref.skin ? sk.data.findSkin(this.ref.skin) : null;
+      if (sk.skin !== skin) sk.setSkin(skin);
+      sk.setupPoseSlots();
+    }
+    if (look?.attachments) {
+      for (const [slotName, name] of Object.entries(look.attachments)) {
+        const slot = sk.findSlot(slotName);
+        if (!slot) continue;
+        const att = name ? sk.getAttachment(slot.data.index, name) : null;
+        if (name && !att) continue;
+        slot.pose.setAttachment(att);
+      }
+    }
+    for (const [bone] of this.drives) bone.setupPose();
+    this.drives = [];
+    if (look?.bones) {
+      for (const [name, d] of Object.entries(look.bones)) {
+        const bone = sk.findBone(name);
+        if (bone) this.drives.push([bone, d] as const);
+      }
+    }
+    this.spine.beforeUpdateWorldTransforms = this.drives.length ? this.applyDrives : noop;
+  }
+
+  /** Mount exactly `mounts` (slot -> live object) in their slots; others are removed (not destroyed). */
+  syncMounts(mounts: ReadonlyMap<string, Container>): void {
+    for (const [slot, obj] of [...this.mounted]) {
+      if (mounts.get(slot) === obj) continue;
+      this.mounted.delete(slot);
+      if (obj.parent === this.spine) this.spine.removeSlotObject(obj);
+    }
+    for (const [slot, obj] of mounts) {
+      if (this.mounted.get(slot) === obj && obj.parent === this.spine) continue;
+      if (!this.meta.slotSetup.has(slot)) continue;
+      this.spine.addSlotObject(slot, obj);
+      this.mounted.set(slot, obj);
+    }
+  }
+
   /** Physics ignores container motion (fast drops would fling the parts off). */
   detachPhysics(): void {
     spinePool.inherit(this.spine, 0);
@@ -391,9 +470,17 @@ export class SpineRig {
     for (const fn of fns) fn();
   }
 
+  /** Drop pending one-shot handlers without firing them (a new action replaces the old one). */
+  clearEvents(): void {
+    this.handlers.clear();
+  }
+
   release(): void {
     this.handlers.clear();
     this.cue = null;
+    this.mounted.clear();
+    this.drives = [];
+    this.skin = null;
     spinePool.release(this.ref, this.spine);
   }
 }

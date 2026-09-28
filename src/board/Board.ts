@@ -9,7 +9,9 @@ import { REDUCED_SHAKE_SCALE, reducedMotion } from '../fx/motion';
 import type { GameContext, GameModule } from '../game/context';
 import type { BoardTransformStyle, GameEvents, SfxId } from '../game/events';
 import { createSymbolView } from '../symbols/createSymbolView';
-import type { SymbolView } from '../symbols/types';
+import { spinePool } from '../symbols/SpinePool';
+import { SYMBOL_TIMING } from '../symbols/symbolTiming';
+import type { SymbolLook, SymbolView } from '../symbols/types';
 import { AnticipationBeam } from './AnticipationBeam';
 import { BOARD_TIMING } from './boardTiming';
 import { ClusterOutlines } from './ClusterOutline';
@@ -45,6 +47,9 @@ import { GridThump } from './thump';
  *   board:hold      cells that stay standing through the next fall-out / drop-in (CR-10b)
  *   board:burst     EMITTED here during board:tumble at the explode-burst frame
  *   board:transform 'impact' (awaited): crush now, heavy impact placement anticipateDuration later
+ *                   (a cell's `look` goes onto the new view before its impact)
+ *   board:look      persistent rig look on the VIEW at a cell (skin, badge tier, live slot text)
+ *   board:play      a rig clip on the view at a cell (the W's sticky_lock / mult_up / sticky_unlock)
  * where k = pitch / BOARD_TIMING.physRefPitch. Game options (config GameFeatures):
  * physicsScale (gravity falls keep the reference time per cell) and explodeShake (the
  * explode trauma table).
@@ -134,6 +139,11 @@ export class Board implements GameModule {
     this.outlines.view.zIndex = Z_OUTLINE;
     this.root.addChild(this.beam.view, this.outlines.view);
 
+    // the symbol rigs' first borrows never allocate mid-round
+    for (const id of Object.keys(SYMBOLS)) {
+      const ref = ctx.art.spine(id);
+      if (ref) spinePool.prewarm(ref, SYMBOL_TIMING.spine.prewarm);
+    }
     this.boardIds = this.attractBoard();
     for (let reel = 0; reel < GRID.reels; reel++) {
       const col: SymbolView[] = [];
@@ -169,6 +179,14 @@ export class Board implements GameModule {
       g.on('board:decorate', ({ reel, row, key, display }) => {
         const sv = this.slots[reel]?.[row];
         if (sv) this.decorations.set(sv, key, display);
+      }),
+      g.on('board:look', ({ reel, row, look }) => {
+        this.slots[reel]?.[row]?.setLook(look);
+      }),
+      g.on('board:play', ({ reel, row, clip, done, ...opts }) => {
+        const sv = this.slots[reel]?.[row];
+        const p = sv ? sv.play(clip, opts) : Promise.resolve();
+        if (done) void p.then(done);
       }),
       g.on('board:thump', ({ px }) => this.thump.kick(px * this.physK() * (reducedMotion() ? REDUCED_SHAKE_SCALE : 1))),
       g.on('board:react', (p) => this.react(p)),
@@ -277,6 +295,7 @@ export class Board implements GameModule {
             sv.setBlur(false);
             sv.view.visible = false;
             this.decorations.detach(sv);
+            sv.setLook(null);
           }, [], s(end));
         }
         // local timeline seconds as built: a later speed change retimes the timeline (timeScale), not these
@@ -599,10 +618,16 @@ export class Board implements GameModule {
       void this.outlines.fadeOut();
       this.spots.clearHighlights();
       const E = TIMING.explode;
-      const bursts = doomed.map((sv) => sv.explode());
       const n = doomed.length;
       const burstPositions = uniq.map((p) => ({ reel: p.reel, row: p.row }));
-      const impact = gsap.delayedCall(s(E.anticipateDuration), () => {
+      // the burst frame: the first rig's `explode_burst` (f2-3) or the procedural burst at
+      // anticipateDuration, whichever comes first (the timer is the fallback)
+      let burstFired = false;
+      let impact: gsap.core.Tween | null = null;
+      const onBurst = (): void => {
+        if (burstFired || gen !== this.gen) return;
+        burstFired = true;
+        impact?.kill();
         // orbs / link snaps / count pops sync to the burst frame (before the freeze starts)
         this.ctx.game.broadcast('board:burst', { positions: burstPositions });
         clock.hitStop(E.hitStop);
@@ -614,8 +639,9 @@ export class Board implements GameModule {
             : Math.min(B.explodeTraumaMax, B.explodeTraumaBase + B.explodeTraumaPerSymbol * n),
         });
         this.sfx('explode', { volume: Math.min(1, 0.7 + n * 0.03) });
-      });
-      followSpeed(impact);
+      };
+      const bursts = doomed.map((sv) => sv.explode({ onBurst }));
+      impact = followSpeed(gsap.delayedCall(s(E.anticipateDuration), onBurst));
       await Promise.all(bursts);
       if (gen !== this.gen) {
         impact.kill();
@@ -716,7 +742,7 @@ export class Board implements GameModule {
   // transform: replace symbols in place (wild drops, upgrades, sticky restores)
   // =========================================================================
 
-  private async transform(cells: Array<Position & { id: string }>, style: BoardTransformStyle): Promise<void> {
+  private async transform(cells: Array<Position & { id: string; look?: SymbolLook }>, style: BoardTransformStyle): Promise<void> {
     const seen = new Set<string>();
     // 'impact' replaces even a cell that already shows the id (a drop onto a W, [M-6])
     const todo = cells.filter((c) => {
@@ -737,6 +763,7 @@ export class Board implements GameModule {
           this.decorations.detach(sv);
           sv.reset();
           sv.setSymbol(c.id);
+          if (c.look) sv.setLook(c.look);
           this.put(sv, c.reel, c.row);
           this.boardIds[c.reel][c.row] = c.id;
         }
@@ -761,13 +788,14 @@ export class Board implements GameModule {
   }
 
   /** Swap in place: sparkle burst + a land squash on the new symbol. */
-  private async morphCell(c: Position & { id: string }): Promise<void> {
+  private async morphCell(c: Position & { id: string; look?: SymbolLook }): Promise<void> {
     const sv = this.slots[c.reel][c.row];
     const def = getSymbolDef(c.id);
     const p = slotPos(this.ctx.layout, c.reel, c.row);
     this.decorations.detach(sv);
     sv.reset();
     sv.setSymbol(c.id);
+    if (c.look) sv.setLook(c.look);
     this.boardIds[c.reel][c.row] = c.id;
     this.ctx.game.broadcast('fx:burst', { kind: 'sparkle', x: p.x, y: p.y, color: def.color, count: 18, power: 0.8 });
     this.ctx.game.broadcast('fx:shake', { trauma: BOARD_TIMING.transformTrauma * 0.6 });
@@ -784,7 +812,7 @@ export class Board implements GameModule {
    * back. Resolves when the new symbol has settled and the crush is done. Contact feedback
    * (impact SFX, dust, shake, hit-stop, board thump, mascot cue) belongs to the caller.
    */
-  private async impactCell(c: Position & { id: string }, gen: number): Promise<void> {
+  private async impactCell(c: Position & { id: string; look?: SymbolLook }, gen: number): Promise<void> {
     const old = this.slots[c.reel][c.row];
     this.unelevate(old);
     this.dim(old, false, false);
@@ -794,6 +822,8 @@ export class Board implements GameModule {
     await clock.wait(TIMING.explode.anticipateDuration);
     if (gen !== this.gen) return;
     const sv = this.acquire(c.id);
+    // the look (skin, badge) is on before the first rendered frame of the impact
+    if (c.look) sv.setLook(c.look);
     this.put(sv, c.reel, c.row);
     // above its neighbours while the slam spills out of the cell
     sv.view.zIndex = Z_BEAM - 1;
@@ -821,10 +851,11 @@ export class Board implements GameModule {
    * Drop in from above the grid: the new symbol falls (gravity, blur) into its cell and
    * smashes the old one, which bursts on impact and returns to the pool.
    */
-  private async dropCell(c: Position & { id: string }, gen: number): Promise<void> {
+  private async dropCell(c: Position & { id: string; look?: SymbolLook }, gen: number): Promise<void> {
     const old = this.slots[c.reel][c.row];
     const def = getSymbolDef(c.id);
     const sv = this.acquire(c.id);
+    if (c.look) sv.setLook(c.look);
     const L = this.ctx.layout;
     const g = TIMING.drop.gravity;
     const from = GRID.firstVisibleRow - 1 - BOARD_TIMING.transformDropCells;
@@ -1055,6 +1086,7 @@ export class Board implements GameModule {
 
   private release(sv: SymbolView): void {
     this.decorations.detach(sv);
+    sv.setLook(null);
     this.held.delete(sv);
     this.unelevate(sv);
     this.dim(sv, false, false);

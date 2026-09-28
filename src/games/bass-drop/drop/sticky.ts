@@ -35,6 +35,8 @@ interface Growth {
  *    the x25 cap whose wild won last spin plays the maxed shimmer. Resolves when the last clip
  *    settles, at once when nothing changed; right after a board:set (resume) it is instant;
  *  - feature end (fs:end): clamps sticky_unlock, markers fade; mode:change basegame clears.
+ * The badge / clamp visuals are the W rig's own (registry rig path: sticky_lock, mult_up,
+ * sticky_unlock clips) or the phase-B code decorations when the rig is not loaded.
  */
 export class StickyDirector {
   private readonly sched = new Sched();
@@ -114,7 +116,7 @@ export class StickyDirector {
       const h = existed ?? R.addHome(w.reel, w.row, w.multiplier, S.homeMarkerIn);
       const from = existed ? existed.mult : w.multiplier;
       const e = h.entity;
-      const held = !!e && e.alive && e.reel === h.reel && e.row === h.row && !!e.badge?.parent;
+      const held = !!e && e.alive && e.reel === h.reel && e.row === h.row && !!R.badgeDisplay(e)?.parent;
       if (!held && R.idAt(w.reel, w.row) === WILD) returns.push({ home: h, from });
       if (w.multiplier > from) ups.push({ home: h, from, to: w.multiplier });
       else if (w.multiplier >= CAP && h.wonLast) maxed.push(h);
@@ -153,19 +155,17 @@ export class StickyDirector {
     const p = slotPos(L, h.reel, h.row);
     this.fx.ring(p.x, p.y, L.cell * 0.8, L.cell * LOOK.returnRing, LOOK.returnRingMs, GOLD, 1);
     if (R.idAt(h.reel, h.row) !== WILD) return;
-    const e = R.adopt(h, from, false);
-    void R.attachBadge(e).play('appear');
-    void R.lock(e);
+    R.returnDecor(R.adopt(h, from, false));
   }
 
   /** mult_up (§9.3.4): badge squash, text + tier swap at f4 with sticky_mult_up and tier sparks. */
   private multUp(g: Growth, first: boolean): void {
     const e = g.home.entity;
-    if (!e?.alive || !e.badge) return;
+    const R = this.registry;
+    if (!e?.alive || !R.badgeDisplay(e)) return;
     e.mult = g.to;
     const tier = multTier(g.to);
-    const R = this.registry;
-    void e.badge.play('mult_up', g.to, () => {
+    void R.multUp(e, g.to, () => {
       const p = R.badgePoint(e);
       this.fx.sparks(p.x, p.y, physK(this.ctx.layout), LOOK.multSparks, tier.color, LOOK.multSparkMs);
       this.ctx.game.broadcast('sfx', { id: 'sticky_mult_up', rate: pentaRate(tier.tier - 1) });
@@ -176,8 +176,8 @@ export class StickyDirector {
   /** Cap x25 (§9.4): the maxed shimmer instead of a number change. */
   private shimmer(h: Home): void {
     const e = h.entity;
-    if (!e?.alive || !e.badge) return;
-    void e.badge.play('maxed');
+    if (!e?.alive || !this.registry.badgeDisplay(e)) return;
+    void this.registry.maxed(e);
     this.ctx.game.broadcast('sfx', { id: 'sticky_mult_up', rate: pentaRate(5) });
   }
 
@@ -185,7 +185,7 @@ export class StickyDirector {
   release(): void {
     this.cancelHold();
     const R = this.registry;
-    for (const h of R.homes.values()) void h.entity?.clamps?.play('sticky_unlock');
+    for (const h of R.homes.values()) if (h.entity) void R.unlock(h.entity);
     R.clearHomes(clipMs(W_CLIPS.sticky_unlock));
   }
 

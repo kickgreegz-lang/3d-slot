@@ -141,6 +141,8 @@ export class Background implements GameModule {
     this.glow.addChild(this.neonA, this.neonB);
     ctx.layers.background.addChild(this.root);
     ctx.layers.bgFx.addChild(this.glow);
+    // DEV / QA: captures read what is loaded (tools read `bdStats` off the layer's first child)
+    if (import.meta.env.DEV) Object.defineProperty(this.root, 'bdStats', { get: () => this.stats });
     this.still = reducedMotion();
     this.measure(ctx.layout);
     this.orient = this.orientFor(ctx.layout);

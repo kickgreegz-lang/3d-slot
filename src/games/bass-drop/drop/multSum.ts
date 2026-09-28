@@ -170,7 +170,7 @@ export class MultSumDirector {
 
   /** Design-space position of an entity's badge (its live transform when attached, else the cell). */
   private badgeOrigin(e: WildEntity): Pt {
-    const b = e.badge;
+    const b = this.registry.badgeDisplay(e);
     if (b?.parent && b.visible) {
       b.getGlobalPosition(this.tmp);
       this.view.toLocal(this.tmp, undefined, this.tmp);

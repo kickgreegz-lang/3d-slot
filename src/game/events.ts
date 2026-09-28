@@ -4,6 +4,7 @@ import type { ClusterWin, GameType, Position } from '../book/types';
 import type { WinTierKey } from '../config/game';
 import type { LayoutSpec } from '../config/layout';
 import type { SpeedProfile } from '../core/timing';
+import type { SymbolLook, SymbolPlayOptions } from '../symbols/types';
 
 /**
  * SCENE EVENTS — emitted by the flow layer (book player handlers) and consumed
@@ -128,8 +129,25 @@ export type CoreGameEvents = {
    *            flipbook, shake, hit-stop, board:thump, mascot cue): the Board adds none;
    *   'morph'  swap in place with a sparkle pop;
    *   'set'    instant, no fanfare (resume / replay).
+   * A cell's optional `look` is applied to the new symbol view as it takes the cell (before its
+   * impact / land), e.g. the W's `mult` skin + badge tier + live "×N" (see 'board:look').
    */
-  'board:transform': { cells: Array<Position & { id: string }>; style: BoardTransformStyle };
+  'board:transform': { cells: Array<Position & { id: string; look?: SymbolLook }>; style: BoardTransformStyle };
+  /**
+   * Persistent rig look of the symbol VIEW at a padded cell (SymbolView.setLook): Spine skin,
+   * attachment overrides, live objects mounted in empty txt_* slots, runtime bone channels, rest
+   * loop. Like a decoration it follows the view (tumbles, holds) and is cleared when the Board
+   * recycles the view; null clears it now. Symbols without a Spine rig ignore it. Synchronous.
+   */
+  'board:look': { reel: number; row: number; look: SymbolLook | null };
+  /**
+   * Play a rig clip on the symbol view at a padded cell (SymbolView.play): e.g. the W's
+   * sticky_lock -> sticky_idle, mult_up (event mult_swap), sticky_unlock (next: null holds the end
+   * pose), or an additive overlay on track >= 1. `events` fire on the rig's event frames (any not
+   * reached run when the clip ends or is cut); `done` runs on complete / interrupt, at once when
+   * there is no view, rig or clip. Synchronous.
+   */
+  'board:play': SymbolPlayOptions & { reel: number; row: number; clip: string; done?: () => void };
   /**
    * Hang (display) or remove (null) a decoration `key` on the symbol view at a padded cell
    * (multiplier badges, sticky clamps, tags). It follows that VIEW - through tumble falls,

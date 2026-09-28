@@ -31,6 +31,7 @@ import {
 import { DROP_LOOK as LOOK } from './look';
 import type { WildRegistry } from './registry';
 import { Sched } from './sched';
+import type { RigWild } from './wildRig';
 import type { WildProxy } from './WildProxy';
 
 const T = BASS_DROP_TIMING;
@@ -75,6 +76,8 @@ interface Flight {
   mounted: boolean;
   /** path progress where the wild passed the rim: the trail ribbon never reaches inside it */
   uRim: number;
+  /** rig path: the look the Board's W takes the cell with (skin mult, tier, live "×N"); null = plain W */
+  look: RigWild | null;
 }
 
 /** Charge seconds of a drop (s()-scaled, floored: first of a step >= chargeFloor, chained >= 60 ms). */
@@ -156,6 +159,7 @@ export class DropRun {
         landed: false,
         mounted: false,
         uRim: 0,
+        look: this.host.registry.prepare(w),
       };
       this.flights.push(f);
     }
@@ -273,7 +277,7 @@ export class DropRun {
   /** contact - anticipateDuration: the Board crushes the doomed symbol and places W at contact. */
   private crush(f: Flight): void {
     if (this.done) return;
-    const cell = { reel: f.wild.reel, row: f.wild.row, id: 'W' };
+    const cell = { reel: f.wild.reel, row: f.wild.row, id: 'W', ...(f.look ? { look: f.look.look() } : {}) };
     this.placed.push(this.host.ctx.game.broadcastAsync('board:transform', { cells: [cell], style: 'impact' }));
     // same frame, same duration as the Board's own placement wait (both created now)
     this.sched.at(s(TIMING.explode.anticipateDuration), () => this.contact(f));
@@ -301,7 +305,7 @@ export class DropRun {
     clock.hitStop(D.impactHitStop);
     this.sfx('wild_impact');
     this.cue('wildLand', undefined, c);
-    registry.land(f.wild, null);
+    registry.land(f.wild, null, f.look);
     this.landed();
   }
 
@@ -314,7 +318,7 @@ export class DropRun {
     if (this.done) return;
     const { ctx } = this.host;
     const L = ctx.layout;
-    const cell = { reel: f.wild.reel, row: f.wild.row, id: 'W' };
+    const cell = { reel: f.wild.reel, row: f.wild.row, id: 'W', ...(f.look ? { look: f.look.look() } : {}) };
     const placed = ctx.game.broadcastAsync('board:transform', { cells: [cell], style: 'drop' });
     this.placed.push(placed);
     const from = GRID.firstVisibleRow - 1 - BOARD_TIMING.transformDropCells;
@@ -330,7 +334,7 @@ export class DropRun {
       ctx.game.broadcast('board:thump', { px: D.thumpPx });
       this.sfx('wild_impact');
       this.cue('wildLand', undefined, c);
-      this.host.registry.land(f.wild, placed);
+      this.host.registry.land(f.wild, placed, f.look);
       this.landed();
     });
   }
@@ -358,7 +362,10 @@ export class DropRun {
         f.mounted = false;
       }
       // landed reticles free themselves after their hit clip; aborted ones go now
-      if (!f.landed) f.reticle.free();
+      if (!f.landed) {
+        f.reticle.free();
+        this.host.registry.unprepare(f.look);
+      }
     }
     this.host.focusLater();
     this.resolve();

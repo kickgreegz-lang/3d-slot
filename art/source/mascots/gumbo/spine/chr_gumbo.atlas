@@ -1,0 +1,105 @@
+chr_gumbo.png
+size: 1144,1024
+filter: Linear,Linear
+pma: true
+chr_gumbo/cooler_body
+bounds: 856,669,223,256
+offsets: 3,3,229,262
+chr_gumbo/cooler_lid
+bounds: 894,235,216,116
+offsets: 3,3,222,122
+chr_gumbo/eye_L/closed
+bounds: 374,483,34,26
+offsets: 3,3,40,32
+chr_gumbo/eye_L/half
+bounds: 410,483,34,26
+offsets: 3,3,40,32
+chr_gumbo/eye_L/open
+bounds: 661,310,34,26
+offsets: 3,3,40,32
+chr_gumbo/eye_L/wide
+bounds: 663,157,34,26
+offsets: 3,3,40,32
+chr_gumbo/eye_R/closed
+bounds: 547,310,55,33
+offsets: 3,3,61,39
+chr_gumbo/eye_R/half
+bounds: 604,310,55,33
+offsets: 3,3,61,39
+chr_gumbo/eye_R/open
+bounds: 1065,458,55,33
+offsets: 3,3,61,39
+chr_gumbo/eye_R/wide
+bounds: 829,2,55,33
+offsets: 3,3,61,39
+chr_gumbo/forearm_L
+bounds: 1021,2,104,212
+offsets: 3,3,110,218
+chr_gumbo/forearm_R
+bounds: 698,758,156,264
+offsets: 3,3,162,270
+chr_gumbo/hand_L/fist
+bounds: 746,669,66,83
+offsets: 3,3,72,89
+chr_gumbo/hand_L/lean
+bounds: 1028,494,73,106
+offsets: 3,3,79,112
+chr_gumbo/hand_L/open
+bounds: 374,343,88,138
+offsets: 3,3,94,144
+chr_gumbo/hand_L/point
+bounds: 966,494,60,113
+offsets: 3,3,66,119
+chr_gumbo/hand_R/fist
+bounds: 1065,353,76,103
+offsets: 3,3,82,109
+chr_gumbo/hand_R/open
+bounds: 547,157,114,151
+offsets: 3,3,120,157
+chr_gumbo/hand_R/point
+bounds: 966,353,97,139
+offsets: 3,3,103,145
+chr_gumbo/head
+bounds: 2,771,388,191
+offsets: 3,3,394,197
+chr_gumbo/jaw
+bounds: 392,771,304,105
+offsets: 3,3,310,111
+chr_gumbo/leg_L
+bounds: 466,343,236,308
+chr_gumbo/leg_R
+bounds: 374,2,171,339
+chr_gumbo/mouth/closed_pick
+bounds: 746,607,258,60
+offsets: 3,3,264,66
+chr_gumbo/mouth/grin
+bounds: 466,653,278,103
+offsets: 3,3,284,109
+chr_gumbo/mouth/open
+bounds: 392,878,262,144
+offsets: 3,3,268,150
+chr_gumbo/mouth/roar
+bounds: 704,419,260,186
+offsets: 3,3,266,192
+chr_gumbo/neck
+bounds: 547,2,280,153
+chr_gumbo/pupil_L
+bounds: 947,353,18,12
+offsets: 3,3,24,18
+chr_gumbo/pupil_R
+bounds: 1021,216,21,14
+offsets: 3,3,27,20
+chr_gumbo/tail
+bounds: 2,515,462,254
+chr_gumbo/teeth_lower
+bounds: 2,964,158,50
+offsets: 3,3,164,56
+chr_gumbo/toothpick
+bounds: 894,353,51,64
+offsets: 3,3,57,70
+chr_gumbo/torso
+bounds: 2,2,370,511
+chr_gumbo/upper_arm_L
+bounds: 894,2,125,231
+chr_gumbo/upper_arm_R
+bounds: 704,157,188,260

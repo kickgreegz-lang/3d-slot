@@ -49,7 +49,7 @@ node tools/spine/validate.mjs "$OUT/$SK.json" --kind character --report "$QA/val
   || { cat "$QA/validate.log"; exit 1; }
 grep -E "WARN|ERROR|PASS|FAIL" "$QA/validate.log" || true
 echo "== pack"
-"$PY" tools/spine/pack.py --images "$SRC/images" --skeleton "$OUT/$SK.json" --out "$OUT" --name "$SK"
+"$PY" tools/spine/pack.py --images "$SRC/images" --skeleton "$OUT/$SK.json" --out "$OUT" --name "$SK" --scale 1 --scale 0.5
 node tools/spine/validate.mjs "$OUT/$SK.json" --kind character --atlas "$OUT/$SK.atlas" --quiet
 if [ -n "$CAP" ]; then
   echo "== capture ($SCEN)"
@@ -59,7 +59,7 @@ fi
 if [ "$PUB" = 1 ]; then
   DST="art/source/mascots/$ID/spine"
   mkdir -p "$DST"
-  cp "$OUT/$SK.json" "$OUT/$SK.atlas" "$DST/"
+  cp "$OUT/$SK.json" "$OUT/$SK"*.atlas "$DST/"
   for f in "$OUT"/"$SK"*.png; do cp "$f" "$DST/"; done
   ls -la "$DST"
 fi

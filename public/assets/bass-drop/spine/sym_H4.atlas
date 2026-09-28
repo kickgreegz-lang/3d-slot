@@ -1,0 +1,36 @@
+sym_H4.webp
+size: 636,508
+filter: Linear,Linear
+pma: true
+sym_H4/bottle
+bounds: 474,2,160,261
+offsets: 3,3,166,267
+sym_H4/bottle_blur
+bounds: 312,2,160,285
+offsets: 3,5,166,295
+sym_H4/cap
+bounds: 137,451,78,45
+offsets: 3,3,84,51
+sym_H4/cap_blur
+bounds: 337,427,78,69
+offsets: 3,5,84,79
+sym_H4/flame
+bounds: 373,289,54,70
+offsets: 3,3,60,76
+sym_H4/glint
+bounds: 257,427,78,78
+offsets: 1,1,80,80
+sym_H4/glow
+bounds: 2,2,308,308
+offsets: 11,11,330,330
+sym_H4/label
+bounds: 257,312,114,113
+offsets: 3,3,120,119
+sym_H4/label_blur
+bounds: 143,312,112,137
+offsets: 5,5,120,147
+sym_H4/sauce
+bounds: 2,312,139,76
+sym_H4/sauce_blur
+bounds: 2,390,133,96
+offsets: 3,3,139,104

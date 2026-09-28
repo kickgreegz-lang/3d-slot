@@ -13,7 +13,7 @@ The second game in the Swamp Funk world: a 6×6 cluster tumble with a **Groove M
 
 The book-level rules (meter resets, drops only up to 60, sticky homes that respawn each Mega Mix spin, win cap) follow the mock math contract in [mock/games/bass-drop/README.md](../../../mock/games/bass-drop/README.md); DESIGN.md §2 lists them as [M-1]…[M-10].
 
-Reference timings from Dragonspire Frostfall are still to be captured. The network now reaches the demo hosts, but the supplied demo session had expired (RGS HTTP 400 "session not found"), so no frame was captured (DESIGN.md §22.1). DESIGN.md §22 has the protocol, every value that needs it is tagged **[RM]**, and [reference-timings.json](reference-timings.json) holds the (still empty) measurements.
+Reference timings from Dragonspire Frostfall were captured on 2026-09-26 and measured on 2026-09-28: the base game at normal, turbo and quick-stop speed, the wild summons, and one resumed bonus round. [reference-timings.json](reference-timings.json) holds the numbers only (no frames). DESIGN.md §18.1 marks every **[RM]** row as kept or adopted, and §22.1 has the decisions and the `src/` change list, which has not landed yet. The bonus flow and the big-win tiers still need a fresh demo session (DESIGN.md §23, R-7 and R-10).
 
 ## Implementation status (phase B)
 

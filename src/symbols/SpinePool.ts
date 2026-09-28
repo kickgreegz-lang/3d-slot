@@ -22,12 +22,23 @@
  *   blur                          loop   optional fast-fall pose (else the 'blur' texture is used)
  *   bass_react                    once   TRACK 1, additive: board-wide bass reaction (optional)
  *   drop_impact                   once   heavy impact of a dropped wild (board:transform 'impact'; optional)
+ *   any other clip                once / loop   SymbolView.play ('board:play'): the W's drop_launch / drop_fall /
+ *                                        sticky_lock / sticky_idle / mult_up / sticky_unlock / appear
  * EVENTS (aliases accepted):
  *   `impact` | `land_impact`      syncs land SFX + dust + shake
  *   `burst`  | `explode_burst`    syncs the explode particles
  *   `win_peak`                    moves the win sparkle burst onto the pop apex
  *   `explode_done`                ends the explode early (instance returned sooner)
  *   `sfx` (string SfxId) · `vfx` (string fx id) · `shake` (float trauma)   generic cues
+ *
+ * LOOKS (SymbolView.setLook): a view that carries a persistent skin / attachment / live-mount state
+ * (a multiplier or sticky W) HOLDS its instance and loops the look's rest clip between actions;
+ * SpineRig.applyLook sets the skin (+ setupPoseSlots), re-applies the attachments, mounts the live
+ * objects in their empty txt_* slots (addSlotObject) and drives runtime bone channels
+ * (ctrl_badge_scale) in beforeUpdateWorldTransforms. release() undoes all of it (skin, mounts, drivers).
+ * CAP: transient borrows (land, blur, idle, bass_react, win) stop at SYMBOL_TIMING.spine.maxActive
+ * (low tier maxActiveLow); the view then falls back to its procedural rig for that action. Looks,
+ * impacts and explicit plays are never refused (ANIMATION_SET §2.7: at most 24 animated symbols).
  *
  * RIG CONVENTIONS: skeleton authored on the @2x symbol canvas (360x360 px == the
  * static texture), `root` at the canvas CENTRE (the texture's anchor 0.5), y-up in
@@ -50,21 +61,31 @@
  */
 import {
   type AnimationStateListener,
+  type Bone,
   type Event as SpineEvent,
   Interpolation,
   Physics,
   Spine,
 } from '@esotericsoftware/spine-pixi-v8';
+import { type Container, Matrix } from 'pixi.js';
 import type { SpineRef } from '../assets/art';
 import { clock } from '../core/clock';
 import { speedScale } from '../core/timing';
 import { SYMBOL_TIMING } from './symbolTiming';
+import type { SymbolBoneDrive, SymbolLook } from './types';
 
 const keyOf = (ref: SpineRef): string => `${ref.skeleton}|${ref.atlas}|${ref.skin ?? ''}`;
+const noop = (): void => undefined;
 
 interface SpineMeta {
   animations: Set<string>;
   events: Set<string>;
+  skins: Set<string>;
+  /**
+   * Slot name -> the slot bone's SETUP world transform in the Spine container's local space (the
+   * matrix addSlotObject gives a mounted object), for drawing live mounts on the static sprite.
+   */
+  slotSetup: Map<string, Matrix>;
 }
 
 /** Deferred / guarded container-motion inheritance of one active instance. */
@@ -82,6 +103,23 @@ class SpinePoolImpl {
   private readonly active = new Set<Spine>();
   private readonly inheriting = new Map<Spine, Inherit>();
   private offTick: (() => void) | null = null;
+
+  /** Instances currently lent out (looks, actions, flying proxies). */
+  get activeCount(): number {
+    return this.active.size;
+  }
+
+  /** Create `n` idle instances up front (no allocation / skeleton setup mid-round). */
+  prewarm(ref: SpineRef, n: number): void {
+    const key = keyOf(ref);
+    this.describe(ref);
+    let list = this.free.get(key);
+    if (!list) {
+      list = [];
+      this.free.set(key, list);
+    }
+    while (list.length < n) list.push(this.create(ref));
+  }
 
   /** Borrow an instance (created on demand; pooled per skeleton+atlas+skin). */
   borrow(ref: SpineRef): Spine {
@@ -106,9 +144,14 @@ class SpinePoolImpl {
   release(ref: SpineRef, spine: Spine): void {
     if (!this.active.delete(spine)) return;
     this.inheriting.delete(spine);
+    spine.removeSlotObjects();
+    spine.beforeUpdateWorldTransforms = noop;
     spine.state.clearListeners();
     spine.state.clearTracks();
     spine.state.timeScale = 1;
+    const sk = spine.skeleton;
+    const skin = ref.skin ? sk.data.findSkin(ref.skin) : null;
+    if (sk.skin !== skin) sk.setSkin(skin);
     spine.skeleton.setupPose();
     spine.skeletonPhysics.setPositionInheritance(0, 0);
     spine.skeletonPhysics.resetTransform();
@@ -164,9 +207,20 @@ class SpinePoolImpl {
     const key = keyOf(ref);
     if (!this.meta.has(key)) {
       const data = spine.skeleton.data;
+      const sk = spine.skeleton;
+      sk.setupPose();
+      sk.updateWorldTransform(Physics.none);
+      const slotSetup = new Map<string, Matrix>();
+      for (const slot of sk.slots) {
+        const b = slot.bone.appliedPose;
+        // the mapping Spine.updateSlotObject uses for a mounted container (y-down runtime)
+        slotSetup.set(slot.data.name, new Matrix(b.a, b.c, -b.b, -b.d, b.worldX, b.worldY));
+      }
       this.meta.set(key, {
         animations: new Set(data.animations.map((a) => a.name)),
         events: new Set(data.events.map((e) => e.name)),
+        skins: new Set(data.skins.map((k) => k.name)),
+        slotSetup,
       });
     }
     return spine;

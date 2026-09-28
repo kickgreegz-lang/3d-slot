@@ -12,7 +12,7 @@ It extends, and never contradicts, the repo-wide contracts:
 Where Bass Drop needs something new in a shared contract, the change is listed as a **contract request (CR-n)** in section 23 instead of being assumed.
 
 Tags used here:
-- **[RM]**: a starting value that must be re-measured from the Dragonspire Frostfall reference capture (protocol in section 22, status in section 22.1: not measured yet).
+- **[RM]**: a value checked against the Dragonspire Frostfall reference capture (protocol in section 22). All 13 [RM] rows were measured on 2026-09-28; each row's Measure cell in section 18.1 says whether the value was kept or adopted, and section 22.1 has the decisions and the change list.
 - **[M-n]**: a math-owned decision. The front end ships the default given here and must render whatever the book says.
 - **[CR-n]**: a change to a shared contract (`src/game/events.ts`, the book event contract, ANIMATION_CONTRACT, `tools/spine/contract.json`).
 
@@ -24,19 +24,17 @@ Sources (none of them is in the repo: third-party frames are never committed, an
 - `ref_dragon_1.png` (Dragonspire intro, 1073×604) and `ref_dragon_2.png` + `ref_dragon_2_grid.png` (Dragonspire base game, 1079×607): the user's screenshots, kept in the session scratchpad only;
 - our Swamp Funk captures from `tools/capture/shot.mjs` at 1920×1080 (regenerate them; they are not committed).
 
-The live demo has not been captured yet (log in section 22.1):
-- first attempt: the proxy refused `paperclip.live.engine.io` and `rgsd.engine.io` (HTTP 403 on CONNECT);
-- second attempt (2026-09-26, run `probe1`): the network allowed both hosts and the page plus all 47 page/asset requests loaded, but the RGS rejected the demo session (`POST /wallet/authenticate` → HTTP 400 `ERR_VAL` "session not found"). The game never left its loading screen, and 0 frames were captured.
+The live demo was captured frame-exact on 2026-09-26 (session 2: 1280×720, virtual 60 fps clock, study only, gitignored `art/_reference/dragonspire/s2-*`) and measured on 2026-09-28 (log and decisions in section 22.1). Measured: the base game at normal, turbo and quick-stop speed, 3 wild summons, 2 big wins and one resumed bonus round (every 2nd frame). Not measured: a bought bonus, the super bonus and the big-win tier thresholds.
 
-**Every timing in this document is still derived from our own `timing.ts` plus AAA norms, not measured from Dragonspire.** Timings that need the capture carry **[RM]**. Nothing in motion has been observed: the table below is read off two stills only.
+The table below is still the stills study. The motion study (timings, turbo, shake, meter behaviour, idle) is in section 22.1, and it answers R-2 to R-6 and R-8 (section 23). Timings in section 18.1 carry their measured value in the Measure column; the rest of this document is still derived from our own `timing.ts` plus AAA norms.
 
 Measured from the stills (proportions of the viewport, converted to our 1920×1080 space):
 
 | Element | Dragonspire | What Bass Drop does |
 |---|---|---|
 | Grid | 5×5, centred (x centre 50.2%); column pitch ≈ 8.0% of viewport width (≈ 154 px at 1920); square cells, so the grid is **≈ 71% of viewport height** | 6×6, centred; cell 124 + gap 4 = 128 pitch; grid 764 px tall = **71% of 1080** (same proportion) |
-| Meter | Dark stone ring with a gold inner rim; "0/35" in frosted cyan in the centre disc; ring Ø ≈ 14% of width (≈ 267 px at 1920); centre ≈ (16.4%, 31.3%) = (316, 338); a lantern cap at 12 o'clock; a dragon perched on the upper-right of the ring. The still shows 0/35 while four special wilds are on the board (per-spin reset, or a frame just after one: section 23, R-3) | **Groove Meter**: a speaker woofer, ring Ø 320 at (248, 318). "23/60" in the dust cap. Six notch badges on the rim. Gumbo leans on the speaker stack; the cone itself is the "creature" (it breathes, pumps and booms) |
-| Mini panel under the meter | A 5×5 grid of empty blue cells (the main board's shape) under a dragon crest with wings; its function is not visible in a still (it may be a position map, e.g. where special wilds landed: unconfirmed) | Not copied. Our "next drop" chip hangs under the meter. **[RM]** find out what the panel does before deciding whether we need an equivalent (section 23, R-4) |
+| Meter | Dark stone ring with a gold inner rim; "0/35" in frosted cyan in the centre disc; ring Ø ≈ 14% of width (≈ 267 px at 1920); centre ≈ (16.4%, 31.3%) = (316, 338); a lantern cap at 12 o'clock; a dragon perched on the upper-right of the ring. The still shows 0/35 while four special wilds are on the board. **Measured:** the meter counts exploded symbols (+1 per symbol, in the frame the symbol freezes; nothing flies), resets every round and only triggers the bonus at 35; it never summons wilds (R-2, R-3) | **Groove Meter**: a speaker woofer, ring Ø 320 at (248, 318). "23/60" in the dust cap. Six notch badges on the rim. Gumbo leans on the speaker stack; the cone itself is the "creature" (it breathes, pumps and booms) |
+| Mini panel under the meter | A 5×5 grid of empty blue cells (the main board's shape) under a dragon crest with wings; **Measured:** it is the per-spin power-up map. Every spin lands three power-up cells (wild, clear, freeze) on the empty board, and the panel lights the same cells | Not copied, and no equivalent is needed: Bass Drop has no per-spin power-ups. Our "next drop" chip under the meter carries the forward-looking information (R-4, closed) |
 | Symbols | Glossy cel gems with snow caps; outline ≈ 3.5% of the cell; highs are crown, horn, scroll, blade | We keep the Swamp Funk set (outline 3% of the cell, top-left light, plum extrusion). It already matches the reference's finish level |
 | Special wilds | A 2×2 dragon wild with a huge "100x" in ice letters overlapping its gold frame; 1×1 dragon wilds with "2x"/"5x" at the bottom; one "5x" wild drawn translucent (ghosted: arriving or pending) | **Multiplier badge** at the bottom-centre of the W: plate 64% × 40% of the cell, digits **30% of the cell** tall, overlapping the cell's bottom edge by 10%. A **ghosted landing shadow** on target cells while a wild is in flight. No 2×2 wild (not in our mechanics) |
 | Frame | Ornate ice-dragon frame; dragons perched on both top corners; ice crystals on the posts; thin light column separators | Cypress frame (Swamp Funk) + **two horn speakers bolted on the top corners** (our "perched dragons"). They pump on every boom. The neon tube on the beam carries the drop charge |
@@ -713,27 +711,31 @@ All Bass Drop constants live in one registered table (lab-tunable), section 18.2
 
 ### 18.1 Per-phase timings (ms)
 
-**Re-measure status (2026-09-26): 0 of the 13 [RM] rows are measured, and none is adopted.** The capture was blocked by an expired demo session (section 22.1), so every value below is still ours. After section 22 step 4 a row's Measure cell becomes `measured: <ref value> (kept)` or `measured: <ref value> (adopted)`; until then it stays **[RM]**. The row → `reference-timings.json` key map and the comparison rules are in section 22.1.
+**Re-measure status (2026-09-28): all 13 [RM] rows are measured.** 5 rows adopt a reference value (fall-out, drop-in, cluster present, explode, intro cards out), 5 keep ours (orb flight, orb spread, meter tick, refill, and the composite tumble step, which follows the adopted phases), and 3 wait for more data (feature intro, feature outro, big-win tiers: R-7, R-10). Decisions, like-for-like numbers and the `src/` change list are in section 22.1.
+
+**Adopted values are the new targets and are shown in bold.** The "was" value is in the Derivation cell. `src/` was frozen during the study, so the build runs the "was" values until the section 22.1 change list lands. Section 18.2 mirrors the current `src/` table and changes in the same PR.
+
+**Turbo (R-5, adopted).** The reference's turbo cuts the spin and keeps the win, so Bass Drop's turbo now does the same through per-key values in `BASS_DROP_TIMING.speed`; `SPEED_SCALE` is unchanged. Turbo cuts the fall-out, puts an 800 ms floor on the cluster present and runs the explode at normal pace without the hit-stop. Super turbo also cuts the fall-out and keeps ÷3 everywhere else, because the reference has no third state. A slam speeds up only the reveal it interrupts (CR-15).
 
 | Phase | Normal | Turbo | Super turbo | Derivation | Measure |
 |---|---|---|---|---|---|
-| Fall-out (whole board) | 510 | 130 | 87 | `spin.fallOutDuration` 260 + column stagger 35 × 5 + row stagger 15 × 5 | [RM] |
+| Fall-out (whole board) | **595** | **cut (1 frame)** | **cut (1 frame)** | `spin.fallOutDuration` 260 + **row stagger 67 × 5, bottom row first, all columns together (column stagger 0)**. Turbo and super turbo hide the old board on the first frame. Was 510 / 130 / 87 (column 35 × 5 + row 15 × 5) | measured: 517 / cut / 467 quick, row gap 67, column gap 0 (**adopted**: per-gap staggers and the turbo cut) |
 | Meter drain (base, parallel) | 400 | 200 | 133 | | |
-| Drop-in: first move → last settle | 950 | 265 | 175 | fall `√(2d/g)` with g = 12,000·k, d = 5.5 pitch ≈ 376; + stagger 60 × 5 + 25 × 5; + land 150 | [RM] |
-| Land settle (per symbol) | 150 | 75 | 50 | spring 1400 / 24 | |
+| Drop-in: first move → last settle | **1,076** | **251** | **167** | fall `√(2d/g)` with g = 12,000·k, d = 5.5 pitch ≈ 376; + **column stagger 90** × 5 + row stagger 25 × 5; + **land 125**. The board fill (1,076) sits inside the ANIMATION_CONTRACT §9 gate of 1.0–1.1 s. Was 950 / 265 / 175 (column 60, land 150) | measured: 833 / block / block; column gap 117, row gap 67, one hop (**adopted**: the column stagger, capped at 90 by the board-fill gate (5×5 equivalent 827 vs 833), and the land. The row gap was not adopted: R-9) |
+| Land settle (per symbol) | **125** | **63** | **42** | **1-frame contact dip, squash sy 0.86, one hop of 6.8% of the pitch (capped at 8% SH), at rest by 125.** Was 150 / 75 / 50 (spring 1400 / 24, 55 ms dip, 3.7% hop); the build measured 225 / 133 / 92, outside the ≤ 150 ms settle gate | measured: 125 (117–133), hop 6.8% pitch (**adopted**; the reference's 250 ms turbo ease fails the gate and is not adopted) |
 | Anticipation per column (book-driven only) | 1,200 | 600 | 400 | `anticipation.holdPerColumn` | |
-| Cluster present (`winInfo` resolves) | 1,000 | 500 | 333 | dim 170 ∥ outline 340 ∥ links ≤ 320; pop 130 + win ≤ 900; label 250 + 700 hold | [RM] |
+| Cluster present (`winInfo` resolves) | 1,000 | **800** | 333 | **dim 17 (hard cut to 44%)** ∥ outline 340 ∥ links ≤ 320; pop 130 + win ≤ 900; label 250 + 700 hold. **In normal speed, the first present of a spin starts 50 ms after the drop-in's last contact** (build: 400 after the last land). Turbo and super turbo still wait for the lands to settle, as the reference's turbo waits for its block. Turbo floor 800; super turbo stays ÷3. Was 1,000 / 500 / 333 with a 170 ms dim tween to 54% | measured: 950 / 800 / 967 quick; dim 44% in 1 frame; last land → present 33–67 (normal **kept**; **adopted**: the turbo floor, the hard dim and the present lead) |
 | Extra cluster in the same `winInfo` | +120 | +0 | +0 | `clusterStagger` | |
 | Wild-multiplier label sum | +600 | +300 | +0 | Flights skipped in super turbo | |
-| Explode (squeeze + burst + hit-stop) | 360 | 130 | 87 | 80 + 180 + 100 (hit-stop off in turbo and super turbo, CR-11) | [RM] |
+| Explode (squeeze + bursts + hit-stop) | **660** | **560** | 87 | squeeze 80 + **bursts spread evenly over 300 in BFS order from each cluster's overlay cell; each burst launches its own orb** + burst 180 + hit-stop 100 at the first burst. Turbo runs the normal squeeze, spread and burst without the hit-stop; super turbo has no spread and runs ÷3. Was 360 / 130 / 87 (all winners together) | measured: 660 (633–684) / 516, a sequential per-symbol freeze (**adopted**) |
 | Orb pop-out | 90 | 45 | 30 | | |
-| Orb flight | 520 | 260 | 173 | | [RM] |
-| Orb spread (cap) | 300 | 0 (±10% flight) | 0 (≤ 6 comets) | | [RM] |
-| Meter tick (LED in / settle / punch) | 60 / 120 / 90 | 30 / 60 / 45 | 20 / 40 / 30 | Throttles 45 / 25 / 16 ms | [RM] |
+| Orb flight | 520 | 260 | 173 | | measured: nothing flies (the counter ticks 34 ms after each freeze); present start → first tick 1,017 vs ours 1,750 (**kept**: the orbs are pillar 1, rule 7) |
+| Orb spread (cap) | 300 | **300 (the bursts)** | 0 (≤ 6 comets) | The spread now paces the bursts, so orbs leave one per burst. A 5-symbol cluster ticks every 75 ms, close to the reference's median of 83. Turbo flights still vary ±10% | measured: no flight to compare; per-symbol ticks 50–117 apart (**kept**) |
+| Meter tick (LED in / settle / punch) | 60 / 120 / 90 | 30 / 60 / 45 | 20 / 40 / 30 | Throttles 45 / 25 / 16 ms | measured: +1 per symbol, 83 ms apart (turbo 17); the per-tick flare was not measurable (**kept**; the spacing follows the burst spread) |
 | Threshold burst, minor / major | 500 / 900 | 250 / 450 | 167 / 300 | Runs during the refill | |
 | Pre-refill delay | 90 | 45 | 30 | `tumble.preRefillDelay` | |
-| Refill: typical / worst | 800 / 950 | 235 / 300 | 157 / 200 | g = 9,000·k; stagger 50 × 5 + 20 × 5; land 150 | [RM] |
-| **Tumble step** (explode + refill; orbs parallel) | ≈ 1,250 | ≈ 410 | ≈ 275 | The last orb lands before the refill ends in every profile (normal ≤ 990, turbo ≤ 371, super ≤ 230); counter rolls run on without holding the step (section 6.3) | [RM] |
+| Refill: typical / worst | **775 / 925** | **223 / 288** | **149 / 192** | g = 9,000·k; stagger 50 × 5 + 20 × 5; **land 125** (was 800 / 950, 235 / 300, 157 / 200 with land 150) | measured: 700 (667–733) / ≈ 267 with settle; build 733 / 333 (**kept**: normal +5% like-for-like; the land change closes the turbo gap) |
+| **Tumble step** (explode + refill; orbs parallel) | **≈ 1,525** | **≈ 830** | ≈ 265 | Composite (22.1 rule 2), so it follows the adopted phases. The last orb lands before the refill ends in every profile (normal ≤ 1,090 vs 1,525; turbo ≤ 711 vs 828; super ≤ 230 vs 266). Present + step: 2,525 / 1,628 / 599. Was ≈ 1,250 / 410 / 275 | measured: present → next present 2,617 (2,583–2,650) / 1,733 (composite, **follows**: −3% / −6% after the change; the build today is −20% / −44%) |
 | Bass drop charge | 500 | 250 | **167 (floor 160)** | Croak `bass_drop_charge` 15 f | |
 | Chained charge | 200 | 100 | 67 (floor 60) | `charge_chained` 6 f; the 160 ms floor applies only to the first charge of a step | |
 | Boom hit-stop | 60 | 0 | 0 | | |
@@ -741,24 +743,26 @@ All Bass Drop constants live in one registered table (lab-tunable), section 18.2
 | Wild flight | 640 | 320 | 213 | | |
 | Impact hit-stop | 40 | 0 | 0 | | |
 | Settle after last contact | 300 | 150 | 100 | | |
-| **Bass drop, 1 / 3 wilds** | **1,580 / 1,880** | **740 / 850** | **493 / 567** | charge + 40 launch delay + (n − 1) × stagger + flight + settle; normal adds the boom hit-stop 60 + 40 per impact (game-clock totals 1,480 / 1,700, section 8.1) | |
+| **Bass drop, 1 / 3 wilds** | **1,580 / 1,880** | **740 / 850** | **493 / 567** | charge + 40 launch delay + (n − 1) × stagger + flight + settle; normal adds the boom hit-stop 60 + 40 per impact (game-clock totals 1,480 / 1,700, section 8.1) | measured (R-6): summon 1,150–1,450 after a 500–600 ms hold; refill settle → next present ≈ 1,850 on both sides (durations **kept**; the shake changes, section 22.1) |
 | Multiplier slam / sticky lock | 180 / 400 | 90 / 200 | 60 / 133 | | |
 | Feature trigger (hold → wipe start) | 1,800 | 900 | 600 | Pumps on the beat in normal; turbo/super pumps at 300 / 200 ms spacing | |
 | Wipe | 620 | 310 | 207 | `FS_TIMING.wipe` | |
-| Feature intro (to tap-ready) | 2,600 | 1,300 | 867 | `freeSpins.introDuration`, lock 900 (unscaled) | [RM] |
+| Feature intro (to tap-ready) | 2,600 | 1,300 | 867 | `freeSpins.introDuration`, lock 900 (unscaled) | measured (n = 1, every 2nd frame): card readable 735, tap-ready 930 after the transition (**not adopted**: low confidence, R-10) |
 | Feature upgrade | 2,200 | 1,100 | 733 | | |
-| Feature outro | 2,200 + count 1,800 | 1,100 + 900 | 733 + 600 | | [RM] |
-| Big win tiers | 5 / 7 / 9 / 13 / 18 s | same | same | Player-controlled, not scaled | [RM] |
+| Feature outro | 2,200 + count 1,800 | 1,100 + 900 | 733 + 600 | | measured (n = 1): last land → TOTAL WIN plaque 1,200 with no count-up; tap → base game 1,100 (**not adopted**: R-10) |
+| Big win tiers | 5 / 7 / 9 / 13 / 18 s | same | same | Player-controlled, not scaled | measured: 2 samples, ×11.5 untitled 1,333 ms and ×20.3 "BIG WIN" 1,400 ms, both self-timed (**not adopted**: R-7) |
 | Small win count L1–L5 | 400–2,000 | ÷2 | ÷3 | `counters.smallByLevel` | |
-| Intro cards in / out | 900 / 400 | same | same | UI time | [RM] |
+| Intro cards in / out | 900 / **1,450** | same | same | UI time. **Out:** the cards pop forward (180), leave 120 ms apart (400 each), then the stage settles in with the meter and logo last. The spin input is live from 540 ms, and a spin during the settle snaps it. Was 400 (12 f) | measured: out 1,450 (last motion 2,100); in is not comparable (boot runs in real time) (out **adopted**, in kept) |
 
-Typical round totals (normal / turbo / super), excluding RGS latency:
+Typical round totals (normal / turbo / super), excluding RGS latency. The model uses the adopted targets; the "was" values are in brackets:
 
 | Round | Normal | Turbo | Super |
 |---|---|---|---|
-| Loss | 1.5 s | 0.4 s | 0.26 s |
-| One cluster, no drop | 3.7 s | 1.3 s | 0.9 s |
-| Three tumbles + two one-wild drops (+ small-win count) | 12.0 s | 4.9 s | 3.3 s |
+| Loss | ≈ 1.7 s (1.5) | ≈ 0.3 s (0.4) | ≈ 0.22 s (0.26) |
+| One cluster, no drop | ≈ 4.2 s (3.7) | ≈ 1.9 s (1.3) | ≈ 0.8 s (0.9) |
+| Three tumbles + two one-wild drops (+ small-win count) | ≈ 13.0 s (12.0) | ≈ 6.9 s (4.9) | ≈ 3.2 s (3.3) |
+
+Turbo is now faster on losses and slower on wins, which is the reference's model: its turbo tumble cycle is 1.73 s and its turbo loss round 0.38 s. Super turbo is the "everything fast" state.
 
 Measured in the running build: see [README.md](README.md#measured-round-timings).
 
@@ -872,34 +876,159 @@ Tool: the reference capture track's `tools/reference/capture.mjs`, which capture
 4. Write the results to `docs/games/bass-drop/reference-timings.json` (numbers only, no frames). For every **[RM]** row in section 18.1, record the measured value next to ours and adopt it if it differs by more than 15% **and** still passes our feel gates (ANIMATION_CONTRACT §9). Mark adopted rows "measured".
 5. Re-check sections 0 and 6.3 (meter behaviour) against the capture; append any divergence as an open decision in section 23.
 
-### 22.1 Status (2026-09-26): blocked, nothing measured, nothing adopted
+### 22.1 Status (2026-09-28): measured, step 4 applied, `src/` change pending
 
-**Result of step 4: no change.** No reference value exists, so no [RM] row could be compared, kept or adopted. The timing constants in `src/` stay as they are, and the step 5 re-check of sections 0 and 6.3 could not be done: its questions are open decisions R-1 to R-8 in section 23.
+**Result of step 4.** All 13 [RM] rows are measured and have a decision (section 18.1, Measure column):
 
-Capture log (outputs in the gitignored `art/_reference/dragonspire/`):
+- **Adopted, 5 rows:** fall-out, drop-in (with the land), cluster present (turbo floor, hard dim, present lead), explode and intro cards out.
+- **Kept, 5 rows:** orb flight, orb spread, meter tick, refill, and the tumble step, which is composite and follows the adopted phases.
+- **Waiting for data, 3 rows:** feature intro, feature outro and big-win tiers (R-7, R-10).
+
+The turbo policy (R-5) and the shake budget (section 19, R-6) also change.
+
+Step 5 (the re-check of sections 0, 6.3, 8, 10, 11, 12 and 19) is below.
+
+**Nothing in `src/` has changed yet.** Another workflow held `src/` during the study, so the build still runs the old values. The change list below is the implementation's to-do. When it lands:
+- update sections 6.3, 7, 8.1, 12, 18.2 and 19 in the same PR;
+- re-capture our build with the same instruments (rule 3);
+- append the result to `reference-timings.json → decisions`.
+
+Capture log (outputs in the gitignored `art/_reference/dragonspire/`; pixels are never copied into the repo):
 
 | Run | Outcome |
 |---|---|
 | (before 2026-09) | The proxy refused both hosts (HTTP 403 on CONNECT) |
-| `probe1` (2026-09-26, 1280×720, virtual clock) | Network fine: the document and all 47 page/asset requests returned 200. The RGS rejected the session: `POST /wallet/authenticate` → HTTP 400 `ERR_VAL` "session not found" (the `sessionID` in the supplied demo URL had expired). The game retried `wallet/balance` 59 times (all 400), showed its loading screen and then went blank. **0 frames, 0 screenshots, 0 segments.** The fallback (same URL with no `sessionID`, or with an invented one) was not run: the permission check refused it |
+| `probe1` (2026-09-26, 1280×720, virtual clock) | The RGS rejected the expired `sessionID` (`POST /wallet/authenticate` → HTTP 400 `ERR_VAL`); 0 frames |
+| `s2-a-intro-idle` (2026-09-26, session 2) | Aborted but usable: the intro screen and its out every frame, 30 s of idle every 3rd frame, grid screenshots of the controls (the regions were verified on them) |
+| `s2-b-normal` | Aborted earlier attempt: 5 every-frame spins and the bonus-triggering spin |
+| `s2-b-normal-2` | OK: `01-resume-round` is the **full bonus round** resumed at the next login (every 2nd frame, 86.7 s: trigger, "4 free spins" card, 4 spins, an in-bonus BIG WIN, TOTAL WIN), then 14 spins every 3rd frame; 16 videos; RGS bodies |
+| `s2-c-turbo` | OK: 20 turbo and 10 turbo + slam spins, 33 videos |
+| `s2-d-quickstop` | Partial: frames only. `frames.json` and `segments.json` were rebuilt from the log and the RGS frame stamps, which recovers 5 every-frame quick stops (one ×11.5 big win, one summon) |
+| `s2-i-explore` | OK: controls and menus |
 
-What exists:
-- [reference-timings.json](reference-timings.json): `status: not_measured`, 21 rows, each with our value, the measuring method, the unit and the confidence it will have once data exists. It holds numbers only, and every reference value is `null`.
-- An analysis pipeline (capture scripts for segments a–e plus `df-analyse.mjs`, which rewrites the JSON from the runs in one command). It holds no third-party content, and it lives in the study session's scratchpad, so it must move to `tools/reference/scripts/` if the study continues in another session. Checked on our own mock slot (`tools/reference/test/mock-slot.html`): 45/45 column stops inside the true window, flash cadence 125 ms (true 125), turbo stop-gap ratio 0.27 (true 0.25), shake self-test exact to the pixel. **Not checked on a tumble game:** the fall-out/drop-in split, the meter heuristics, and the intro, idle and bonus rows.
-- The region rectangles (grid, meter, mini panel, HUD, shake patches) are read off the stills, not off a live probe.
+**Method.** Both sides were measured with the same instruments, all at 60 fps and 1280×720, with px converted to 1920 wide:
+- per-cell grid energy (bursts, fall-out/drop-in split, column entry and settle);
+- dim windows (per-cell luminance);
+- counter digit changes;
+- vertical template tracking of single cells (lands, hops);
+- SAD block matching of static stage and HUD patches (shake, zoom).
 
-To unblock, one of:
-1. a fresh demo URL with a live `sessionID` from the user (IDs expire, so run it soon after it is issued);
-2. the user's explicit approval to load the demo with no `sessionID` or with a random one.
+Our build was captured with the same driver (`tools/reference/capture.mjs --stub-ws --clock after-boot`) on the books `loss`, `loss-fast`, `small_win`, `meter_10`, `tumble_chain` and `meter_30`, in all three profiles. Use the HUD's `ui:turbo` to pick a profile: `__slot.speed()` is reset at round start.
 
-Stake Engine replay URLs need no session, but they need round event ids, which we do not have. Once the game boots: run segment `a` first and verify the regions on `shots/*.grid.png`, then segments `b c d e` at `--viewport 1280x720 --jpeg 85` (the virtual clock keeps timing frame-exact on the shared CPUs; about 1.5–2.5 h), then `df-analyse.mjs`.
+`timings.mjs` / `df-analyse.mjs` are quoted only for first motion, loss round and intro out: their generic heuristics split the reference's empty-board phase wrongly.
 
-**Row map for step 4.** "Compare against" is the value of ours that measures the same thing as the JSON row. It is not always the 18.1 cell.
+Precision is ±17 ms every frame, ±33 ms every 2nd frame and ±50 ms every 3rd frame. The per-cell Python instruments are still in the study session's scratchpad; move them to `tools/reference/scripts/dragonspire/` before the next capture.
+
+**Decisions per [RM] row.** "Build" is our running build measured with the same instrument (rule 3). The spec is in brackets.
+
+| 18.1 row | Reference N / T / quick | Ours: build (spec) N / T / ST | Rule check | Decision |
+|---|---|---|---|---|
+| Fall-out | 517 / cut ≤ 17 / 467 (the fall-out in flight finishes at normal pace); bottom row first, row gap 67, column gap 0 | 500 / 134 / 84 (510 / 130 / 87; 5×5: 460); column gap 33 (35), row 15 | Total −3% like-for-like, but rule 1 compares per gap: column −100%, row +347%, high. Turbo ratio 0.03 vs 0.27 (rule 5). No gate touched | **Adopted:** column 0, row 67 → 595 on 6×6 (5×5 equivalent 528). Turbo and super turbo cut the old board on the first frame |
+| Drop-in | 833 (median of the last column) / block / block; column gap 117, row gap 67, one hop; each symbol crosses the grid in ≈ 117 ms | 717 / 267 / 184 (950 / 265 / 175; 5×5: 865); column gap 50 (60) | Column −57%, high → adopt. At 117 the 6×6 board fill would be 1,211 ms, outside the ANIMATION_CONTRACT §9 board-fill gate (1.0–1.1 s), so the stagger is capped at 90 (fill 1,076; 5×5 equivalent 827 vs 833). A row gap of 67 would push the fill to 1,286 and belongs to a different fall model (one symbol at a time from just above the grid) | **Adopted:** column stagger 60 → 90. Row stagger kept at 25 (R-9). Turbo is already a block (staggers 0): ≈ 250 from first move to rest, against the reference's 300–333. The difference is the reference's 250 ms land ease, which fails our settle gate |
+| (Land, via the drop-in row) | contact → 1-frame dip → one hop of 6.8% pitch peaking at +67 → at rest 125 (117–133); turbo ≈ 250 ease | 225 / 133 / 92 (150 / 75 / 50); 67 ms squash dip, hop 3.7% pitch | +80% like-for-like, medium. Our build stays outside ±2% SH until ≈ 200 ms, so it probably misses its own ≤ 150 ms settle gate. 6.8% pitch = 7.0% SH ≤ 8% ✓; squash 0.86 ✓. The reference's turbo ease fails the gate | **Adopted:** at rest by 125 with a 1-frame dip and one 6.8% hop (capped at 8% SH for heavy and special). Confirm the settle, the rebound and no column overlap during the hop with the lab MotionProbe |
+| Cluster present | 950 (950–1,000, n = 6) / 800–833 (n = 4) / 967 (n = 2); hard dim to 44% in 1 frame, in and out; last land → present 33–67 | 950 / 483 / 333 (1,000 / 500 / 333); dim to 54% over 130 ms; last land → present 400 / 150 / 100 | Normal −5% → kept. Turbo ratio 0.84 vs 0.51 (rule 5, high). The dim is part of this row (high). The lead is medium; the tumble → next present lead is left alone because the reference rests 200–250 ms there | **Normal kept.** **Adopted:** a turbo floor of 800 (super turbo stays 333, since the reference has no third state), a hard 1-frame dim to 44%, and, in normal speed, the first present of a spin starting 50 ms after the drop-in's last contact (turbo keeps waiting for the settle, as the reference does). The IRIS check covers the dim cuts (one opposing pair per present, ≤ 3/s) |
+| Explode | 660 (633–684) / 516: a sequential per-symbol freeze; the meter ticks with each freeze | 400 / 133 / 100 (360 / 130 / 87): all winners burst together | −39% normal, high. Turbo ratio 0.78 vs 0.33. Like-for-like (explode start → refill start) 693 vs 490. Hit-stop cap ✓ | **Adopted** in our own vocabulary: the bursts run in BFS order from the overlay cell, evenly over the 300 ms orb spread, and **each burst launches its own orb**. 80 + 300 + 180 + 100 = 660 for every cluster (5+ symbols). Turbo runs the normal timing without the hit-stop: 560 (ref 516, +9%). Super turbo stays 87 |
+| Orb flight | Nothing flies. First tick 34 ms after the explode; present start → first tick 1,017 | explode → first tick 783 / 350 / 233; present start → first tick 1,750 / 833 / 566 (1,790 / 845 / 563) | +72%, high, but the gap is the orb travel itself. Adopting it removes the orbs, which breaks pillar 1 (rule 7) | **Kept** (R-2) |
+| Orb spread (cap) | Not comparable: nothing flies. Per-symbol ticks 50–117 apart (median 83) | 300 cap; ticks roll 1 per frame | Compared only if the reference flies one item per symbol, which it does not | **Kept** at 300. The spread now paces the bursts, so a 5-symbol cluster ticks every 75 ms |
+| Meter tick | +1 per symbol, 83 ms apart (turbo 17); `meter.counterBurst` heuristic 242 / 333 (low) | 17 ms spacing (a roll) | The sum row is low confidence (rule 4). The per-tick flare was not measurable | **Kept.** The spacing follows the burst spread |
+| Refill | 700 (667–733) / ≈ 117 block + 150 settle | 733 / 333 / 250 (800 / 235 / 157) | +5% normal → kept. Turbo +25%, and all of it is the land tail | **Kept.** The land change brings the turbo refill to ≈ 223 |
+| Tumble step | Cycle 2,617 (2,583–2,650, n = 2) / 1,733 (n = 1) | 2,100 (1,983–2,167) / 967 / 667 over 8 cycles (compare 2,250 / 910 / 608) | Composite (rule 2): nothing adopted on its own | **Follows** the adopted phases: 2,525 / 1,628 / 599 (−3% / −6% against the reference) |
+| Feature intro | Meter 35/35 → transition 1,100; transition → card readable 735, tap-ready 930; tap → bonus scene 700 (n = 1, every 2nd frame) | trigger 1,800; intro 2,600 (tap lock 900) | Low confidence (n = 1); the row map needs high | **Not adopted** (R-10) |
+| Feature outro | Last land → TOTAL WIN plaque ≈ 1,200 with no count-up; tap → base game ≈ 1,100 (n = 1) | 2,200 + count 1,800 | As above | **Not adopted** (R-10) |
+| Big win tiers | ×11.5: chest count-up, no title, 1,333 ms; ×20.3: "BIG WIN", 1,400 ms; both self-timed, no tap | 5 / 7 / 9 / 13 / 18 s, tap-controlled | 2 samples, low; the row map needs high | **Not adopted** (R-7) |
+| Intro cards in / out | Out: cards pop forward, leave 100–150 ms apart, the stage settles in last; main motion 1,450 (last motion 2,100; `timings.mjs` 1,733). In: boot runs in real time | Out 500 (400) | Out +190% like-for-like, medium ✓; no gate or pillar touched. In: not frame-exact on either side | **Out adopted:** 1,450, with the spin input live from 567 ms, so the extra motion costs no wait. **In kept** at 900 |
+
+**Other measured rows (no 18.1 row).** These feed sections 0, 6.3, 8, 12 and 19 and R-2 to R-8:
+
+| Measure | Reference | Our build | Decision |
+|---|---|---|---|
+| Press → first pixel | 33 / 33 / 34 | 33 / 33 / 33 | Equal |
+| Spin-click feedback | Stage zoom +1.9% (meter ring 12.6 px), peak 67, at rest 317, the same in turbo; HUD static; the spin button only greys out | Button icon only (0 px) | **Adopted** (R-8): a 1.9% stage punch, real time, HUD excluded |
+| Empty board between spins | 1,350 ms: 3 power-up tiles land one by one, mirrored on the mini map (turbo ≈ 50, quick ≈ 17) | 17 | **Not adopted.** It is structural and part of the reference's identity; we have no per-spin information to show (R-4) |
+| Wild summon | Onset 500–600 after the refill settles; one vertical stage stomp per wild (21 px, peak +83, ≈ 300 ms, 233 apart, not speed-scaled, one per event in turbo); a comet from the frame dragon (≈ 300), a white burst on the cell (≈ 250), then the framed ×N wild; 1,150–1,450 (turbo ≈ 600) | wild:drop → next present 1,600 / 767 / 517 (starts 267 after the refill land); boom 5.6 px for ≈ 100 ms; impact 0.2 trauma (< 1 px) | **Durations kept** (R-6). Like-for-like (refill settle → next present) both are ≈ 1,850 ms. **Shake adopted, capped at our gates:** see section 19 below |
+| Ordinary lands and explodes | Never shake; one ×11.5 explode stomped 37 px (n = 1) | ≤ 0.1 px, but heavy lands log 0.08 trauma | Land trauma set to 0 (matches section 19). The big-explode stomp is not adopted (n = 1) |
+| Idle | Highs and wilds loop ≈ 1 s, lows still; logo and meter dragons breathe ≈ 850 ms; frame dragons on a scripted 10 s cycle (3 and 6 acts); no attract within 30 s; grid energy 4.9, meter 0.8 | grid 0.74, meter 1.74 (600 ms beat pulse), horns 600 ms, mascots move all the time | **Adopted as a direction** (R-8, art lead): move life from the edges to the board |
+| RGS | `bonusMeter` = cumulative exploded symbols, reset every round, bonus at 35; wilds come from a per-spin power-up cell; wild multipliers add (6 + 10 = 16) | — | R-2 and R-3 answered. Our wild-multiplier sum (section 7 step 6) is the same rule |
+
+**Step 5, section re-check.**
+- **Section 0:** updated (capture status; the R-3 and R-4 answers in the stills table).
+- **Section 6.3 (meter):** the reference counts per symbol, flies nothing and ticks in the frame of each freeze. We keep the orbs (pillar 1, R-2). The adopted divergence: steps 2–3 change from "every orb leaves at the common burst + a BFS delay" to "each symbol bursts at its BFS slot (even over 300 ms) and its orb leaves at that burst" (CR-13). Step 7 is unchanged: +1 per arrival.
+- **Section 8 (bass drop):** the beat sheet timing stays. In section 8.1, the boom trauma becomes 0.62 and each impact gets a vertical stage stomp instead of trauma 0.2 (CR-14).
+- **Sections 10 and 11:** no change until R-10 and R-7 have data.
+- **Section 12 (intro):** `ui_intro_cards` `out` goes from 12 f to 29 f:
+  - pop 0–5 f;
+  - the cards leave at f9, f13 and f17, 12 f each;
+  - then code settles the stage from 600 to 1,450 ms (dim off, meter and logo in last);
+  - input is live from f17 (567 ms), and a spin during the settle snaps it (`closeNow`).
+- **Section 19 (shake):**
+  - Boom 0.45 → **0.62 (8.5 px)**. It stays the biggest non-big-win shake (trigger 7.9, upgrade 5.5) for pillar 2, and is inside the boom gate of 4–10 px. The px values here use the per-axis formula of section 19; the measured 2D peak runs higher (our 0.45 boom measured 5.6 px). If the golden trace puts the boom above 10 px, back off to 0.6.
+  - Chain +0.1 → **+0.05, max 0.67 (9.9 px)**.
+  - Wild impact: trauma 0.2 → **0**, replaced by a **vertical stage stomp** of 7·k px (5.8 px landscape), 2 Hz, ζ 0.8 (peak ≈ 80 ms, ≈ 300 ms, no oscillation). One per wild in normal, one per drop in turbo and super turbo, not speed-scaled. `drop.thumpPx` is also the displacement cap, so stomps 110 ms apart never add up past the boom.
+  - **The HUD never moves** (shake, stomp and punch move the stage only, CR-14).
+  - The spin punch is a zoom, not a shake: off in reduced motion. The stomp is ×0.3 in reduced motion.
+  - Hit-stops unchanged.
+  - The hard-dim cuts join the IRIS/Harding golden check.
+
+**Change list (implementation to-do).** Core keys marked CR-12 become **Bass Drop overrides**, and the core default stays for Swamp Funk. Promote the land fix to core only after a Swamp Funk MotionProbe check shows the same settle-gate miss.
+
+| File | Key | Old → new | Why |
+|---|---|---|---|
+| `src/core/timing.ts` (CR-12) | `spin.fallOutColumnStagger` | 35 → 0 | Reference column gap 0: all columns fall together |
+| `src/core/timing.ts` (CR-12) | `spin.fallOutRowStagger` | 15 → 67 | Reference row gap 67, bottom row first (6×6 total 595) |
+| `src/core/timing.ts` (CR-12) | `drop.columnStagger` | 60 → 90 | Reference 117 per gap, capped by the board-fill gate (fill 1,076 ms) |
+| `src/core/timing.ts` (CR-12) | `land.squashDuration` | 55 → 17 | 1-frame contact dip; the 55 ms hold is most of our 225 ms settle |
+| `src/core/timing.ts` (CR-12) | `land.hopHeight` | 6 → 10.5 | ×k = 8.7 px = 6.8% of the 128 pitch (7.0% SH) |
+| `src/core/timing.ts` (CR-12) | `win.dimDuration` | 170 → 17 | Hard 1-frame dim in and out |
+| `src/core/timing.ts` (CR-12) | `win.dimTint` | 0x5a5a5a → 0x484848 | Non-winners at 44% of their settled luminance (build 54%); tune on the `win.dim` instrument |
+| `src/symbols/symbolTiming.ts` (CR-12) | `land.hopGravity` | 2,400 → 7,000 | Hop rises in ≈ 50 ms and lands ≈ 117 ms after contact (reference 117–133) |
+| `src/symbols/symbolTiming.ts` (CR-12) | `land.hopDelay` (new; `SymbolRig.releaseSquash` hard-codes 0.85 × quarter period) | 0.85 → 0 | The hop leaves at the squash release, not 35 ms later |
+| `src/symbols/symbolTiming.ts` (CR-12) | `land.hopKick` | 0.004 → 0.002 | The touch-down re-kick must not push the settle past 150 ms |
+| `src/symbols/symbolTiming.ts` (CR-12) | `land.hopMaxSH` (new) | none → 0.08 | Keeps heavy and special hops inside the ≤ 8% SH rebound gate |
+| `src/symbols/symbolTiming.ts` (CR-12) | `land.shakeTrauma` | heavy 0.08 / special 0.15 → 0 / 0 | Section 19: ordinary lands never shake (it was invisible but logged) |
+| `src/board/boardTiming.ts` (CR-13) | `revealResolveLead` (new, normal profile only) | await every land settle → 50 | The first present starts 50 ms after the last contact (build 400; reference 33–67) |
+| `src/board/boardTiming.ts` (CR-13) | `explodeSpread` (new; `GameFeatures.explodeSequence`) | 0 (together) → 300 (Bass Drop passes `orbs.spreadCap`) | Sequential bursts in BFS order: explode 660 |
+| `src/games/bass-drop/timing.ts` | `orbs.depthStagger` / `orbs.orbStagger` | 22 / 6 → 0 / 0 | Each orb leaves at its own burst; the order and spread moved to the explode |
+| `src/games/bass-drop/timing.ts` | `speed.fallOutCut` (new) | none → `['turbo', 'superTurbo']` | Turbo fall-out 130 → 1 frame (reference turbo ratio 0.03) |
+| `src/games/bass-drop/timing.ts` | `speed.presentMinTurbo` (new) | none → 800 | Turbo present 500 → 800 (reference ×0.84) |
+| `src/games/bass-drop/timing.ts` | `speed.explodeTurbo` (new) | none → `'normal'` | Turbo explode 130 → 560, without the hit-stop (reference 516) |
+| `src/games/bass-drop/timing.ts` | `shake.boom` | 0.45 → 0.62 | 8.5 px: toward the reference stomp, capped at the boom gate |
+| `src/games/bass-drop/timing.ts` | `shake.boomChainAdd` / `shake.boomMax` | 0.1 / 0.65 → 0.05 / 0.67 | Chained max 9.9 px ≤ 10 |
+| `src/games/bass-drop/timing.ts` | `shake.wildImpact` | 0.2 → 0 | Replaced by the directional stomp (the trauma was < 1 px) |
+| `src/games/bass-drop/timing.ts` | `drop.thumpPx` | 5 → 7 | The thump becomes a stage stomp (×k = 5.8 px), one per wild |
+| `src/games/bass-drop/timing.ts` | `drop.stompHz` / `drop.stompZeta` (new) | none → 2 / 0.8 | Peak ≈ 80 ms, ≈ 300 ms, no oscillation (reference 83 / 300) |
+| `src/games/bass-drop/timing.ts` | `punch.spin` (new) | none → `{ scale: 0.019, hz: 3.2, zeta: 0.55 }` | Spin-click stage punch: peak ≈ 60 ms, one ≈ 0.25% undershoot, at rest ≈ 350 ms; real time |
+| `src/games/bass-drop/screens/look.ts` | `introCards.out` | 400 (12 f) → 967 (29 f) | Staged card exit |
+| `src/games/bass-drop/screens/look.ts` | `introCards.outPop` / `outStagger` / `stageSettleAt` / `stageSettle` / `outInputAt` (new) | none → 167 / 133 / 600 / 850 / 567 | Intro out 1,450 with live input from 567 |
+| `src/games/bass-drop/meter/geometry.ts` | `METER_LOOK.breathScale` | 1.02 → 1.01 | Calmer idle meter (reference meter idle energy 0.8, ours 1.74); art lead |
+| `src/games/bass-drop/stage/look.ts` | `STAGE_LOOK.cabinet.breathe` | 1.022 → 1.011 | As above, for the cabinet and horns |
+| `src/symbols/symbolTiming.ts` (CR-16) | `idle.loopKinds` / `idle.loopBeats` (new) | none → `['high', 'wild']` / 4 | H1–H4 and W loop `idle` on a 4-beat grid (2,400 ms at 100 BPM) with seeded phases; lows keep the random accents |
+
+Behaviour changes without a single key:
+- the row-wise fall-out means the drop-in starts on an empty board;
+- a slam speeds up only the interrupted reveal (CR-15);
+- the stomp and the punch need the stage container (CR-14);
+- Gumbo and Croak idle becomes a calm base loop plus 2–3 scripted acts per ≈ 10 s cycle, offset between the two (ANIMATION_SET, art lead).
+
+**Kept on purpose** (our design does these better, or the reference's version is its identity):
+- the orbs and groove links (pillar 1), now paired 1:1 with the bursts;
+- the bass drop's length and beat structure (charge, boom, arc, impact), same length as the summon like-for-like;
+- no empty-board ritual, so a loss stays at ≈ 1.7 s against 2.8 s;
+- super turbo as a full ÷3 state;
+- the next-drop chip instead of a side grid;
+- the gold links and the multiplier-sum flight, which explain ×N;
+- normal-speed hit-stops, the flash limiter and reduced motion;
+- loops on the music grid;
+- the hex HUD;
+- the per-round meter reset;
+- tap-controlled big wins until R-7 has data;
+- the whole Swamp Funk identity: no ice, dragons, comets, dissolving orbs, power-up tiles or mini map.
+
+**Row map for step 4** (kept for re-measures; the "Ours" column is the pre-adoption value that was compared on 2026-09-28). "Compare against" is the value of ours that measures the same thing as the JSON row. It is not always the 18.1 cell.
 
 | 18.1 row | Ours (N / T / ST) | `reference-timings.json` key | Compare against (N / T / ST) | Adopt at confidence |
 |---|---|---|---|---|
 | Fall-out (whole board) | 510 / 130 / 87 | `fallOut.wholeBoard` | 5×5 equivalent **460** / 130 / 87 (4 column and 4 row gaps) | medium |
-| Drop-in | 950 / 265 / 175 | `dropIn.firstMoveToLastSettle`, `column.stagger`, `land.bouncePeaks` | 5×5 equivalent **865** / 265 / 175; column stagger per gap 60 / 0 / 0; 1 rebound | medium (the drop-in row is low until the split is confirmed on frames) |
+| Drop-in | 950 / 265 / 175 | `dropIn.firstMoveToLastSettle`, `column.stagger`, `land.bouncePeaks` | 5×5 equivalent **865** / 265 / 175; column stagger per gap 60 / 0 / 0; 1 rebound | medium (the split was confirmed on every-frame sheets on 2026-09-28) |
 | Cluster present | 1,000 / 500 / 333 | none: inside `tumble.stepAfterLand` | the per-phase split, read off every-frame sheets | high |
 | Explode | 360 / 130 / 87 | none: inside `tumble.stepAfterLand` | as above | high |
 | Orb flight | 520 / 260 / 173 | `meter.reaction` | first orb arrival counted from the start of the win presentation: **≈ 1,790** (with the 100 ms explode hit-stop) / 845 / 563. The JSON's `ours` 610 applies only if the frames show the reference has no separate present phase | medium |
@@ -914,7 +1043,7 @@ Stake Engine replay URLs need no session, but they need round event ids, which w
 
 The other JSON rows (`spin.pressToFirstMotion`, `land.settleTail`, `speed.*`, `wild.summon`, `shake.peak`, `miniPanel.activity`, `idle.loops`, `winFlash.peakSpacing`) have no 18.1 row. They feed the open decisions R-2 to R-8 (section 23), not the table.
 
-**Comparison rules for step 4** (in addition to the > 15% rule):
+**Comparison rules for step 4** (in addition to the > 15% rule). They were applied as written on 2026-09-28. Rule 3 used the per-cell instruments on both sides, because the `timings.mjs` heuristics misread the reference's empty-board phase. Rule 6 also used the ANIMATION_CONTRACT §9 board-fill gate (1.0–1.1 s) for the drop-in stagger:
 1. **Grid size.** Dragonspire is 5×5 and ours is 6×6. Compare per gap (column and row stagger) and per cell (fall time per pitch), never whole-board totals. An adopted per-gap value is re-derived into our 6×6 totals. The reference pitch (≈ 154 px at 1920) equals our `physRefPitch`, so per-cell fall times compare directly (section 5).
 2. **Composite rows adopt nothing on their own.** `tumble.stepAfterLand` and `bonus.flow` are sums: a phase changes only after its share has been read off the frames.
 3. **Same instrument on both sides.** The reference numbers come from motion energy, not from a spec. Before adopting, run the same `timings.mjs` regions on a capture of our own build and compare like with like: our build already differs from 18.1 (drop-in measured 1,067 / 333 / 233 vs 950 / 265 / 175 in the table).
@@ -944,6 +1073,11 @@ Contract requests (outside docs/games/bass-drop; each one lands in the same PR a
 | **CR-9** | Bet modes `BASE` 1×, `BONUS` 100×, `SUPER` 300× | bass-drop bet-mode table | **Landed** (`src/games/bass-drop/config.ts` `BET_MODES`, `mock/games/bass-drop/mock.json`) |
 | **CR-10** | (a) `board:transform` style **`'impact'`**: crush the old symbol now, place the new id after `TIMING.explode.anticipateDuration`, play `drop_impact` (or a procedural squash of 0.72), then resolve (section 8.3). (b) A Mega Mix **hold set** for `board:reveal`: cells whose current symbol equals the reveal's id at that cell (a W on its own home) stay in place through the fall-out and are skipped by the drop-in (section 9.3). Tumbles never use it | `src/board/Board.ts`, `src/game/events.ts` | (a) **Landed**: `Board.impactCell` crushes at the call (`explode({crush: true})`: the old symbol is pressed flat under the wild with a dim light and no debris, so the wild's squash reads on top) and places the W `anticipateDuration` later with the procedural impact keys (sy 0.72 at f1, 1.10 at f5, settled by f15; `drop_impact` is played instead when the W rig has it) and pushes the 4 neighbours. It resolves ≈ 330 ms of game time after the call (measured 360 ms at 60 fps; plus the 40 ms contact hit-stop on the wall clock in normal speed). (b) **Landed** as the core scene event `board:hold {cells}` (a request for the next fall-out; BassDrop sends it on every `fs:update`) |
 | **CR-11** | Gate hit-stops to the normal profile: `Board.tumble`'s explode hit-stop (and every Bass Drop hit-stop) only when `getSpeedProfile() === 'normal'` (section 18) | `src/board/Board.ts` (or a profile check in `clock.hitStop`) | **Landed** in `clock.hitStop`: normal profile only, capped at 120 ms, overlapping hit-stops keep the longer freeze, a slam releases a pending one |
+| **CR-12** | **Per-game core timing overrides.** `@game/config` may export `TIMING_OVERRIDES`, a deep-partial of `TIMING` and of the `symbol` / `board` sections, merged once at boot so the lab tunes and exports the effective values. Bass Drop uses it for the fall-out, drop-in, land and dim values of section 22.1. Swamp Funk exports nothing and keeps the core defaults | `src/core/timing.ts`, `src/config/game.ts` | Open (needed by the 22.1 change list) |
+| **CR-13** | **Board sequencing.** (a) `GameFeatures.explodeSequence {spread}`: winners burst in BFS order from each cluster's overlay cell, evenly over `spread` ms. `board:burst` is emitted per cell at its burst (orbs, link snaps and count pops already sync to it). Hit-stop, shake and the explode SFX play at the first burst. `stagger()` zeroes the spread in super turbo; turbo runs the explode at normal pace when `speed.explodeTurbo` is `'normal'`. (b) `BOARD_TIMING.revealResolveLead`: in the normal profile, `board:reveal` resolves this long after the last contact; turbo and super turbo keep awaiting the land settle. The lands keep animating, `win()` interrupts a winner that is still hopping, and the next fall-out may move cells whose land tail is still running. (c) A fall-out cut per profile (`speed.fallOutCut`). (d) A per-profile present floor on the `winInfo` resolve (`speed.presentMinTurbo`) | `src/board/Board.ts`, `src/config/game.ts`, `src/present/WinPresenter.ts` | Open |
+| **CR-14** | **Camera.** Shake, stomp and punch move a `stage` container (everything in `root` except `hud` and `overlay`), so the HUD never moves. New scene events: `fx:punch {scale, hz, zeta}`, the ANIMATION_CONTRACT §9 zoom punch (real time, off in reduced motion), and `fx:stomp {px, hz, zeta}`, a vertical directional spring (×0.3 in reduced motion) | `src/render/layers.ts`, `src/fx/shake.ts`, `src/fx/Fx.ts`, `src/game/events.ts` | Open. It also changes Swamp Funk: its HUD stops shaking too |
+| **CR-15** | **Slam scope.** A slam (quick stop) plays only the interrupted reveal (fall-out and drop-in) at super turbo. The win steps of that round keep the selected profile, and a slam in turbo changes nothing (reference quick stop: present ×1.0). `GameFeatures.slamScope: 'reveal'`; the default `'round'` is today's behaviour | `src/flow/controller.ts` (`followSpeed`), `src/config/game.ts` | Open |
+| **CR-16** | **Idle loops.** The ANIMATION_CONTRACT §3 `idle` runtime note ("played once per idle accent") gets a per-kind loop mode: `SYMBOL_TIMING.idle.loopKinds` loop `idle` continuously with a seeded phase on a `loopBeats` grid (Bass Drop: H1–H4 and W on 4 beats). Other kinds keep the random accents | `docs/ANIMATION_CONTRACT.md` §3, `src/symbols/*`, the Board idle scheduler | Open (art lead, R-8) |
 
 Also landed with the phase B front end (core, additive; Swamp Funk does not use them):
 - scene events `board:decorate` (keyed displays on a cell's view: multiplier badges, clamps), `board:thump` (grid spring, section 5), `board:react` (distance-staggered `bass_react`), `board:focus` (the drop's 20% dim), `board:burst` (emitted by the Board at the explode-burst frame: orbs, link snaps and count pops sync to it) and `win:labelMult` (the external multiplier-sum driver of section 7 step 6);
@@ -952,23 +1086,26 @@ Also landed with the phase B front end (core, additive; Swamp Funk does not use 
 - `fx:burst` takes `light` (0..1, the explode preset's flash glow and ring) and `count: 0` on `explode` (light and smoke only), used by the crush;
 - HUD hotkeys during the feature screens: FeatureScreens holds `modal:state` open from the trigger's t 0 to the hand-off (also upgrade and outro), so SPACE / ENTER never reach the flow as `ui:skip`; they act as the screen's own tap (tap lock, `spacebarAllowed` and `slamStopAllowed` respected).
 
-Reference study decisions (open until the Dragonspire capture exists, section 22.1). Each row has a default, which is what ships now. The capture can change pacing inside our design, never its identity (ART_BIBLE §0).
+Reference study decisions, measured 2026-09-28 (section 22.1). The "Decision" column is what ships once the 22.1 change list lands; until then the build runs the previous defaults. The capture can change pacing inside our design, never its identity (ART_BIBLE §0).
 
-| R | Question | Default (ships now) | What would change it |
-|---|---|---|---|
-| **R-1** | Unblock the capture | — | The user supplies a fresh demo URL with a live `sessionID`, or explicitly approves loading the demo with no or a random `sessionID` |
-| **R-2** | Meter granularity (section 6.3): does the reference count per symbol or per cluster, and does anything fly from the board to the meter? | Keep ours: one orb per exploding symbol, counter +1 per arrival. The meter counts connections (math), and the orbs are the visible link (pillar 1) | Pacing only. If the reference counts per cluster and our stream measures busier than its equivalent, tune `orbs.spreadCap` and the super-turbo comet count; the per-symbol model stays |
-| **R-3** | Meter reset: the still shows 0/35 with four special wilds on the board | Keep ours: drain on every base spin (section 6.5) | Nothing: the stateless rule (section 21) requires it |
-| **R-4** | What the mini 5×5 panel under the reference meter does | No equivalent: the next-drop chip (section 6.8) carries the forward-looking information, and Mega Mix homes show on the board (section 9) | If the panel shows state the player needs and we do not show, add it in our own form (on the board or the chip), never as a copied side grid |
-| **R-5** | Turbo, a second turbo state and quick stop, per phase | Keep ÷2 / ÷3 with staggers 0, and a slam-stop plays the rest of the round at the fastest allowed profile, normally super turbo (`src/flow/controller.ts`, `followSpeed`) | A per-phase ratio > 15% off at medium confidence → a per-key value or floor in `BASS_DROP_TIMING`, never `SPEED_SCALE` (shared with Swamp Funk) |
-| **R-6** | The summon, beat by beat: cue, source, flight, landing, multiplier reveal, shake | Keep section 8: one wild 1,580 ms wall clock (normal), boom 4.5 px | A reference summon > 15% shorter may shorten the flight and settle only, never the charge or its 160 ms floor. A larger reference shake is adopted only below the big-win gate (section 19) |
-| **R-7** | Big-win tier thresholds and durations | Keep 15 / 30 / 50 / 100× and 5 / 7 / 9 / 13 / 18 s (the Swamp Funk values) | A difference > 15% at high confidence → Bass Drop's own `WIN_TIERS` (`src/games/bass-drop/config.ts`); the shared `TIMING.bigWin` durations change only with a contract request |
-| **R-8** | Idle character motion (the perched corner figures, the lantern) and spin-click feedback | Keep ours: horns pump on booms, the cone breathes on the beat, the mascots idle, `ui.pressScale` 0.92 | Loop periods stay on our music grid. If the reference's idle is much sparser, check that ours does not read as busy on the golden captures |
+| R | Question | Measured | Decision | Still open |
+|---|---|---|---|---|
+| **R-1** | Unblock the capture | Session 2 (2026-09-26) captured the base game at normal, turbo and quick-stop speed, and one resumed bonus round | Closed for the base game | **A fresh demo session is needed** for R-7 and R-10. The user supplies a fresh demo URL with a live `sessionID`, and the capture runs soon after it is issued (IDs expire) |
+| **R-2** | Meter granularity (section 6.3): per symbol or per cluster, and does anything fly? | Per symbol: +1 in the frame each symbol freezes, 50–117 ms apart (median 83); nothing flies. RGS `bonusMeter` = cumulative exploded symbols | Keep the orbs (pillar 1). Adopted pacing: each symbol bursts at its BFS slot (evenly over 300 ms) and its orb leaves at that burst, so a 5-symbol cluster ticks every 75 ms (CR-13) | — |
+| **R-3** | Meter reset | Confirmed: 0/35 at every spin start, and `bonusMeter` restarts at 0 | Keep the drain on every base spin (section 6.5) | — |
+| **R-4** | The mini 5×5 panel | The per-spin power-up map: 3 cells (wild, clear, freeze), lit as their tiles land on the empty board | No equivalent: Bass Drop has no per-spin power-ups. The next-drop chip (section 6.8) and the Mega Mix home markers carry our forward-looking state | — |
+| **R-5** | Turbo, a second state and quick stop | Two states. Turbo cuts the spin (fall-out ×0.03, drop-in as one block, loss round ×0.14) and keeps the win (present ×0.84, explode ×0.78, summon ×0.5, shake ×1.0). Quick stop (Space at +150): the fall-out in flight finishes at normal pace, then a block drop; present ×1.0. A slam in turbo changes nothing | Bass Drop per-key values in `BASS_DROP_TIMING.speed` (`SPEED_SCALE` unchanged): turbo cuts the fall-out, floors the present at 800 and runs the explode at normal pace without the hit-stop. Super turbo cuts the fall-out and runs ÷3 elsewhere. A slam speeds up only the interrupted reveal (CR-15) | Capture our own quick stop with the same instruments after CR-15 |
+| **R-6** | The summon, beat by beat | Onset 500–600 ms after the refill settles. One vertical stage stomp per wild (21 px, peak +83, ≈ 300 ms, 233 apart, not speed-scaled, one per event in turbo, HUD static). Comet ≈ 300, white burst ≈ 250, then the framed ×N wild. 1,150–1,450 (turbo ≈ 600) | **Durations kept:** refill settle → next present is ≈ 1,850 ms on both sides. **Shake adopted inside our gates:** boom 0.62 (8.5 px), chain max 0.67 (9.9 px), and a 7·k px vertical stage stomp per wild instead of trauma 0.2 (CR-14). The 37 px big-explode stomp (n = 1) is not adopted | — |
+| **R-7** | Big-win tier thresholds and durations | 2 samples: ×11.5 → a chest count-up with no title, 1,333 ms; ×20.3 → "BIG WIN", 1,400 ms; both self-timed, no tap | Keep 15 / 30 / 50 / 100× and 5 / 7 / 9 / 13 / 18 s (low confidence) | **Open:** ≥ 3 samples per tier, from bonus buys in a fresh session (R-1). A difference > 15% at high confidence goes into Bass Drop's own `WIN_TIERS`; the shared `TIMING.bigWin` changes only with a contract request |
+| **R-8** | Idle motion and spin-click feedback | Spin click: +1.9% stage zoom (peak 67, at rest 317, the same in turbo, HUD static); the spin button only greys out. Idle: highs and wilds loop ≈ 1 s and lows stay still; the logo and meter dragons breathe ≈ 850 ms; the frame dragons run a scripted 10 s cycle; grid energy 4.9 vs ours 0.74, meter 0.8 vs ours 1.74 | Adopted: a 1.9% stage punch at spin start (real time, HUD excluded, CR-14). Idle life moves from the edges to the board: H1–H4 and W loop on a 4-beat grid (CR-16), the meter and cabinet idle breathe is halved, and the mascots get a calm base loop plus 2–3 scripted acts per ≈ 10 s cycle. The hex spin button keeps its press and rotation | Art-lead sign-off on the idle amplitudes and the mascot acts; check on the golden captures that the board does not read busy |
+| **R-9** | Drop model: a pour or a stack? | The reference pours symbols one at a time: row gap 67, each symbol crosses the grid in ≈ 117 ms from just above it. Ours drops each column as a stack from 5.5 cells (row gap 25, 376 ms fall) | Keep ours. A 67 ms row gap on our fall model would push the board fill to 1,286 ms, past the ANIMATION_CONTRACT §9 gate of 1.0–1.1 s | **Open:** a pour needs a lower start height and an initial / terminal velocity (`drop.startOffsetCells`, plus the pending `drop.maxVelocity` / `initialVelocity` of ANIMATION_CONTRACT §9), then a board-fill re-check. Lab and art-lead decision |
+| **R-10** | Bonus flow: feature trigger, intro and outro | n = 1 (a resumed round, every 2nd frame): meter full → transition 1,100; card readable 735 and tap-ready 930 after the transition; tap → bonus scene 700; last land → TOTAL WIN plaque 1,200 with no count-up; tap → base game 1,100. Ours: trigger 1,800, intro 2,600, outro 2,200 + count 1,800 | Keep section 10 (low confidence: the row map needs high) | **Open, needs a fresh demo session** (R-1). Capture every frame: ≥ 3 natural triggers, one bought bonus and one super bonus. Capture our own feature flow with the same instruments, compare per beat (rule 2) and adopt at high confidence |
 
 Art-lead decisions (default in brackets):
 - the logo word-mark: stacked "SWAMP FUNK / BASS DROP" [yes];
 - whether Gumbo leans on the stack in portrait too [no: space];
 - the W redesign: keep the Swamp Funk gator-tooth charm + add badge/clamps [keep].
+- the neon cluster outline once the hard dim lands (section 22.1) [keep; drop it for Bass Drop if the golden captures read cluttered, since the dim and the groove links already carry the cluster].
 
 ---
 

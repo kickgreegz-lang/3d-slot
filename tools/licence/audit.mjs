@@ -16,19 +16,24 @@ Fails (exit 1) on:
   * a model not listed in its allowlist entry's modelIds;
   * a dangling parent id; a sha256 that no longer matches the file / frame folder on disk;
   * a shipped row (or any row covering a file in public/assets) whose licence or ANY ancestor's
-    licence is not 'cleared' / 'not-required' (clearances gate shipping, not building);
-  * a shipped chain containing a vendor generation with tosVersion null, or any tosVersion file
-    that does not exist;
+    licence has a clearance other than 'cleared' / 'not-required' / 'pending' (or none);
+  * any tosVersion file that does not exist;
   * a file in public/assets with no row (and no entry in tools/licence/exemptions.json);
-    --release additionally fails on 'placeholder' exemptions;
   * a package.json dependency named in the denylist.
+Release blockers (a WARNING per shipped row in the dev audit, an ERROR with --release):
+  * a shipped chain holding a licence whose clearance is 'pending' (build and preview with it;
+    release only once the written clearance is filed in licenses/clearances/ and the allowlist
+    entry says 'cleared');
+  * a shipped chain holding a vendor generation without an archived ToS (tosVersion null);
+  * a 'placeholder' exemption still shipped.
 Options:
   --root DIR          repo root for row paths (default: this repo)
   --manifest FILE     default <root>/art/manifest.json (missing file = no rows)
   --public DIR        default <root>/public/assets
   --exemptions FILE   default tools/licence/exemptions.json
   --allowlist FILE    --denylist FILE   --schema FILE   --package FILE (default <root>/package.json)
-  --release           placeholder exemptions become errors
+  --release           release blockers (pending clearances, missing ToS archives, placeholder
+                      exemptions) become errors
   --strict            warnings become errors
   --no-sha            skip the sha256 drift check (fast)
   --json FILE         write the full report as JSON
@@ -132,13 +137,31 @@ export function audit(opt) {
     return out;
   };
   const vendorMade = (x) => !LOCAL_ROUTES.has(String(x.route ?? '')) && VENDOR_KINDS.has(allowById.get(x.licenseId)?.kind);
-  const shipCheck = (r, why) => {
+  // Release blockers, one entry per shipped row (the shipped-row pass and the public-file pass report
+  // the same row once): licences still 'pending' in its chain, vendor generations without a ToS archive.
+  const blockers = new Map();
+  const blockerOf = (r) => {
+    let b = blockers.get(r.id);
+    if (!b) blockers.set(r.id, (b = { row: r, files: new Set(), pending: new Map(), noTos: [] }));
+    return b;
+  };
+  const shipCheck = (r, why, file = null) => {
     for (const x of [r, ...ancestry(r)]) {
       const c = clearOf(x);
       const who = x === r ? '' : `ancestor ${x.id} `;
-      if (!OK_CLEARANCE.has(c)) E(`${why} row ${r.id}: ${who}licence '${x.licenseId}' has clearance '${c ?? 'unknown'}' (file the written clearance, then set 'cleared')`);
-      if (vendorMade(x) && !x.tosVersion) E(`${why} row ${r.id}: ${who}vendor generation has no archived ToS (tosVersion null)`);
+      if (c === 'pending') {
+        const b = blockerOf(r);
+        const ids = b.pending.get(x.licenseId) ?? b.pending.set(x.licenseId, []).get(x.licenseId);
+        if (!ids.includes(x.id)) ids.push(x.id);
+      } else if (!OK_CLEARANCE.has(c)) {
+        E(`${why} row ${r.id}: ${who}licence '${x.licenseId}' has clearance '${c ?? 'unknown'}' (file the written clearance, then set 'cleared')`);
+      }
+      if (vendorMade(x) && !x.tosVersion) {
+        const b = blockerOf(r);
+        if (!b.noTos.includes(x.id)) b.noTos.push(x.id);
+      }
     }
+    if (file && blockers.has(r.id)) blockers.get(r.id).files.add(file);
   };
   const digestOf = (abs) => {
     const st = fs.statSync(abs);
@@ -208,7 +231,7 @@ export function audit(opt) {
       const match = opt.noSha ? direct[direct.length - 1] : direct.find((r) => r.sha256 === d);
       if (!match) { E(`${relp}: changed since its manifest row(s) ${direct.map((r) => r.id).join(', ')}`); continue; }
       if (!match.shipped) W(`${relp}: row ${match.id} covers a shipped file but has shipped:false`);
-      shipCheck(match, `public file ${relp} ->`);
+      shipCheck(match, `public file ${relp} ->`, relp);
       coverage.rows++;
       continue;
     }
@@ -217,7 +240,7 @@ export function audit(opt) {
       const fabs = path.join(root, folder.path);
       if (!opt.noSha && !folderDigest.has(fabs)) folderDigest.set(fabs, digestFiles(walk(fabs).sort(), fabs));
       if (!opt.noSha && folderDigest.get(fabs) !== folder.sha256) { E(`${relp}: folder ${folder.path} changed since row ${folder.id}`); continue; }
-      shipCheck(folder, `public file ${relp} ->`);
+      shipCheck(folder, `public file ${relp} ->`, relp);
       coverage.folderRows++;
       continue;
     }
@@ -239,6 +262,34 @@ export function audit(opt) {
   }
   info.publicFiles = pub.length;
   info.coverage = coverage;
+
+  // ---------------------------------------------------------------- release blockers
+  const few = (ids) => (ids.length > 3 ? `${ids.slice(0, 3).join(', ')} +${ids.length - 3} more` : ids.join(', '));
+  const byLicence = {};
+  let noTosRows = 0;
+  for (const b of blockers.values()) {
+    const parts = [];
+    for (const [lic, ids] of b.pending) {
+      byLicence[lic] = (byLicence[lic] ?? 0) + 1;
+      parts.push(`licence '${lic}' clearance 'pending' (${ids.length} row(s) in its chain: ${few(ids)})`);
+    }
+    if (b.noTos.length) {
+      noTosRows++;
+      parts.push(`${b.noTos.length} vendor generation(s) without an archived ToS (tosVersion null: ${few(b.noTos)})`);
+    }
+    const files = [...b.files];
+    const where = files.length ? ` (${files.length === 1 ? files[0] : `${files.length} public files`})` : '';
+    const msg = `release blocker: shipped row ${b.row.id}${where}: ${parts.join('; ')}`;
+    if (opt.release) E(`${msg}; refused for release`);
+    else W(`${msg}; allowed in dev / preview builds only`);
+  }
+  info.releaseBlockers = { rows: blockers.size, pendingByLicence: byLicence, rowsWithoutTos: noTosRows };
+  if (blockers.size) {
+    const lics = Object.keys(byLicence).map((l) => `'${l}'`).join(', ') || '(none)';
+    const how = `file the written clearance for ${lics} in licenses/clearances/<vendor>.pdf, set that allowlist entry's clearance to 'cleared' and archive the vendor ToS (licenses/tos/<vendor>/, rows' tosVersion)`;
+    if (opt.release) E(`RELEASE REFUSED: ${blockers.size} shipped row(s) depend on uncleared vendor output: ${how}`);
+    else W(`${blockers.size} shipped row(s) depend on uncleared vendor output (release blockers; 'licence:audit --release' refuses them): ${how}`);
+  }
 
   // ---------------------------------------------------------------- dependencies
   if (fs.existsSync(files.package)) {
@@ -268,6 +319,7 @@ if (isMain(import.meta.url)) {
   for (const w of rep.warnings) console.log(`warning: ${w}`);
   for (const e of rep.errors) console.log(`error:   ${e}`);
   const c = rep.info.coverage ?? {};
-  console.log(`licence-audit: ${rep.info.rows} rows, ${rep.info.publicFiles} public files (rows ${c.rows}, folder rows ${c.folderRows}, exempt ${c.exempt}, uncovered ${c.uncovered}), ${rep.errors.length} error(s), ${rep.warnings.length} warning(s) -> ${rep.passed ? 'PASS' : 'FAIL'}`);
+  const rb = rep.info.releaseBlockers?.rows ?? 0;
+  console.log(`licence-audit${o.flags.has('release') ? ' --release' : ''}: ${rep.info.rows} rows, ${rep.info.publicFiles} public files (rows ${c.rows}, folder rows ${c.folderRows}, exempt ${c.exempt}, uncovered ${c.uncovered}), ${rb} release blocker(s), ${rep.errors.length} error(s), ${rep.warnings.length} warning(s) -> ${rep.passed ? 'PASS' : 'FAIL'}`);
   process.exit(rep.passed ? 0 : 1);
 }

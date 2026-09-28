@@ -59,6 +59,16 @@ function fixture(name, mutate = () => {}, opts = {}) {
 
 const has = (rep, re) => rep.errors.some((e) => re.test(e));
 
+/** A copy of the real allowlist with entry `id` set to `clearance` (written under WORK). */
+function clearedAllowlist(id, clearance = 'cleared') {
+  const doc = JSON.parse(fs.readFileSync(path.join(REPO, 'licenses/allowlist.json'), 'utf8'));
+  for (const e of doc.entries) if (e.id === id) e.clearance = clearance;
+  fs.mkdirSync(WORK, { recursive: true });
+  const file = path.join(WORK, `allowlist.${id}.${clearance}.json`);
+  fs.writeFileSync(file, JSON.stringify(doc));
+  return file;
+}
+
 test('good fixture passes (vendor row without ToS is only a warning)', () => {
   const rep = fixture('good');
   assert.deepEqual(rep.errors, []);
@@ -75,7 +85,7 @@ test('denied model (OpenAI through Higgsfield) fails', () => {
 });
 
 test('unknown and denylisted licenseId fail', () => {
-  assert.ok(has(fixture('unknown-lic', (c) => { c.rows[0].licenseId = 'owned-code'; }), /'owned-code' is not in licenses\/allowlist.json/));
+  assert.ok(has(fixture('unknown-lic', (c) => { c.rows[0].licenseId = 'no-such-licence'; }), /'no-such-licence' is not in licenses\/allowlist.json/));
   assert.ok(has(fixture('denied-lic', (c) => { c.rows[0].licenseId = 'bria-rmbg-2.0'; }), /DENYLISTED/));
 });
 
@@ -90,15 +100,51 @@ test('uncovered public file fails', () => {
   assert.ok(has(rep, /extra.png: shipped file has no art\/manifest.json row/));
 });
 
-test('shipping a pending licence (directly or through an ancestor) fails', () => {
-  const direct = fixture('ship-pending', (c) => {
+const warned = (rep, re) => rep.warnings.some((w) => re.test(w));
+
+test('a pending licence in a shipped chain is a release blocker: warning in dev, error with --release', () => {
+  const direct = (c) => {
     Object.assign(c.rows[1], { licenseId: 'vertex-nano-banana-pro', model: 'gemini-3-pro-image', route: 'vertex', vendor: 'Google Cloud', tosVersion: null });
-  });
-  assert.ok(has(direct, /clearance 'pending'/));
-  const anc = fixture('ship-ancestor', (c) => { c.rows[1].parents = ['sym_h2.raw.v01']; });
-  assert.ok(has(anc, /ancestor sym_h2.raw.v01 licence 'higgsfield' has clearance 'pending'/));
-  const flag = fixture('ship-flag-false', (c) => { c.rows[1].shipped = false; c.rows[1].parents = ['sym_h2.raw.v01']; });
-  assert.ok(has(flag, /ancestor sym_h2.raw.v01/), 'a file in public/assets is shipped whatever the flag says');
+  };
+  const dev = fixture('ship-pending', direct);
+  assert.deepEqual(dev.errors, [], 'dev / preview builds may ship a pending-clearance file');
+  assert.equal(dev.passed, true);
+  assert.ok(warned(dev, /release blocker: shipped row pack.symbols.bbbb2222 \(public\/assets\/pack\/symbols.png\): licence 'vertex-nano-banana-pro' clearance 'pending'/));
+  assert.ok(warned(dev, /allowed in dev \/ preview builds only/));
+  assert.equal(dev.info.releaseBlockers.rows, 1);
+  const rel = fixture('ship-pending-release', direct, { release: true });
+  assert.equal(rel.passed, false);
+  assert.ok(has(rel, /release blocker: shipped row pack.symbols.bbbb2222 .*clearance 'pending'.*refused for release/));
+  assert.ok(has(rel, /RELEASE REFUSED: 1 shipped row\(s\).*licenses\/clearances\/<vendor>.pdf/));
+
+  // through an ancestor (the Higgsfield raw): one blocker for the row, naming the ancestor
+  const anc = (c) => { c.rows[1].parents = ['sym_h2.raw.v01']; };
+  const ancDev = fixture('ship-ancestor', anc);
+  assert.equal(ancDev.passed, true);
+  assert.ok(warned(ancDev, /shipped row pack.symbols.bbbb2222 .*licence 'higgsfield' clearance 'pending' \(1 row\(s\) in its chain: sym_h2.raw.v01\)/));
+  assert.ok(warned(ancDev, /without an archived ToS \(tosVersion null: sym_h2.raw.v01\)/));
+  assert.equal(ancDev.warnings.filter((w) => /release blocker: shipped row pack.symbols/.test(w)).length, 1, 'reported once per row');
+  const ancRel = fixture('ship-ancestor-release', anc, { release: true });
+  assert.ok(has(ancRel, /shipped row pack.symbols.bbbb2222 .*'higgsfield' clearance 'pending'.*refused for release/));
+  assert.deepEqual(ancRel.info.releaseBlockers.pendingByLicence, { higgsfield: 1 });
+
+  // a public file counts as shipped whatever its row's flag says
+  const flag = (c) => { c.rows[1].shipped = false; c.rows[1].parents = ['sym_h2.raw.v01']; };
+  assert.ok(warned(fixture('ship-flag-false', flag), /release blocker: shipped row pack.symbols.bbbb2222 .*sym_h2.raw.v01/));
+  assert.ok(has(fixture('ship-flag-false-release', flag, { release: true }), /shipped row pack.symbols.bbbb2222 .*sym_h2.raw.v01/));
+
+  // the same chain once the clearance is filed and the ToS archived: no blocker, release passes
+  const cleared = fixture('ship-cleared', (c) => {
+    anc(c);
+    c.rows[3].tosVersion = 'package.json'; // any existing file stands in for the archived ToS
+  }, { release: true, allowlist: clearedAllowlist('higgsfield') });
+  assert.deepEqual(cleared.errors, []);
+  assert.equal(cleared.info.releaseBlockers.rows, 0);
+});
+
+test('a clearance other than cleared / not-required / pending fails in dev too', () => {
+  const rep = fixture('ship-unknown-clearance', (c) => { c.rows[1].parents = ['sym_h2.raw.v01']; }, { allowlist: clearedAllowlist('higgsfield', 'refused') });
+  assert.ok(has(rep, /ancestor sym_h2.raw.v01 licence 'higgsfield' has clearance 'refused'/));
 });
 
 test('sha drift on a file and on a folder row fails', () => {
@@ -120,9 +166,9 @@ test('derivatives inherit a vendor licence without tripping modelIds; ToS is req
   };
   const dev = fixture('vertex-derivative', addVertex);
   assert.deepEqual(dev.errors, [], 'a route:code derivative is not checked against modelIds');
-  const shipped = fixture('vertex-shipped', (c) => { addVertex(c); c.rows[1].parents = ['sym_h4.matte.12345678']; });
-  assert.ok(has(shipped, /ancestor sym_h4.raw.v01 vendor generation has no archived ToS/));
-  assert.ok(has(shipped, /ancestor sym_h4.matte.12345678 licence 'vertex-nano-banana-pro' has clearance 'pending'/));
+  const shipped = fixture('vertex-shipped', (c) => { addVertex(c); c.rows[1].parents = ['sym_h4.matte.12345678']; }, { release: true });
+  assert.ok(has(shipped, /without an archived ToS \(tosVersion null: sym_h4.raw.v01\)/));
+  assert.ok(has(shipped, /licence 'vertex-nano-banana-pro' clearance 'pending' \(2 row\(s\) in its chain: sym_h4.matte.12345678, sym_h4.raw.v01\)/));
 });
 
 test('denylisted dependency fails', () => {
@@ -159,6 +205,17 @@ test('CLI exit codes and JSON report', () => {
   const bad = spawnSync('node', [path.join(REPO, 'tools/licence/audit.mjs'), '--root', path.join(WORK, 'cli-bad'), '--exemptions', path.join(WORK, 'cli-bad', 'exemptions.json')], { encoding: 'utf8' });
   assert.equal(bad.status, 1);
   assert.equal(spawnSync('node', [path.join(REPO, 'tools/licence/audit.mjs'), '--bogus'], { encoding: 'utf8' }).status, 2);
+  // a pending-clearance chain: dev audit exits 0 with warnings, --release exits 1 with a clear refusal
+  fixture('cli-pending', (c) => { c.rows[1].parents = ['sym_h2.raw.v01']; });
+  const pend = ['--root', path.join(WORK, 'cli-pending'), '--exemptions', path.join(WORK, 'cli-pending', 'exemptions.json')];
+  const devRun = spawnSync('node', [path.join(REPO, 'tools/licence/audit.mjs'), ...pend], { encoding: 'utf8' });
+  assert.equal(devRun.status, 0, devRun.stdout + devRun.stderr);
+  assert.match(devRun.stdout, /warning: release blocker: shipped row pack.symbols.bbbb2222/);
+  assert.match(devRun.stdout, /1 release blocker\(s\).* -> PASS/);
+  const relRun = spawnSync('node', [path.join(REPO, 'tools/licence/audit.mjs'), ...pend, '--release'], { encoding: 'utf8' });
+  assert.equal(relRun.status, 1, relRun.stdout + relRun.stderr);
+  assert.match(relRun.stdout, /error: +RELEASE REFUSED: 1 shipped row\(s\) depend on uncleared vendor output/);
+  assert.match(relRun.stdout, /licence-audit --release: .* -> FAIL/);
   // started through a symlinked checkout whose path has a space: the main guard must still run the
   // audit (a URL-pathname comparison silently skipped it and exited 0 = a false PASS)
   // (the link lives in the OS temp dir, never inside the repo, so nothing walks into a loop)

@@ -1,0 +1,54 @@
+sym_H3.webp
+size: 1020,512
+filter: Linear,Linear
+pma: true
+sym_H3/antenna_L
+bounds: 809,2,161,98
+sym_H3/antenna_L_blur
+bounds: 809,102,154,116
+offsets: 4,5,161,126
+sym_H3/antenna_R
+bounds: 809,220,125,96
+sym_H3/antenna_R_blur
+bounds: 352,318,117,114
+offsets: 3,5,125,124
+sym_H3/body
+bounds: 553,2,254,276
+offsets: 3,3,260,282
+sym_H3/body_blur
+bounds: 312,2,239,287
+offsets: 5,5,260,310
+sym_H3/claw_L
+bounds: 265,312,85,132
+sym_H3/claw_L_blur
+bounds: 186,312,77,152
+offsets: 4,5,85,160
+sym_H3/claw_R
+bounds: 91,312,93,161
+sym_H3/claw_R_blur
+bounds: 2,312,87,179
+offsets: 3,5,93,189
+sym_H3/eyes_closed
+bounds: 91,475,66,35
+offsets: 3,3,72,41
+sym_H3/eyes_half
+bounds: 936,220,66,35
+offsets: 3,3,72,41
+sym_H3/eyes_open
+bounds: 936,257,66,35
+offsets: 3,3,72,41
+sym_H3/eyes_open_blur
+bounds: 265,446,66,63
+offsets: 3,3,72,69
+sym_H3/eyes_wide
+bounds: 186,466,66,37
+offsets: 3,3,72,41
+sym_H3/glow
+bounds: 2,2,308,308
+offsets: 11,11,330,330
+sym_H3/tail_fan
+bounds: 333,446,51,55
+offsets: 3,3,57,61
+sym_H3/tail_fan_blur
+bounds: 965,102,51,79
+offsets: 3,5,57,89

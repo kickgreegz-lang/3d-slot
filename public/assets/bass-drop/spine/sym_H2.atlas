@@ -1,0 +1,40 @@
+sym_H2.webp
+size: 976,892
+filter: Linear,Linear
+pma: true
+sym_H2/disc
+bounds: 528,2,253,254
+offsets: 3,3,259,260
+sym_H2/disc_blur
+bounds: 2,610,253,279
+offsets: 3,5,259,288
+sym_H2/disc_cracked
+bounds: 422,258,253,254
+offsets: 3,3,259,260
+sym_H2/disc_shards
+bounds: 257,586,269,271
+offsets: 3,3,275,277
+sym_H2/fx_groove
+bounds: 783,2,108,246
+offsets: 3,3,114,252
+sym_H2/fx_groove_blur
+bounds: 312,2,108,272
+offsets: 3,4,114,280
+sym_H2/glint
+bounds: 422,109,82,82
+offsets: 1,1,84,84
+sym_H2/glow
+bounds: 2,2,308,308
+offsets: 11,11,330,330
+sym_H2/label
+bounds: 893,2,81,81
+offsets: 3,3,87,87
+sym_H2/label_blur
+bounds: 422,2,81,105
+offsets: 3,5,87,115
+sym_H2/sleeve
+bounds: 212,312,208,272
+offsets: 3,3,214,278
+sym_H2/sleeve_blur
+bounds: 2,312,208,296
+offsets: 3,5,214,306

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedBy": "tools/matte/variants.py",
+  "generatedBy": "tools/licence/ship.py",
   "rows": [
     {
       "id": "d_h1.raw.v01",
@@ -14130,6 +14130,582 @@
       "date": "2026-09-28T14:35:50Z",
       "sha256": "de20878afdce5268c1867edb5d56e57c487a3e819abd9219edb69ecf749628b8",
       "notes": "glow variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.base_landscape.5d613481",
+      "path": "public/assets/bass-drop/bg/base_landscape.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "5d613481967661e67cc77ee660f613f64ba2b52b9e05fd0b7902c7acb908c02e"
+      ],
+      "parents": [
+        "bg_base_landscape.source.5d613481"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "5d613481967661e67cc77ee660f613f64ba2b52b9e05fd0b7902c7acb908c02e",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/base_landscape.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.base_landscape_neon.dc822335",
+      "path": "public/assets/bass-drop/bg/base_landscape_neon.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "dc822335e48268dfc8be1d42aee1e7aca0109d67a0e0b6bd27e33893dd0f8ad0"
+      ],
+      "parents": [
+        "bd_bg_base_landscape_neon.source.dc822335"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "dc822335e48268dfc8be1d42aee1e7aca0109d67a0e0b6bd27e33893dd0f8ad0",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/base_landscape_neon.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.base_portrait.2488a355",
+      "path": "public/assets/bass-drop/bg/base_portrait.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "2488a3554f2b75081cae06363740d87702fe826b846d18c77a993379b0ec8742"
+      ],
+      "parents": [
+        "bd_bg_base_portrait.source.2488a355"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "2488a3554f2b75081cae06363740d87702fe826b846d18c77a993379b0ec8742",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/base_portrait.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.base_portrait_neon.e57e248c",
+      "path": "public/assets/bass-drop/bg/base_portrait_neon.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "e57e248cafa06be35ffe6c6c792e78bb6b883215426cdbeb92b035c8479a0f20"
+      ],
+      "parents": [
+        "bd_bg_base_portrait_neon.source.e57e248c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "e57e248cafa06be35ffe6c6c792e78bb6b883215426cdbeb92b035c8479a0f20",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/base_portrait_neon.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.jukejam_landscape.a8388cd7",
+      "path": "public/assets/bass-drop/bg/jukejam_landscape.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a8388cd7428d478afc9da9ef8363e6523249697b6b40bb7a2a9371d9a64cfa88"
+      ],
+      "parents": [
+        "bd_bg_jukejam_landscape.source.a8388cd7"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "a8388cd7428d478afc9da9ef8363e6523249697b6b40bb7a2a9371d9a64cfa88",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/jukejam_landscape.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.jukejam_landscape_neon.c0d17168",
+      "path": "public/assets/bass-drop/bg/jukejam_landscape_neon.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "c0d17168bca33f83d89ca754e6d2c987cd0a66100c0bfec2284b302911d2f48a"
+      ],
+      "parents": [
+        "bd_bg_jukejam_landscape_neon.source.c0d17168"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "c0d17168bca33f83d89ca754e6d2c987cd0a66100c0bfec2284b302911d2f48a",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/jukejam_landscape_neon.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.jukejam_portrait.0a60e4e6",
+      "path": "public/assets/bass-drop/bg/jukejam_portrait.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "0a60e4e6dc8b44b63ec920e629be55333b3f1f1dc72729ed89830ddd412ca9cb"
+      ],
+      "parents": [
+        "bd_bg_jukejam_portrait.source.0a60e4e6"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "0a60e4e6dc8b44b63ec920e629be55333b3f1f1dc72729ed89830ddd412ca9cb",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/jukejam_portrait.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.jukejam_portrait_neon.aaecdc67",
+      "path": "public/assets/bass-drop/bg/jukejam_portrait_neon.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "aaecdc671167b70b90dcc8b452054a9851ba6b71c7fa90340e44868209059702"
+      ],
+      "parents": [
+        "bd_bg_jukejam_portrait_neon.source.aaecdc67"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "aaecdc671167b70b90dcc8b452054a9851ba6b71c7fa90340e44868209059702",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/jukejam_portrait_neon.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.megamix_landscape.5adb0fca",
+      "path": "public/assets/bass-drop/bg/megamix_landscape.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "5adb0fcaadca819f347dd6be8bb83fe5f2181721aca53418a2561df862ef8f70"
+      ],
+      "parents": [
+        "bd_bg_megamix_landscape.source.5adb0fca"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "5adb0fcaadca819f347dd6be8bb83fe5f2181721aca53418a2561df862ef8f70",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/megamix_landscape.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.megamix_landscape_neon.7a64de84",
+      "path": "public/assets/bass-drop/bg/megamix_landscape_neon.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "7a64de8480d6081c5f242f51d60d0d15bb77c262e4c8edc638dbe87ee1b08408"
+      ],
+      "parents": [
+        "bd_bg_megamix_landscape_neon.source.7a64de84"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "7a64de8480d6081c5f242f51d60d0d15bb77c262e4c8edc638dbe87ee1b08408",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/megamix_landscape_neon.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.megamix_portrait.bedc424d",
+      "path": "public/assets/bass-drop/bg/megamix_portrait.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "bedc424d9363ad4616e17ff2572fcc83dec6ca245c30c1de1015e21f41c45f0f"
+      ],
+      "parents": [
+        "bd_bg_megamix_portrait.source.bedc424d"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "bedc424d9363ad4616e17ff2572fcc83dec6ca245c30c1de1015e21f41c45f0f",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/megamix_portrait.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.bg.megamix_portrait_neon.699f5a30",
+      "path": "public/assets/bass-drop/bg/megamix_portrait_neon.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "699f5a300cd9ccf3bca8b50bbeea0129f2ac805ddcc42f4ba9917b2151c8084b"
+      ],
+      "parents": [
+        "bd_bg_megamix_portrait_neon.source.699f5a30"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "699f5a300cd9ccf3bca8b50bbeea0129f2ac805ddcc42f4ba9917b2151c8084b",
+      "notes": "bass-drop env: byte-identical copy of art/source/backgrounds/bass-drop/megamix_portrait_neon.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.frame.frame_beam_2x.ec406e27",
+      "path": "public/assets/bass-drop/frame/frame_beam@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "de81edb59b3bfdc81e6275ebe4342488839280c5bfd285651010b59e381846ef"
+      ],
+      "parents": [
+        "bd_frame_beam.code.de81edb5"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:13Z",
+      "sha256": "ec406e2708b2916a0f41e7a39df968a1b920a7d4efdd2c314d89c6ffd869bf29",
+      "notes": "bass-drop env: WebP re-encode {\"alpha_quality\": 100, \"method\": 6, \"quality\": 92} of art/source/ui/bass-drop/frame/frame_beam.png; loaded at resolution 2 (@2x); 3-slice contract in art/source/ui/bass-drop/frame/frame.json",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.frame.frame_post_2x.e12b9241",
+      "path": "public/assets/bass-drop/frame/frame_post@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "e0cadceb489921250b3fca94d37561e7201fb4d470bb12a1006dfa587ac61e0c"
+      ],
+      "parents": [
+        "bd_frame_post.code.e0cadceb"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:14Z",
+      "sha256": "e12b924107bfc3038fa953660bf77020385f59a25277eb24e42c80299f40b03a",
+      "notes": "bass-drop env: WebP re-encode {\"alpha_quality\": 100, \"method\": 6, \"quality\": 92} of art/source/ui/bass-drop/frame/frame_post.png; loaded at resolution 2 (@2x); 3-slice contract in art/source/ui/bass-drop/frame/frame.json",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.frame.frame_sill_2x.bb728c2f",
+      "path": "public/assets/bass-drop/frame/frame_sill@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a9d1458c7fc11fd82f6fa0e94de231b0b65a9766d278f93f1419d6c3e5db788c"
+      ],
+      "parents": [
+        "bd_frame_sill.code.a9d1458c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:15Z",
+      "sha256": "bb728c2f255900f0c1ad1d61dcca41ac72c33c34e0bb0b159df43542d9e281ee",
+      "notes": "bass-drop env: WebP re-encode {\"alpha_quality\": 100, \"method\": 6, \"quality\": 92} of art/source/ui/bass-drop/frame/frame_sill.png; loaded at resolution 2 (@2x); 3-slice contract in art/source/ui/bass-drop/frame/frame.json",
+      "route": "code"
+    },
+    {
+      "id": "ship.bass-drop.logo.logo_emblem.e358ee30",
+      "path": "public/assets/bass-drop/logo/logo_emblem.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "d5ded73479015c784d53d9c581c0df84e293e4084be5ed4e48fa2374e026a0d7"
+      ],
+      "parents": [
+        "bd_logo_emblem.source.d5ded734"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-28T16:22:18Z",
+      "sha256": "e358ee30e57da600a5b64bb68b4d1d801ea9646b7d9b7602169bb813dd370c82",
+      "notes": "bass-drop env: WebP re-encode {\"alpha_quality\": 100, \"method\": 6, \"quality\": 92} of art/source/ui/bass-drop/logo/logo_emblem.png; crest only; the SWAMP FUNK / BASS DROP word-mark is live text (src/games/bass-drop/scene/Logo.ts)",
       "route": "code"
     }
   ]

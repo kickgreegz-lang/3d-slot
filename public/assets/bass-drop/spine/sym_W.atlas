@@ -1,0 +1,63 @@
+sym_W.webp
+size: 736,1012
+filter: Linear,Linear
+pma: true
+sym_W/badge_t1
+bounds: 2,898,192,112
+offsets: 3,3,198,118
+sym_W/badge_t2
+bounds: 494,454,192,112
+offsets: 3,3,198,118
+sym_W/badge_t3
+bounds: 404,828,192,112
+offsets: 3,3,198,118
+sym_W/badge_t4
+bounds: 446,2,192,112
+offsets: 3,3,198,118
+sym_W/badge_t5
+bounds: 210,828,192,166
+offsets: 3,3,198,172
+sym_W/cap
+bounds: 500,710,190,113
+offsets: 3,3,196,119
+sym_W/cap_blur
+bounds: 500,568,190,140
+offsets: 3,3,196,147
+sym_W/chain
+bounds: 446,116,140,104
+sym_W/chain_blur
+bounds: 598,825,133,123
+offsets: 4,5,140,132
+sym_W/clamp_open_L
+bounds: 584,222,57,84
+offsets: 3,3,63,90
+sym_W/clamp_open_R
+bounds: 588,116,57,84
+offsets: 3,3,63,90
+sym_W/clamp_shut_L
+bounds: 518,222,64,84
+offsets: 3,3,70,90
+sym_W/clamp_shut_R
+bounds: 518,308,64,84
+offsets: 3,3,70,90
+sym_W/glow
+bounds: 2,304,282,282
+offsets: 9,9,300,300
+sym_W/ribbon
+bounds: 2,808,206,88
+offsets: 3,3,212,94
+sym_W/ribbon_blur
+bounds: 286,454,206,116
+offsets: 3,3,212,122
+sym_W/ring
+bounds: 286,222,230,230
+sym_W/tooth
+bounds: 194,2,250,218
+sym_W/tooth_blur
+bounds: 254,588,244,238
+offsets: 3,4,250,246
+sym_W/tooth_cracked
+bounds: 2,588,250,218
+sym_W/trail_streak
+bounds: 2,2,190,300
+offsets: 5,0,200,300

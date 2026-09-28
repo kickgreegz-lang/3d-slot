@@ -1,0 +1,114 @@
+{
+ "$comment": "Bass Drop environment track: backgrounds (plates + additive neon layers, base / Juke Jam / Mega Mix, landscape + portrait), formula-D frame pieces (3-slice env keys frame_beam / frame_post / frame_sill) and the logo crest. Runtime: src/games/bass-drop/manifest/env.ts (frame) and src/games/bass-drop/scene/* (plates, logo). Ship with: tools/.venv/bin/python tools/licence/ship.py tools/licence/ship/bass_drop_env.json",
+ "name": "bass-drop env",
+ "items": [
+  {
+   "src": "art/source/backgrounds/bass-drop/base_landscape.webp",
+   "dst": "public/assets/bass-drop/bg/base_landscape.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/base_landscape_neon.webp",
+   "dst": "public/assets/bass-drop/bg/base_landscape_neon.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/base_portrait.webp",
+   "dst": "public/assets/bass-drop/bg/base_portrait.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/base_portrait_neon.webp",
+   "dst": "public/assets/bass-drop/bg/base_portrait_neon.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/jukejam_landscape.webp",
+   "dst": "public/assets/bass-drop/bg/jukejam_landscape.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/jukejam_landscape_neon.webp",
+   "dst": "public/assets/bass-drop/bg/jukejam_landscape_neon.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/jukejam_portrait.webp",
+   "dst": "public/assets/bass-drop/bg/jukejam_portrait.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/jukejam_portrait_neon.webp",
+   "dst": "public/assets/bass-drop/bg/jukejam_portrait_neon.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/megamix_landscape.webp",
+   "dst": "public/assets/bass-drop/bg/megamix_landscape.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/megamix_landscape_neon.webp",
+   "dst": "public/assets/bass-drop/bg/megamix_landscape_neon.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/megamix_portrait.webp",
+   "dst": "public/assets/bass-drop/bg/megamix_portrait.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/backgrounds/bass-drop/megamix_portrait_neon.webp",
+   "dst": "public/assets/bass-drop/bg/megamix_portrait_neon.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/ui/bass-drop/frame/frame_beam.png",
+   "dst": "public/assets/bass-drop/frame/frame_beam@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 92,
+     "alpha_quality": 100,
+     "method": 6
+    }
+   },
+   "note": "loaded at resolution 2 (@2x); 3-slice contract in art/source/ui/bass-drop/frame/frame.json"
+  },
+  {
+   "src": "art/source/ui/bass-drop/frame/frame_post.png",
+   "dst": "public/assets/bass-drop/frame/frame_post@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 92,
+     "alpha_quality": 100,
+     "method": 6
+    }
+   },
+   "note": "loaded at resolution 2 (@2x); 3-slice contract in art/source/ui/bass-drop/frame/frame.json"
+  },
+  {
+   "src": "art/source/ui/bass-drop/frame/frame_sill.png",
+   "dst": "public/assets/bass-drop/frame/frame_sill@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 92,
+     "alpha_quality": 100,
+     "method": 6
+    }
+   },
+   "note": "loaded at resolution 2 (@2x); 3-slice contract in art/source/ui/bass-drop/frame/frame.json"
+  },
+  {
+   "src": "art/source/ui/bass-drop/logo/logo_emblem.png",
+   "dst": "public/assets/bass-drop/logo/logo_emblem.webp",
+   "encode": {
+    "webp": {
+     "quality": 92,
+     "alpha_quality": 100,
+     "method": 6
+    }
+   },
+   "note": "crest only; the SWAMP FUNK / BASS DROP word-mark is live text (src/games/bass-drop/scene/Logo.ts)"
+  }
+ ]
+}

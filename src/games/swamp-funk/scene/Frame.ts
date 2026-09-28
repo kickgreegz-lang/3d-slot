@@ -100,6 +100,8 @@ const geometry = (L: LayoutSpec): FrameGeom => {
 export interface FrameOptions {
   /** procedural word-mark text (first word lime, the rest neon bands); production art key `logo` wins */
   logoText?: string;
+  /** false: the game draws its own logo in layers.logo (Bass Drop: scene/Logo.ts), the Frame none */
+  logo?: boolean;
 }
 
 export class Frame implements GameModule {
@@ -250,8 +252,14 @@ export class Frame implements GameModule {
     return s;
   }
 
+  /**
+   * A production frame piece as a 3-slice: 20% fixed ends (texture px) and the middle stretched along
+   * the piece. The thickness is fitted uniformly (the slice scales by rect thickness / texture
+   * thickness), so the bolts and straps on the fixed ends keep their proportions in every layout.
+   */
   private prodPart(tex: Texture, r: Rect, vertical: boolean): Container {
     const border = vertical ? Math.round(tex.height * 0.2) : Math.round(tex.width * 0.2);
+    const k = vertical ? r.w / tex.width : r.h / tex.height;
     const s = new NineSliceSprite({
       texture: tex,
       leftWidth: vertical ? 0 : border,
@@ -260,8 +268,9 @@ export class Frame implements GameModule {
       bottomHeight: vertical ? border : 0,
     });
     s.position.set(r.x, r.y);
-    s.width = r.w;
-    s.height = r.h;
+    s.scale.set(k);
+    s.width = r.w / k;
+    s.height = r.h / k;
     return s;
   }
 
@@ -356,6 +365,7 @@ export class Frame implements GameModule {
   }
 
   private buildLogo(L: LayoutSpec): void {
+    if (this.opts.logo === false) return;
     const prod = this.ctx.art.env('logo');
     if (!this.logoTex && !prod) {
       this.logoTex = buildLogo(this.ctx.app.renderer, this.opts.logoText).texture;

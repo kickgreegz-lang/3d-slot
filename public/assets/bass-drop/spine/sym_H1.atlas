@@ -1,0 +1,42 @@
+sym_H1.webp
+size: 1024,508
+filter: Linear,Linear
+pma: true
+sym_H1/antenna
+bounds: 866,2,33,92
+sym_H1/body
+bounds: 312,261,295,233
+offsets: 3,3,301,239
+sym_H1/body_blur
+bounds: 312,2,295,257
+offsets: 3,5,301,267
+sym_H1/cassette_door
+bounds: 962,2,59,58
+offsets: 3,3,65,64
+sym_H1/cassette_door_blur
+bounds: 901,2,59,83
+offsets: 3,4,65,92
+sym_H1/glint
+bounds: 901,87,78,78
+offsets: 1,1,80,80
+sym_H1/glow
+bounds: 2,2,308,308
+offsets: 11,11,330,330
+sym_H1/handle
+bounds: 2,312,223,71
+offsets: 3,3,229,77
+sym_H1/handle_blur
+bounds: 2,385,222,97
+offsets: 3,3,229,105
+sym_H1/speaker_L
+bounds: 700,2,89,110
+offsets: 3,3,95,116
+sym_H1/speaker_L_blur
+bounds: 609,2,89,134
+offsets: 3,5,95,144
+sym_H1/speaker_R
+bounds: 791,2,73,97
+offsets: 3,3,79,103
+sym_H1/speaker_R_blur
+bounds: 226,385,73,121
+offsets: 3,5,79,131

@@ -1,5 +1,5 @@
 {
-  "$comment": "Dragonspire Frostfall (Paperclip Gaming) demo, DESIGN.md s.22 re-measure. Numbers only: no frames, pixels, assets or text of the reference; captures stay in the gitignored art/_reference/. \"ours\" = DESIGN.md s.18.1/s.19 spec values; \"oursBuild\" = our build measured with the same instruments (DESIGN 22.1 rule 3). Nothing here is adopted: adoption is a DESIGN.md s.22 step-4 decision.",
+  "$comment": "Dragonspire Frostfall (Paperclip Gaming) demo, DESIGN.md s.22 re-measure. Numbers only: no frames, pixels, assets or text of the reference; captures stay in the gitignored art/_reference/. \"ours\" = DESIGN.md s.18.1/s.19 spec values; \"oursBuild\" = our build measured with the same instruments (DESIGN 22.1 rule 3). \"ours\" is the pre-adoption spec. The step-4 decisions (2026-09-28) are in \"decisions\" and DESIGN.md s.22.1.",
   "schema": 2,
   "status": "partial",
   "statusNote": "Base game (normal, turbo, quick stop), wild summons, one big win in the base game, and one full bonus round (resumed) are measured. Missing: a bought bonus, big-win tier thresholds (2 samples), intro cards in (boot is real time).",
@@ -1362,6 +1362,128 @@
       "step": "DESIGN.md s.22 step 4",
       "result": "measured; no row adopted by this study (adoption is a design decision, see deltaPctOursBuildVsRef and the study notes)",
       "adopted": []
+    },
+    {
+      "date": "2026-09-28",
+      "step": "DESIGN.md s.22 step 4 applied (s.22.1 rules 1-7)",
+      "result": "13/13 [RM] rows decided: 5 adopted, 5 kept, 3 waiting for data. Targets are in DESIGN.md s.18.1 and the src/ change list is in s.22.1. src/ is not changed yet: the build still runs the previous values until the change list lands, and oursBuild is re-captured after it",
+      "adopted": [
+        {
+          "row": "Fall-out (whole board)",
+          "keys": [
+            "fallOut.wholeBoard",
+            "fallOut.stagger"
+          ],
+          "from": {
+            "columnGap": 35,
+            "rowGap": 15,
+            "normal": 510,
+            "turbo": 130,
+            "super": 87
+          },
+          "to": {
+            "columnGap": 0,
+            "rowGap": 67,
+            "normal": 595,
+            "turbo": "cut",
+            "super": "cut"
+          }
+        },
+        {
+          "row": "Drop-in: first move -> last settle",
+          "keys": [
+            "column.stagger",
+            "land.settleTail",
+            "land.bouncePeaks"
+          ],
+          "from": {
+            "columnGap": 60,
+            "landSettle": 150,
+            "reboundPctPitch": 3.7,
+            "normal": 950
+          },
+          "to": {
+            "columnGap": 90,
+            "landSettle": 125,
+            "reboundPctPitch": 6.8,
+            "normal": 1076
+          },
+          "note": "column gap 117 capped at 90 by the ANIMATION_CONTRACT s.9 board-fill gate (1.0-1.1 s); row gap 67 not adopted (R-9)"
+        },
+        {
+          "row": "Cluster present",
+          "keys": [
+            "win.present",
+            "win.dim",
+            "win.landToPresent"
+          ],
+          "from": {
+            "turbo": 500,
+            "dimMs": 170,
+            "dimLevel": 0.54,
+            "firstPresentLeadMs": 400
+          },
+          "to": {
+            "turbo": 800,
+            "dimMs": 17,
+            "dimLevel": 0.44,
+            "firstPresentLeadMs": 50
+          },
+          "note": "normal kept (1,000 vs 950); super turbo stays 333"
+        },
+        {
+          "row": "Explode",
+          "keys": [
+            "explode.duration"
+          ],
+          "from": {
+            "normal": 360,
+            "turbo": 130,
+            "super": 87
+          },
+          "to": {
+            "normal": 660,
+            "turbo": 560,
+            "super": 87
+          },
+          "note": "sequential bursts in BFS order over the 300 ms orb spread; each burst launches its orb"
+        },
+        {
+          "row": "Intro cards out",
+          "keys": [
+            "intro.cardsOut"
+          ],
+          "from": {
+            "out": 400
+          },
+          "to": {
+            "out": 1450,
+            "inputLiveMs": 567
+          }
+        }
+      ],
+      "kept": [
+        "Orb flight (pillar 1)",
+        "Orb spread (cap) (not comparable: nothing flies)",
+        "Meter tick (low-confidence sum row; the spacing follows the bursts)",
+        "Refill (+5%)",
+        "Tumble step (composite, follows)",
+        "Bass drop durations (R-6: equal like-for-like)",
+        "Intro cards in (not frame-exact)"
+      ],
+      "notAdopted": [
+        "Feature intro (n = 1, R-10)",
+        "Feature outro (n = 1, R-10)",
+        "Big win tiers (2 samples, R-7)"
+      ],
+      "alsoAdopted": [
+        "turbo per-key values in BASS_DROP_TIMING.speed (R-5)",
+        "slam scope = reveal only (CR-15)",
+        "boom trauma 0.62, chain max 0.67, per-wild vertical stage stomp 7*k px (R-6, s.19)",
+        "spin-click stage punch 1.9% (R-8)",
+        "HUD excluded from camera motion (CR-14)",
+        "idle: highs + W loop on a 4-beat grid, edges calmer (R-8, art lead)"
+      ]
     }
   ]
 }

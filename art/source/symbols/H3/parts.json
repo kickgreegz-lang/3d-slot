@@ -1,152 +1,159 @@
 {
- "$comment": "sym_H3 parts (ANIMATION_SET 2.3): outline-bounded cuts of art/source/symbols/H3/master_rig_1024.png (sym_H3_rig 0d5d1a66) with hidden-area fills; eye states from the c11 variants sym_H3_eyes_half / _closed / _wide registered to the master raw; tools/spine/examples/bass_drop/cut/cut_H3.py. Canvas 360 @2x, content 288 (cellScale 0.96).",
- "symbol": "H3",
- "canvas": [
-  360,
-  360
- ],
- "images": "../../spine/images",
- "$blur": [
-  "body",
-  "claw_L",
-  "claw_R",
-  "tail_fan",
-  "antenna_L",
-  "antenna_R",
-  "eyes_open"
- ],
- "parts": [
-  {
-   "name": "glow",
-   "slot": "fx_glow",
-   "bbox": [
-    15,
-    20,
-    330,
-    330
-   ],
-   "z": 0,
-   "bone": "fx_glow",
-   "blend": "additive",
-   "color": "ffffff00",
-   "joint": [
-    180.0,
-    185.0
-   ]
-  },
-  {
-   "name": "antenna_R",
-   "bbox": [
-    115,
-    31,
-    125,
-    96
-   ],
-   "z": 0.4,
-   "bone": "phys_antenna_1_R"
-  },
-  {
-   "name": "antenna_L",
-   "bbox": [
-    142,
-    36,
-    161,
-    98
-   ],
-   "z": 0.5,
-   "bone": "phys_antenna_1_L"
-  },
-  {
-   "name": "tail_fan",
-   "bbox": [
-    255,
-    202,
-    57,
-    61
-   ],
-   "z": 0.6,
-   "bone": "tail_fan"
-  },
-  {
-   "name": "claw_R",
-   "bbox": [
-    49,
-    45,
-    93,
-    161
-   ],
-   "z": 0.8,
-   "bone": "claw_R"
-  },
-  {
-   "name": "body",
-   "bbox": [
-    50,
-    47,
-    260,
-    282
-   ],
-   "z": 1,
-   "bone": "body"
-  },
-  {
-   "name": "eyes_open",
-   "bbox": [
-    128,
-    95,
-    72,
-    41
-   ],
-   "z": 2,
-   "bone": "face_eyes",
-   "slot": "eyes"
-  },
-  {
-   "name": "eyes_half",
-   "slot": "eyes",
-   "bbox": [
-    128,
-    95,
-    72,
-    41
-   ],
-   "z": 2,
-   "bone": "face_eyes"
-  },
-  {
-   "name": "eyes_closed",
-   "slot": "eyes",
-   "bbox": [
-    128,
-    95,
-    72,
-    41
-   ],
-   "z": 2,
-   "bone": "face_eyes"
-  },
-  {
-   "name": "eyes_wide",
-   "slot": "eyes",
-   "bbox": [
-    128,
-    95,
-    72,
-    41
-   ],
-   "z": 2,
-   "bone": "face_eyes"
-  },
-  {
-   "name": "claw_L",
-   "bbox": [
-    200,
-    160,
-    85,
-    132
-   ],
-   "z": 3,
-   "bone": "claw_L"
-  }
- ]
+  "$comment": "sym_H3 parts (ANIMATION_SET 2.3): outline-bounded cuts of art/source/symbols/H3/master_rig_1024.png (sym_H3_rig 0d5d1a66) with hidden-area fills; eye states from the c11 variants sym_H3_eyes_half / _closed / _wide registered to the master raw; tools/spine/examples/bass_drop/cut/cut_H3.py. Canvas 360 @2x, content 288 (cellScale 0.96).",
+  "symbol": "H3",
+  "canvas": [
+    360,
+    360
+  ],
+  "images": "../../spine/images",
+  "$blur": [
+    "body",
+    "claw_L",
+    "claw_R",
+    "tail_fan",
+    "antenna_L",
+    "antenna_R",
+    "eyes_open"
+  ],
+  "parts": [
+    {
+      "name": "glow",
+      "slot": "fx_glow",
+      "bbox": [
+        15,
+        20,
+        330,
+        330
+      ],
+      "z": 0,
+      "bone": "fx_glow",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        180.0,
+        185.0
+      ]
+    },
+    {
+      "name": "antenna_R",
+      "bbox": [
+        115,
+        31,
+        125,
+        96
+      ],
+      "z": 0.4,
+      "bone": "phys_antenna_1_R",
+      "blur": true
+    },
+    {
+      "name": "antenna_L",
+      "bbox": [
+        142,
+        36,
+        161,
+        98
+      ],
+      "z": 0.5,
+      "bone": "phys_antenna_1_L",
+      "blur": true
+    },
+    {
+      "name": "tail_fan",
+      "bbox": [
+        255,
+        202,
+        57,
+        61
+      ],
+      "z": 0.6,
+      "bone": "tail_fan",
+      "blur": true
+    },
+    {
+      "name": "claw_R",
+      "bbox": [
+        49,
+        45,
+        93,
+        161
+      ],
+      "z": 0.8,
+      "bone": "claw_R",
+      "blur": true
+    },
+    {
+      "name": "body",
+      "bbox": [
+        50,
+        47,
+        260,
+        282
+      ],
+      "z": 1,
+      "bone": "body",
+      "blur": true
+    },
+    {
+      "name": "eyes_open",
+      "bbox": [
+        128,
+        95,
+        72,
+        41
+      ],
+      "z": 2,
+      "bone": "face_eyes",
+      "slot": "eyes",
+      "blur": true
+    },
+    {
+      "name": "eyes_half",
+      "slot": "eyes",
+      "bbox": [
+        128,
+        95,
+        72,
+        41
+      ],
+      "z": 2,
+      "bone": "face_eyes"
+    },
+    {
+      "name": "eyes_closed",
+      "slot": "eyes",
+      "bbox": [
+        128,
+        95,
+        72,
+        41
+      ],
+      "z": 2,
+      "bone": "face_eyes"
+    },
+    {
+      "name": "eyes_wide",
+      "slot": "eyes",
+      "bbox": [
+        128,
+        95,
+        72,
+        41
+      ],
+      "z": 2,
+      "bone": "face_eyes"
+    },
+    {
+      "name": "claw_L",
+      "bbox": [
+        200,
+        160,
+        85,
+        132
+      ],
+      "z": 3,
+      "bone": "claw_L",
+      "blur": true
+    }
+  ]
 }

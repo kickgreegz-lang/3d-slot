@@ -33,7 +33,8 @@ rig.yaml (Claude)         ┴─► gen.py ─► skeleton.json ─► validate.
 | `preview/` | Vite-free preview page (`index.html` + `preview.mjs`, import map into `node_modules`), `serve.mjs` static server, and `capture.mjs` (Playwright contact sheets) |
 | `examples/demo_symbol/` | End-to-end demo: `make_parts.mjs` (resvg-js cel-shaded parts), `rig.yaml`, `parts.json`, `images/`, `build.sh`, `provenance.json` |
 | `examples/character_demo/` | Both mascots on procedural placeholder parts: `make_parts.mjs`, `gumbo/` + `croak/` (`rig.yaml`, `parts.json`, `images/`), `build.sh` |
-| `test/` | `run.sh` (everything), `test_spinegen.py`, `test_character.py`, `validate.test.mjs` (baseline + 21 negative cases), `validate_character.test.mjs` (baseline + 22), `export.test.sh` + `fake-spine.sh` |
+| `test/` | `run.sh` (everything), `test_spinegen.py`, `test_character.py`, `validate.test.mjs` (baseline + 21 negative cases), `validate_cr8.test.mjs` (CR-8: wild + ui baselines + 21), `validate_character.test.mjs` (baseline + 22), `export.test.sh` + `fake-spine.sh` |
+| `examples/bass_drop/` | The Bass Drop production rigs (`sym_W`, `sym_H1`..`sym_H4`, `ui_groove_meter`): master-cut scripts, `bdgen.py` (the stock generator + per-rig `bassdrop.yaml`: CR-8 clips, skins, empty runtime slots, clones, radial weights), `check_bd.mjs` (ANIMATION_SET tables), `capture_bd.mjs`, `provenance_bd.py`, `build.sh`; see its README |
 
 Shipped demo: `public/assets/spine/demo/{sym_demo.json, sym_demo.atlas, sym_demo.png}` (PMA, 568×512).
 
@@ -161,7 +162,7 @@ An accent on a bone/property the base motion already keys is an error, so the co
 ## validate.mjs
 
 ```bash
-node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind auto|high|special|royal|any|character] \
+node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind auto|high|special|royal|any|character|wild|ui|env] \
      [--cell 300] [--kick 36] [--cell-scale f] [--report out.json] [--strict] [--quiet]
 ```
 
@@ -186,6 +187,15 @@ node tools/spine/validate.mjs <skeleton.json> [--atlas <file.atlas>] [--kind aut
 - the end poses match (see the list under the motion table);
 - `land` squashes the `squash` bone to sy 0.83–0.87 (warning), inside the 0.80–0.88 feel gate (error), with sx = 1/√sy (warning beyond ±0.03);
 - `land` stays inside the cell with the kick applied (default ±36 = `SpineRig`'s 26 × the largest runtime land multiplier 1.378, a `special` landing at max velocity), plus the `runtimeFit` report line described under **Headroom**.
+
+**CR-8 kinds and rules** (Bass Drop, `contract.json → kinds`, [ANIMATION_SET §12](../../docs/games/bass-drop/ANIMATION_SET.md#12-contract-deltas-cr-8)):
+- `wild` extends `special`: the special set plus `drop_launch`, `drop_fall`, `drop_impact`, `sticky_lock`, `sticky_idle`, `mult_up`; budgets 34 bones / 12 slots / 300 mesh vertices / 4 physics; the empty `txt_wild` / `txt_mult` slots (no attachment in any skin) and the skins `default` / `mult` / `sticky`;
+- `ui` / `env`: budgets (40 / 30 / 400 / 0 and 24 / 16 / 200 / 3) and the static checks only; no root → squash → body rig and no symbol animation rules (their clip tables are checked per rig by [`examples/bass_drop/check_bd.mjs`](examples/bass_drop/));
+- `--kind auto`: a symbol's kind comes from `src/games/$GAME/config.ts` when it is a contract kind (`GAME=bass-drop`: W → `wild`); `ui_*` → `ui`, `env_*` → `env`;
+- rule keys: `overlay` (e.g. `bass_react`: the first and last pose must be the setup pose), `cellOverflow` (e.g. `drop_impact` may leave the cell by ≤ 20 %), and `drop_impact`'s own squash gate (sy 0.70–0.76, error outside 0.68–0.78);
+- part bones: a bone without a contract prefix must carry a slot or mesh weights (else a warning).
+
+Tests: `test/validate_cr8.test.mjs` (a wild made from the demo + a ui skeleton, 21 negative cases), run by `test/run.sh`.
 
 Exit codes: 0 = pass; 1 = failure (with `--strict`, warnings also fail); 2 = usage error.
 

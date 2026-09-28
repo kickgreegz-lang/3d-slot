@@ -1,0 +1,114 @@
+{
+  "$comment": "sym_H4 parts (ANIMATION_SET 2.4): cork / label outline-bounded cuts and the sauce band of art/source/symbols/H4/master_rig_1024.png (sym_H4_rig 3432f2f5), bottle with the rim back / neck opening synthesized under the cork; flame wisp from the c11 sheet (sym_H4_parts 6a9d8342); tools/spine/examples/bass_drop/cut/cut_H4.py. Canvas 360 @2x, content 285 (cellScale 0.95).",
+  "symbol": "H4",
+  "canvas": [
+    360,
+    360
+  ],
+  "images": "../../spine/images",
+  "$blur": [
+    "bottle",
+    "sauce",
+    "label",
+    "cap"
+  ],
+  "parts": [
+    {
+      "name": "glow",
+      "slot": "fx_glow",
+      "bbox": [
+        15,
+        20,
+        330,
+        330
+      ],
+      "z": 0,
+      "bone": "fx_glow",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        180.0,
+        185.0
+      ]
+    },
+    {
+      "name": "bottle",
+      "bbox": [
+        97,
+        61,
+        166,
+        267
+      ],
+      "z": 1,
+      "bone": "body",
+      "blur": true
+    },
+    {
+      "name": "sauce",
+      "bbox": [
+        110,
+        99,
+        139,
+        76
+      ],
+      "z": 2,
+      "bone": "body",
+      "blur": true
+    },
+    {
+      "name": "label",
+      "bbox": [
+        119,
+        167,
+        120,
+        119
+      ],
+      "z": 3,
+      "bone": "label",
+      "blur": true
+    },
+    {
+      "name": "flame",
+      "bbox": [
+        151,
+        1,
+        60,
+        76
+      ],
+      "z": 3.5,
+      "bone": "flame",
+      "slot": "fx_flame",
+      "color": "ffffff00"
+    },
+    {
+      "name": "cap",
+      "bbox": [
+        138,
+        32,
+        84,
+        51
+      ],
+      "z": 4,
+      "bone": "cap",
+      "blur": true
+    },
+    {
+      "name": "glint",
+      "slot": "fx_glint",
+      "bbox": [
+        102,
+        112,
+        80,
+        80
+      ],
+      "z": 5,
+      "bone": "fx_glint",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        141.8,
+        152.5
+      ]
+    }
+  ]
+}

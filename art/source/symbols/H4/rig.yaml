@@ -1,0 +1,49 @@
+# sym_H4 Hot Sauce (docs/games/bass-drop/ANIMATION_SET.md 2.4: medium, rest angle -12 degrees).
+# Parts: art/source/symbols/H4/parts.json (tools/spine/examples/bass_drop/cut/cut_H4.py). Coordinates: 360x360 @2x
+# canvas, image space (y down). Build: tools/spine/examples/bass_drop/build.sh H4 [--cut] [--capture dir].
+# 7 slots: fx_glow, bottle, sauce, label, fx_flame, cap, fx_glint. The sauce is a mesh over the liquid's surface band:
+# its surface rows ride phys_sauce_1..3 (jelly) while the band's edges stay on four anchor bones, so the painted
+# meniscus sloshes inside the glass. fx_flame is a painted (normal-blend) wisp on a part bone at the mouth, so it
+# follows the bottle's pops; alpha 0 at rest.
+symbol: H4
+parts: parts.json
+kind: high
+
+bones:
+  - {name: cap, parent: body, joint: [180.0, 59.0], tip: [180.0, 38.4]}
+  - {name: label, parent: body, joint: [180.0, 226.8]}
+  - {name: flame, parent: body, joint: [180.0, 76.9], tip: [180.0, 20.0]}
+  # sauce anchors (weights only): the band's top and bottom edges and both glass walls
+  - {name: sauce_top, parent: body, joint: [152.5, 105.8], tip: [203.4, 105.8]}
+  - {name: sauce_bottom, parent: body, joint: [117.4, 169.7], tip: [242.6, 169.7]}
+  - {name: sauce_wall_L, parent: body, joint: [121.6, 119.5], tip: [116.1, 169.7]}
+  - {name: sauce_wall_R, parent: body, joint: [227.4, 118.1], tip: [243.6, 169.7]}
+  # the surface (left, centre, right): jelly translate physics
+  - {name: phys_sauce_1, parent: body, joint: [140.8, 126.4], tip: [140.8, 116.4]}
+  - {name: phys_sauce_2, parent: body, joint: [179.3, 124.3], tip: [179.3, 114.3]}
+  - {name: phys_sauce_3, parent: body, joint: [217.8, 126.4], tip: [217.8, 116.4]}
+  - {name: fx_glow, parent: root, joint: [180.0, 185.0]}
+
+meshes:
+  sauce: {type: grid, cols: 6, rows: 6,
+          weights: {mode: idw, power: 4, max: 4,
+                    bones: [sauce_top, sauce_bottom, sauce_wall_L, sauce_wall_R, phys_sauce_1, phys_sauce_2, phys_sauce_3]}}
+
+physics:
+  - {bone: phys_sauce_1, preset: jelly, x: 0.3, y: 1, rotate: 0, inertia: 0.6}
+  - {bone: phys_sauce_2, preset: jelly, x: 0.3, y: 1, rotate: 0, inertia: 0.6}
+  - {bone: phys_sauce_3, preset: jelly, x: 0.3, y: 1, rotate: 0, inertia: 0.6}
+
+motion:
+  idle: {frames: 84, sway: 1.8}
+  land: {squash: 0.85, rebound: 0.06, frames: 12}
+  win: {pop: 1.25}
+  win_loop: {frames: 45, beats: 2}
+  explode: {frames: 15, burst_frame: 2, fade_from: 5, scatter: 80, spin: 40, burst_scale: 1.15, end_scale: 1.2, body_fade: [3, 9]}
+  appear: {frames: 9}
+  blur: {frames: 1}
+
+accents:
+  land:
+    - {bone: cap, type: hop, amount: 8, at: impact+1, frames: 8}
+    - {bone: label, type: squash, amount: 0.05, at: impact+1}

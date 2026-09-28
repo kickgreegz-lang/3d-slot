@@ -20,6 +20,13 @@ applies `bassdrop.yaml` from the same folder:
                                                            # the part name), e.g. ANIMATION_SET's `clamp` in 2 slots
   untouched: [fx_trail, fx_ring]                           # fx slots (and their fx bones) the contract motions must
                                                            # not animate: their generated glow keys are removed
+  skins_copy: {base: [trim_base]}                          # like skins, but the attachment also stays in default
+  skin_rename: {base: {rim_trim: {trim_base: trim}}}       # rename inside one skin (same name, other image per skin)
+  clone: {notch_2: notch_1}                                # copy a slot's default-skin attachments (and setup) to
+                                                           # another slot (declare it under `slots`)
+  region_scale: {glow_ring: 2}                             # soft art authored at 1/s size: the region draws s x bigger
+  radial_weights:                                          # mesh weights by radius (image space) instead of rig.yaml's
+    cone: {centre: [380, 440], inner: [cone, 150], outer: [ring, 222]}
   clips:                     pose-to-pose clips (keys on whole frames, curves from named easing presets)
     bass_react:
       frames: 8              # exact length (the last key may sit earlier; the length is padded)
@@ -64,7 +71,8 @@ KIND_BUDGETS = {
     "ui": {"bones": 40, "slots": 30, "meshVertices": 400, "physics": 0},
     "high": {"bones": 30, "slots": 8, "meshVertices": 250, "physics": 4},
 }
-BD_KEYS = {"kind", "slots", "skins", "setup", "paths", "clips", "rename", "untouched"}
+BD_KEYS = {"kind", "slots", "skins", "skins_copy", "skin_rename", "clone", "radial_weights", "region_scale", "setup",
+           "paths", "clips", "rename", "untouched"}
 CLIP_KEYS = {"frames", "loop", "ease", "bones", "slots", "events", "merge", "track", "retime", "override"}
 
 
@@ -232,6 +240,16 @@ class BassDropBuilder(RigBuilder):
             default["attachments"][slot].pop(att, None)
             if not default["attachments"][slot]:
                 default["attachments"].pop(slot)
+        for skin_name, atts in (bd.get("skins_copy") or {}).items():
+            skin = next((s for s in doc["skins"] if s["name"] == skin_name), None)
+            if skin is None:
+                skin = {"name": skin_name, "attachments": {}}
+                doc["skins"].append(skin)
+            for att in atts:
+                hit = [(slot, ent[att]) for slot, ent in default["attachments"].items() if att in ent]
+                if not hit:
+                    raise RigError(f"skins_copy.{skin_name}: attachment '{att}' not in the default skin")
+                skin["attachments"].setdefault(hit[0][0], {})[att] = copy.deepcopy(hit[0][1])
         # keep skin attachment maps in slot order (deterministic, like the default skin)
         for skin in doc["skins"]:
             skin["attachments"] = {k: skin["attachments"][k] for k in slot_names if k in skin["attachments"]}
@@ -281,6 +299,53 @@ class BassDropBuilder(RigBuilder):
                     for k in tls.get("attachment", []):
                         if (slot, k.get("name")) in renamed:
                             k["name"] = renamed[(slot, k["name"])]
+        # 4c. per-skin renames (e.g. one `trim` attachment name, a different image in each skin)
+        for skin_name, slots_map in (bd.get("skin_rename") or {}).items():
+            skin = next((x for x in doc["skins"] if x["name"] == skin_name), None)
+            if skin is None:
+                raise RigError(f"skin_rename.{skin_name}: no such skin")
+            for slot, mapping in (slots_map or {}).items():
+                ent = skin["attachments"].get(slot, {})
+                for old, new in (mapping or {}).items():
+                    if old not in ent:
+                        raise RigError(f"skin_rename.{skin_name}.{slot}.{old}: attachment not found")
+                    a = ent.pop(old)
+                    a.setdefault("path", f"{self.prefix}/{old}")
+                    ent[new] = a
+        # 4d. clones: a slot gets another slot's default-skin attachments (bone-local, so both bones must share the
+        #     same world orientation) and its setup attachment
+        for dst, src in (bd.get("clone") or {}).items():
+            if dst not in slot_names or src not in slot_names:
+                raise RigError(f"clone.{dst}: slots '{dst}' / '{src}' must both exist")
+            ent = default["attachments"].get(src)
+            if not ent:
+                raise RigError(f"clone.{dst}: slot '{src}' has no default-skin attachments")
+            new = {}
+            for name, a in ent.items():
+                b = copy.deepcopy(a)
+                b.setdefault("path", f"{self.prefix}/{name}")
+                new[name] = b
+            default["attachments"][dst] = new
+            s_src = next(x for x in doc["slots"] if x["name"] == src)
+            s_dst = next(x for x in doc["slots"] if x["name"] == dst)
+            if "attachment" in s_src and "attachment" not in s_dst:
+                s_dst["attachment"] = s_src["attachment"]
+        default["attachments"] = {k: default["attachments"][k] for k in slot_names if k in default["attachments"]}
+        # 4e. regions authored at 1/s resolution (soft glows, thin tinted bands): drawn s x bigger around the same centre
+        for part, sc in (bd.get("region_scale") or {}).items():
+            hit = False
+            for skin in doc["skins"]:
+                for ent in skin["attachments"].values():
+                    for a in ent.values():
+                        if a.get("type", "region") == "region" and a.get("path", "").split("/")[-1] == part or \
+                                (a.get("type", "region") == "region" and "path" not in a and part in ent and ent[part] is a):
+                            a["scaleX"] = a["scaleY"] = float(sc)
+                            hit = True
+            if not hit:
+                raise RigError(f"region_scale.{part}: no region attachment uses it")
+        # 4f. radial mesh weights
+        for att, spec in (bd.get("radial_weights") or {}).items():
+            self._radial_weights(doc, att, spec)
         # 5. clips
         anims = doc["animations"]
         all_bones = set(bones)
@@ -337,6 +402,45 @@ class BassDropBuilder(RigBuilder):
         doc["skeleton"]["hash"] = ""
         doc["skeleton"]["hash"] = _hash(doc)
         return doc
+
+    def _radial_weights(self, doc: dict, att: str, spec: dict) -> None:
+        """Reweight a mesh by radius from `centre` (image space): 100 % `inner` bone inside its radius, 100 % `outer`
+        bone outside its radius, smoothstep between (a bulge that keeps its rim in place)."""
+        _chk(spec, {"centre", "inner", "outer"}, f"radial_weights.{att}")
+        part = self.part_by_name.get(att)
+        if part is None:
+            raise RigError(f"radial_weights.{att}: no such part")
+        m = None
+        for skin in doc["skins"]:
+            for ent in skin["attachments"].values():
+                if att in ent and ent[att].get("type") == "mesh":
+                    m = ent[att]
+        if m is None:
+            raise RigError(f"radial_weights.{att}: not a mesh attachment")
+        (b_in, r_in), (b_out, r_out) = spec["inner"], spec["outer"]
+        for b in (b_in, b_out):
+            if b not in self.bones:
+                raise RigError(f"radial_weights.{att}: bone '{b}' missing")
+        cx, cy = spec["centre"]
+        x0, y0, w, h = part.bbox
+        uv = m["uvs"]
+        verts = []
+        for i in range(0, len(uv), 2):
+            px, py = x0 + uv[i] * w, y0 + uv[i + 1] * h
+            r = ((px - cx) ** 2 + (py - cy) ** 2) ** 0.5
+            t = max(0.0, min(1.0, (r - r_in) / max(1e-6, r_out - r_in)))
+            t = t * t * (3 - 2 * t)
+            ws = [(b_in, 1 - t), (b_out, t)]
+            ws = [(n, round(v, 4)) for n, v in ws if round(v, 4) > 0]
+            d = round(1 - sum(v for _, v in ws), 4)
+            if d:
+                ws[0] = (ws[0][0], round(ws[0][1] + d, 4))
+            sx, sy = self.img2sk(px, py)
+            verts.append(len(ws))
+            for n, v in ws:
+                lx, ly = self.bones[n].to_local(sx, sy)
+                verts += [self.bone_index(n), round(lx, 2), round(ly, 2), v]
+        m["vertices"] = verts
 
     @staticmethod
     def _anim_len(a: dict) -> float:

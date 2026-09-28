@@ -1,0 +1,57 @@
+# sym_H4 Bass Drop additions (ANIMATION_SET 2.0 / 2.4), applied by tools/spine/examples/bass_drop/bdgen.py after the
+# stock generator. Frames at 30 fps. The sauce surface: phys_sauce_1 / _3 opposite = a tilt, _2 = a bob.
+kind: high
+untouched: [fx_glint]
+
+clips:
+  idle:
+    merge: true
+    bones:
+      # the slosh settles (the idle is played once as an accent: a kick that dies out)
+      phys_sauce_1: {translate: [[0, [0, 0], sine_in_out], [8, [0, 8], sine_in_out], [20, [0, -6], sine_in_out], [32, [0, 3], sine_in_out], [44, [0, 0]], [84, [0, 0]]]}
+      phys_sauce_3: {translate: [[0, [0, 0], sine_in_out], [8, [0, -8], sine_in_out], [20, [0, 6], sine_in_out], [32, [0, -3], sine_in_out], [44, [0, 0]], [84, [0, 0]]]}
+      # a little heat wisp flickers out of the cork (3 keys)
+      flame: {scale: [[0, 1], [49, 1, stepped], [50, 0.35, quad_out], [54, 0.55, sine_in_out], [60, 0.45, sine_in_out], [66, 0.3, stepped], [67, 1], [84, 1]]}
+      fx_glint: {scale: [[0, 1], [69, 1, stepped], [70, 0.2, quad_out], [73, 1.1, sine_in_out], [78, 0.4, stepped], [79, 1], [84, 1]]}
+    slots:
+      fx_flame: {alpha: [[0, 0], [50, 0, quad_out], [54, 0.7, sine_in_out], [58, 0.25, sine_in_out], [62, 0.55, quad_in], [66, 0], [84, 0]]}
+      fx_glint: {alpha: [[0, 0], [70, 0, quad_out], [73, 1, sine_in_out], [78, 0], [84, 0]]}
+  land:
+    merge: true
+    bones:
+      phys_sauce_2: {translate: [[0, [0, 0], expo_out], [2, [0, -7], sine_in_out], [5, [0, 4], sine_in_out], [9, [0, -1]], [12, [0, 0]]]}
+  win:
+    merge: true
+    bones:
+      # the cork pops 30 units at the pop (win_peak f8) and spins, the flame flares out of the open neck, the cork drops back
+      cap: {translate: [[0, [0, 0], sine_out], [4, [0, -3], expo_out], [8, [0, 30], sine_in_out], [12, [0, 27], quad_in],
+                        [16, [0, 0], expo_out], [18, [0, 4], quad_in], [20, [0, 0]], [24, [0, 0]]],
+            rotate: [[0, 0], [4, 0, expo_out], [9, -14, sine_in_out], [13, 8, quad_in], [16, 0], [24, 0]]}
+      flame: {scale: [[0, 1], [6, 1, stepped], [7, 0.3, expo_out], [10, 1.4, sine_in_out], [14, 1.1, quad_in], [18, 0.5, stepped], [19, 1], [24, 1]]}
+      phys_sauce_2: {translate: [[0, [0, 0]], [4, [0, -5], expo_out], [8, [0, 8], sine_in_out], [13, [0, -3]], [18, [0, 0]], [24, [0, 0]]]}
+      fx_glint: {scale: [[0, 1], [7, 1, stepped], [8, 0.2, quad_out], [10, 1.25, sine_in_out], [15, 0.4, stepped], [16, 1], [24, 1]]}
+    slots:
+      fx_flame: {alpha: [[0, 0], [7, 0, expo_out], [9, 1], [14, 0.9, quad_in], [18, 0], [24, 0]]}
+      fx_glint: {alpha: [[0, 0], [8, 0, quad_out], [10, 1], [15, 0], [24, 0]]}
+  win_loop:
+    merge: true
+    bones:
+      cap: {translate: [[0, [0, 0], expo_out], [2, [0, 7], quad_in], [5, [0, 0]], [22, [0, 0], expo_out], [24, [0, 7], quad_in], [27, [0, 0]], [45, [0, 0]]]}
+      phys_sauce_1: {translate: [[0, [0, 0], sine_in_out], [11, [0, 3], sine_in_out], [33, [0, -3], sine_in_out], [45, [0, 0]]]}
+      phys_sauce_3: {translate: [[0, [0, 0], sine_in_out], [11, [0, -3], sine_in_out], [33, [0, 3], sine_in_out], [45, [0, 0]]]}
+  explode:
+    merge: true
+    override: true
+    retime: {explode_done: 13}
+    bones:
+      flame: {scale: [[0, 0.4], [2, 0.4, expo_out], [5, 1.3], [10, 1.5]]}
+    slots:
+      fx_flame: {alpha: [[0, 0], [2, 0, expo_out], [4, 1], [10, 0], [15, 0]]}          # a burst of fire as it breaks
+  bass_react:
+    frames: 8
+    bones:
+      squash: {scale: [[0, 1, quad_out], [1, [1.03, 0.95]], [4, [0.99, 1.03]], [8, 1]]}
+      cap: {translate: [[0, [0, 0], expo_out], [1, [0, 8], quad_in], [4, [0, -1]], [8, [0, 0]]]}
+      phys_sauce_1: {translate: [[0, [0, 0], expo_out], [1, [0, -9], sine_in_out], [4, [0, 7], sine_in_out], [8, [0, 0]]]}
+      phys_sauce_3: {translate: [[0, [0, 0], expo_out], [1, [0, 9], sine_in_out], [4, [0, -7], sine_in_out], [8, [0, 0]]]}
+      label: {rotate: [[0, 0, quad_out], [1, -2], [4, 1], [8, 0]]}

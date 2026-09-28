@@ -1,0 +1,422 @@
+{
+ "$comment": "ui_groove_meter parts (ANIMATION_SET 3): the woofer of bd_meter_master (80be379d) remapped radially onto DESIGN 6.1's bands, its cabinet mapped onto 704 x 840 units, notch badges around the approved bd_notch_icons (c11954bf); tools/spine/examples/bass_drop/cut/cut_meter.py. Canvas 760 x 880 (2x landscape), root = ring centre (380, 440), R = 320.",
+ "symbol": "meter",
+ "canvas": [
+  760,
+  880
+ ],
+ "images": "../../spine/images",
+ "parts": [
+  {
+   "name": "cabinet_back",
+   "bbox": [
+    24,
+    24,
+    712,
+    849
+   ],
+   "z": 0.1,
+   "bone": "cabinet"
+  },
+  {
+   "name": "grill_cloth",
+   "bbox": [
+    157,
+    68,
+    450,
+    757
+   ],
+   "z": 0.2,
+   "bone": "cabinet",
+   "slot": "grill"
+  },
+  {
+   "name": "cabinet_front",
+   "bbox": [
+    78,
+    63,
+    604,
+    758
+   ],
+   "z": 0.3,
+   "bone": "cabinet"
+  },
+  {
+   "name": "rim",
+   "bbox": [
+    56,
+    116,
+    648,
+    648
+   ],
+   "z": 1.0,
+   "bone": "ring"
+  },
+  {
+   "name": "trim_base",
+   "bbox": [
+    233,
+    293,
+    294,
+    294
+   ],
+   "z": 1.1,
+   "bone": "ring",
+   "slot": "rim_trim"
+  },
+  {
+   "name": "trim_jukejam",
+   "bbox": [
+    233,
+    293,
+    294,
+    294
+   ],
+   "z": 1.1,
+   "bone": "ring",
+   "slot": "rim_trim"
+  },
+  {
+   "name": "trim_megamix",
+   "bbox": [
+    233,
+    293,
+    294,
+    294
+   ],
+   "z": 1.1,
+   "bone": "ring",
+   "slot": "rim_trim"
+  },
+  {
+   "name": "surround",
+   "bbox": [
+    151,
+    211,
+    458,
+    458
+   ],
+   "z": 1.3,
+   "bone": "ring",
+   "slot": "cone_surround"
+  },
+  {
+   "name": "cone",
+   "bbox": [
+    152,
+    212,
+    456,
+    456
+   ],
+   "z": 1.2,
+   "bone": "cone"
+  },
+  {
+   "name": "dust_cap",
+   "bbox": [
+    209,
+    269,
+    342,
+    342
+   ],
+   "z": 1.4,
+   "bone": "dust_cap"
+  },
+  {
+   "name": "notch_w1_off",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w1_next",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w1_lit",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w1_spent",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w2_off",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w2_next",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w2_lit",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w2_spent",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w3_off",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w3_next",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w3_lit",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_w3_spent",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_jj_off",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_jj_next",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_jj_lit",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_jj_spent",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_mm_off",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_mm_next",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_mm_lit",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "notch_mm_spent",
+   "bbox": [
+    28,
+    436,
+    112,
+    112
+   ],
+   "z": 2.0,
+   "bone": "notch_1",
+   "slot": "notch_1"
+  },
+  {
+   "name": "glow_ring",
+   "bbox": [
+    195,
+    255,
+    370,
+    370
+   ],
+   "z": 1.9,
+   "bone": "fx_glow",
+   "slot": "fx_glow",
+   "blend": "additive",
+   "color": "ffffff00"
+  },
+  {
+   "name": "swirl",
+   "bbox": [
+    263,
+    323,
+    234,
+    234
+   ],
+   "z": 1.35,
+   "bone": "fx_swirl",
+   "slot": "fx_swirl",
+   "blend": "additive",
+   "color": "ffffff00"
+  },
+  {
+   "name": "cap_flash",
+   "bbox": [
+    286,
+    346,
+    188,
+    188
+   ],
+   "z": 1.45,
+   "bone": "fx_cap",
+   "slot": "fx_cap",
+   "blend": "additive",
+   "color": "ffffff00"
+  },
+  {
+   "name": "burst_star",
+   "bbox": [
+    295,
+    54,
+    170,
+    170
+   ],
+   "z": 3.1,
+   "bone": "fx_notch",
+   "slot": "fx_burst",
+   "blend": "additive",
+   "color": "ffffff00"
+  }
+ ]
+}

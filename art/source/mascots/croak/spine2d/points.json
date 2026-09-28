@@ -1,0 +1,57 @@
+{
+ "$comment": "Named rig points in canvas image space (written by art/source/mascots/pipeline/mastercut.py from the cut spec `points`, master px -> canvas): joints/tips for rig.yaml bones and pose targets.",
+ "points": {
+  "pouch": [
+   341.2,
+   362.3
+  ],
+  "pouch_1": [
+   341.2,
+   399.9
+  ],
+  "pouch_2": [
+   341.2,
+   437.5
+  ],
+  "pouch_tip": [
+   341.2,
+   475.1
+  ],
+  "chain_1": [
+   345.9,
+   489.2
+  ],
+  "chain_2": [
+   313.0,
+   569.1
+  ],
+  "chain_3": [
+   310.65,
+   620.8
+  ],
+  "chain_tip": [
+   310.65,
+   656.05
+  ],
+  "cup_R": [
+   223.7,
+   446.9
+  ],
+  "cup_L": [
+   436.61,
+   444.55
+  ],
+  "note": [
+   172.0,
+   240.1
+  ],
+  "deck_R": [
+   76.12,
+   793.76
+  ],
+  "fader_L": [
+   619.44,
+   793.76
+  ]
+ }
+}

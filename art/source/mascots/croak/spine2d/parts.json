@@ -1,0 +1,535 @@
+{
+ "$comment": "Written by art/source/mascots/pipeline/mastercut.py from art/source/mascots/croak/spine2d/cut.yaml (master cut: setup pose = the approved rig master pixel for pixel; hidden areas, variants and props from the part sheets). Canvas 720x1260 @2x, image space (y down); root = anchor (feet point).",
+ "skeleton": "chr_croak",
+ "kind": "character",
+ "canvas": [
+  720,
+  1260
+ ],
+ "anchor": [
+  0.5,
+  1.0
+ ],
+ "images": "images",
+ "landmarks": {
+  "hips": [
+   367.05,
+   832.3
+  ],
+  "spine": [
+   362.35,
+   705.4
+  ],
+  "chest": [
+   355.3,
+   583.2
+  ],
+  "neck": [
+   348.25,
+   489.2
+  ],
+  "head": [
+   355.3,
+   399.9
+  ],
+  "head_top": [
+   374.1,
+   183.7
+  ],
+  "look": [
+   78.0,
+   254.2
+  ],
+  "shoulder_R": [
+   204.9,
+   550.3
+  ],
+  "elbow_R": [
+   121.24,
+   719.5
+  ],
+  "wrist_R": [
+   76.12,
+   793.76
+  ],
+  "hand_R": [
+   47.92,
+   855.8
+  ],
+  "shoulder_L": [
+   540.95,
+   529.15
+  ],
+  "elbow_L": [
+   592.65,
+   705.4
+  ],
+  "wrist_L": [
+   619.44,
+   793.76
+  ],
+  "hand_L": [
+   634.95,
+   865.2
+  ],
+  "hip_R": [
+   289.5,
+   869.9
+  ],
+  "knee_R": [
+   271.64,
+   982.7
+  ],
+  "ankle_R": [
+   285.74,
+   1133.1
+  ],
+  "toe_R": [
+   78.0,
+   1180.1
+  ],
+  "hip_L": [
+   446.95,
+   869.9
+  ],
+  "knee_L": [
+   438.96,
+   992.1
+  ],
+  "ankle_L": [
+   458.7,
+   1194.2
+  ],
+  "toe_L": [
+   437.55,
+   1245.9
+  ]
+ },
+ "parts": [
+  {
+   "slot": "upper_arm_R",
+   "bbox": [
+    93,
+    513,
+    152,
+    244
+   ],
+   "z": 0
+  },
+  {
+   "slot": "forearm_R",
+   "bbox": [
+    61,
+    691,
+    113,
+    144
+   ],
+   "z": 1
+  },
+  {
+   "slot": "mic",
+   "bbox": [
+    -59,
+    737,
+    174,
+    134
+   ],
+   "z": 2,
+   "bone": "mic",
+   "parent": "hand_R",
+   "joint": [
+    61.55,
+    832.3
+   ],
+   "hidden": true
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "open",
+   "bbox": [
+    57,
+    768,
+    85,
+    140
+   ],
+   "z": 3
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "point",
+   "bbox": [
+    -3,
+    776,
+    92,
+    166
+   ]
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "fist",
+   "bbox": [
+    -2,
+    778,
+    114,
+    128
+   ]
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "scratch",
+   "bbox": [
+    -6,
+    783,
+    109,
+    145
+   ]
+  },
+  {
+   "slot": "hand_R",
+   "attachment": "press",
+   "bbox": [
+    -16,
+    781,
+    118,
+    153
+   ]
+  },
+  {
+   "slot": "leg_R",
+   "bbox": [
+    125,
+    813,
+    249,
+    389
+   ],
+   "z": 8,
+   "bone": "thigh_R"
+  },
+  {
+   "slot": "leg_L",
+   "bbox": [
+    334,
+    811,
+    249,
+    448
+   ],
+   "z": 9,
+   "bone": "thigh_L"
+  },
+  {
+   "slot": "torso",
+   "bbox": [
+    170,
+    417,
+    419,
+    469
+   ],
+   "z": 10,
+   "bone": "spine"
+  },
+  {
+   "slot": "cup_R",
+   "bbox": [
+    212,
+    389,
+    88,
+    120
+   ],
+   "z": 11,
+   "bone": "cup_R",
+   "parent": "neck",
+   "joint": [
+    223.7,
+    446.9
+   ]
+  },
+  {
+   "slot": "chain",
+   "bbox": [
+    264,
+    446,
+    153,
+    212
+   ],
+   "z": 12,
+   "bone": "phys_chain_1"
+  },
+  {
+   "slot": "pouch",
+   "bbox": [
+    218,
+    305,
+    266,
+    197
+   ],
+   "z": 13,
+   "bone": "phys_pouch_1"
+  },
+  {
+   "slot": "head",
+   "bbox": [
+    217,
+    205,
+    309,
+    206
+   ],
+   "z": 14
+  },
+  {
+   "slot": "cap",
+   "bbox": [
+    302,
+    152,
+    242,
+    171
+   ],
+   "z": 15,
+   "bone": "head"
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "open",
+   "bbox": [
+    233,
+    208,
+    57,
+    93
+   ],
+   "z": 16,
+   "bone": "face_eye_R",
+   "parent": "head",
+   "joint": [
+    260.83,
+    254.2
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "half",
+   "bbox": [
+    233,
+    208,
+    57,
+    93
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "closed",
+   "bbox": [
+    233,
+    208,
+    57,
+    93
+   ]
+  },
+  {
+   "slot": "eye_R",
+   "attachment": "wide",
+   "bbox": [
+    233,
+    208,
+    57,
+    93
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "open",
+   "bbox": [
+    375,
+    205,
+    99,
+    99
+   ],
+   "z": 20,
+   "bone": "face_eye_L",
+   "parent": "head",
+   "joint": [
+    423.45,
+    256.08
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "half",
+   "bbox": [
+    375,
+    205,
+    99,
+    99
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "closed",
+   "bbox": [
+    375,
+    205,
+    99,
+    99
+   ]
+  },
+  {
+   "slot": "eye_L",
+   "attachment": "wide",
+   "bbox": [
+    375,
+    205,
+    99,
+    99
+   ]
+  },
+  {
+   "slot": "pupil_R",
+   "bbox": [
+    237,
+    238,
+    40,
+    28
+   ],
+   "z": 24,
+   "bone": "face_pupil_R",
+   "parent": "face_eye_R",
+   "joint": [
+    258.01,
+    252.32
+   ]
+  },
+  {
+   "slot": "pupil_L",
+   "bbox": [
+    395,
+    243,
+    58,
+    34
+   ],
+   "z": 25,
+   "bone": "face_pupil_L",
+   "parent": "face_eye_L",
+   "joint": [
+    424.86,
+    259.84
+   ]
+  },
+  {
+   "slot": "mouth",
+   "attachment": "closed",
+   "bbox": [
+    230,
+    315,
+    266,
+    74
+   ],
+   "z": 26,
+   "bone": "head"
+  },
+  {
+   "slot": "mouth",
+   "attachment": "smile",
+   "bbox": [
+    230,
+    313,
+    267,
+    93
+   ]
+  },
+  {
+   "slot": "mouth",
+   "attachment": "open",
+   "bbox": [
+    230,
+    313,
+    267,
+    139
+   ]
+  },
+  {
+   "slot": "mouth",
+   "attachment": "O",
+   "bbox": [
+    239,
+    314,
+    246,
+    135
+   ]
+  },
+  {
+   "slot": "cup_L",
+   "bbox": [
+    379,
+    385,
+    132,
+    127
+   ],
+   "z": 30,
+   "bone": "cup_L",
+   "parent": "neck",
+   "joint": [
+    435.2,
+    442.2
+   ]
+  },
+  {
+   "slot": "upper_arm_L",
+   "bbox": [
+    486,
+    379,
+    186,
+    360
+   ],
+   "z": 31
+  },
+  {
+   "slot": "forearm_L",
+   "bbox": [
+    573,
+    566,
+    112,
+    264
+   ],
+   "z": 32
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "open",
+   "bbox": [
+    571,
+    732,
+    141,
+    221
+   ],
+   "z": 33
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "point",
+   "bbox": [
+    595,
+    789,
+    113,
+    171
+   ]
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "fist",
+   "bbox": [
+    592,
+    789,
+    94,
+    127
+   ]
+  },
+  {
+   "slot": "hand_L",
+   "attachment": "fader",
+   "bbox": [
+    599,
+    790,
+    101,
+    145
+   ]
+  }
+ ]
+}

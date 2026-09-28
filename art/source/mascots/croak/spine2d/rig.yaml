@@ -1,0 +1,219 @@
+# Baron Croak (chr_croak): lanky adult bullfrog DJ, faces screen-LEFT, near side = his L.
+# PRODUCTION rig on the real formula-D parts: parts.json + images/ come from the master cut of the approved
+# rig master (cut.yaml, art/source/mascots/pipeline/mastercut.py). Canvas 720x1260 @2x (y down), root = feet.
+# Pose values are facing-normalised exactly like Gumbo's (rot + = counter-clockwise AS IF he faced right,
+# x + = forward toward the booth/reels): the generator mirrors them for a left-facing rig.
+# Deltas from ANIMATION_SET 5.2, forced by the approved master: no `cable` slot (the master has no cable;
+# the headphones rest around the neck), no separate lid / bulge slots (the lids are the eye states, the
+# bulges are part of the head), the `shirt` is one piece with the torso (the open shirt is painted over the
+# tank), sleeves: the near sleeve rides the near upper arm, the far sleeve stays on the torso.
+kind: character
+skeleton: chr_croak
+parts: parts.json
+facing: left
+near: L
+tempo: 1.06                    # ANIMATION_SET 5.2: springy and quick
+template: biped
+ik: {feet: true, hands: [L, R]} # near hand on the fader, far hand on the deck (mix keyed per clip)
+
+bones:
+  - {name: pouch, parent: neck, joint: [341.2, 362.3], tip: [341.2, 399.9]}
+  - {name: phys_pouch_1, parent: pouch, joint: [341.2, 399.9], tip: [341.2, 437.5]}
+  - {name: phys_pouch_2, parent: phys_pouch_1, joint: [341.2, 437.5], tip: [341.2, 475.1]}
+  - {name: phys_chain_1, parent: chest, joint: [345.9, 489.2], tip: [313.0, 569.1]}
+  - {name: phys_chain_2, parent: phys_chain_1, joint: [313.0, 569.1], tip: [310.7, 620.8]}
+  - {name: phys_chain_3, parent: phys_chain_2, joint: [310.7, 620.8], tip: [310.7, 656.0]}
+  - {name: fx_note, parent: root, joint: [172.0, 240.1]}
+
+slots:
+  fx_note: {bone: fx_note, blend: additive}   # empty: the runtime attaches the code-drawn music notes (celebrate)
+
+meshes:
+  torso: {type: trace, spacing: 44, weights: {mode: vertical, stops: [[chest, 520], [spine, 690], [hips, 830]]}}
+  pouch: {type: trace, spacing: 34, weights: {mode: vertical, stops: [[pouch, 372], [phys_pouch_1, 420], [phys_pouch_2, 480]]}}
+  chain: {type: grid, cols: 3, rows: 5, weights: {mode: vertical, stops: [[chest, 492], [phys_chain_1, 540], [phys_chain_2, 590], [phys_chain_3, 630]]}}
+  leg_R: {type: trace, spacing: 34, weights: {mode: vertical, stops: [[hips, 850], [thigh_R, 900], [shin_R, 990], [shin_R, 1100], [foot_R, 1150]]}}
+  leg_L: {type: trace, spacing: 34, weights: {mode: vertical, stops: [[hips, 850], [thigh_L, 900], [shin_L, 1000], [shin_L, 1160], [foot_L, 1210]]}}
+  upper_arm_L: {type: trace, spacing: 30, weights: {mode: vertical, stops: [[chest, 470], [upper_arm_L, 560]]}}
+
+physics:
+  - {bone: phys_pouch_1, preset: default, x: 0.4, y: 0.6, rotate: 0, inertia: 0.5}
+  - {bone: phys_pouch_2, preset: default, x: 0.4, y: 0.6, rotate: 0, inertia: 0.55}
+  - {bone: phys_chain_1, f: 3.0, zeta: 0.3, rotate: 1, inertia: 0.5}   # floppy frequency, a little more damping:
+  - {bone: phys_chain_2, f: 3.0, zeta: 0.3, rotate: 1, inertia: 0.5}   # a 3-link chain rings longer than one spring
+  - {bone: phys_chain_3, f: 3.0, zeta: 0.3, rotate: 1, inertia: 0.55}
+
+look:
+  head: {mix: 0.6, deg_per_100: 5, max: 12}
+  pupils: {per_100: 3, max: [5, 4]}      # the far iris is foreshortened: 5 units keeps both slit pupils inside
+
+face: {hide_pupils: [half, closed, wide]}
+drag: {lag: 2, gain: 0.55, body: 0.5}   # looser than Gumbo: long limbs trail more
+
+stance: stance
+poses:
+  stance:                       # behind the booth: near hand on the fader, far hand flat on the deck
+    base: none
+    hips: {y: -8}
+    spine: {rot: -3}
+    chest: {rot: -2}
+    head: {rot: -2}
+    place: {ik_hand_L: [572, 742], ik_hand_R: [112, 742]}
+    ik: {ik_hand_L: 1, ik_hand_R: 1}
+    hand_L: {rot: -8}
+    hand_R: {rot: -10}
+    attach: {hand_L: fader, hand_R: open, mouth: closed, eyes: open}
+  # --- anticipation
+  hover: {spine: {rot: -7}, chest: {rot: -5}, neck: {rot: -2}, head: {rot: 3}, look: [320, 80], place: {ik_hand_L: [566, 722]}, attach: {hand_L: open}}
+  # --- react_small / scratch / win_big
+  scratch_ready: {hips: {y: -20}, spine: {rot: -8}, chest: {rot: -4}, head: {rot: -5}, attach: {hand_R: scratch, mouth: smile}}
+  scratch_lean: {base: scratch_ready, hips: {y: -28, x: 8}, spine: {rot: -11}, head: {rot: -9}}
+  # --- react_point: points at the meter (forward and up)
+  point_cock: {hips: {y: -12}, ik: {ik_hand_L: 0}, upper_arm_L: {rot: 40}, forearm_L: {rot: 70}, attach: {hand_L: fist}}
+  point_fwd: {spine: {rot: -2}, chest: {rot: 4}, head: {rot: 7}, look: [360, 260], ik: {ik_hand_L: 0}, upper_arm_L: {rot: 104}, forearm_L: {rot: 14}, hand_L: {rot: -4}, attach: {hand_L: point, mouth: smile}}
+  # --- bass_drop_charge -> bass_drop
+  charge_up: {hips: {y: -2}, spine: {rot: 4}, chest: {rot: 5}, head: {rot: 5}, ik: {ik_hand_R: 0}, upper_arm_R: {rot: 88}, forearm_R: {rot: 62}, hand_R: {rot: 8}, attach: {hand_R: press, eyes: wide}}
+  charge_top: {base: charge_up, spine: {rot: 6}, chest: {rot: 7}, upper_arm_R: {rot: 104}, forearm_R: {rot: 72}}
+  pressed: {hips: {y: -24}, spine: {rot: -11}, chest: {rot: -7}, neck: {rot: -3}, head: {rot: -7}, ik: {ik_hand_R: 0}, reach: {hand_R: [108, 752]}, hand_R: {rot: -30}, attach: {hand_R: press, eyes: wide}}
+  recoil: {hips: {y: -4}, spine: {rot: 6}, chest: {rot: 7}, neck: {rot: 3}, head: {rot: 7}, ik: {ik_hand_R: 0}, upper_arm_R: {rot: 40}, forearm_R: {rot: 80}, hand_R: {rot: 16}, attach: {hand_R: open, eyes: wide, mouth: O}}
+  settle_fwd: {hips: {y: -12}, spine: {rot: -5}, head: {rot: -4}, ik: {ik_hand_R: 0.6}}
+  # --- idle_bored
+  phones_reach: {ik: {ik_hand_L: 0}, reach: {hand_L: [470, 500]}, hand_L: {rot: 60}, head: {rot: 4}, attach: {hand_L: open}}
+  phones_adjust: {base: phones_reach, head: {rot: 7}, neck: {rot: 3}, reach: {hand_L: [468, 486]}}
+  crowd_look: {spine: {rot: 2}, chest: {rot: 3}, head: {rot: -4}, look: [60, -220]}
+  # --- celebrate
+  arms_up: {ik: {ik_hand_L: 0, ik_hand_R: 0}, upper_arm_L: {rot: 194}, forearm_L: {rot: 14}, upper_arm_R: {rot: 132}, forearm_R: {rot: 24}, chest: {rot: 5}, head: {rot: 7}, attach: {hand_L: fist, hand_R: fist, mouth: open}}
+  # --- fs_trigger (mic drop)
+  mic_up: {hips: {y: -4}, spine: {rot: 4}, chest: {rot: 6}, head: {rot: 9}, look: [200, 300], ik: {ik_hand_R: 0}, upper_arm_R: {rot: 112}, forearm_R: {rot: 40}, hand_R: {rot: 4}, mic: {rot: -20}, attach: {hand_R: fist, mouth: smile}}
+  mic_out: {hips: {y: -8}, spine: {rot: -2}, chest: {rot: 3}, head: {rot: 2}, look: [300, -100], ik: {ik_hand_R: 0}, upper_arm_R: {rot: 86}, forearm_R: {rot: 8}, hand_R: {rot: -4}, attach: {hand_R: fist}}
+  mic_dropped: {base: mic_out, hips: {y: -10}, hand_R: {rot: -24}, chest: {rot: 5}, head: {rot: 6}, attach: {hand_R: open, mouth: smile}}
+  swagger: {hips: {y: -6}, spine: {rot: 5}, chest: {rot: 8}, head: {rot: 11}, look: [120, 200], ik: {ik_hand_R: 0, ik_hand_L: 0}, upper_arm_R: {rot: 12}, forearm_R: {rot: 18}, upper_arm_L: {rot: 96}, forearm_L: {rot: 14}, hand_L: {rot: -6}, attach: {hand_R: open, hand_L: point, mouth: smile}}
+  # --- fs_end (bow, a hand on the headphones)
+  bow: {hips: {y: -12}, spine: {rot: -15}, chest: {rot: -11}, neck: {rot: -4}, head: {rot: -9}, ik: {ik_hand_L: 0}, reach: {hand_L: [470, 500]}, hand_L: {rot: 60}, attach: {hand_L: open, eyes: closed, mouth: smile}}
+  # --- overlays (additive deltas from setup)
+  flinch: {base: none, hips: {y: -5}, chest: {rot: -3}, neck: {rot: -2}, head: {y: -6, rot: -3}}
+  pump: {base: none, phys_pouch_1: {s: 1.35}}
+
+clips:
+  idle:                          # 144 f = 8 beats @100 BPM: head nod every 18 f, pouch breath every 36 f, near hand rides the fader
+    layers:
+      - {preset: nod, every: 18, amount: 6, bob: 5, neck: 0.4, chest: 0.3}
+      - {preset: pulse, bone: phys_pouch_1, every: 36, amount: 0.1, attack: 10, release: 22}
+      - {preset: sway, bone: ik_hand_L, channel: x, amount: 12, cycles: 2}
+      - {preset: sway, bone: ik_hand_R, channel: y, amount: 3, cycles: 4, phase: 0.1}
+      - {preset: weight_shift, amount: 6, dip: 2, cycles: 1, counter: 1.0}
+      - {preset: blink, at: [62, 128]}
+  idle_bored:                    # adjusts the headphones, taps the deck, looks at the crowd
+    keys:
+      16: {pose: phones_reach, ease: sine_in_out}
+      24: {pose: phones_adjust, ease: sine_in_out}
+      50: {pose: phones_adjust, ease: linear}
+      62: {pose: rest, ease: sine_in_out}
+      108: {pose: crowd_look, ease: sine_in_out}
+      136: {pose: crowd_look, ease: linear}
+    swap: {eyes: {26: closed, 30: open, 110: wide, 134: open}, mouth: {112: smile, 138: closed}}
+    layers:
+      - {preset: nod, every: 15, amount: 3, bob: 3}
+      - {preset: jolt, bone: ik_hand_R, at: 72, y: 14, attack: 3, hold: 0, recover: 6, overshoot: 0.1}
+      - {preset: jolt, bone: ik_hand_R, at: 82, y: 14, attack: 3, hold: 0, recover: 6, overshoot: 0.1}
+      - {preset: jolt, bone: ik_hand_R, at: 92, y: 14, attack: 3, hold: 0, recover: 6, overshoot: 0.1}
+      - {preset: pulse, bone: cup_L, at: 26, amount: -0.06, attack: 3, release: 10}
+      - {preset: pulse, bone: phys_pouch_1, every: 50, amount: 0.08, attack: 10, release: 22}
+  anticipation:                  # hand hovering over the fader, leaning toward the meter (also meterHeat)
+    keys: {0: hover, 36: hover}
+    layers:
+      - {preset: tremble, bone: ik_hand_L, channel: x, amount: 3, hz: 5}
+      - {preset: tremble, bone: head, amount: 0.6, hz: 6}
+      - {preset: pulse, bone: phys_pouch_1, every: 18, amount: 0.05, attack: 4, release: 10}
+  react_small:                   # scratch with the far hand (+ dj_scratch f4), nod
+    keys:
+      3: {pose: scratch_ready, ease: sine_in_out}
+      24: {pose: scratch_ready, ease: linear}
+      36: {pose: rest, ease: sine_in_out}
+    layers:
+      - {preset: sway, bone: ik_hand_R, channel: x, amount: 26, cycles: 3, at: 2, frames: 24}
+      - {preset: nod, at: 4, count: 2, every: 10, amount: 10, bob: 8}
+  scratch:                       # hand-only scratch (the booth's `scratch` carries the sfx)
+    keys:
+      3: {pose: scratch_ready, ease: sine_in_out}
+      28: {pose: scratch_ready, ease: linear}
+      36: {pose: rest, ease: sine_in_out}
+    layers:
+      - {preset: sway, bone: ik_hand_R, channel: x, amount: 16, cycles: 4, at: 2, frames: 30}
+  react_point:                   # points at the meter at f8
+    keys:
+      5: {pose: point_cock, ease: sine_in_out}
+      8: {pose: point_fwd, ease: expo_out}
+      20: {pose: point_fwd, ease: linear}
+      30: {pose: rest, ease: sine_in_out}
+    layers: [{preset: nod, at: 12, count: 1, every: 10, amount: 7, bob: 4}]
+  bass_drop_charge:              # raises the far hand f0-f8, palm hits the drop button at f14, fully down at f15
+    keys:
+      6: {pose: charge_up, ease: sine_in_out}
+      10: {pose: charge_top, ease: sine_out}
+      14: {pose: pressed, ease: expo_in}
+      15: {pose: pressed, ease: linear}
+    end: hold
+  bass_drop:                     # follow-through: chain whips, the cups rock with the neck, pouch balloons to 1.4 at f4, recovers
+    keys:
+      0: pressed
+      5: {pose: recoil, ease: expo_out}
+      16: {pose: settle_fwd, ease: sine_in_out}
+      30: {pose: rest, ease: sine_in_out}
+    swap: {mouth: {1: O, 18: closed}, eyes: {1: wide, 16: open}}
+    layers:
+      - {preset: pulse, bone: phys_pouch_1, at: 0, amount: 0.3, attack: 4, release: 18}
+      - {preset: jolt, bone: cup_L, at: 1, y: 10, attack: 2, hold: 0, recover: 12, overshoot: 0.5}
+      - {preset: jolt, bone: cup_R, at: 2, y: 8, attack: 2, hold: 0, recover: 12, overshoot: 0.5}
+  wild_land_react:               # track 1 additive flinch
+    track: 1
+    keys:
+      1: {pose: flinch, ease: expo_out}
+      12: {pose: none, ease: sine_in_out}
+    swap: {eyes: {1: closed, 4: open}}
+  pouch_pump:                    # track 1: pouch 1.00 -> 1.35 -> 1.00 (sticky mult_up, spotUpgrade cue)
+    track: 1
+    keys:
+      4: {pose: pump, ease: quad_out}
+      12: {pose: none, ease: sine_in_out}
+  win_big:                       # double scratch (+ dj_scratch f10) + headbang
+    keys:
+      4: {pose: scratch_ready, ease: sine_in_out}
+      28: {pose: scratch_lean, ease: sine_in_out}
+      50: {pose: scratch_lean, ease: linear}
+      60: {pose: rest, ease: sine_in_out}
+    swap: {mouth: {8: smile, 30: open, 54: closed}, eyes: {30: closed, 50: open}}
+    layers:
+      - {preset: sway, bone: ik_hand_R, channel: x, amount: 34, cycles: 4, at: 6, frames: 26}
+      - {preset: nod, at: 30, count: 3, every: 8, amount: 22, bob: 12, neck: 0.5, chest: 0.5, attack: 2}
+      - {preset: pulse, bone: phys_pouch_1, at: [31, 39, 47], amount: 0.16, attack: 2, release: 6}
+  celebrate:                     # 4 beats: arms up, fist pumps on beats, fx_note puffs
+    keys: {0: arms_up, 72: arms_up}
+    layers:
+      - {preset: nod, every: 18, amount: 7, bob: 8, chest: 0.3}
+      - {preset: sway, bone: upper_arm_L, amount: 10, cycles: 4}
+      - {preset: sway, bone: upper_arm_R, amount: 10, cycles: 4, phase: 0.5}
+      - {preset: puff, slot: fx_note, every: 18, frames: 16, rise: 60, drift: -14}
+      - {preset: pulse, bone: phys_pouch_1, every: 18, amount: 0.1, attack: 3, release: 10}
+  fs_trigger:                    # mic appears in hand at f10, held high f10-f30, mic drop at f36
+    keys:
+      10: {pose: mic_up, ease: sine_in_out}
+      28: {pose: mic_up, ease: linear}
+      33: {pose: mic_out, ease: sine_in_out}
+      36: {pose: mic_dropped, ease: expo_out}
+      47: {pose: mic_dropped, ease: linear}
+      60: {pose: swagger, ease: sine_in_out}
+      64: {pose: swagger, ease: linear}
+      75: {pose: rest, ease: sine_in_out}
+    swap: {mic: {10: mic}, hand_R: {9: fist, 36: open}}
+    layers:
+      - {preset: tremble, bone: upper_arm_R, amount: 1.5, hz: 6, at: 12, frames: 18}
+      - {preset: release, bone: mic, at: 36, frames: 11, fall: 470, forward: 2, spin: 110, slot: mic}
+  fs_end:                        # bow, a hand on the headphones
+    keys:
+      18: {pose: bow, ease: sine_in_out}
+      34: {pose: bow, ease: linear}
+      54: {pose: rest, ease: sine_in_out}
+  blink:                         # track 2: lids close f1-f3
+    track: 2
+    layers: [{preset: blink, at: 0, soft: false}]

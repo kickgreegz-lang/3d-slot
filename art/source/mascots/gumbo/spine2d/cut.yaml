@@ -20,8 +20,8 @@ fit: {scale: 0.43, feet: [1070, 2232]}
 inkLum: 0.12
 inkChroma: 0.12
 inkBand: 14
-seam: 6
-stroke: 9
+seam: 14
+stroke: 14
 landmarks:
   hips: [1075, 1470]
   spine: [1080, 1190]
@@ -68,11 +68,16 @@ joints:
   hip_L:      {at: [1250, 1580], r: 100, parent: leg_L, take: false, within: [leg_L, torso]}
 parts:
   - slot: tail
+    z: -12
     bone: phys_tail_1
     seed:
       - [[110, 1900], [300, 1880], [520, 1800], [640, 1740], [700, 1760], [690, 2020], [520, 2040], [300, 2010], [140, 1930]]
       - [[1020, 1730], [1080, 1740], [1110, 1840], [1060, 1930], [1010, 1940], [1000, 1850]]
-    extend: [[[690, 1740], [1000, 1640], [1120, 1650], [1130, 1800], [1070, 1960], [900, 2040], [690, 2050]]]
+    # the tail root hidden behind the near leg: a clean tapered shape (olive top, khaki belly), outlined
+    clip: false
+    extend: [[[700, 1745], [780, 1718], [900, 1686], [1000, 1648], [1080, 1632], [1118, 1645], [1112, 1780], [1045, 1895], [965, 1982], [900, 2012], [800, 2040], [700, 2046]]]
+    post:
+      - {gradient: [[[690, 1620], [1130, 1620], [1130, 2060], [690, 2060]]], from: [930, 1700, 84, 72, 52], to: [880, 1990, 138, 114, 83], only: fill}
   - slot: leg_L
     bone: thigh_L
     seed:
@@ -81,6 +86,7 @@ parts:
     seed:
       - [[1420, 650], [1470, 700], [1500, 850], [1505, 1010], [1470, 1015], [1440, 900]]
       - [[1325, 625], [1380, 640], [1430, 680], [1455, 740], [1420, 790], [1395, 790], [1360, 720], [1340, 670]]
+    extend: [{capsule: [1392, 730, 1470, 1010, 64]}]
   - slot: forearm_L
     seed: [[[1470, 1032], [1540, 1032], [1610, 1200], [1620, 1365], [1560, 1365], [1510, 1230]]]
   - slot: hand_L
@@ -279,25 +285,25 @@ parts:
     inRest: false
     bone: cooler
     parent: root
-    joint: [547, 2227]
-    tip: [547, 1810]
-    source: {sheet: props, comp: 2, from: [[1720, 765], [1330, 620]], to: [[560.7, 2227.3], [293.5, 2128.0]]}
+    joint: [687, 2227]
+    tip: [687, 1640]
+    source: {sheet: props, comp: 2, from: [[1720, 765], [1330, 620], [1560, 165]], to: [[700.7, 2227.3], [433.5, 2086.7], [591.1, 1645.3]]}
   - slot: cooler_lid
     z: -9
     inRest: false
     bone: cooler_lid
     parent: cooler
-    joint: [443, 1789]
-    tip: [643, 1880]
-    source: {sheet: props, comp: 3, from: [[1700, 1150], [1310, 1070]], to: [[547.0, 1984.3], [273.0, 1913.8]],
+    joint: [591, 1650]
+    tip: [790, 1760]
+    source: {sheet: props, comp: 3, from: [[1700, 1150], [1310, 1070], [1560, 905]], to: [[687.0, 1881.0], [419.8, 1801.5], [591.1, 1635.6]],
              erase: [[[1250, 1100], [1500, 1128], [1700, 1162], [1900, 1118], [2060, 1097], [2060, 1600], [1250, 1600]]]}
 points:
   toothpick_grip: [1250, 474]
   toothpick_tip: [1178, 582]
-  cooler_base: [547, 2227]
-  cooler_top: [547, 1790]
-  lid_hinge: [443, 1789]
-  lid_front: [547, 1960]
+  cooler_base: [687, 2227]
+  cooler_top: [687, 1636]
+  lid_hinge: [591, 1650]
+  lid_front: [687, 1881]
   tail_1: [1030, 1650]
   tail_2: [760, 1880]
   tail_3: [520, 1935]
@@ -308,7 +314,7 @@ points:
   jowl: [1080, 600]
   jowl_tip: [1080, 660]
   sweat: [1250, 170]
-  lid_top: [430, 1830]
+  lid_top: [540, 1740]
 tests:
   - {name: shoulder_R, joint: [640, 760], pieces: [upper_arm_R, forearm_R, hand_R], deg: [-40, 40, 90]}
   - {name: elbow_R, joint: [545, 1040], pieces: [forearm_R, hand_R], deg: [-35, 35]}

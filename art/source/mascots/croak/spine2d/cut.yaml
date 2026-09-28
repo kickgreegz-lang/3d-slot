@@ -1,0 +1,320 @@
+# chr_croak master cut (art/source/mascots/pipeline/mastercut.py).
+# Master = the approved rig master chr_croak_rig_master (bd_c09 c1, job 6b18395f, raw v01), faces screen-LEFT
+# as drawn (near side = his L = image right). The setup pose is the master pixel for pixel; hidden areas are
+# filled; eye states are painted from the master, mouth shapes are warped from the face sheet, hands and the
+# mic from the hands / props sheets. All coordinates: master px (1696x2528, y down). Canvas 720x1260 @2x.
+skeleton: chr_croak
+canvas: [720, 1260]
+anchor: [0.5, 1.0]
+work: art/_work/mascots_bd/chr_croak
+out:
+  parts: art/source/mascots/croak/spine2d/parts.json
+  images: art/source/mascots/croak/spine2d/images
+  qa: build/qa/chr_croak/cut
+master: {image: art/_raw/chr_croak_rig_master/v01/raw.png, key: auto, expectKey: "#0000FF"}
+sheets:
+  face: {image: art/_raw/chr_croak_parts_face/v01/raw.png, key: auto, expectKey: "#0000FF"}
+  hands: {image: art/_raw/chr_croak_parts_hands/v01/raw.png, key: auto, expectKey: "#0000FF"}
+  props: {image: art/_raw/chr_croak_parts_props/v01/raw.png, key: auto, expectKey: "#0000FF"}
+fit: {scale: 0.47, feet: [800, 2470]}
+inkLum: 0.12
+inkChroma: 0.12
+inkBand: 14
+seam: 14
+stroke: 14
+landmarks:
+  hips: [815, 1560]
+  spine: [805, 1290]
+  chest: [790, 1030]
+  neck: [775, 830]
+  head: [790, 640]
+  head_top: [830, 180]
+  look: [200, 330]
+  shoulder_R: [470, 960]
+  elbow_R: [292, 1320]
+  wrist_R: [196, 1478]
+  hand_R: [136, 1610]
+  shoulder_L: [1185, 915]
+  elbow_L: [1295, 1290]
+  wrist_L: [1352, 1478]
+  hand_L: [1385, 1630]
+  hip_R: [650, 1640]
+  knee_R: [612, 1880]
+  ankle_R: [642, 2200]
+  toe_R: [200, 2300]
+  hip_L: [985, 1640]
+  knee_L: [968, 1900]
+  ankle_L: [1010, 2330]
+  toe_L: [965, 2440]
+cuts:
+  - {line: [[200, 1320], [390, 1320]], parts: {upper_arm_R: [300, 1200], forearm_R: [280, 1400]}}
+  - {line: [[110, 1478], [280, 1478]], parts: {forearm_R: [200, 1420], hand_R: [170, 1560]}}
+  - {line: [[1210, 1290], [1400, 1290]], parts: {upper_arm_L: [1290, 1200], forearm_L: [1310, 1380]}}
+  - {line: [[1270, 1478], [1450, 1478]], parts: {forearm_L: [1350, 1420], hand_L: [1370, 1560]}}
+  - {line: [[470, 1600], [790, 1650]], ext: 20, parts: {torso: [640, 1560], leg_R: [640, 1720]}}
+  - {line: [[790, 1650], [1175, 1600]], ext: 20, parts: {torso: [990, 1560], leg_L: [990, 1720]}}
+  - {line: [[1150, 800], [1140, 1060]], parts: {torso: [1060, 950], upper_arm_L: [1220, 950]}}
+joints:
+  elbow_R:    {at: [292, 1320], r: 52, parent: upper_arm_R, child: forearm_R}
+  wrist_R:    {at: [196, 1478], r: 48, parent: forearm_R, child: hand_R}
+  elbow_L:    {at: [1295, 1290], r: 56, parent: upper_arm_L, child: forearm_L}
+  wrist_L:    {at: [1352, 1478], r: 50, parent: forearm_L, child: hand_L}
+parts:
+  - slot: upper_arm_R
+    seed: [[[380, 1060], [440, 1050], [400, 1160], [340, 1260], [300, 1300], [270, 1290], [320, 1180]]]
+    extend: [{capsule: [470, 960, 390, 1080, 58]}]
+  - slot: forearm_R
+    seed: [[[240, 1340], [300, 1340], [250, 1440], [215, 1462], [190, 1450]]]
+  - slot: mic
+    bone: mic
+    parent: hand_R
+    joint: [165, 1560]
+    hidden: true
+    inRest: false
+    source: {sheet: props, comp: 6, from: [[2118, 1420], [2098, 1110]], to: [[165, 1560], [-51, 1464]]}
+  - slot: hand_R
+    attachment: open
+    seed: [[[140, 1500], [230, 1500], [210, 1560], [180, 1620], [130, 1640], [110, 1590]]]
+  - slot: hand_R
+    attachment: point
+    source: {sheet: hands, comp: 5, from: [[1070, 885], [1400, 800]], to: [[196, 1478], [133.9, 1636.7]], match: {master: [{ellipse: [180, 1560, 50, 90]}], strength: 0.8}}
+  - slot: hand_R
+    attachment: fist
+    source: {sheet: hands, comp: 6, from: [[2380, 730], [2080, 820]], to: [[196, 1478], [138.9, 1623.8]], match: {master: [{ellipse: [180, 1560, 50, 90]}], strength: 0.8}}
+  - slot: hand_R
+    attachment: scratch
+    source: {sheet: hands, comp: 3, from: [[2370, 150], [2080, 330]], to: [[196, 1478], [133.8, 1636.9]], match: {master: [{ellipse: [180, 1560, 50, 90]}], strength: 0.8}}
+  - slot: hand_R
+    attachment: press
+    source: {sheet: hands, comp: 10, from: [[2370, 1200], [2080, 1390]], to: [[196, 1478], [132.8, 1639.4]], match: {master: [{ellipse: [180, 1560, 50, 90]}], strength: 0.8}}
+  - slot: leg_R
+    bone: thigh_R
+    extend: [[[478, 1540], [800, 1560], [800, 1700], [478, 1680]]]
+    seed:
+      - [[520, 1680], [760, 1690], [760, 1830], [700, 1880], [690, 2150], [660, 2230], [400, 2260], [220, 2290], [220, 2320], [560, 2300], [600, 2200], [590, 1880], [520, 1840]]
+  - slot: leg_L
+    bone: thigh_L
+    extend: [[[790, 1560], [1172, 1540], [1172, 1680], [790, 1700]]]
+    seed:
+      - [[830, 1680], [1130, 1690], [1130, 1840], [1040, 1880], [1030, 2280], [1100, 2380], [1160, 2430], [900, 2440], [940, 2360], [960, 2280], [920, 1880], [840, 1840]]
+  - slot: torso
+    bone: spine
+    seed:
+      - [[500, 870], [640, 850], [760, 880], [900, 880], [1060, 850], [1110, 900], [1100, 1100], [1120, 1450], [1150, 1560], [900, 1600], [700, 1600], [500, 1560], [480, 1300], [500, 1000]]
+    extend:
+      - [[1130, 790], [1230, 830], [1260, 900], [1250, 1000], [1200, 1070], [1140, 1080], [1110, 1000], [1110, 850]]
+      # the tank under the chain + pendant (the chain swings)
+      - {capsule: [650, 815, 662, 912, 20]}
+      - {capsule: [662, 912, 692, 978, 20]}
+      - {capsule: [692, 978, 708, 1010, 20]}
+      - {capsule: [880, 850, 832, 927, 20]}
+      - {capsule: [832, 927, 760, 972, 20]}
+      - {capsule: [760, 972, 710, 1005, 20]}
+      - {circle: [695, 1112, 86]}
+    fill: telea
+    fillRadius: 12
+    post:
+      - {gradient: [[[1100, 780], [1270, 780], [1270, 1090], [1100, 1090]]], from: [1120, 900, 236, 80, 160], to: [1250, 900, 150, 40, 100], only: fill}
+  - slot: cup_R
+    bone: cup_R
+    parent: neck
+    joint: [510, 740]
+    seed: [[[450, 700], [520, 650], [560, 700], [560, 800], [500, 830], [455, 790]]]
+  - slot: chain
+    bone: phys_chain_1
+    seed:
+      - {capsule: [650, 822, 660, 910, 7]}
+      - {capsule: [660, 910, 690, 975, 7]}
+      - {capsule: [690, 975, 705, 1000, 7]}
+      - {capsule: [875, 855, 830, 925, 7]}
+      - {capsule: [830, 925, 760, 970, 7]}
+      - {capsule: [760, 970, 712, 1000, 7]}
+      - {circle: [695, 1110, 66]}
+  - slot: pouch
+    bone: phys_pouch_1
+    seed:
+      - [[570, 580], [700, 590], [850, 580], [880, 640], [850, 740], [760, 790], [640, 780], [580, 700]]
+      - [[850, 575], [960, 560], [990, 590], [930, 625], [880, 640]]
+    extend:
+      - [[850, 600], [900, 620], [920, 700], [880, 790], [800, 810], [850, 700]]
+      - [[560, 540], [700, 556], [850, 545], [960, 510], [1040, 470], [1040, 520], [960, 560], [850, 590], [700, 600], [560, 590]]
+  - slot: head
+    seed:
+      - [[560, 240], [700, 220], [720, 420], [1000, 420], [1060, 440], [1070, 520], [1040, 500], [960, 480], [850, 470], [700, 470], [560, 460], [540, 400], [540, 300]]
+      - [[600, 480], [1000, 480], [980, 500], [850, 525], [700, 530], [600, 515]]
+  - slot: cap
+    bone: head
+    seed: [[[730, 170], [950, 150], [1080, 200], [1110, 320], [1140, 400], [1100, 420], [1040, 330], [980, 260], [880, 230], [760, 250]]]
+  # ---- eyes: every state is the master eye patch, lids painted over it (identical size and centre)
+  - slot: eye_R
+    attachment: open
+    bone: face_eye_R
+    parent: head
+    joint: [589, 330]
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [589, 330, 52, 88]}]
+    ops:
+      - {gradient: [{ellipse: [583, 326, 33, 19]}], clipTo: [{ellipse: [589, 330, 38, 67]}], from: [589, 300, 222, 146, 57], to: [589, 355, 220, 166, 59], feather: 1.0}
+  - slot: eye_R
+    attachment: half
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [589, 330, 52, 88]}]
+    ops:
+      - {gradient: [[[545, 250], [635, 250], [630, 318], [612, 332], [589, 338], [566, 332], [548, 320]]], clipTo: [{ellipse: [589, 330, 40, 69]}], from: [600, 262, 172, 152, 66], to: [600, 335, 132, 112, 52], feather: 0.8}
+      - {stroke: [[551, 321], [568, 333], [589, 339], [610, 333], [627, 318]], width: 7}
+  - slot: eye_R
+    attachment: closed
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [589, 330, 52, 88]}]
+    ops:
+      - {gradient: [{ellipse: [589, 330, 41, 70]}], from: [600, 262, 172, 152, 66], to: [600, 395, 128, 108, 50], feather: 0.8}
+      - {stroke: [[554, 346], [570, 358], [589, 363], [608, 358], [624, 342]], width: 7}
+      - {stroke: [[560, 300], [589, 290], [618, 298]], width: 3, alpha: 0.35}
+  - slot: eye_R
+    attachment: wide
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [589, 330, 52, 88]}]
+    ops:
+      - {gradient: [{ellipse: [583, 326, 33, 19]}], clipTo: [{ellipse: [589, 330, 38, 67]}], from: [589, 300, 222, 146, 57], to: [589, 355, 220, 166, 59], feather: 1.0}
+      - {paint: [{ellipse: [586, 324, 10, 14]}], color: [45, 27, 27], feather: 0.8}
+      - {paint: [{ellipse: [591, 316, 4, 5]}], color: [255, 250, 235], feather: 0.6}
+  - slot: eye_L
+    attachment: open
+    bone: face_eye_L
+    parent: head
+    joint: [935, 334]
+    noOwn: true
+    seam: 0
+    region: [{circle: [935, 332, 94]}]
+    ops:
+      - {gradient: [{ellipse: [938, 342, 52, 27, -4]}], clipTo: [{circle: [935, 332, 68]}], from: [935, 300, 250, 200, 62], to: [935, 385, 228, 176, 43], feather: 1.2}
+      - {paint: [{ellipse: [909, 304, 17, 14]}], color: [255, 252, 238], alpha: 0.9, feather: 3}
+  - slot: eye_L
+    attachment: half
+    noOwn: true
+    seam: 0
+    region: [{circle: [935, 332, 94]}]
+    ops:
+      - {gradient: [[[860, 250], [1010, 250], [1006, 322], [975, 340], [935, 347], [895, 340], [864, 324]]], clipTo: [{circle: [935, 332, 71]}], from: [935, 262, 160, 146, 64], to: [935, 345, 122, 108, 50], feather: 0.8}
+      - {stroke: [[866, 325], [898, 341], [935, 348], [972, 341], [1004, 322]], width: 8}
+  - slot: eye_L
+    attachment: closed
+    noOwn: true
+    seam: 0
+    region: [{circle: [935, 332, 94]}]
+    ops:
+      - {gradient: [{circle: [935, 332, 72]}], from: [935, 262, 160, 146, 64], to: [935, 400, 118, 104, 48], feather: 0.8}
+      - {stroke: [[868, 350], [900, 368], [935, 374], [970, 368], [1002, 348]], width: 8}
+      - {stroke: [[885, 292], [935, 280], [985, 292]], width: 3, alpha: 0.35}
+  - slot: eye_L
+    attachment: wide
+    noOwn: true
+    seam: 0
+    region: [{circle: [935, 332, 94]}]
+    ops:
+      - {gradient: [{ellipse: [938, 342, 52, 27, -4]}], clipTo: [{circle: [935, 332, 68]}], from: [935, 300, 250, 200, 62], to: [935, 385, 228, 176, 43], feather: 1.2}
+      - {paint: [{circle: [936, 334, 19]}], color: [45, 27, 27], feather: 0.8}
+      - {paint: [{ellipse: [944, 325, 6, 5]}], color: [255, 250, 235], feather: 0.6}
+      - {paint: [{ellipse: [909, 304, 17, 14]}], color: [255, 252, 238], alpha: 0.9, feather: 3}
+  - slot: pupil_R
+    bone: face_pupil_R
+    parent: face_eye_R
+    joint: [583, 326]
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [583, 326, 32, 18]}]
+  - slot: pupil_L
+    bone: face_pupil_L
+    parent: face_eye_L
+    joint: [938, 342]
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [938, 342, 51, 26, -4]}]
+  # ---- mouth: rest grin = the master; the other shapes are the face sheet's frontal mouths, warped by the
+  # corners onto the master grin, clipped below the master's upper lip line and to the head/pouch silhouette
+  - slot: mouth
+    attachment: closed
+    bone: head
+    noOwn: true
+    seam: 0
+    soft: 3
+    region: [[[540, 484], [620, 486], [700, 491], [800, 495], [900, 487], [1000, 476], [1052, 466], [1080, 480], [1075, 560], [1000, 590], [800, 610], [600, 600], [535, 600]]]
+  - slot: mouth
+    attachment: smile
+    source:
+      sheet: face
+      comp: 12
+      from: [[250, 2150], [1390, 2150]]
+      to: [[556, 505], [1048, 466]]
+      clip: [[[540, 484], [620, 486], [700, 491], [800, 495], [900, 487], [1000, 476], [1052, 466], [1080, 480], [1075, 560], [1000, 610], [800, 640], [600, 620], [535, 600]]]
+      clipFig: true
+      clipSoft: 2.5
+      match: {master: [[[600, 560], [1000, 540], [950, 640], [650, 650]]], strength: 0.25}
+  - slot: mouth
+    attachment: open
+    source:
+      sheet: face
+      comp: 13
+      from: [[1760, 2140], [2790, 2140]]
+      to: [[556, 505], [1048, 466]]
+      clip: [[[540, 484], [620, 486], [700, 491], [800, 495], [900, 487], [1000, 476], [1052, 466], [1080, 480], [1075, 560], [1000, 680], [800, 740], [600, 700], [535, 600]]]
+      clipFig: true
+      clipSoft: 2.5
+      match: {master: [[[600, 560], [1000, 540], [950, 640], [650, 650]]], strength: 0.3}
+  - slot: mouth
+    attachment: O
+    source:
+      sheet: face
+      comp: 14
+      from: [[3345, 2390], [3790, 2390]]
+      to: [[705, 524], [905, 512]]
+      clip: [[[540, 484], [620, 486], [700, 491], [800, 495], [900, 487], [1000, 476], [1052, 466], [1080, 480], [1075, 560], [1000, 680], [800, 740], [600, 700], [535, 600]]]
+      clipFig: true
+      clipSoft: 2.5
+      match: {master: [[[600, 560], [1000, 540], [950, 640], [650, 650]]], strength: 0.3}
+  - slot: cup_L
+    bone: cup_L
+    parent: neck
+    joint: [960, 730]
+    limit: [{circle: [966, 742, 106]}]
+    seed: [[[880, 660], [980, 620], [1050, 660], [1060, 760], [1000, 830], [900, 820], [870, 740]]]
+  - slot: upper_arm_L
+    seed:
+      - [[1170, 830], [1250, 870], [1290, 950], [1280, 1040], [1300, 1150], [1330, 1260], [1280, 1270], [1240, 1160], [1210, 1070], [1170, 1050], [1160, 950]]
+  - slot: forearm_L
+    seed: [[[1270, 1310], [1340, 1310], [1370, 1440], [1340, 1462], [1300, 1440]]]
+  - slot: hand_L
+    attachment: open
+    seed: [[[1310, 1500], [1420, 1500], [1450, 1600], [1400, 1680], [1330, 1640], [1300, 1570]]]
+  - slot: hand_L
+    attachment: point
+    source: {sheet: hands, comp: 4, from: [[120, 760], [430, 690]], to: [[1352, 1478], [1410.0, 1626.0]], match: {master: [{ellipse: [1390, 1560, 60, 90]}], strength: 0.8}}
+  - slot: hand_L
+    attachment: fist
+    source: {sheet: hands, comp: 7, from: [[120, 1060], [470, 990]], to: [[1352, 1478], [1417.1, 1644.2]], match: {master: [{ellipse: [1390, 1560, 60, 90]}], strength: 0.8}}
+  - slot: hand_L
+    attachment: fader
+    source: {sheet: hands, comp: 8, from: [[120, 1500], [470, 1400]], to: [[1352, 1478], [1418.4, 1647.5]], erase: [[[388, 1446], [428, 1446], [428, 1580], [388, 1580]]], match: {master: [{ellipse: [1390, 1560, 60, 90]}], strength: 0.8}}
+points:
+  pouch: [760, 560]
+  pouch_1: [760, 640]
+  pouch_2: [760, 720]
+  pouch_tip: [760, 800]
+  chain_1: [770, 830]
+  chain_2: [700, 1000]
+  chain_3: [695, 1110]
+  chain_tip: [695, 1185]
+  cup_R: [510, 740]
+  cup_L: [963, 735]
+  note: [400, 300]
+  deck_R: [196, 1478]
+  fader_L: [1352, 1478]
+tests:
+  - {name: shoulder_R, joint: [470, 960], pieces: [upper_arm_R, forearm_R, hand_R], deg: [-60, 60]}
+  - {name: shoulder_L, joint: [1185, 915], pieces: [upper_arm_L, forearm_L, hand_L], deg: [-60, 60, 150]}
+  - {name: elbow_L, joint: [1295, 1290], pieces: [forearm_L, hand_L], deg: [-35, 35]}
+  - {name: head, joint: [790, 640], pieces: [head, cap], deg: [-15, 15]}

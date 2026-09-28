@@ -531,6 +531,11 @@ class Cut:
         if sw > 0 and (e.any() or s.any()):
             d = ndi.distance_transform_edt(m)
             st = np.clip(sw + 0.5 - d, 0, 1) * (e | s)
+            # never ink the first px next to the pixels visible at rest: a front piece's anti-aliased edge sits
+            # over them, and ink there shows as a dark crack in the rest pose
+            dk = ndi.distance_transform_edt(~k)
+            keep = float(self.S.get("strokeKeep", 3.0))
+            st = st * np.clip((dk - keep) / 1.5, 0, 1)
             if p.get("strokeZone"):
                 st *= raster(p["strokeZone"], W, H)[y0:y1, x0:x1]
             rgb = rgb * (1 - st[..., None]) + self.ink_rgb[None, None, :] * st[..., None]
@@ -822,6 +827,10 @@ class Cut:
             # clip in master space: warp the clip mask back to the sheet
             Ainv = np.linalg.inv(A @ sl.trans_m(sx0, sy0))
             cm = raster(src["clip"], self.W, self.H).astype(np.float32)
+            if src.get("clipFig"):
+                cm = cm * self.alpha
+            if src.get("clipSoft"):
+                cm = ndi.gaussian_filter(cm, float(src["clipSoft"]))
             h, w = al.shape
             Ai = Ainv
             if cv2 is not None:

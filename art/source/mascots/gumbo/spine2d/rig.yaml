@@ -73,37 +73,37 @@ poses:
   blown_peak: {base: blown, spine: {rot: 10}, chest: {rot: 9}, head: {rot: 13}, jaw: {rot: -17}, upper_arm_R: {rot: -26}}
   recover_over: {hips: {x: 5, y: -10}, spine: {rot: -4}, chest: {rot: -2}, head: {rot: -5}}
   # --- react_small (fist pump, grin)
-  pump_load: {hips: {y: -16}, spine: {rot: -3}, chest: {rot: -3}, head: {rot: -5}, upper_arm_R: {rot: 30}, forearm_R: {rot: 95}, attach: {hand_R: fist}}
-  pump_up: {hips: {y: -2}, spine: {rot: 3}, chest: {rot: 5}, head: {rot: 7}, jaw: {rot: -7}, upper_arm_R: {rot: 78}, forearm_R: {rot: 52}, hand_R: {rot: -8}, attach: {hand_R: fist}}
-  pump_mid: {base: pump_up, hips: {y: -12}, head: {rot: 2}, upper_arm_R: {rot: 62}, forearm_R: {rot: 80}}
+  pump_load: {hips: {y: -16}, spine: {rot: -3}, chest: {rot: -3}, head: {rot: -5}, upper_arm_R: {rot: 26}, forearm_R: {rot: 104}, upper_arm_L: {rot: 4}, forearm_L: {rot: 12}, attach: {hand_R: fist, hand_L: fist}}
+  pump_up: {hips: {y: -6}, spine: {rot: 3}, chest: {rot: 5}, head: {rot: 8}, jaw: {rot: -8}, upper_arm_R: {rot: -22}, forearm_R: {rot: 88}, hand_R: {rot: -6}, upper_arm_L: {rot: 164}, forearm_L: {rot: 16}, attach: {hand_R: fist, hand_L: fist}}
+  pump_mid: {base: pump_up, hips: {y: -14}, head: {rot: 2}, upper_arm_R: {rot: -6}, forearm_R: {rot: 100}, upper_arm_L: {rot: 140}, forearm_L: {rot: 50}}
   # --- react_point / meter_heat: the Groove Meter is above him and a little behind (up-left)
-  point_cock: {hips: {y: -10}, upper_arm_R: {rot: 22}, forearm_R: {rot: 90}, head: {rot: 3}, attach: {hand_R: fist}}
-  point_up: {hips: {y: -4}, spine: {rot: 2}, chest: {rot: 4}, head: {rot: 11}, look: [-160, 420], upper_arm_R: {rot: 34}, forearm_R: {rot: 128}, hand_R: {rot: 6}, attach: {hand_R: point}}
+  point_cock: {hips: {y: -10}, head: {rot: 3}, upper_arm_L: {rot: 70}, forearm_L: {rot: 90}, attach: {hand_L: fist}}
+  point_up: {hips: {y: -4}, spine: {rot: 2}, chest: {rot: 4}, head: {rot: 12}, look: [-160, 440], upper_arm_L: {rot: 160}, forearm_L: {rot: 10}, hand_L: {rot: 4}, attach: {hand_L: point}}
   # --- fs_end: two-finger salute off the brow
-  salute_up: {head: {rot: -4}, upper_arm_R: {rot: 52}, forearm_R: {rot: 128}, hand_R: {rot: 18}, attach: {hand_R: point}}
-  salute_out: {head: {rot: 4}, chest: {rot: 4}, upper_arm_R: {rot: 66}, forearm_R: {rot: 70}, hand_R: {rot: -12}, jaw: {rot: -7}, attach: {hand_R: point}}
+  salute_up: {head: {rot: -3}, upper_arm_R: {rot: 84}, forearm_R: {rot: 104}, hand_R: {rot: 8}, attach: {hand_R: point}}
+  salute_out: {head: {rot: 5}, chest: {rot: 4}, upper_arm_R: {rot: 98}, forearm_R: {rot: 40}, hand_R: {rot: -12}, jaw: {rot: -7}, attach: {hand_R: point}}
   # --- idle_bored: yawn, claws, glance at the stack
   yawn_in: {chest: {rot: 4, sx: 1.03}, neck: {rot: 4}, head: {rot: 7}, jaw: {rot: -9}}
   yawn: {hips: {y: -4}, spine: {rot: 4}, chest: {rot: 6, sx: 1.05}, neck: {rot: 7}, head: {rot: 15}, jaw: {rot: -26}, upper_arm_R: {rot: -8}, forearm_R: {rot: 14}, upper_arm_L: {rot: -10}}
-  inspect: {head: {rot: -7}, neck: {rot: -3}, look: [80, -140], upper_arm_R: {rot: 30}, forearm_R: {rot: 112}, hand_R: {rot: 30}, attach: {hand_R: open}}
+  inspect: {head: {rot: -9}, neck: {rot: -3}, look: [60, -180], upper_arm_R: {rot: 16}, forearm_R: {rot: 92}, hand_R: {rot: 40}, attach: {hand_R: open}}
   glance: {head: {rot: 5}, chest: {rot: 4}, look: [-420, 240]}
   # --- anticipation / meter_heat
   lean_in: {hips: {x: 8, y: -12}, spine: {rot: -5}, chest: {rot: -4, sx: 1.025, sy: 1.02}, neck: {rot: -2}, head: {rot: -2}, look: [300, -40], upper_arm_R: {rot: 12}, forearm_R: {rot: 40}, forearm_L: {rot: 14}, attach: {hand_R: fist, hand_L: fist}}
   heat: {chest: {rot: 4}, neck: {rot: 4}, head: {rot: 9}, look: [-200, 380], upper_arm_R: {rot: 24}, forearm_R: {rot: 100}, forearm_L: {rot: 30}, attach: {hand_R: fist, hand_L: fist}}
   # --- win_big / fs_trigger: the cooler stands at his near side, the fist comes down on its lid
-  wind_up: {hips: {y: -4}, spine: {rot: 5}, chest: {rot: 7, sx: 1.03}, head: {rot: 8}, jaw: {rot: -9}, upper_arm_R: {rot: 105}, forearm_R: {rot: 60}, hand_R: {rot: 6}, attach: {hand_R: fist}}
-  wind_top: {base: wind_up, spine: {rot: 8}, chest: {rot: 9}, head: {rot: 10}, upper_arm_R: {rot: 122}, forearm_R: {rot: 70}}
-  slam: {hips: {x: -8, y: -54}, spine: {rot: -10}, chest: {rot: -8}, neck: {rot: -3}, head: {rot: -10}, reach: {hand_R: [196, 726]}, hand_R: {rot: -4}, upper_arm_L: {rot: 10}, forearm_L: {rot: 26}, attach: {hand_R: fist, hand_L: fist}}
-  slam_squash: {base: slam, hips: {x: -8, y: -60}, spine: {rot: -12}, chest: {sy: 1.03}, head: {rot: -12}}
-  roar_up: {hips: {y: -6}, spine: {rot: 6}, chest: {rot: 9, sx: 1.04}, neck: {rot: 6}, head: {rot: 16}, jaw: {rot: -27}, upper_arm_R: {rot: 44}, forearm_R: {rot: 96}, upper_arm_L: {rot: 30}, forearm_L: {rot: 70}, attach: {hand_R: fist, hand_L: fist}}
+  wind_up: {hips: {y: -2}, spine: {rot: 5}, chest: {rot: 6, sx: 1.03, sy: 1.02}, head: {rot: 8}, jaw: {rot: -8}, upper_arm_R: {rot: 22}, forearm_R: {rot: 104}, hand_R: {rot: 12}, upper_arm_L: {rot: 6}, forearm_L: {rot: 26}, attach: {hand_R: fist, hand_L: fist}}
+  wind_top: {base: wind_up, hips: {y: -1}, spine: {rot: 7}, chest: {rot: 8, sy: 1.03}, head: {rot: 10}, upper_arm_R: {rot: 30}, forearm_R: {rot: 114}}
+  slam: {hips: {x: 0, y: -44}, spine: {rot: -6}, chest: {rot: -5}, neck: {rot: -3}, head: {rot: -9}, reach: {hand_R: [252, 702]}, hand_R: {rot: -2}, upper_arm_L: {rot: 6}, forearm_L: {rot: 30}, attach: {hand_R: fist, hand_L: fist}}
+  slam_squash: {base: slam, hips: {x: 0, y: -49}, spine: {rot: -8}, chest: {sy: 1.03}, head: {rot: -11}}
+  roar_up: {hips: {y: -8}, spine: {rot: 5}, chest: {rot: 8, sx: 1.05}, neck: {rot: 6}, head: {rot: 16}, jaw: {rot: -27}, upper_arm_R: {rot: -12}, forearm_R: {rot: 72}, upper_arm_L: {rot: 6}, forearm_L: {rot: 108}, attach: {hand_R: fist, hand_L: fist}}
   fs_gather: {hips: {y: -26}, spine: {rot: -8}, chest: {rot: -7}, head: {rot: -9}, upper_arm_R: {rot: 12}, forearm_R: {rot: 26}, upper_arm_L: {rot: 8}, forearm_L: {rot: 20}, attach: {hand_R: fist, hand_L: fist}}
-  fs_windup: {hips: {y: -2}, spine: {rot: 7}, chest: {rot: 8, sx: 1.04}, neck: {rot: 4}, head: {rot: 12}, jaw: {rot: -10}, upper_arm_R: {rot: 112}, forearm_R: {rot: 56}, upper_arm_L: {rot: 60}, forearm_L: {rot: 80}, attach: {hand_R: fist, hand_L: fist}}
-  fs_windup_top: {base: fs_windup, spine: {rot: 9}, chest: {rot: 10}, upper_arm_R: {rot: 126}, forearm_R: {rot: 66}}
-  fs_slam: {hips: {x: -10, y: -56}, spine: {rot: -11}, chest: {rot: -9}, neck: {rot: -3}, head: {rot: -11}, reach: {hand_R: [194, 726]}, hand_R: {rot: -4}, upper_arm_L: {rot: -6}, forearm_L: {rot: 12}, attach: {hand_R: fist, hand_L: fist}}
-  fs_slam_squash: {base: fs_slam, hips: {x: -10, y: -62}, spine: {rot: -13}, head: {rot: -13}}
-  fs_roar: {hips: {y: -6}, spine: {rot: 7}, chest: {rot: 10, sx: 1.05}, neck: {rot: 6}, head: {rot: 18}, jaw: {rot: -28}, upper_arm_R: {rot: 70}, forearm_R: {rot: 70}, upper_arm_L: {rot: 55}, forearm_L: {rot: 60}, attach: {hand_R: fist, hand_L: fist}}
+  fs_windup: {hips: {y: -2}, spine: {rot: 7}, chest: {rot: 8, sx: 1.04, sy: 1.02}, neck: {rot: 4}, head: {rot: 11}, jaw: {rot: -10}, upper_arm_R: {rot: 26}, forearm_R: {rot: 108}, hand_R: {rot: 12}, upper_arm_L: {rot: 6}, forearm_L: {rot: 62}, attach: {hand_R: fist, hand_L: fist}}
+  fs_windup_top: {base: fs_windup, hips: {y: -1}, spine: {rot: 9}, chest: {rot: 10, sy: 1.03}, upper_arm_R: {rot: 34}, forearm_R: {rot: 118}, forearm_L: {rot: 70}}
+  fs_slam: {hips: {x: 0, y: -45}, spine: {rot: -7}, chest: {rot: -6}, neck: {rot: -3}, head: {rot: -10}, reach: {hand_R: [250, 703]}, hand_R: {rot: -2}, upper_arm_L: {rot: 10}, forearm_L: {rot: 36}, attach: {hand_R: fist, hand_L: fist}}
+  fs_slam_squash: {base: fs_slam, hips: {x: 0, y: -50}, spine: {rot: -9}, head: {rot: -12}}
+  fs_roar: {hips: {y: -8}, spine: {rot: 6}, chest: {rot: 9, sx: 1.05}, neck: {rot: 6}, head: {rot: 18}, jaw: {rot: -28}, upper_arm_R: {rot: -14}, forearm_R: {rot: 76}, upper_arm_L: {rot: 8}, forearm_L: {rot: 112}, attach: {hand_R: fist, hand_L: fist}}
   # --- celebrate
-  party: {upper_arm_R: {rot: 68}, forearm_R: {rot: 70}, chest: {rot: 4}, head: {rot: 5}, jaw: {rot: -7}, attach: {hand_R: fist}}
+  party: {chest: {rot: 4}, head: {rot: 6}, jaw: {rot: -8}, upper_arm_R: {rot: 12}, forearm_R: {rot: 98}, upper_arm_L: {rot: 156}, forearm_L: {rot: 30}, attach: {hand_R: fist, hand_L: fist}}
   # --- wild_land_react (additive overlay: deltas from the setup pose)
   flinch: {base: none, hips: {y: -4}, chest: {rot: -3, sx: 0.98}, neck: {rot: -2}, head: {y: -6, rot: -3}}
 
@@ -201,8 +201,9 @@ clips:
     keys: {0: party, 72: party}
     layers:
       - {preset: nod, every: 18, amount: 6, bob: 9, chest: 0.4}
-      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3, phys_tail_4], amount: 7, cycles: 2, lag: 3, grow: 1.2}
-      - {preset: sway, bone: upper_arm_R, amount: 8, cycles: 4, phase: 0.1}
+      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3, phys_tail_4], amount: 4, cycles: 2, lag: 3, grow: 1.1}
+      - {preset: sway, bone: upper_arm_L, amount: 10, cycles: 4, phase: 0.1}
+      - {preset: sway, bone: forearm_R, amount: 8, cycles: 4, phase: 0.35}
       - {preset: sway, bone: hips, channel: x, amount: 6, cycles: 2}
       - {preset: pulse, bone: phys_belly, every: 18, amount: 0.03, attack: 2, release: 8}
   fs_trigger:                    # wind-up f0-f30, fist slam on the cooler at f36 (= feature-trigger pump 3), roar hold, return

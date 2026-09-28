@@ -1,0 +1,48 @@
+# ui_groove_meter: the Groove Meter + upper cabinet (docs/games/bass-drop/ANIMATION_SET.md 3, DESIGN 6.1).
+# Parts: art/source/ui/meter/parts.json (tools/spine/examples/bass_drop/cut/cut_meter.py). Canvas 760 x 880 at 2x
+# landscape design size, image space (y down); root = the ring centre (380, 440); R = 320 units (ring 640).
+# Build: tools/spine/examples/bass_drop/build.sh meter [--cut] [--capture dir]. Validator kind: ui (CR-8).
+# All clips are authored in bassdrop.yaml (the contract symbol motions are off). Angles: clockwise from 12 o'clock
+# (layout.json meterGeometry): notches at -100, -50, 0, +50, +100, +150 degrees on 0.94 R.
+symbol: meter
+skeleton: ui_groove_meter
+parts: parts.json
+kind: any
+
+bones:
+  - {name: cabinet, parent: root, joint: [380.0, 868.0], tip: [380.0, 828.0]}     # pivot: the cabinet's bottom centre
+  - {name: ring, parent: root, joint: [380.0, 440.0]}
+  - {name: led_arc, parent: ring, joint: [380.0, 440.0]}                          # the code-drawn LED arc mounts here
+  - {name: ctrl_cone, parent: ring, joint: [380.0, 440.0]}                        # runtime additive beat pumps
+  - {name: cone, parent: ctrl_cone, joint: [380.0, 440.0]}
+  - {name: dust_cap, parent: cone, joint: [380.0, 440.0]}
+  - {name: txt_count, parent: dust_cap, joint: [380.0, 440.0]}                    # live "23/60" (Titan One)
+  - {name: notch_1, parent: ring, joint: [83.77, 492.23]}
+  - {name: notch_2, parent: ring, joint: [149.57, 246.65]}
+  - {name: notch_3, parent: ring, joint: [380.0, 139.2]}
+  - {name: notch_4, parent: ring, joint: [610.43, 246.65]}
+  - {name: notch_5, parent: ring, joint: [676.23, 492.23]}
+  - {name: notch_6, parent: ring, joint: [530.4, 700.5]}
+  - {name: chip_anchor, parent: cabinet, joint: [380.0, 752.0]}                  # the next-drop chip hangs in the gauge gap
+  # fx: the burst sits on the active notch (the runtime moves fx_notch there; setup = the 0-degree notch)
+  - {name: fx_notch, parent: root, joint: [380.0, 139.2]}
+  - {name: fx_glow, parent: root, joint: [380.0, 440.0]}
+  - {name: fx_swirl, parent: root, joint: [380.0, 440.0]}
+  - {name: fx_cap, parent: root, joint: [380.0, 440.0]}
+  - {name: fx_blast, parent: root, joint: [380.0, 440.0]}                        # the fx_speaker_blast flipbook mounts here
+
+meshes:
+  cone: {type: grid, cols: 6, rows: 6}            # reweighted by radius in bassdrop.yaml (radial_weights)
+
+motion:                                           # UI rig: every clip comes from bassdrop.yaml
+  idle: false
+  land: false
+  win: false
+  win_loop: false
+  anticipation: false
+  anticipation_intro: false
+  anticipation_out: false
+  explode: false
+  appear: false
+  blur: false
+  blink: false

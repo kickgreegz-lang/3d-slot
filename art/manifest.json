@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedBy": "tools/gen/hf-ingest.mjs",
+  "generatedBy": "tools/spine/examples/bass_drop/provenance_bd.py",
   "rows": [
     {
       "id": "d_h1.raw.v01",
@@ -3946,6 +3946,3771 @@
       "sha256": "a2e2575289b975e47ea1f01ccd244dbb11c4e57c17c5796329fb1bbf96d264ae",
       "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch bd_c10 job chr_croak_parts_body.c2; 5504x3072 (4k 16:9); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
       "route": "higgsfield-mcp"
+    },
+    {
+      "id": "sym_w_badge_t1.cut.0373705e",
+      "path": "art/source/spine/images/sym_W/badge_t1.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "30c5d27eaffd56cd8ba704ae2dc5cbcfe685b00081226a85719e528f8dcdf621"
+      ],
+      "parents": [
+        "sym_w_badge_t1.tier.30c5d27e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "0373705efcb5102d2dc66543aebb6e2840bf877042f038ee89578a50aa7ef187",
+      "notes": "sym_W part 'badge_t1': the approved sym_W_pieces badge_t1, rescaled to the 192-unit plate"
+    },
+    {
+      "id": "sym_w_badge_t2.cut.664ce166",
+      "path": "art/source/spine/images/sym_W/badge_t2.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "6f60f7e030449e545855a2b9692311108aa167a6e35c611cd8b2b05f6cefbaa1"
+      ],
+      "parents": [
+        "sym_w_badge_t2.tier.6f60f7e0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "664ce1664ea340f3e43e77b85adf4560b01509dc538d19c6ad5587d3983c725e",
+      "notes": "sym_W part 'badge_t2': the approved sym_W_pieces badge_t2, rescaled to the 192-unit plate"
+    },
+    {
+      "id": "sym_w_badge_t3.cut.9bd54fda",
+      "path": "art/source/spine/images/sym_W/badge_t3.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9383b48533f93382af71139136111e1e9038f014fc061bfe7c1ddf54362f57e3"
+      ],
+      "parents": [
+        "sym_w_badge_t3.cut.9383b485"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "9bd54fda893bfcbe48cbfceb2a0bdec5fadb15db0936a6171d64ad86455134d4",
+      "notes": "sym_W part 'badge_t3': the approved sym_W_pieces badge_t3, rescaled to the 192-unit plate"
+    },
+    {
+      "id": "sym_w_badge_t4.cut.659a4d71",
+      "path": "art/source/spine/images/sym_W/badge_t4.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9dd16b7a33763db013c45331d3c44a6d2ac2972ea150aba0805cd14738718015"
+      ],
+      "parents": [
+        "sym_w_badge_t4.tier.9dd16b7a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "659a4d712a7c4c7868942717d4cca3f9812c89c0fcd7ea9145e9afd7fc61249d",
+      "notes": "sym_W part 'badge_t4': the approved sym_W_pieces badge_t4, rescaled to the 192-unit plate"
+    },
+    {
+      "id": "sym_w_badge_t5.cut.f6748b8d",
+      "path": "art/source/spine/images/sym_W/badge_t5.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "2b6ddc5e3b117f6323f70d71b0f266b9fb5a7be2dec356c1ed946fe1317f09a2"
+      ],
+      "parents": [
+        "sym_w_badge_t5.tier.2b6ddc5e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "f6748b8d37049cc8d01179d0d9d0618878f3ebed71c9ae41b2fcb478dd7fabd6",
+      "notes": "sym_W part 'badge_t5': the approved sym_W_pieces badge_t5, rescaled to the 192-unit plate"
+    },
+    {
+      "id": "sym_w_cap.cut.679b6474",
+      "path": "art/source/spine/images/sym_W/cap.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b411179c00b59f3d1e5aa470a1eed1a0e70272145b33a9395ac4182945a19428"
+      ],
+      "parents": [
+        "sym_w_rig.source.b411179c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "679b6474d8769802a55a7e6f5b728ba43ffd1421b936e98fd6cc9e746894e3df",
+      "notes": "sym_W part 'cap': master-cut (tooth socket under the cap inpainted; tooth_cracked = + drawn cracks)"
+    },
+    {
+      "id": "sym_w_chain.cut.66105af2",
+      "path": "art/source/spine/images/sym_W/chain.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b411179c00b59f3d1e5aa470a1eed1a0e70272145b33a9395ac4182945a19428"
+      ],
+      "parents": [
+        "sym_w_rig.source.b411179c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "66105af2db376f49d23f3e76b43f3d65828d3ac0719eea6957a693a5e07681c9",
+      "notes": "sym_W part 'chain': master-cut (tooth socket under the cap inpainted; tooth_cracked = + drawn cracks)"
+    },
+    {
+      "id": "sym_w_clamp_open_l.cut.6f632f20",
+      "path": "art/source/spine/images/sym_W/clamp_open_L.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9c54f4d557571fa8f87f4ac2bcf7366a2cd279af419e4ce9b67dac7e79cd8eb4"
+      ],
+      "parents": [
+        "sym_w_clamp_open.cut.9c54f4d5"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "6f632f205d08b6591beb4e16deb087810cc3b6bd04b37781a6a51742da5752db",
+      "notes": "sym_W part 'clamp_open_L': the approved sym_W_pieces clamp_open, rotated to face the tooth, left side"
+    },
+    {
+      "id": "sym_w_clamp_open_r.cut.fddece99",
+      "path": "art/source/spine/images/sym_W/clamp_open_R.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9c54f4d557571fa8f87f4ac2bcf7366a2cd279af419e4ce9b67dac7e79cd8eb4"
+      ],
+      "parents": [
+        "sym_w_clamp_open.cut.9c54f4d5"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "fddece99188cb4161e42bfff5b68a7a9161d446ba058e2b368808243446ee102",
+      "notes": "sym_W part 'clamp_open_R': the approved sym_W_pieces clamp_open, rotated to face the tooth, mirrored for the right side"
+    },
+    {
+      "id": "sym_w_clamp_shut_l.cut.0e9f4aad",
+      "path": "art/source/spine/images/sym_W/clamp_shut_L.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "8ef8ed1cf571bb87bac29f8bc444b925bc46ef6bc906a0cfb3b12f654ad9a2bb"
+      ],
+      "parents": [
+        "sym_w_clamp.cut.8ef8ed1c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "0e9f4aade46dd2014b058d9ffd62d2e48b6b7c77fc2a334643cd13e514de1df5",
+      "notes": "sym_W part 'clamp_shut_L': the approved sym_W_pieces clamp, rotated to face the tooth, left side"
+    },
+    {
+      "id": "sym_w_clamp_shut_r.cut.fd320f1a",
+      "path": "art/source/spine/images/sym_W/clamp_shut_R.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "8ef8ed1cf571bb87bac29f8bc444b925bc46ef6bc906a0cfb3b12f654ad9a2bb"
+      ],
+      "parents": [
+        "sym_w_clamp.cut.8ef8ed1c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "fd320f1aadeba306743acbf09456200add1326ede43ab04146accd8fd32ba614",
+      "notes": "sym_W part 'clamp_shut_R': the approved sym_W_pieces clamp, rotated to face the tooth, mirrored for the right side"
+    },
+    {
+      "id": "sym_w_glow.fx.6d6e55a7",
+      "path": "art/source/spine/images/sym_W/glow.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "6d6e55a7e07c8a0455037492d3c922abb8b8accc7d26ce894c64078d14270058",
+      "notes": "sym_W fx sprite drawn in code (cut_W.py)"
+    },
+    {
+      "id": "sym_w_ribbon.cut.aca027c4",
+      "path": "art/source/spine/images/sym_W/ribbon.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "96c815774272f17533b18ea2f591e2ee7bf2c3915a51e6c0b61d070cdd60b23e"
+      ],
+      "parents": [
+        "sym_w_ribbon.cut.96c81577"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "aca027c4b9eeafe0cf6aa137e564e95a0597f7666c301beac066d12bbfb04456",
+      "notes": "sym_W part 'ribbon': the approved sym_W_pieces ribbon, rescaled to 206 units"
+    },
+    {
+      "id": "sym_w_ring.fx.5e51500a",
+      "path": "art/source/spine/images/sym_W/ring.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "5e51500ae1e506cbdb8409906f6d7684283e531e9deee589b92e39e5abd8f656",
+      "notes": "sym_W fx sprite drawn in code (cut_W.py)"
+    },
+    {
+      "id": "sym_w_tooth.cut.c372dcef",
+      "path": "art/source/spine/images/sym_W/tooth.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b411179c00b59f3d1e5aa470a1eed1a0e70272145b33a9395ac4182945a19428"
+      ],
+      "parents": [
+        "sym_w_rig.source.b411179c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "c372dcefb0de02c1d0f6e62c17f0808fe6ebdd4e5553fce2a63df2b63c010111",
+      "notes": "sym_W part 'tooth': master-cut (tooth socket under the cap inpainted; tooth_cracked = + drawn cracks)"
+    },
+    {
+      "id": "sym_w_tooth_cracked.cut.6c83b8b4",
+      "path": "art/source/spine/images/sym_W/tooth_cracked.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b411179c00b59f3d1e5aa470a1eed1a0e70272145b33a9395ac4182945a19428"
+      ],
+      "parents": [
+        "sym_w_rig.source.b411179c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "6c83b8b4ab222a1d937dee3b5cdb210ef9dfd72c703d2926a0e716ff2bed4233",
+      "notes": "sym_W part 'tooth_cracked': master-cut (tooth socket under the cap inpainted; tooth_cracked = + drawn cracks)"
+    },
+    {
+      "id": "sym_w_trail_streak.fx.8ff0ec48",
+      "path": "art/source/spine/images/sym_W/trail_streak.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_W.py",
+      "version": "02d9d7d9dece",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "8ff0ec48278af68c36bf6bc155ef3f99666b1a9fbb8e9893681adc6a8af9ce1a",
+      "notes": "sym_W fx sprite drawn in code (cut_W.py)"
+    },
+    {
+      "id": "sym_w_cap_blur.blur.3e1d423e",
+      "path": "art/source/spine/images/sym_W/cap_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "679b6474d8769802a55a7e6f5b728ba43ffd1421b936e98fd6cc9e746894e3df"
+      ],
+      "parents": [
+        "sym_w_cap.cut.679b6474"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "3e1d423e8e9871ee0dc28f1dcd32d66c6ca9bab5bc385105aa01492426e37015",
+      "notes": "spin-blur variant of sym_W/cap (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_w_chain_blur.blur.f5e90207",
+      "path": "art/source/spine/images/sym_W/chain_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "66105af2db376f49d23f3e76b43f3d65828d3ac0719eea6957a693a5e07681c9"
+      ],
+      "parents": [
+        "sym_w_chain.cut.66105af2"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "f5e90207b3b9857b43b5324ec08a84ed768c62fbc5083786385722b9115d4738",
+      "notes": "spin-blur variant of sym_W/chain (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_w_ribbon_blur.blur.c3f600bf",
+      "path": "art/source/spine/images/sym_W/ribbon_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "aca027c4b9eeafe0cf6aa137e564e95a0597f7666c301beac066d12bbfb04456"
+      ],
+      "parents": [
+        "sym_w_ribbon.cut.aca027c4"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "c3f600bf31eb52117c56f1be1b9c89809061b97438767cb3c25f97ac14ff7940",
+      "notes": "spin-blur variant of sym_W/ribbon (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_w_tooth_blur.blur.01c57b1b",
+      "path": "art/source/spine/images/sym_W/tooth_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "c372dcefb0de02c1d0f6e62c17f0808fe6ebdd4e5553fce2a63df2b63c010111"
+      ],
+      "parents": [
+        "sym_w_tooth.cut.c372dcef"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "01c57b1bd2d5fab0ce7042229bd6773e73770caecaeea17032e019cfa9365ead",
+      "notes": "spin-blur variant of sym_W/tooth (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h1_antenna.cut.d826b089",
+      "path": "art/source/spine/images/sym_H1/antenna.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H1.py",
+      "version": "07b979f4b38b",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9c1f721d2f91e59a9f09b59ef153c92d22bb6f316874bc3f020054286dbfdb13"
+      ],
+      "parents": [
+        "sym_h1_parts.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "d826b08904a1e260bd11a3cb5e15a4bd7ac5fa24f3345d01811991ebfce67336",
+      "notes": "sym_H1 part 'antenna': the c11 sheet's telescopic antenna (tools/split cut, key #03FC04), similarity-warped to the top-right corner"
+    },
+    {
+      "id": "sym_h1_body.cut.74208629",
+      "path": "art/source/spine/images/sym_H1/body.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H1.py",
+      "version": "07b979f4b38b",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "77c52c1dc1ffb99897d8a99fb009c5d2ca2b58fce2e27ca3998482ae2908017a"
+      ],
+      "parents": [
+        "sym_h1_rig.source.77c52c1d"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "74208629b652c714e32a06ae780e22053ca627a282312f14b744ae8da87791e9",
+      "notes": "sym_H1 part 'body': master-cut; the body keeps a shadowed recess under each speaker and the dark tape well under the door"
+    },
+    {
+      "id": "sym_h1_cassette_door.cut.1c6ea28e",
+      "path": "art/source/spine/images/sym_H1/cassette_door.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H1.py",
+      "version": "07b979f4b38b",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "77c52c1dc1ffb99897d8a99fb009c5d2ca2b58fce2e27ca3998482ae2908017a"
+      ],
+      "parents": [
+        "sym_h1_rig.source.77c52c1d"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "1c6ea28ed22e5bea2926671170d830216b54b3d8f496766624c9f49d8a2f7488",
+      "notes": "sym_H1 part 'cassette_door': master-cut; the body keeps a shadowed recess under each speaker and the dark tape well under the door"
+    },
+    {
+      "id": "sym_h1_glint.fx.01528d3f",
+      "path": "art/source/spine/images/sym_H1/glint.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H1.py",
+      "version": "07b979f4b38b",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "01528d3ff45069060e18ec1ba865d7632d4f343d90332507138cb6ee68693dbb",
+      "notes": "sym_H1 fx sprite drawn in code (cut_H1.py)"
+    },
+    {
+      "id": "sym_h1_glow.fx.7d0e811a",
+      "path": "art/source/spine/images/sym_H1/glow.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H1.py",
+      "version": "07b979f4b38b",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "7d0e811a4badf57afa8765885b0ea20439595c926ba6a4c1e1e3554b6a267156",
+      "notes": "sym_H1 fx sprite drawn in code (cut_H1.py)"
+    },
+    {
+      "id": "sym_h1_handle.cut.c12a5880",
+      "path": "art/source/spine/images/sym_H1/handle.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H1.py",
+      "version": "07b979f4b38b",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "77c52c1dc1ffb99897d8a99fb009c5d2ca2b58fce2e27ca3998482ae2908017a"
+      ],
+      "parents": [
+        "sym_h1_rig.source.77c52c1d"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "c12a58805f8bcfdb7fb644584e7c9205808ab5fff8549b5133078e7be3ed32ea",
+      "notes": "sym_H1 part 'handle': master-cut; the body keeps a shadowed recess under each speaker and the dark tape well under the door"
+    },
+    {
+      "id": "sym_h1_speaker_l.cut.0c8c39af",
+      "path": "art/source/spine/images/sym_H1/speaker_L.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H1.py",
+      "version": "07b979f4b38b",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "77c52c1dc1ffb99897d8a99fb009c5d2ca2b58fce2e27ca3998482ae2908017a"
+      ],
+      "parents": [
+        "sym_h1_rig.source.77c52c1d"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "0c8c39afb12019d10440f99056e0fee7b7d13b0d7792679d3a080dedf86865ff",
+      "notes": "sym_H1 part 'speaker_L': master-cut; the body keeps a shadowed recess under each speaker and the dark tape well under the door"
+    },
+    {
+      "id": "sym_h1_speaker_r.cut.e6878a06",
+      "path": "art/source/spine/images/sym_H1/speaker_R.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H1.py",
+      "version": "07b979f4b38b",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "77c52c1dc1ffb99897d8a99fb009c5d2ca2b58fce2e27ca3998482ae2908017a"
+      ],
+      "parents": [
+        "sym_h1_rig.source.77c52c1d"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "e6878a06d0d47148049ad76f21516571632d3044345d1295555803b5d074fa37",
+      "notes": "sym_H1 part 'speaker_R': master-cut; the body keeps a shadowed recess under each speaker and the dark tape well under the door"
+    },
+    {
+      "id": "sym_h1_body_blur.blur.47d32aed",
+      "path": "art/source/spine/images/sym_H1/body_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "74208629b652c714e32a06ae780e22053ca627a282312f14b744ae8da87791e9"
+      ],
+      "parents": [
+        "sym_h1_body.cut.74208629"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "47d32aedb2eb7b6ee613a15759da8da7feed257a43e5a6b48108638558c2c0dc",
+      "notes": "spin-blur variant of sym_H1/body (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h1_cassette_door_blur.blur.a7adfd99",
+      "path": "art/source/spine/images/sym_H1/cassette_door_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "1c6ea28ed22e5bea2926671170d830216b54b3d8f496766624c9f49d8a2f7488"
+      ],
+      "parents": [
+        "sym_h1_cassette_door.cut.1c6ea28e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "a7adfd9967facdd641a14bb1d692c8e8a8fe32e86a025c8c0b9398f11bb4165a",
+      "notes": "spin-blur variant of sym_H1/cassette_door (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h1_handle_blur.blur.01f9dd5c",
+      "path": "art/source/spine/images/sym_H1/handle_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "c12a58805f8bcfdb7fb644584e7c9205808ab5fff8549b5133078e7be3ed32ea"
+      ],
+      "parents": [
+        "sym_h1_handle.cut.c12a5880"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "01f9dd5cd9ecc6ba3b3708fc77b2cff6013fd900d3898f8349a9e00911575e9e",
+      "notes": "spin-blur variant of sym_H1/handle (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h1_speaker_l_blur.blur.07a1415f",
+      "path": "art/source/spine/images/sym_H1/speaker_L_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "0c8c39afb12019d10440f99056e0fee7b7d13b0d7792679d3a080dedf86865ff"
+      ],
+      "parents": [
+        "sym_h1_speaker_l.cut.0c8c39af"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "07a1415f90a5b8ce7793c9acf96786f8a9a92b2d3b305df1e0d6c6a499940362",
+      "notes": "spin-blur variant of sym_H1/speaker_L (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h1_speaker_r_blur.blur.ada0fdfd",
+      "path": "art/source/spine/images/sym_H1/speaker_R_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "e6878a06d0d47148049ad76f21516571632d3044345d1295555803b5d074fa37"
+      ],
+      "parents": [
+        "sym_h1_speaker_r.cut.e6878a06"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "ada0fdfd951ae581675322fca2c73b967819af3cbeadac3781f76965ae23af90",
+      "notes": "spin-blur variant of sym_H1/speaker_R (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h2_disc.cut.bb743408",
+      "path": "art/source/spine/images/sym_H2/disc.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H2.py",
+      "version": "d9ff2ac7cc39",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3f68b52e210bfd356c5c03ed61a618c64dae5cde85713b4fa63b73f9a54f11b6"
+      ],
+      "parents": [
+        "sym_h2_rig.source.3f68b52e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "bb743408b21ed27d78e4f1d6318391af3c8952577825d07c6c2aaa250e76b1f0",
+      "notes": "sym_H2 part 'disc': the whole record rebuilt from the master's radial profile"
+    },
+    {
+      "id": "sym_h2_disc_cracked.cut.178a69f1",
+      "path": "art/source/spine/images/sym_H2/disc_cracked.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H2.py",
+      "version": "d9ff2ac7cc39",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3f68b52e210bfd356c5c03ed61a618c64dae5cde85713b4fa63b73f9a54f11b6"
+      ],
+      "parents": [
+        "sym_h2_rig.source.3f68b52e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "178a69f175cb4278ec378aac8ab8d4ec31901e65474b31e975ce0cefb0eb33d4",
+      "notes": "sym_H2 part 'disc_cracked': the rebuilt record with drawn cracks"
+    },
+    {
+      "id": "sym_h2_disc_shards.cut.eb6de7d2",
+      "path": "art/source/spine/images/sym_H2/disc_shards.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H2.py",
+      "version": "d9ff2ac7cc39",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3f68b52e210bfd356c5c03ed61a618c64dae5cde85713b4fa63b73f9a54f11b6"
+      ],
+      "parents": [
+        "sym_h2_rig.source.3f68b52e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "eb6de7d298279789b9cbe6c73dfb5df3c15f49d251a07647be35b42ce961d3db",
+      "notes": "sym_H2 part 'disc_shards': the rebuilt record in 6 wedges"
+    },
+    {
+      "id": "sym_h2_fx_groove.cut.e1ddc484",
+      "path": "art/source/spine/images/sym_H2/fx_groove.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H2.py",
+      "version": "d9ff2ac7cc39",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3f68b52e210bfd356c5c03ed61a618c64dae5cde85713b4fa63b73f9a54f11b6"
+      ],
+      "parents": [
+        "sym_h2_rig.source.3f68b52e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "e1ddc48462b99a94761a2a1dba63c5499b36e18ec6a2fae1f4f5a17b98591692",
+      "notes": "sym_H2 part 'fx_groove': the master's reflections: minimal-alpha unblend over the rebuilt record"
+    },
+    {
+      "id": "sym_h2_glint.fx.30d0a117",
+      "path": "art/source/spine/images/sym_H2/glint.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H2.py",
+      "version": "d9ff2ac7cc39",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "30d0a11755f173c0606a8d2f6ca8419e6cea5ab6bbefae03ce61e03723aa068a",
+      "notes": "sym_H2 fx sprite drawn in code (cut_H2.py)"
+    },
+    {
+      "id": "sym_h2_glow.fx.85653e2b",
+      "path": "art/source/spine/images/sym_H2/glow.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H2.py",
+      "version": "d9ff2ac7cc39",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "85653e2bfa7033a373ea7f7a34d6803415fbf10244d11ed10f2d8a4b40c1416c",
+      "notes": "sym_H2 fx sprite drawn in code (cut_H2.py)"
+    },
+    {
+      "id": "sym_h2_label.cut.d2b8b675",
+      "path": "art/source/spine/images/sym_H2/label.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H2.py",
+      "version": "d9ff2ac7cc39",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3f68b52e210bfd356c5c03ed61a618c64dae5cde85713b4fa63b73f9a54f11b6"
+      ],
+      "parents": [
+        "sym_h2_rig.source.3f68b52e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "d2b8b675090a0b31b38e69099449e6a76642af09f052fb6e1b167e46a4f2cb19",
+      "notes": "sym_H2 part 'label': the label rebuilt from the master's radial profile + a printed arc on its hidden side"
+    },
+    {
+      "id": "sym_h2_sleeve.cut.fa96f342",
+      "path": "art/source/spine/images/sym_H2/sleeve.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H2.py",
+      "version": "d9ff2ac7cc39",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3f68b52e210bfd356c5c03ed61a618c64dae5cde85713b4fa63b73f9a54f11b6"
+      ],
+      "parents": [
+        "sym_h2_rig.source.3f68b52e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "fa96f342fdfb9a403296edcb4e00caeda3b09406e3be98a065ca5242625f785d",
+      "notes": "sym_H2 part 'sleeve': master-cut + the lip's shadow (unblended)"
+    },
+    {
+      "id": "sym_h2_disc_blur.blur.f4dc3c56",
+      "path": "art/source/spine/images/sym_H2/disc_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "bb743408b21ed27d78e4f1d6318391af3c8952577825d07c6c2aaa250e76b1f0"
+      ],
+      "parents": [
+        "sym_h2_disc.cut.bb743408"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "f4dc3c56871575d0d4ec9a8104c0f08ca57605182cf08dd478b02b96320e4a7c",
+      "notes": "spin-blur variant of sym_H2/disc (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h2_fx_groove_blur.blur.4a306771",
+      "path": "art/source/spine/images/sym_H2/fx_groove_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "e1ddc48462b99a94761a2a1dba63c5499b36e18ec6a2fae1f4f5a17b98591692"
+      ],
+      "parents": [
+        "sym_h2_fx_groove.cut.e1ddc484"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "4a3067716f32668f0a5b5ed8c280f4d9495fbca87784e87f8649aae43a5cbae1",
+      "notes": "spin-blur variant of sym_H2/fx_groove (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h2_label_blur.blur.dc67028f",
+      "path": "art/source/spine/images/sym_H2/label_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "d2b8b675090a0b31b38e69099449e6a76642af09f052fb6e1b167e46a4f2cb19"
+      ],
+      "parents": [
+        "sym_h2_label.cut.d2b8b675"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "dc67028f057052c5ff4152c45d45b5525c34d029791b2f9ba700fceea587bb06",
+      "notes": "spin-blur variant of sym_H2/label (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h2_sleeve_blur.blur.e9795b25",
+      "path": "art/source/spine/images/sym_H2/sleeve_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "fa96f342fdfb9a403296edcb4e00caeda3b09406e3be98a065ca5242625f785d"
+      ],
+      "parents": [
+        "sym_h2_sleeve.cut.fa96f342"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "e9795b25ccaaa9c7b5c611124bf7d380a70414dfb70ddc077e597844b16db1df",
+      "notes": "spin-blur variant of sym_H2/sleeve (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h3_antenna_l.cut.fd6661ab",
+      "path": "art/source/spine/images/sym_H3/antenna_L.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "957992f067f1eced5d8c41779d27bd580195f0b16ef3a7ed2369682552cf849b"
+      ],
+      "parents": [
+        "sym_h3_rig.source.957992f0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "fd6661abcc089eba33abd68af9cbc69e3af7058b996e93a7fbbb8775c333779f",
+      "notes": "sym_H3 part 'antenna_L': outline-bounded cut of the master; hidden areas filled (belly under claw_L mirrored + inpainted, arm / fan continued)"
+    },
+    {
+      "id": "sym_h3_antenna_r.cut.c6357a9a",
+      "path": "art/source/spine/images/sym_H3/antenna_R.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "957992f067f1eced5d8c41779d27bd580195f0b16ef3a7ed2369682552cf849b"
+      ],
+      "parents": [
+        "sym_h3_rig.source.957992f0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "c6357a9a50eba3daefa946af470f6ad486aa4c81d62d6f48b711958379a65fac",
+      "notes": "sym_H3 part 'antenna_R': outline-bounded cut of the master; hidden areas filled (belly under claw_L mirrored + inpainted, arm / fan continued)"
+    },
+    {
+      "id": "sym_h3_body.cut.82811ffc",
+      "path": "art/source/spine/images/sym_H3/body.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "957992f067f1eced5d8c41779d27bd580195f0b16ef3a7ed2369682552cf849b"
+      ],
+      "parents": [
+        "sym_h3_rig.source.957992f0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "82811ffc374fcb7f7dcccd8f0da00006a0634a3e80dbe43f68105cf58afcfe1e",
+      "notes": "sym_H3 part 'body': outline-bounded cut of the master; hidden areas filled (belly under claw_L mirrored + inpainted, arm / fan continued)"
+    },
+    {
+      "id": "sym_h3_claw_l.cut.4f9e837a",
+      "path": "art/source/spine/images/sym_H3/claw_L.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "957992f067f1eced5d8c41779d27bd580195f0b16ef3a7ed2369682552cf849b"
+      ],
+      "parents": [
+        "sym_h3_rig.source.957992f0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "4f9e837aa7bf33f1071ae1552099c9e86b4c80986f11b42ed1314625d68f1b71",
+      "notes": "sym_H3 part 'claw_L': outline-bounded cut of the master; hidden areas filled (belly under claw_L mirrored + inpainted, arm / fan continued)"
+    },
+    {
+      "id": "sym_h3_claw_r.cut.4b99bda6",
+      "path": "art/source/spine/images/sym_H3/claw_R.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "957992f067f1eced5d8c41779d27bd580195f0b16ef3a7ed2369682552cf849b"
+      ],
+      "parents": [
+        "sym_h3_rig.source.957992f0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "4b99bda6784a1ef26a0251612c6767e3d22d69916740c438d240f25904efe298",
+      "notes": "sym_H3 part 'claw_R': outline-bounded cut of the master; hidden areas filled (belly under claw_L mirrored + inpainted, arm / fan continued)"
+    },
+    {
+      "id": "sym_h3_eyes_closed.cut.ec156d4b",
+      "path": "art/source/spine/images/sym_H3/eyes_closed.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "e31d9624fa64df1e3bc4dcbe532568e136c49c8e36a2c8b6132672133c755b0f",
+        "7be68e80d17246363cdbc77f42af1ee82f51ace424dc7a40bc8e435978a190aa"
+      ],
+      "parents": [
+        "sym_h3_eyes_closed.raw.v01",
+        "sym_h3_rig.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "ec156d4b2a1937b6b837f63538917588e0adb3b6d65b9652e75df67ae9a996bb",
+      "notes": "sym_H3 part 'eyes_closed': c11 eye variant registered to the master raw (ECC affine), keyed on its measured olive key, eye region only"
+    },
+    {
+      "id": "sym_h3_eyes_half.cut.9e84074e",
+      "path": "art/source/spine/images/sym_H3/eyes_half.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "6f5dac27f07361c76b9fda23b6624ba52d0e8fa8e7928f3d93597b7151fe4996",
+        "7be68e80d17246363cdbc77f42af1ee82f51ace424dc7a40bc8e435978a190aa"
+      ],
+      "parents": [
+        "sym_h3_eyes_half.raw.v01",
+        "sym_h3_rig.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "9e84074edc460984c9d505aaed7c5aa0ccb0edc7f218c5021e4ff803d60e9bab",
+      "notes": "sym_H3 part 'eyes_half': c11 eye variant registered to the master raw (ECC affine), keyed on its measured olive key, eye region only"
+    },
+    {
+      "id": "sym_h3_eyes_open.cut.ea99c818",
+      "path": "art/source/spine/images/sym_H3/eyes_open.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "957992f067f1eced5d8c41779d27bd580195f0b16ef3a7ed2369682552cf849b"
+      ],
+      "parents": [
+        "sym_h3_rig.source.957992f0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "ea99c8188a565e1cd5a147042823bc59c27358f135b706f220a10adee3ef22c1",
+      "notes": "sym_H3 part 'eyes_open': outline-bounded cut of the master; hidden areas filled (belly under claw_L mirrored + inpainted, arm / fan continued)"
+    },
+    {
+      "id": "sym_h3_eyes_wide.cut.3817cbde",
+      "path": "art/source/spine/images/sym_H3/eyes_wide.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "0ef5e821171be687b6c70faa093fb8e1adc734f0e3f71c3d3555c616914ee6bc",
+        "7be68e80d17246363cdbc77f42af1ee82f51ace424dc7a40bc8e435978a190aa"
+      ],
+      "parents": [
+        "sym_h3_eyes_wide.raw.v01",
+        "sym_h3_rig.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "3817cbde4eb9f8e26b774b61c4f1af4088549b8c414e5417260fd4610bec7b3f",
+      "notes": "sym_H3 part 'eyes_wide': c11 eye variant registered to the master raw (ECC affine), keyed on its measured olive key, eye region only"
+    },
+    {
+      "id": "sym_h3_glow.fx.2b790c91",
+      "path": "art/source/spine/images/sym_H3/glow.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "2b790c91f65236b43af479b9396f9b6b5730444995c3ff9980551a770315687e",
+      "notes": "sym_H3 fx sprite drawn in code (cut_H3.py)"
+    },
+    {
+      "id": "sym_h3_tail_fan.cut.105f715a",
+      "path": "art/source/spine/images/sym_H3/tail_fan.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H3.py",
+      "version": "38064e6cb84f",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "957992f067f1eced5d8c41779d27bd580195f0b16ef3a7ed2369682552cf849b"
+      ],
+      "parents": [
+        "sym_h3_rig.source.957992f0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "105f715a5d57d85f3aba8f3c4cb37014887de9f52547e2dc6604c6ddc2cdbd48",
+      "notes": "sym_H3 part 'tail_fan': outline-bounded cut of the master; hidden areas filled (belly under claw_L mirrored + inpainted, arm / fan continued)"
+    },
+    {
+      "id": "sym_h3_antenna_l_blur.blur.9aa7063a",
+      "path": "art/source/spine/images/sym_H3/antenna_L_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "fd6661abcc089eba33abd68af9cbc69e3af7058b996e93a7fbbb8775c333779f"
+      ],
+      "parents": [
+        "sym_h3_antenna_l.cut.fd6661ab"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "9aa7063a8e4fbc18bf02b9c1f60dc7b73c46967264a09355ca577d406b38d123",
+      "notes": "spin-blur variant of sym_H3/antenna_L (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h3_antenna_r_blur.blur.e8e00464",
+      "path": "art/source/spine/images/sym_H3/antenna_R_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "c6357a9a50eba3daefa946af470f6ad486aa4c81d62d6f48b711958379a65fac"
+      ],
+      "parents": [
+        "sym_h3_antenna_r.cut.c6357a9a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "e8e00464444cead492732e2ccebc83fb750b295aee55f8c37c1e5bc7795f4705",
+      "notes": "spin-blur variant of sym_H3/antenna_R (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h3_body_blur.blur.a27a2e12",
+      "path": "art/source/spine/images/sym_H3/body_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "82811ffc374fcb7f7dcccd8f0da00006a0634a3e80dbe43f68105cf58afcfe1e"
+      ],
+      "parents": [
+        "sym_h3_body.cut.82811ffc"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "a27a2e125bfb01f05f10e786e3f36fd8866904e74e4ca0c222279efe8a623ea2",
+      "notes": "spin-blur variant of sym_H3/body (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h3_claw_l_blur.blur.261eb893",
+      "path": "art/source/spine/images/sym_H3/claw_L_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "4f9e837aa7bf33f1071ae1552099c9e86b4c80986f11b42ed1314625d68f1b71"
+      ],
+      "parents": [
+        "sym_h3_claw_l.cut.4f9e837a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "261eb8939c2753944f6e14885ced75f5cdb494f522c0b26d871317e8d73b1f7b",
+      "notes": "spin-blur variant of sym_H3/claw_L (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h3_claw_r_blur.blur.132077a8",
+      "path": "art/source/spine/images/sym_H3/claw_R_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "4b99bda6784a1ef26a0251612c6767e3d22d69916740c438d240f25904efe298"
+      ],
+      "parents": [
+        "sym_h3_claw_r.cut.4b99bda6"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "132077a839436e41d0c1c8c7e48a9ece98d2197ab17503dadea625ea0747834c",
+      "notes": "spin-blur variant of sym_H3/claw_R (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h3_eyes_open_blur.blur.1a8d52bb",
+      "path": "art/source/spine/images/sym_H3/eyes_open_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "ea99c8188a565e1cd5a147042823bc59c27358f135b706f220a10adee3ef22c1"
+      ],
+      "parents": [
+        "sym_h3_eyes_open.cut.ea99c818"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "1a8d52bb9480928040097f7384c819ba42cf7455b8980c5b446bce2bb012c3d8",
+      "notes": "spin-blur variant of sym_H3/eyes_open (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h3_tail_fan_blur.blur.00daeb30",
+      "path": "art/source/spine/images/sym_H3/tail_fan_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "105f715a5d57d85f3aba8f3c4cb37014887de9f52547e2dc6604c6ddc2cdbd48"
+      ],
+      "parents": [
+        "sym_h3_tail_fan.cut.105f715a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "00daeb30bdad9c75d84cab1d26caed64393457ae6c19776e5052da490880c3ea",
+      "notes": "spin-blur variant of sym_H3/tail_fan (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h4_bottle.cut.3d8738dd",
+      "path": "art/source/spine/images/sym_H4/bottle.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H4.py",
+      "version": "731e42e4f8b1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "2c47ca9053c770089f2f9e604eb2fceddc19bb2dbb1333f9566a7e326b20f7d2"
+      ],
+      "parents": [
+        "sym_h4_rig.source.2c47ca90"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "3d8738ddb28f279c0108b74fab1a536f37d891e34dd9b695727854d656135fcb",
+      "notes": "sym_H4 part 'bottle': master-cut; the bottle has the rim back / neck opening synthesized under the cork and the sauce inpainted under the label"
+    },
+    {
+      "id": "sym_h4_cap.cut.b49975ee",
+      "path": "art/source/spine/images/sym_H4/cap.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H4.py",
+      "version": "731e42e4f8b1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "2c47ca9053c770089f2f9e604eb2fceddc19bb2dbb1333f9566a7e326b20f7d2"
+      ],
+      "parents": [
+        "sym_h4_rig.source.2c47ca90"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "b49975ee76d2f0c7c982673d2576036cd68013fe3dfd33fbb2c658805d27b805",
+      "notes": "sym_H4 part 'cap': master-cut; the bottle has the rim back / neck opening synthesized under the cork and the sauce inpainted under the label"
+    },
+    {
+      "id": "sym_h4_flame.cut.43f26615",
+      "path": "art/source/spine/images/sym_H4/flame.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H4.py",
+      "version": "731e42e4f8b1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a3d521ee7648ed111ef966505de6a32ee6d95a2c73005111d6acb34a7dc4e418"
+      ],
+      "parents": [
+        "sym_h4_parts.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "43f266159d69a688f2d1f784707f172ad3e7f6a9e3caa4a7667782841469d985",
+      "notes": "sym_H4 part 'flame': the c11 sheet's flame wisp, keyed on its measured green (#03FB04) and despilled"
+    },
+    {
+      "id": "sym_h4_glint.fx.01528d3f",
+      "path": "art/source/spine/images/sym_H4/glint.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H4.py",
+      "version": "731e42e4f8b1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "01528d3ff45069060e18ec1ba865d7632d4f343d90332507138cb6ee68693dbb",
+      "notes": "sym_H4 fx sprite drawn in code (cut_H4.py)"
+    },
+    {
+      "id": "sym_h4_glow.fx.c6f13fbb",
+      "path": "art/source/spine/images/sym_H4/glow.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H4.py",
+      "version": "731e42e4f8b1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "c6f13fbb069c18f76a68687bd5158251bd3b19e42587e3976c32756dfa17459b",
+      "notes": "sym_H4 fx sprite drawn in code (cut_H4.py)"
+    },
+    {
+      "id": "sym_h4_label.cut.a6beb7e4",
+      "path": "art/source/spine/images/sym_H4/label.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H4.py",
+      "version": "731e42e4f8b1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "2c47ca9053c770089f2f9e604eb2fceddc19bb2dbb1333f9566a7e326b20f7d2"
+      ],
+      "parents": [
+        "sym_h4_rig.source.2c47ca90"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "a6beb7e49589f953e3a381e01f0c7a305361a4851e20fcc2812c9d253e6f9294",
+      "notes": "sym_H4 part 'label': master-cut; the bottle has the rim back / neck opening synthesized under the cork and the sauce inpainted under the label"
+    },
+    {
+      "id": "sym_h4_sauce.cut.0a506ab0",
+      "path": "art/source/spine/images/sym_H4/sauce.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_H4.py",
+      "version": "731e42e4f8b1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "2c47ca9053c770089f2f9e604eb2fceddc19bb2dbb1333f9566a7e326b20f7d2"
+      ],
+      "parents": [
+        "sym_h4_rig.source.2c47ca90"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "0a506ab082c865e30b9c81e9a0370a0b7ac6353a354aaeed8eeee3c50e186ca1",
+      "notes": "sym_H4 part 'sauce': master-cut; the bottle has the rim back / neck opening synthesized under the cork and the sauce inpainted under the label"
+    },
+    {
+      "id": "sym_h4_bottle_blur.blur.a1979834",
+      "path": "art/source/spine/images/sym_H4/bottle_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3d8738ddb28f279c0108b74fab1a536f37d891e34dd9b695727854d656135fcb"
+      ],
+      "parents": [
+        "sym_h4_bottle.cut.3d8738dd"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "a197983442ad822b92768723a15d5b8985b28308dd19c1d130d1cff51cda3a40",
+      "notes": "spin-blur variant of sym_H4/bottle (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h4_cap_blur.blur.bc11f888",
+      "path": "art/source/spine/images/sym_H4/cap_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b49975ee76d2f0c7c982673d2576036cd68013fe3dfd33fbb2c658805d27b805"
+      ],
+      "parents": [
+        "sym_h4_cap.cut.b49975ee"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "bc11f888d4de608500dc042367c49b6c2b7e898b55fe22086a2f2ab2ecb04913",
+      "notes": "spin-blur variant of sym_H4/cap (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h4_label_blur.blur.dffce6e0",
+      "path": "art/source/spine/images/sym_H4/label_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a6beb7e49589f953e3a381e01f0c7a305361a4851e20fcc2812c9d253e6f9294"
+      ],
+      "parents": [
+        "sym_h4_label.cut.a6beb7e4"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "dffce6e059563a0b5d7ad349ec574ecb2041b99aa9043c80f7d085a3864a2238",
+      "notes": "spin-blur variant of sym_H4/label (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "sym_h4_sauce_blur.blur.b6d8aa14",
+      "path": "art/source/spine/images/sym_H4/sauce_blur.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/make_blur.py",
+      "version": "vblur-14",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "0a506ab082c865e30b9c81e9a0370a0b7ac6353a354aaeed8eeee3c50e186ca1"
+      ],
+      "parents": [
+        "sym_h4_sauce.cut.0a506ab0"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "b6d8aa14ccf938c4f056d62bc8dd038a0461f0605bacb19c3588c4deed775b5d",
+      "notes": "spin-blur variant of sym_H4/sauce (tools/spine/make_blur.py, vertical box blur)"
+    },
+    {
+      "id": "ui_groove_meter_burst_star.fx.8e712d67",
+      "path": "art/source/spine/images/ui_groove_meter/burst_star.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "8e712d67625e3c1d3a92dd7d40f028e14cdb55b7c4e64c1cdc37fa98ad4c11bf",
+      "notes": "ui_groove_meter fx sprite drawn in code (cut_meter.py)"
+    },
+    {
+      "id": "ui_groove_meter_cabinet_back.cut.2d5b9dd5",
+      "path": "art/source/spine/images/ui_groove_meter/cabinet_back.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "2d5b9dd580f9268cd3e0b78ddae7285e18b55b42d7b82cc4e66175f226ede23d",
+      "notes": "ui_groove_meter part 'cabinet_back': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
+    },
+    {
+      "id": "ui_groove_meter_cabinet_front.cut.54c1072b",
+      "path": "art/source/spine/images/ui_groove_meter/cabinet_front.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "54c1072bdd1f643894421589b86cfc6fa7576ebeea55cb69dae2ffe868ab950a",
+      "notes": "ui_groove_meter part 'cabinet_front': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
+    },
+    {
+      "id": "ui_groove_meter_cap_flash.fx.648caba5",
+      "path": "art/source/spine/images/ui_groove_meter/cap_flash.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "648caba59f6cbd677d7f6fe9148cfc19de769c1dffdeaf7b66dd692aed9068d6",
+      "notes": "ui_groove_meter fx sprite drawn in code (cut_meter.py)"
+    },
+    {
+      "id": "ui_groove_meter_cone.cut.cb90c288",
+      "path": "art/source/spine/images/ui_groove_meter/cone.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "cb90c288b642ee4e6fbf9b681c8be5e69cf871718914037984db0aa74a6c8e58",
+      "notes": "ui_groove_meter part 'cone': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
+    },
+    {
+      "id": "ui_groove_meter_dust_cap.cut.cdb5a59d",
+      "path": "art/source/spine/images/ui_groove_meter/dust_cap.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "cdb5a59d4b079a0a10c61ce1dd7635e463958b74c59620bd3b9c32dbd3eab752",
+      "notes": "ui_groove_meter part 'dust_cap': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
+    },
+    {
+      "id": "ui_groove_meter_glow_ring.fx.24b0ec4f",
+      "path": "art/source/spine/images/ui_groove_meter/glow_ring.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "24b0ec4f2e1b1315e7537ea54b0dc0e3918721b1bf25a0aed7d571b0ce2da752",
+      "notes": "ui_groove_meter fx sprite drawn in code (cut_meter.py)"
+    },
+    {
+      "id": "ui_groove_meter_grill_cloth.cut.2cb0877b",
+      "path": "art/source/spine/images/ui_groove_meter/grill_cloth.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "2cb0877b47275ffb2a33d0624b6cc74a0ea9760c19802ec530253d60c85f3355",
+      "notes": "ui_groove_meter part 'grill_cloth': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
+    },
+    {
+      "id": "ui_groove_meter_notch_jj_lit.cut.6eeb2d6a",
+      "path": "art/source/spine/images/ui_groove_meter/notch_jj_lit.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "887d73ab221f2e4fa0edfabf5f4d993738e6a96573bf6576918166fff146f457"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_jj.cut.887d73ab"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "6eeb2d6a0798d617c2b66d5419c135bbb2a2b6e864bb3f52cca798a913d944fd",
+      "notes": "ui_groove_meter part 'notch_jj_lit': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_jj_next.cut.6fd909e8",
+      "path": "art/source/spine/images/ui_groove_meter/notch_jj_next.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "887d73ab221f2e4fa0edfabf5f4d993738e6a96573bf6576918166fff146f457"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_jj.cut.887d73ab"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "6fd909e8eb94e466b6064fbabfc43fca6ce3a5ddeee6edbc104c6e36ec179597",
+      "notes": "ui_groove_meter part 'notch_jj_next': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_jj_off.cut.ce6c4f25",
+      "path": "art/source/spine/images/ui_groove_meter/notch_jj_off.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "887d73ab221f2e4fa0edfabf5f4d993738e6a96573bf6576918166fff146f457"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_jj.cut.887d73ab"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "ce6c4f2568337e5430e2627ac64fe00087dd660243b07a81cc584d7002d89058",
+      "notes": "ui_groove_meter part 'notch_jj_off': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_jj_spent.cut.347fb8b9",
+      "path": "art/source/spine/images/ui_groove_meter/notch_jj_spent.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "887d73ab221f2e4fa0edfabf5f4d993738e6a96573bf6576918166fff146f457"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_jj.cut.887d73ab"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "347fb8b922bc2de2d3ca0e68a826202a3df02e6102f9d065f5389cda956f84a8",
+      "notes": "ui_groove_meter part 'notch_jj_spent': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_mm_lit.cut.6f2f725c",
+      "path": "art/source/spine/images/ui_groove_meter/notch_mm_lit.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "dbd0694a1fd7f4f56e82e408d870bf387cacab0ae7c0d8ef4f5b1fc90d181948"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_mm.cut.dbd0694a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "6f2f725cdf7e0f2c71c8be85e2290144c71dcaf11bff6949667fa64b084314f7",
+      "notes": "ui_groove_meter part 'notch_mm_lit': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_mm_next.cut.0d0a8540",
+      "path": "art/source/spine/images/ui_groove_meter/notch_mm_next.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "dbd0694a1fd7f4f56e82e408d870bf387cacab0ae7c0d8ef4f5b1fc90d181948"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_mm.cut.dbd0694a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "0d0a854032b13bf820b2629df6d3fb8d21ddcf65b582c2aff04ff1e46f5657f6",
+      "notes": "ui_groove_meter part 'notch_mm_next': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_mm_off.cut.c8dc8d25",
+      "path": "art/source/spine/images/ui_groove_meter/notch_mm_off.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "dbd0694a1fd7f4f56e82e408d870bf387cacab0ae7c0d8ef4f5b1fc90d181948"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_mm.cut.dbd0694a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "c8dc8d25ac07fed79c66e5782ec4112734100f3e5944843f3d18c5c3a824629a",
+      "notes": "ui_groove_meter part 'notch_mm_off': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_mm_spent.cut.aacff3fe",
+      "path": "art/source/spine/images/ui_groove_meter/notch_mm_spent.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "dbd0694a1fd7f4f56e82e408d870bf387cacab0ae7c0d8ef4f5b1fc90d181948"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_mm.cut.dbd0694a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "aacff3feaa6a854d56e6f5e586bc8f8cce05c23e0b80a54273384376c1283ce9",
+      "notes": "ui_groove_meter part 'notch_mm_spent': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w1_lit.cut.bba40cbd",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w1_lit.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "bba40cbdfaab95bb60e779145054d474caf5ca5e0bf9c80d709914a2c9068f97",
+      "notes": "ui_groove_meter part 'notch_w1_lit': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w1_next.cut.b881a387",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w1_next.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "b881a387d2bb78deb4e02c6832292c584338fb04f9187c00dd2669253ecf6586",
+      "notes": "ui_groove_meter part 'notch_w1_next': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w1_off.cut.d2409dd4",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w1_off.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "d2409dd42f61a6a0d071d3a31cba835b0991d374a604210831ea00349813af13",
+      "notes": "ui_groove_meter part 'notch_w1_off': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w1_spent.cut.cc4d40e0",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w1_spent.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "cc4d40e04c2438469ea86ee73e4bc39ab4303040c37533d01ba0c367d845f39e",
+      "notes": "ui_groove_meter part 'notch_w1_spent': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w2_lit.cut.074daedb",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w2_lit.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "074daedbb7d567426b6a56add16b194a735763c5b7f57e7ca1caddd494d7dea4",
+      "notes": "ui_groove_meter part 'notch_w2_lit': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w2_next.cut.3f1957ed",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w2_next.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "3f1957ed20d1840d19c7b376ac38695fb5b0bcec43bf6f4b531e4c3de38f1557",
+      "notes": "ui_groove_meter part 'notch_w2_next': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w2_off.cut.2f9282ca",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w2_off.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "2f9282ca09f2a03a517c5997ea225ad19fc9f76c54ea73839264e2e0901ebd75",
+      "notes": "ui_groove_meter part 'notch_w2_off': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w2_spent.cut.346a6b2f",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w2_spent.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "346a6b2fd35e1306b5b85cc5f59f65751b68846c3a2e4ab88fc8a19dde35bdfd",
+      "notes": "ui_groove_meter part 'notch_w2_spent': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w3_lit.cut.10007206",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w3_lit.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "10007206c149119ef6ca014ed1ca5af05c9c1bf4549f6531543938a46101c90f",
+      "notes": "ui_groove_meter part 'notch_w3_lit': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w3_next.cut.89f35cf8",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w3_next.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "89f35cf830e07e0d4792b869245937e3bf2739fe9666ad74bc906fe9a454b43b",
+      "notes": "ui_groove_meter part 'notch_w3_next': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w3_off.cut.2cb3d879",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w3_off.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "2cb3d879f257d771c4d3576eb1b3c5e747604d9708a4099cc0df4b1d01cbd16c",
+      "notes": "ui_groove_meter part 'notch_w3_off': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_notch_w3_spent.cut.7290d11a",
+      "path": "art/source/spine/images/ui_groove_meter/notch_w3_spent.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3fd64287ca7832d5ffe6470345253d2c57adf53fefbe53a4179dda7ce08164ce"
+      ],
+      "parents": [
+        "bd_notch_icons_notch_w.cut.3fd64287"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "7290d11ab96c7624fef3e7d5011caa84206a6e92d36e7c862e5c91f0972c0f0e",
+      "notes": "ui_groove_meter part 'notch_w3_spent': badge plate drawn in code around the approved notch icon (state / pips drawn)"
+    },
+    {
+      "id": "ui_groove_meter_rim.cut.f5920888",
+      "path": "art/source/spine/images/ui_groove_meter/rim.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "f592088896e4c24fc51abff85df96cec19acb1e9958a1fd0399bba8960904d3b",
+      "notes": "ui_groove_meter part 'rim': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
+    },
+    {
+      "id": "ui_groove_meter_surround.cut.e158a435",
+      "path": "art/source/spine/images/ui_groove_meter/surround.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "e158a435db9d45827978f3539154a144d44d37dd47077317b8ac1f79aa63e5cf",
+      "notes": "ui_groove_meter part 'surround': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
+    },
+    {
+      "id": "ui_groove_meter_swirl.fx.67563d0e",
+      "path": "art/source/spine/images/ui_groove_meter/swirl.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "67563d0e32113300eab03a5cbc39c15887f3699af58f1ed16b2eaf130a179be5",
+      "notes": "ui_groove_meter fx sprite drawn in code (cut_meter.py)"
+    },
+    {
+      "id": "ui_groove_meter_trim_base.cut.33dd1905",
+      "path": "art/source/spine/images/ui_groove_meter/trim_base.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "33dd1905e24d2081f88a4ab80fb9cd236a39a92961e099609833bfcbc5759cb4",
+      "notes": "ui_groove_meter part 'trim_base': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
+    },
+    {
+      "id": "ui_groove_meter_trim_jukejam.cut.36139f73",
+      "path": "art/source/spine/images/ui_groove_meter/trim_jukejam.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "36139f7367ec1c586c92f140b92c33633bcb3478e752b55b999e746d53ab4ef7",
+      "notes": "ui_groove_meter part 'trim_jukejam': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
+    },
+    {
+      "id": "ui_groove_meter_trim_megamix.cut.d38c6153",
+      "path": "art/source/spine/images/ui_groove_meter/trim_megamix.png",
+      "stage": "layer-split",
+      "shipped": false,
+      "route": "code",
+      "vendor": "self",
+      "model": "tools/spine/examples/bass_drop/cut/cut_meter.py",
+      "version": "9b3b9f8a309a",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3e443493724e17e6b645605e5d575ec71ecb77ec45cdad0616f11407c06b5558"
+      ],
+      "parents": [
+        "bd_meter_master_full.matte.3e443493"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "estimated": false
+      },
+      "date": "2026-09-28T12:31:02Z",
+      "sha256": "d38c61537a7d5d0358bf2c9ebb72797786f7c39bb5efca1eebd97b7b673748aa",
+      "notes": "ui_groove_meter part 'trim_megamix': radially remapped onto DESIGN 6.1's bands (woofer) / affinely onto 704 x 840 units (cabinet)"
     }
   ]
 }

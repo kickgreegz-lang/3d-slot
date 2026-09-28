@@ -96,7 +96,9 @@ config/spine/pack-symbols.json     # pack settings (not created yet; tools/spine
 | `face_*` | Eyes, lids, mouth | Face states (track 2) |
 | `fx_*` | Children of `root` | Glows and sparkles (additive slots only) |
 
-Bone names are `snake_case`. L/R means the character's own left and right.
+Bone names are `snake_case`, with an L/R suffix only at the end (`phys_antenna_1_R`, not `phys_antenna_R_1`). L/R means the character's own left and right.
+
+**Part bones** (CR-8): a bone without one of the prefixes above is a part bone, named after the part it moves (`claw_R`, `handle`, `record`). It must carry a slot or weight mesh vertices; the validator warns about a prefix-less bone that moves no art.
 
 ### 2.4 Slots, attachments, skins
 
@@ -153,6 +155,9 @@ All times are at 30 fps (`f` = frames). "Required" means the validator fails the
 | `blur` | yes | 1–2 f | H1–H4, W, S | none | Swaps region attachments to `<part>_blur`. | [ok] (else the `_blur` texture) |
 | `dim` | overlay | any | optional | none | Track 1 only, never track 0. The runtime tints by default (`TIMING.win.dimTint`). | [planned] |
 | `reveal`, `expand`, `sticky_lock`, `upgrade` | no | as designed | optional (math-dependent) | as designed | Mystery / expanding wild / sticky / upgrade. | [planned] |
+| `bass_react` | overlay (track 1, additive) | 6–10 f | optional | none | **CR-8.** Board-wide bass reaction. First and last pose = the setup pose (additive: a non-zero delta at either end would jump in or stick). | [ok] `SymbolRig` plays it on track 1 when the skeleton has it |
+| `drop_launch`, `drop_fall` (loop), `drop_impact` | no / yes / no | 6–10 / 8–16 / 12–18 f | wild (Bass Drop) | `drop_release` (f1–3, target f2) / none / `land_impact` f0 | **CR-8.** `drop_launch` ends on `drop_fall` f0. `drop_impact` has its own squash gate on `squash` (sy 0.70–0.76, error outside 0.68–0.78, sx = 1/√sy ± 0.05), ends on the setup pose and may leave the cell by ≤ 20 % (`cellOverflow`). Rotation and path belong to the runtime | [planned] (`src/games/bass-drop/drop/WildProxy.ts` stand-in) |
+| `sticky_lock`, `sticky_idle` (loop), `mult_up`, `sticky_unlock` | no / yes / no / no | 9–15 / 45–90 / 9–15 / 6–12 f | wild (all but `sticky_unlock`) | `lock_snap` (f5–7, target f6) / none / `mult_swap` (f3–5, target f4) / none | **CR-8.** `sticky_lock` and `mult_up` end on `sticky_idle` f0 (mix 0). `mult_up` is the concrete name of the planned `upgrade` slot | [planned] (`drop/decor.ts` stand-ins) |
 | `fx_glow` | overlay | any | optional | none | Track 1, `entry.additive = true`. | [planned] |
 | `blink` | overlay | 3–6 f | optional | none | Track 2. | [planned] |
 
@@ -171,7 +176,8 @@ All times are at 30 fps (`f` = frames). "Required" means the validator fails the
 - budgets from §2.6;
 - the 4.3 constraint format and order (IK → transform → path → physics → slider); physics pairing and warnings from §2.5;
 - no sequence attachments; region names without extensions; additive blend only on `fx_*` slots;
-- `sfx` payloads are `SfxId`s (parsed from `src/game/events.ts`); `vfx` payloads are FX ids.
+- `sfx` payloads are `SfxId`s (parsed from `src/game/events.ts`); `vfx` payloads are FX ids;
+- **CR-8 kinds** (`contract.json → kinds`, ANIMATION_SET §10 / §12): `wild` extends `special` (its required set plus `drop_launch`, `drop_fall`, `drop_impact`, `sticky_lock`, `sticky_idle`, `mult_up`) with 34 bones / 12 slots / 300 mesh vertices / 4 physics, the empty `txt_wild` / `txt_mult` slots and the skins `default` / `mult` / `sticky`; `ui` and `env` are budget-only kinds. `--kind auto` takes a symbol's kind from `src/games/$GAME/config.ts` (Bass Drop W → `wild`), and `ui_*` / `env_*` skeletons map to `ui` / `env`. The rule keys `overlay` (start and end on the setup pose) and `cellOverflow` apply to every kind.
 
 Exit codes: 0 pass, 1 fail (with `--strict`, warnings also fail), 2 usage.
 
@@ -273,6 +279,8 @@ spine.skeleton.updateWorldTransform(Physics.reset);                // [ok]
 **`ui_fs_intro` / `ui_fs_outro`**: `in` / `loop` / `out` with the same slot rule. The lengths must fit `TIMING.freeSpins.introDuration` (2,600 ms) and `outroDuration` (2,200 ms).
 
 **`ui_spin_btn`**: `idle`, `press`, `spin_loop`, `disabled`. It sits on the 20°-tilted 293×271 hex.
+
+**Bass Drop UI and env skeletons (CR-8)**: `ui_groove_meter` (the Groove Meter, [ANIMATION_SET §3](games/bass-drop/ANIMATION_SET.md#3-groove-meter--ui_groove_meter-p0)), `ui_intro_cards`, `ui_buy_cards`, `ui_feature_intro`, `ui_feature_upgrade`, `ui_feature_outro`, `ui_bigwin` (skin `bassdrop`), `env_speaker_stack`, `env_dj_booth`, `env_horn`. Validator kinds `ui` / `env` (`tools/spine/contract.json → kinds`): budgets and the static checks only (no root → squash → body rig, no symbol animation rules); each rig's clip table (exact lengths, loops, events, end poses) is checked from ANIMATION_SET by `tools/spine/examples/bass_drop/check_bd.mjs`.
 
 ---
 

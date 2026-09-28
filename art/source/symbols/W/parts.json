@@ -1,11 +1,17 @@
 {
-  "$comment": "sym_W parts: master-cut from art/source/symbols/W/master_rig_1024.png (sym_W_rig 7f0557f2) + the sym_W_pieces cuts (ribbon, badge tiers, clamps); fx sprites drawn by tools/spine/examples/bass_drop/cut/cut_W.py. Canvas 360 @2x, content 306 (cellScale 1.02).",
+  "$comment": "sym_W parts (ANIMATION_SET 2.6, 12 slots): master-cut tooth / cap / chain from art/source/symbols/W/master_rig_1024.png (sym_W_rig 7f0557f2) + the sym_W_pieces cuts (ribbon, badge tiers, clamps); fx sprites drawn by tools/spine/examples/bass_drop/cut/cut_W.py. Canvas 360 @2x, content 306 (cellScale 1.02).",
   "symbol": "W",
   "canvas": [
     360,
     360
   ],
   "images": "../../spine/images",
+  "$blur": [
+    "tooth",
+    "cap",
+    "chain",
+    "ribbon"
+  ],
   "parts": [
     {
       "name": "glow",
@@ -19,42 +25,58 @@
       "z": 0,
       "bone": "fx_glow",
       "blend": "additive",
-      "color": "ffffff00"
+      "color": "ffffff00",
+      "joint": [
+        180,
+        184
+      ]
     },
     {
       "name": "trail_streak",
-      "slot": "fx_glow",
+      "slot": "fx_trail",
       "bbox": [
-        105,
-        -80,
-        150,
+        90,
+        -170,
+        200,
         300
       ],
-      "z": 0,
-      "bone": "fx_glow"
+      "z": 0.5,
+      "bone": "fx_trail",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        180,
+        184
+      ]
     },
     {
       "name": "ring",
-      "slot": "fx_glow",
+      "slot": "fx_ring",
       "bbox": [
         65,
         69,
         230,
         230
       ],
-      "z": 0,
-      "bone": "fx_glow"
+      "z": 9,
+      "bone": "fx_ring",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        180,
+        184
+      ]
     },
     {
       "name": "tooth",
       "bbox": [
         47,
         120,
-        260,
+        250,
         218
       ],
       "z": 2,
-      "bone": "tooth",
+      "bone": "body",
       "blur": true
     },
     {
@@ -63,11 +85,28 @@
       "bbox": [
         47,
         120,
-        260,
+        250,
         218
       ],
       "z": 2,
-      "bone": "tooth"
+      "bone": "body"
+    },
+    {
+      "name": "ribbon",
+      "bbox": [
+        95,
+        167,
+        212,
+        94
+      ],
+      "z": 2.5,
+      "bone": "ribbon",
+      "parent": "tooth",
+      "joint": [
+        201.5,
+        213.8
+      ],
+      "blur": true
     },
     {
       "name": "chain",
@@ -78,7 +117,7 @@
         104
       ],
       "z": 1,
-      "bone": "phys_chain_1",
+      "bone": "body",
       "blur": true
     },
     {
@@ -94,28 +133,68 @@
       "blur": true
     },
     {
-      "name": "clamps",
-      "slot": "clamps",
+      "name": "clamp_shut_L",
+      "slot": "clamp_L",
       "bbox": [
         66,
         151,
-        273,
+        70,
         90
       ],
       "z": 6,
-      "bone": "clamps"
+      "bone": "clamp_L",
+      "joint": [
+        101.0,
+        196.0
+      ]
     },
     {
-      "name": "clamps_open",
-      "slot": "clamps",
+      "name": "clamp_shut_R",
+      "slot": "clamp_R",
+      "bbox": [
+        269,
+        151,
+        70,
+        90
+      ],
+      "z": 6.1,
+      "bone": "clamp_R",
+      "joint": [
+        304.0,
+        196.0
+      ]
+    },
+    {
+      "name": "clamp_open_L",
+      "slot": "clamp_L",
       "bbox": [
         73,
         151,
-        259,
+        63,
         90
       ],
       "z": 6,
-      "bone": "clamps"
+      "bone": "clamp_L",
+      "joint": [
+        104.5,
+        196.0
+      ]
+    },
+    {
+      "name": "clamp_open_R",
+      "slot": "clamp_R",
+      "bbox": [
+        269,
+        151,
+        63,
+        90
+      ],
+      "z": 6.1,
+      "bone": "clamp_R",
+      "joint": [
+        300.5,
+        196.0
+      ]
     },
     {
       "name": "badge_t1",

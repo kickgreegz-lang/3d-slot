@@ -282,8 +282,12 @@ def register_sift(piece: np.ndarray, master: np.ndarray, region=None, full_affin
 
 
 def write_parts(out_dir: Path, symbol: str, parts: list[dict], canvas=(360, 360), images_rel="../../spine/images",
-                comment: str = "") -> Path:
-    doc = {"$comment": comment, "symbol": symbol, "canvas": list(canvas), "images": images_rel, "parts": parts}
+                comment: str = "", blur: list[str] | None = None) -> Path:
+    """parts.json for tools/spine/gen.py; `blur` = the parts build.sh --cut gives _blur variants (make_blur.py)."""
+    doc = {"$comment": comment, "symbol": symbol, "canvas": list(canvas), "images": images_rel}
+    if blur:
+        doc["$blur"] = list(blur)
+    doc["parts"] = parts
     p = Path(out_dir) / "parts.json"
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
@@ -313,4 +317,112 @@ def crop(canvas_rgba: np.ndarray, bbox) -> np.ndarray:
     sx1, sy1 = min(W, x + w), min(H, y + h)
     if sx1 > sx0 and sy1 > sy0:
         out[sy0 - y:sy1 - y, sx0 - x:sx1 - x] = canvas_rgba[sy0:sy1, sx0:sx1]
+    return out
+
+
+# ------------------------------------------------------------------------------------------ shared helpers (H1-H4, meter)
+def rot_ellipse(shape, cx, cy, ax, ay, ang_deg=0.0, grow: float = 0.0, n: int = 360) -> np.ndarray:
+    """Anti-aliased coverage of a rotated ellipse (cv2.fitEllipse convention: `ax` along the x axis rotated by
+    `ang_deg`), grown by `grow` px."""
+    t = np.linspace(0, 2 * np.pi, n, endpoint=False)
+    a = math.radians(ang_deg)
+    rx, ry = ax + grow, ay + grow
+    xs = cx + rx * np.cos(t) * math.cos(a) - ry * np.sin(t) * math.sin(a)
+    ys = cy + rx * np.cos(t) * math.sin(a) + ry * np.sin(t) * math.cos(a)
+    return poly(shape, list(zip(xs, ys)))
+
+
+def grow_poly(pts, d: float):
+    """Offset a convex polygon outward by d px (vertices pushed along the bisector)."""
+    P = np.array(pts, float)
+    c = P.mean(0)
+    out = []
+    for p in P:
+        v = p - c
+        out.append(tuple(p + v / max(1e-6, np.linalg.norm(v)) * d))
+    return out
+
+
+def glow_disc(d: int, rgb, alpha: float = 0.85, power: float = 2.2) -> np.ndarray:
+    y, x = np.mgrid[0:d, 0:d] + 0.5
+    r = np.hypot(x - d / 2, y - d / 2) / (d / 2)
+    out = np.zeros((d, d, 4), np.float32)
+    out[..., :3] = rgb
+    out[..., 3] = np.clip(1 - r, 0, 1) ** power * alpha
+    return out
+
+
+def star_glint(d: int, rgb=(1.0, 0.95, 0.75), arms: int = 4, core: float = 0.16) -> np.ndarray:
+    """A formula-D specular glint: soft white core + thin tapered arms (additive fx sprite)."""
+    y, x = np.mgrid[0:d, 0:d] + 0.5
+    u, v = (x - d / 2) / (d / 2), (y - d / 2) / (d / 2)
+    r = np.hypot(u, v)
+    th = np.arctan2(v, u)
+    a = np.exp(-(r / core) ** 2)
+    for k in range(arms):
+        across = np.abs(np.sin(th - k * (2 * np.pi / arms))) * r
+        along = np.cos(th - k * (2 * np.pi / arms))
+        arm = np.exp(-(across / (0.03 + 0.05 * (1 - r))) ** 2) * np.clip(1 - r, 0, 1) ** 1.5 * (along > 0)
+        a = np.maximum(a, arm)
+    out = np.zeros((d, d, 4), np.float32)
+    w = np.clip(a * 1.6, 0, 1)[..., None]
+    out[..., :3] = np.array(rgb, np.float32) * (1 - w * 0.6) + w * 0.6
+    out[..., 3] = np.clip(a, 0, 1)
+    return out
+
+
+def piece_to_master(piece: np.ndarray, base_xy, tip_xy, target_base, target_tip, shape) -> np.ndarray:
+    """Similarity-warp a straight RGBA sheet piece so its base->tip axis lands on target_base->target_tip
+    (a master-sized layer)."""
+    bx, by = base_xy
+    tx, ty = tip_xy
+    Bx, By = target_base
+    Tx, Ty = target_tip
+    s = math.hypot(Tx - Bx, Ty - By) / math.hypot(tx - bx, ty - by)
+    a = math.atan2(Ty - By, Tx - Bx) - math.atan2(ty - by, tx - bx)
+    c, sn = math.cos(a) * s, math.sin(a) * s
+    M = np.array([[c, -sn, 0.0], [sn, c, 0.0]])
+    M[:, 2] = np.array([Bx, By]) - M[:, :2] @ np.array([bx, by])
+    if s < 1:   # pre-filter the downscale (Lanczos on premultiplied) before the cubic warp
+        h, w = piece.shape[:2]
+        prem = piece.copy()
+        prem[..., :3] *= prem[..., 3:4]
+        nw, nh = max(1, round(w * s * 1.5)), max(1, round(h * s * 1.5))
+        ch = [np.asarray(Image.fromarray(prem[..., k], "F").resize((nw, nh), Image.LANCZOS)) for k in range(4)]
+        small = np.clip(np.stack(ch, -1), 0, 1)
+        al = small[..., 3:4]
+        small[..., :3] = np.where(al > 1e-5, small[..., :3] / np.maximum(al, 1e-5), 0)
+        f = nw / w
+        M2 = M.copy()
+        M2[:, :2] = M[:, :2] / f
+        return warp_into(small.astype(np.float32), M2, shape)
+    return warp_into(piece, M, shape)
+
+
+def principal_axis(piece: np.ndarray):
+    """(centre, unit axis, half-length) of a piece's alpha (PCA)."""
+    ys, xs = np.nonzero(piece[..., 3] > 0.5)
+    P = np.stack([xs, ys], 1).astype(float)
+    c = P.mean(0)
+    u, s, vt = np.linalg.svd(P - c, full_matrices=False)
+    ax = vt[0]
+    proj = (P - c) @ ax
+    return c, ax, proj.min(), proj.max()
+
+
+def blur_rgb(layer_rgba: np.ndarray, sigma: float) -> np.ndarray:
+    out = layer_rgba.copy()
+    for k in range(3):
+        out[..., k] = cv2.GaussianBlur(layer_rgba[..., k], (0, 0), sigma)
+    return out
+
+
+def despeckle(rgba: np.ndarray, min_area: int = 30) -> np.ndarray:
+    """Drop isolated specks (connected alpha islands smaller than min_area px): anti-aliasing crumbs a cut left."""
+    a = rgba[..., 3] > 0.02
+    n, lab, st, _ = cv2.connectedComponentsWithStats(a.astype(np.uint8), 8)
+    out = rgba.copy()
+    for i in range(1, n):
+        if st[i, 4] < min_area:
+            out[lab == i] = 0
     return out

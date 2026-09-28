@@ -1,0 +1,75 @@
+# sym_H3 Bass Drop additions (ANIMATION_SET 2.0 / 2.3), applied by tools/spine/examples/bass_drop/bdgen.py after the
+# stock generator. Frames at 30 fps. Pincers: + closes (both fingers turn toward their claw's palm).
+# claw_R points up-left from the shoulder (- lifts it over the head); claw_L hangs down-right (+ lifts it).
+kind: high
+rename:
+  eyes: {eyes_open: open, eyes_half: half, eyes_closed: closed, eyes_wide: wide, eyes_open_blur: open_blur}
+
+clips:
+  idle:
+    merge: true
+    bones:
+      # claws snap: claw_R at f40, claw_L at f80
+      pincer_R: {rotate: [[0, 0], [37, 0, quad_in], [39, -8, expo_out], [41, 16, sine_in_out], [44, -3], [48, 0], [105, 0]]}
+      pincer_L: {rotate: [[0, 0], [77, 0, quad_in], [79, -8, expo_out], [81, 14, sine_in_out], [84, -3], [88, 0], [105, 0]]}
+      claw_R: {rotate: [[0, 0], [36, 0, sine_in_out], [41, -4, sine_in_out], [50, 0], [105, 0]]}
+      claw_L: {rotate: [[0, 0], [76, 0, sine_in_out], [81, 3, sine_in_out], [90, 0], [105, 0]]}
+      # antennae sway out of phase (the stiff physics adds the follow-through)
+      phys_antenna_1_R: {rotate: [[0, 0, sine_in_out], [26, 3, sine_in_out], [79, -3, sine_in_out], [105, 0]]}
+      phys_antenna_1_L: {rotate: [[0, 0, sine_in_out], [40, -3, sine_in_out], [92, 2, sine_in_out], [105, 0]]}
+      tail_fan: {rotate: [[0, 0, sine_in_out], [30, 3, sine_in_out], [80, -3, sine_in_out], [105, 0]]}
+    slots:
+      eyes: {attachment: [[0, open], [60, half], [61, closed], [63, half], [64, open]]}
+  land:
+    merge: true
+    bones:
+      pincer_R: {rotate: [[0, 0, expo_out], [2, 12, sine_in_out], [5, -3], [9, 0], [12, 0]]}
+      pincer_L: {rotate: [[0, 0, expo_out], [2, 10, sine_in_out], [5, -3], [9, 0], [12, 0]]}
+    slots:
+      eyes: {attachment: [[0, open], [1, half], [5, open]]}           # a squint on the impact
+  win:
+    merge: true
+    bones:
+      # claws up at the pop (win_peak f8) with a snap, then the swagger pose win_loop starts from
+      claw_R: {rotate: [[0, 0, sine_out], [4, 6, expo_out], [8, -14, sine_in_out], [13, -6, sine_in_out], [18, -9], [24, -8]]}
+      claw_L: {rotate: [[0, 0, sine_out], [4, -3, expo_out], [8, 6, sine_in_out], [13, 2, sine_in_out], [18, 4], [24, 3]]}
+      pincer_R: {rotate: [[0, 0], [5, -10, expo_out], [8, 16, sine_in_out], [11, -3], [15, 0], [24, 0]]}
+      pincer_L: {rotate: [[0, 0], [5, -8, expo_out], [9, 14, sine_in_out], [12, -3], [16, 0], [24, 0]]}
+      tail_fan: {rotate: [[0, 0], [8, 8, sine_in_out], [14, -4, sine_in_out], [20, 0], [24, 0]]}
+    slots:
+      eyes: {attachment: [[0, open], [7, wide], [15, half]]}           # wide on the pop, then the smug squint
+  win_loop:
+    merge: true
+    bones:
+      # the claws pump alternately on the 2 beats (claw_R on f0, claw_L on f22), each with a snap
+      claw_R: {rotate: [[0, -8, expo_out], [3, -16, sine_in_out], [9, -8], [45, -8]]}
+      claw_L: {rotate: [[0, 3], [22, 3, expo_out], [25, 8, sine_in_out], [31, 3], [45, 3]]}
+      pincer_R: {rotate: [[0, 0, expo_out], [3, 14, sine_in_out], [7, 0], [45, 0]]}
+      pincer_L: {rotate: [[0, 0], [22, 0, expo_out], [25, 12, sine_in_out], [29, 0], [45, 0]]}
+    slots:
+      eyes: {attachment: [[0, half]]}
+  explode:
+    merge: true
+    override: true
+    retime: {explode_done: 13}
+    bones:
+      face_eyes: {translate: [[0, [0, 0]], [15, [0, 0]]], rotate: [[0, 0], [15, 0]]}   # the eyes stay on the face
+      # claw_L covers the belly it hides: it drops a little and fades with the body instead of flying off
+      claw_L: {translate: [[0, [0, 0]], [2, [0, 0], expo_out], [15, [14, -18]]], rotate: [[0, 0], [2, 0, cubic_out], [15, 12]]}
+      pincer_R: {rotate: [[0, 0], [2, -18, expo_out], [15, -30]]}                     # the claws fly open
+      pincer_L: {rotate: [[0, 0], [2, -16, expo_out], [15, -28]]}
+    slots:
+      eyes: {attachment: [[0, open], [1, closed], [2, wide]], alpha: [[0, 1], [3, 1, quad_in], [9, 0], [15, 0]]}
+      claw_L: {alpha: [[0, 1], [3, 1, quad_in], [9, 0], [15, 0]]}
+  bass_react:
+    frames: 8
+    bones:
+      squash: {scale: [[0, 1, quad_out], [1, [1.03, 0.95]], [4, [0.99, 1.03]], [8, 1]]}
+      # claws flinch up (claw_L less: it lifts off the belly), antennae whip
+      claw_R: {rotate: [[0, 0, expo_out], [1, -12, sine_in_out], [4, 3, sine_in_out], [8, 0]]}
+      claw_L: {rotate: [[0, 0, expo_out], [1, 7, sine_in_out], [4, -2, sine_in_out], [8, 0]]}
+      pincer_R: {rotate: [[0, 0, expo_out], [1, -10], [4, 4], [8, 0]]}
+      phys_antenna_1_R: {rotate: [[0, 0, expo_out], [1, -6], [4, 3], [8, 0]]}
+      phys_antenna_1_L: {rotate: [[0, 0, expo_out], [1, -5], [4, 3], [8, 0]]}
+    slots:
+      eyes: {attachment: [[0, open], [1, wide], [5, open]]}

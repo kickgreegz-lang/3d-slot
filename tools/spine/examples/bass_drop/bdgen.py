@@ -16,6 +16,10 @@ applies `bassdrop.yaml` from the same folder:
     sticky: [badge_t1, clamps, clamps_open]                #  is empty, so default/base shows nothing)
   setup: {badge: badge_t1, clamps: null}                  # slot setup attachment (null = empty)
   paths: {notch_2/notch_w1_off: notch_1/notch_w1_off}      # optional shared regions (slot/att: part)
+  rename: {clamp_L: {clamp_L_shut: clamp}}                 # attachment names per slot (the region path keeps
+                                                           # the part name), e.g. ANIMATION_SET's `clamp` in 2 slots
+  untouched: [fx_trail, fx_ring]                           # fx slots (and their fx bones) the contract motions must
+                                                           # not animate: their generated glow keys are removed
   clips:                     pose-to-pose clips (keys on whole frames, curves from named easing presets)
     bass_react:
       frames: 8              # exact length (the last key may sit earlier; the length is padded)
@@ -25,6 +29,7 @@ applies `bassdrop.yaml` from the same folder:
       slots: {fx_glow: {alpha: [[0, 0], [1, 0.8], [8, 0]], attachment: [[0, glow]]}}
       events: [{name: drop_release, at: 2}]
     idle: {merge: true, ...}  # add timelines to a generated contract animation (conflicts are errors)
+    explode: {merge: true, override: true, ...}   # ... or replace the generated timelines it names
 
 Key rows are [frame, value, ease?]: `ease` shapes the segment that LEAVES this key (as in tools/spine
 timeline.Key). Scale values may be one number (uniform). Colours are 'rrggbbaa' / 'rrggbb'. Everything else
@@ -59,8 +64,8 @@ KIND_BUDGETS = {
     "ui": {"bones": 40, "slots": 30, "meshVertices": 400, "physics": 0},
     "high": {"bones": 30, "slots": 8, "meshVertices": 250, "physics": 4},
 }
-BD_KEYS = {"kind", "slots", "skins", "setup", "paths", "clips"}
-CLIP_KEYS = {"frames", "loop", "ease", "bones", "slots", "events", "merge", "track", "retime"}
+BD_KEYS = {"kind", "slots", "skins", "setup", "paths", "clips", "rename", "untouched"}
+CLIP_KEYS = {"frames", "loop", "ease", "bones", "slots", "events", "merge", "track", "retime", "override"}
 
 
 def _chk(obj, allowed, where):
@@ -171,6 +176,18 @@ class BassDropBuilder(RigBuilder):
         doc = super().build()
         bd = self.bd
         bones = {b["name"] for b in doc["bones"]}
+        # 0. fx slots that are not glows (speed streak, impact ring, ...): no generated glow keys
+        for name in bd.get("untouched") or []:
+            slot = next((x for x in doc["slots"] if x["name"] == name), None)
+            if slot is None:
+                raise RigError(f"untouched.{name}: no such slot")
+            for an in doc["animations"].values():
+                an.get("slots", {}).pop(name, None)
+                if slot["bone"].startswith("fx_") and slot["bone"] not in {s["bone"] for s in doc["slots"] if s["name"] != name}:
+                    an.get("bones", {}).pop(slot["bone"], None)
+                for group in ("slots", "bones"):
+                    if group in an and not an[group]:
+                        an.pop(group)
         # 1. empty runtime slots
         for s in bd.get("slots") or []:
             _chk(s, {"name", "bone", "after", "blend", "color"}, f"slots[{s.get('name')}]")
@@ -238,6 +255,32 @@ class BassDropBuilder(RigBuilder):
                     hit = True
             if not hit:
                 raise RigError(f"paths.{key}: attachment not found")
+        # 4b. attachment names per slot (the region path stays the part's)
+        renamed: dict[tuple[str, str], str] = {}
+        for slot, mapping in (bd.get("rename") or {}).items():
+            if slot not in slot_names:
+                raise RigError(f"rename.{slot}: no such slot")
+            for old, new in (mapping or {}).items():
+                hit = False
+                for skin in doc["skins"]:
+                    ent = skin["attachments"].get(slot, {})
+                    if old in ent:
+                        a = ent.pop(old)
+                        a.setdefault("path", f"{self.prefix}/{old}")
+                        ent[new] = a
+                        hit = True
+                if not hit:
+                    raise RigError(f"rename.{slot}.{old}: attachment not found")
+                renamed[(slot, old)] = new
+                s = next(x for x in doc["slots"] if x["name"] == slot)
+                if s.get("attachment") == old:
+                    s["attachment"] = new
+        if renamed:
+            for an in doc["animations"].values():
+                for slot, tls in an.get("slots", {}).items():
+                    for k in tls.get("attachment", []):
+                        if (slot, k.get("name")) in renamed:
+                            k["name"] = renamed[(slot, k["name"])]
         # 5. clips
         anims = doc["animations"]
         all_bones = set(bones)
@@ -256,8 +299,9 @@ class BassDropBuilder(RigBuilder):
                     for target, tls in frag.get(group, {}).items():
                         cur = base.setdefault(group, {}).setdefault(target, {})
                         for kind, keys in tls.items():
-                            if kind in cur:
-                                raise RigError(f"clips.{name}: {group[:-1]} '{target}' already has a '{kind}' timeline")
+                            if kind in cur and not spec.get("override"):
+                                raise RigError(f"clips.{name}: {group[:-1]} '{target}' already has a '{kind}' timeline"
+                                               " (override: true replaces it)")
                             cur[kind] = keys
                         base[group][target] = dict(sorted(cur.items()))
                     if group in base:

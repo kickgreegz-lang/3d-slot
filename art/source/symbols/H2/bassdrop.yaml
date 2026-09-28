@@ -1,0 +1,52 @@
+# sym_H2 Bass Drop additions (ANIMATION_SET 2.0 / 2.2), applied by tools/spine/examples/bass_drop/bdgen.py after the
+# stock generator. Frames at 30 fps; scale rows are [sx, sy]; clockwise spin = negative rotation (Y-up).
+kind: high
+untouched: [fx_glint]          # one twinkle on the record's hotspot, keyed here
+
+clips:
+  idle:
+    merge: true
+    bones:
+      record: {translate: [[0, [0, 0]], [20, [0, 0], sine_in_out], [36, [6, 0], sine_in_out], [54, [0, 0]], [75, [0, 0]]]}
+      fx_glint: {scale: [[0, 1], [39, 1, stepped], [40, 0.2, quad_out], [43, 1.1, sine_in_out], [48, 0.4, stepped], [49, 1], [75, 1]],
+                 rotate: [[0, 0], [40, 0, sine_in_out], [48, 30, stepped], [49, 0], [75, 0]]}
+    slots:
+      fx_glint: {alpha: [[0, 0], [40, 0, quad_out], [43, 1, sine_in_out], [48, 0], [75, 0]]}
+  land:
+    merge: true
+    bones:
+      record: {translate: [[0, [0, 0], quad_out], [2, [-5, 0], sine_in_out], [6, [2, 0], sine_in_out], [10, [0, 0]], [12, [0, 0]]]}
+  win:
+    merge: true
+    bones:
+      # the record ducks in (dip), then rolls out of the sleeve 40 units with a 90-degree spin at the pop (win_peak f8)
+      record: {translate: [[0, [0, 0], sine_out], [4, [-5, 0], expo_out], [8, [40, 0], sine_in_out], [12, [35, 0], sine_in_out],
+                           [16, [40, 0]], [24, [40, 0]]]}
+      disc: {rotate: [[0, 0], [4, 0, expo_out], [10, -100, sine_in_out], [14, -88, sine_in_out], [18, -90], [24, -90]]}
+      fx_glint: {scale: [[0, 1], [7, 1, stepped], [8, 0.2, quad_out], [10, 1.25, sine_in_out], [15, 0.4, stepped], [16, 1], [24, 1]],
+                 rotate: [[0, 0], [8, 0, sine_in_out], [15, 45, stepped], [16, 0], [24, 0]]}
+    slots:
+      fx_glint: {alpha: [[0, 0], [8, 0, quad_out], [10, 1], [15, 0], [24, 0]]}
+  win_loop:
+    merge: true
+    bones:
+      record: {translate: [[0, [40, 0]], [45, [40, 0]]]}
+      disc: {rotate: [[0, -90, linear], [45, -450]]}          # one full turn per loop, exact
+  explode:
+    merge: true
+    retime: {explode_done: 13}
+    # the record's scatter is the generated one (from the sleeve): after win_loop the 0.05 s mix pulls the record back
+    # in during the squeeze (f0-f2), and an explode straight from idle never pops it out first
+    bones:
+      disc: {scale: [[0, 1], [4, 1, expo_out], [15, 1.12]]}
+    slots:
+      disc: {attachment: [[2, disc_cracked], [4, disc_shards]]}
+      label: {attachment: [[4, null]]}                        # the shards carry the broken label
+  bass_react:
+    frames: 8
+    bones:
+      squash: {scale: [[0, 1, quad_out], [1, [1.03, 0.95]], [4, [0.99, 1.03]], [8, 1]]}
+      # the record (with its reflections) wobbles +-8 degrees in the sleeve and kicks out a little: a symmetric disc
+      # turning under a fixed sheen would not show the wobble
+      record: {rotate: [[0, 0, quad_out], [1, 8, sine_in_out], [3, -6, sine_in_out], [5, 3, sine_in_out], [6, 0], [8, 0]],
+               translate: [[0, [0, 0], quad_out], [1, [6, 0]], [4, [-1, 0]], [8, [0, 0]]]}

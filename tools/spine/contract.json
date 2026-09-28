@@ -31,12 +31,16 @@
     "explode_done": {},
     "sfx": { "string": "" },
     "vfx": { "string": "" },
-    "shake": { "float": 0 }
+    "shake": { "float": 0 },
+    "drop_release": {}, "lock_snap": {}, "mult_swap": {}, "threshold_hit": {}, "charge_start": {}, "boom": {},
+    "pump_hit": {}, "drop_hit": {}, "card_land": {}, "count_hit": {}, "crack": {}, "shatter": {}
   },
   "fxIds": [
     "fx_explode", "fx_dust", "fx_land_puff", "fx_sparkle", "fx_coins", "fx_confetti", "fx_spot_spark", "fx_scatter",
     "fx_shake", "fx_flash", "fx_coin_shower", "fx_title_shine", "fx_shockwave", "fx_lightning", "fx_neon_flicker",
-    "fx_trail", "fx_smoke_bg", "fx_poof", "fx_smoke", "fx_explosion_big"
+    "fx_trail", "fx_smoke_bg", "fx_poof", "fx_smoke", "fx_explosion_big",
+    "fx_orb", "fx_orb_trail", "fx_link_spark", "fx_threshold_sparks", "fx_bass_rings", "fx_speaker_blast",
+    "fx_wild_trail", "fx_wild_dust", "fx_wild_impact", "fx_mult_spark", "fx_lock_glint", "fx_crush", "fx_feature_blast"
   ],
   "animations": {
     "idle":               { "loop": true,  "frames": [60, 120], "required": ["high", "special"], "events": [] },
@@ -53,7 +57,26 @@
     "blur":               { "loop": true,  "frames": [1, 2],    "required": ["high", "special"], "events": [] },
     "dim":                { "loop": false, "frames": [0, 30],   "required": [], "events": [], "overlay": 1 },
     "blink":              { "loop": false, "frames": [3, 6],    "required": [], "events": [], "overlay": 2 },
-    "fx_glow":            { "loop": true,  "frames": [1, 120],  "required": [], "events": [], "overlay": 1 }
+    "fx_glow":            { "loop": true,  "frames": [1, 120],  "required": [], "events": [], "overlay": 1 },
+    "bass_react":         { "loop": false, "frames": [6, 10],   "required": [], "events": [], "overlay": 1 },
+    "drop_launch":        { "loop": false, "frames": [6, 10],   "required": ["wild"], "events": ["drop_release"], "endsAt": "drop_fall",
+                            "eventFrames": { "drop_release": { "target": [2, 2], "hard": [1, 3] } } },
+    "drop_fall":          { "loop": true,  "frames": [8, 16],   "required": ["wild"], "events": [] },
+    "drop_impact":        { "loop": false, "frames": [12, 18],  "required": ["wild"], "events": ["land_impact"], "endsAtSetup": true,
+                            "squash": { "bone": "squash", "sy": [0.70, 0.76], "gate": [0.68, 0.78], "volumeTol": 0.05 }, "cellOverflow": 0.2 },
+    "sticky_lock":        { "loop": false, "frames": [9, 15],   "required": ["wild"], "events": ["lock_snap"], "endsAt": "sticky_idle",
+                            "eventFrames": { "lock_snap": { "target": [6, 6], "hard": [5, 7] } } },
+    "sticky_idle":        { "loop": true,  "frames": [45, 90],  "required": ["wild"], "events": [] },
+    "mult_up":            { "loop": false, "frames": [9, 15],   "required": ["wild"], "events": ["mult_swap"], "endsAt": "sticky_idle",
+                            "eventFrames": { "mult_swap": { "target": [4, 4], "hard": [3, 5] } } },
+    "sticky_unlock":      { "loop": false, "frames": [6, 12],   "required": [], "events": [] }
+  },
+  "kinds": {
+    "$comment": "ANIMATION_SET 10 / 12 (CR-8; its animations, events and fx ids are in the blocks above: bass_react .. sticky_unlock, drop_release .. shatter, fx_orb .. fx_feature_blast). Animation rule keys: `overlay` = an additive track, so the first and last pose must be the setup pose; `cellOverflow` = allowed spill outside the cell (fraction of the cell), the opposite of `inCell`. `extends`: the animations the contract requires for that kind are required too. `symbol: false` = skeleton kinds with budgets and the static checks only (no root/squash/body rig, no symbol animation rules; their clip tables are checked per rig by tools/spine/examples/bass_drop/check_bd.mjs). Characters keep their own section below.",
+    "wild": { "extends": "special", "symbol": true, "budgets": { "bones": 34, "meshVertices": 300, "slots": 12, "clipping": 0, "physics": 4 },
+              "requiredEmptySlots": ["txt_wild", "txt_mult"], "requiredSkins": ["default", "mult", "sticky"] },
+    "ui":   { "symbol": false, "budgets": { "bones": 40, "meshVertices": 400, "slots": 30, "clipping": 0, "physics": 0 } },
+    "env":  { "symbol": false, "budgets": { "bones": 24, "meshVertices": 200, "slots": 16, "clipping": 0, "physics": 3 } }
   },
   "runtimeAliases": {
     "$comment": "Legacy runtime names. src/symbols/SpinePool.ts (SPINE_EVENT / SPINE_ANIM) now accepts both these and the contract names, so new rigs do not need them; gen.py emits them only with compat.runtime_aliases: true (older runtimes).",

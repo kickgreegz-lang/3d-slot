@@ -41,10 +41,10 @@ const BASE_STRINGS: GameStrings = {
     'rules.bassdrop.wilds': '{wilds} Wild(s)',
     'rules.jukejam.title': 'JUKE JAM',
     'rules.jukejam.body':
-      'End a base game round with the Groove Meter at {at} or more to trigger Juke Jam with {spins} Free Spins. The Groove Meter starts again from 0 when Juke Jam begins and keeps its value across all of its Free Spins. Dropped Wilds carry a multiplier from x{min} to x{max}: a winning cluster is multiplied by the sum of the Wild multipliers in it. Reaching {superAt} during Juke Jam upgrades it to Mega Mix with {addFs} extra Free Spins.',
+      'End a base game round with the Groove Meter at {at} or more to trigger Juke Jam with {spins} Free Spins. The Groove Meter starts again from 0 when Juke Jam begins and keeps its value across all of its Free Spins. Dropped Wilds carry a multiplier from ×{min} to ×{max}: a winning cluster is multiplied by the sum of the Wild multipliers in it. Reaching {superAt} during Juke Jam upgrades it to Mega Mix with {addFs} extra Free Spins.',
     'rules.megamix.title': 'MEGA MIX',
     'rules.megamix.body':
-      'End a base game round with the Groove Meter at {at} or more to trigger Mega Mix with {spins} Free Spins. The Groove Meter starts again from 0 and keeps its value across all of its Free Spins. Dropped Wilds carry a multiplier from x{min} to x{max} and are sticky: a sticky Wild returns to the cell it landed on at the start of every remaining Free Spin. Every time a sticky Wild is part of a win, its multiplier grows by 1, up to x{cap}.',
+      'End a base game round with the Groove Meter at {at} or more to trigger Mega Mix with {spins} Free Spins. The Groove Meter starts again from 0 and keeps its value across all of its Free Spins. Dropped Wilds carry a multiplier from ×{min} to ×{max} and are sticky: a sticky Wild returns to the cell it landed on at the start of every remaining Free Spin. Every time a sticky Wild is part of a win, its multiplier grows by 1, up to ×{cap}.',
 
     'rules.modes.bonus': 'Juke Jam feature',
     'rules.modes.super': 'Mega Mix feature',

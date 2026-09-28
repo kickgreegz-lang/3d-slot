@@ -3,17 +3,21 @@
 kind: wild
 
 slots:
-  - {name: txt_wild, bone: txt_wild, after: cap}        # runtime BitmapText "WILD" (i18n bd.wild) on the ribbon
+  - {name: txt_wild, bone: txt_wild, after: ribbon}     # runtime BitmapText "WILD" (i18n bd.wild) on the ribbon
   - {name: txt_mult, bone: txt_mult, after: badge}      # runtime BitmapText "x5" (Lilita One, cap height 90 units)
 
 # default = base game (no badge, no clamps); mult = Juke Jam (badge); sticky = Mega Mix (badge + clamps)
 skins:
   mult: [badge_t1, badge_t2, badge_t3, badge_t4, badge_t5]
-  sticky: [badge_t1, badge_t2, badge_t3, badge_t4, badge_t5, clamps, clamps_open]
+  sticky: [badge_t1, badge_t2, badge_t3, badge_t4, badge_t5, clamp_shut_L, clamp_open_L, clamp_shut_R, clamp_open_R]
 setup:
   badge: badge_t1           # the runtime attaches the tier (badge_t1..t5); empty in the default skin
-  clamps: clamps            # sticky skin only: locked clamps at rest (default / mult skins resolve it to nothing).
-                            # A sticky wild flies in skin mult and switches to sticky when sticky_lock starts.
+  clamp_L: clamp_shut_L     # sticky skin only: locked clamps at rest (default / mult skins resolve it to nothing).
+  clamp_R: clamp_shut_R     # A sticky wild flies in skin mult and switches to sticky when sticky_lock starts.
+rename:                     # ANIMATION_SET 2.6 attachment names (the regions keep their per-side images)
+  clamp_L: {clamp_shut_L: clamp, clamp_open_L: clamp_open}
+  clamp_R: {clamp_shut_R: clamp, clamp_open_R: clamp_open}
+untouched: [fx_trail, fx_ring]   # the speed streak and the impact ring are keyed only by the drop clips
 
 clips:
   # ---------------------------------------------------------------- contract clips, W-specific layers
@@ -23,13 +27,15 @@ clips:
       fx_glow: {alpha: [[0, 0], [42, 0, sine_in_out], [46, 0.22, sine_in_out], [54, 0], [90, 0]]}   # inlay glint
   explode:
     merge: true
+    override: true           # the sticky clamps spring open (f0-f2) and slide out: "released", not lost
     retime: {explode_done: 13}          # ANIMATION_SET 2.6: explode_done f13 (the contract allows the last 2 frames)
     slots:
       tooth: {attachment: [[2, tooth_cracked]]}
-      clamps: {attachment: [[1, clamps_open]]}                          # sticky: released, not lost
+      clamp_L: {attachment: [[1, clamp_open]]}
+      clamp_R: {attachment: [[1, clamp_open]]}
     bones:
-      clamp_L: {translate: [[0, [0, 0], quad_out], [2, [-22, 0], quad_out], [15, [-40, 0]]]}
-      clamp_R: {translate: [[0, [0, 0], quad_out], [2, [22, 0], quad_out], [15, [40, 0]]]}
+      clamp_L: {translate: [[0, [0, 0], quad_out], [2, [-22, 0], quad_out], [15, [-46, -8]]], rotate: [[0, 0], [2, 0, quad_out], [15, 8]]}
+      clamp_R: {translate: [[0, [0, 0], quad_out], [2, [22, 0], quad_out], [15, [46, -8]]], rotate: [[0, 0], [2, 0, quad_out], [15, -8]]}
 
   # ---------------------------------------------------------------- bass_react (track 1, additive, 8 f)
   bass_react:
@@ -37,6 +43,7 @@ clips:
     bones:
       squash: {scale: [[0, 1, quad_out], [1, [1.03, 0.95]], [4, [0.99, 1.03]], [8, 1]]}
       phys_chain_1: {translate: [[0, [0, 0], quad_out], [1, [0, -7]], [3, [2, 4]], [6, [0, 0]], [8, [0, 0]]]}
+      ribbon: {rotate: [[0, 0, quad_out], [1, -3], [4, 2], [8, 0]]}
     slots:
       fx_glow: {alpha: [[0, 0, quad_out], [1, 0.75], [8, 0]]}
 
@@ -47,34 +54,40 @@ clips:
     bones:
       squash: {scale: [[0, [1.15, 0.8], expo_out], [2, [0.86, 1.25], sine_in_out], [5, [0.97, 1.06]], [8, [0.953, 1.10]]]}
       tooth_tip: {rotate: [[0, 6, expo_out], [2, -12], [8, -6]]}
-      fx_glow: {scale: [[0, 1, expo_out], [2, 1.4], [5, 1.15], [6, 1], [8, 1]]}
+      ribbon: {rotate: [[0, 4, expo_out], [2, -6], [8, -3]]}
+      fx_glow: {scale: [[0, 1, expo_out], [2, 1.4], [8, 1.15]]}
+      fx_trail: {scale: [[0, [0.6, 0.4]], [5, [0.6, 0.4], expo_out], [8, [1, 1]]]}
       phys_chain_1: {translate: [[0, [0, 0], expo_out], [2, [-6, -10]], [8, [0, 0]]]}
     slots:
-      fx_glow:
-        alpha: [[0, 0.3, expo_out], [2, 1.0], [5, 0.55, stepped], [6, 0.6], [8, 0.6]]
-        attachment: [[0, glow], [6, trail_streak]]
+      fx_glow: {alpha: [[0, 0.3, expo_out], [2, 1.0], [8, 0.35]]}
+      fx_trail: {alpha: [[0, 0], [4, 0, quad_out], [8, 0.6]]}
   drop_fall:
     frames: 12
     loop: true
     bones:
       squash: {scale: [[0, [0.953, 1.10]], [6, [0.937, 1.14]], [12, [0.953, 1.10]]]}
       tooth_tip: {rotate: [[0, -6], [6, -9], [12, -6]]}
+      ribbon: {rotate: [[0, -3], [6, -5], [12, -3]]}
+      fx_glow: {scale: [[0, 1.15], [12, 1.15]]}
+      fx_trail: {scale: [[0, [1, 1]], [6, [0.92, 1.08]], [12, [1, 1]]]}
     slots:
-      fx_glow:
-        attachment: [[0, trail_streak]]
-        alpha: [[0, 0.6, quad_out], [3, 1.0], [6, 0.7, quad_out], [9, 1.0], [12, 0.6]]
+      fx_glow: {alpha: [[0, 0.35], [6, 0.45], [12, 0.35]]}
+      fx_trail: {alpha: [[0, 0.6, quad_out], [3, 1.0], [6, 0.7, quad_out], [9, 1.0], [12, 0.6]]}
   drop_impact:
     frames: 15
     events: [{name: land_impact, at: 0}]
     bones:
       squash: {scale: [[0, [0.953, 1.10], expo_out], [1, [1.18, 0.72], sine_in_out], [5, [0.95, 1.10]], [9, [1.015, 0.97]], [15, 1]]}
       tooth_tip: {rotate: [[0, -6, expo_out], [2, 9], [6, -3], [10, 1], [15, 0]]}
+      ribbon: {rotate: [[0, -3, expo_out], [2, 5], [6, -2], [10, 1], [15, 0]]}
       badge: {translate: [[0, [0, 0], expo_out], [1, [0, -12]], [4, [0, 3]], [7, [0, 0]], [15, [0, 0]]]}
-      fx_glow: {scale: [[0, 0.3, expo_out], [9, 1.6, stepped], [10, 1], [15, 1]]}
+      fx_glow: {scale: [[0, 1.15, expo_out], [2, 1.5], [15, 1]]}
+      fx_ring: {scale: [[0, 0.3, expo_out], [9, 1.6, stepped], [15, 1]]}           # invisible after f9: back to setup
+      fx_trail: {scale: [[0, [1, 1], expo_out], [3, [1, 0.3], stepped], [15, [1, 1]]]}
     slots:
-      fx_glow:
-        attachment: [[0, ring], [10, glow]]
-        alpha: [[0, 1, quad_out], [9, 0, stepped], [15, 0]]
+      fx_glow: {alpha: [[0, 0.35, expo_out], [2, 0.9, quad_in], [15, 0]]}
+      fx_ring: {alpha: [[0, 1, quad_out], [9, 0], [15, 0]]}
+      fx_trail: {alpha: [[0, 0.6, expo_out], [3, 0], [15, 0]]}
 
   # ---------------------------------------------------------------- sticky (Mega Mix) and multiplier
   sticky_lock:
@@ -86,18 +99,21 @@ clips:
       squash: {scale: [[0, 1], [5, 1, quad_out], [6, [1.04, 0.93]], [9, [0.99, 1.01]], [12, 1]]}
       badge: {scale: [[0, 1], [12, 1]]}
     slots:
-      clamps: {attachment: [[0, clamps_open], [6, clamps]]}
+      clamp_L: {attachment: [[0, clamp_open], [6, clamp]]}
+      clamp_R: {attachment: [[0, clamp_open], [6, clamp]]}
       fx_glow: {alpha: [[0, 0], [6, 0, quad_out], [7, 0.9], [10, 0.3], [12, 0.3]]}
   sticky_idle:
     frames: 60
     loop: true
     bones:
       badge: {scale: [[0, 1, quad_out], [3, 1.04], [10, 1], [30, 1, quad_out], [33, 1.04], [40, 1], [60, 1]]}
-      clamp_L: {scale: [[0, 1], [10, 1, quad_out], [12, 1.08], [15, 1], [60, 1]]}
-      clamp_R: {scale: [[0, 1], [40, 1, quad_out], [42, 1.08], [45, 1], [60, 1]]}
+      clamp_L: {scale: [[0, 1], [10, 1, quad_out], [12, 1.12], [16, 1], [60, 1]]}
+      clamp_R: {scale: [[0, 1], [40, 1, quad_out], [42, 1.12], [46, 1], [60, 1]]}
       squash: {scale: [[0, 1], [30, [0.994, 1.012]], [60, 1]]}
+      phys_chain_1: {translate: [[0, [0, 0]], [15, [1.5, 0]], [45, [-1.5, 0]], [60, [0, 0]]]}
     slots:
-      clamps: {attachment: [[0, clamps]]}
+      clamp_L: {attachment: [[0, clamp]]}
+      clamp_R: {attachment: [[0, clamp]]}
       fx_glow: {alpha: [[0, 0.3], [3, 0.42], [12, 0.3], [30, 0.3], [33, 0.42], [42, 0.3], [60, 0.3]]}
   mult_up:
     frames: 12
@@ -106,7 +122,8 @@ clips:
       badge: {scale: [[0, 1, quad_in], [3, [1.1, 0.85], expo_out], [5, 1.35, sine_in_out], [8, 0.96], [12, 1]]}
       fx_glow: {scale: [[0, 1, expo_out], [5, 1.3, sine_in_out], [12, 1]]}
     slots:
-      clamps: {attachment: [[0, clamps]]}
+      clamp_L: {attachment: [[0, clamp]]}
+      clamp_R: {attachment: [[0, clamp]]}
       fx_glow: {alpha: [[0, 0.3, expo_out], [5, 1.0, sine_in_out], [12, 0.3]]}
   sticky_unlock:
     frames: 9
@@ -114,5 +131,6 @@ clips:
       clamp_L: {translate: [[0, [0, 0], quad_out], [2, [6, 0], quad_in], [9, [-210, 0]]]}
       clamp_R: {translate: [[0, [0, 0], quad_out], [2, [-6, 0], quad_in], [9, [210, 0]]]}
     slots:
-      clamps: {attachment: [[0, clamps], [1, clamps_open]]}
+      clamp_L: {attachment: [[0, clamp], [1, clamp_open]]}
+      clamp_R: {attachment: [[0, clamp], [1, clamp_open]]}
       fx_glow: {alpha: [[0, 0.3], [9, 0]]}

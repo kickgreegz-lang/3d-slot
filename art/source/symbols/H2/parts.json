@@ -1,0 +1,125 @@
+{
+  "$comment": "sym_H2 parts (ANIMATION_SET 2.2): record + label rebuilt from the radial profile of art/source/symbols/H2/master_rig_1024.png (sym_H2_rig 434527a1), fx_groove = its reflections unblended (non-rotating), sleeve = master left of the lip + the lip shadow; explode / fx sprites drawn by tools/spine/examples/bass_drop/cut/cut_H2.py. Canvas 360 @2x, content 288 (cellScale 0.96).",
+  "symbol": "H2",
+  "canvas": [
+    360,
+    360
+  ],
+  "images": "../../spine/images",
+  "$blur": [
+    "sleeve",
+    "disc",
+    "label",
+    "fx_groove"
+  ],
+  "parts": [
+    {
+      "name": "glow",
+      "slot": "fx_glow",
+      "bbox": [
+        15,
+        15,
+        330,
+        330
+      ],
+      "z": 0,
+      "bone": "fx_glow",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        180.0,
+        180.0
+      ]
+    },
+    {
+      "name": "disc",
+      "bbox": [
+        70,
+        50,
+        259,
+        260
+      ],
+      "z": 1,
+      "bone": "disc",
+      "blur": true
+    },
+    {
+      "name": "disc_cracked",
+      "bbox": [
+        70,
+        50,
+        259,
+        260
+      ],
+      "z": 1,
+      "bone": "disc",
+      "slot": "disc"
+    },
+    {
+      "name": "disc_shards",
+      "bbox": [
+        62,
+        41,
+        275,
+        277
+      ],
+      "z": 1,
+      "bone": "disc",
+      "slot": "disc"
+    },
+    {
+      "name": "label",
+      "bbox": [
+        157,
+        136,
+        87,
+        87
+      ],
+      "z": 2,
+      "bone": "label",
+      "blur": true
+    },
+    {
+      "name": "fx_groove",
+      "bbox": [
+        213,
+        54,
+        114,
+        252
+      ],
+      "z": 3,
+      "bone": "record",
+      "blur": true
+    },
+    {
+      "name": "sleeve",
+      "bbox": [
+        31,
+        41,
+        214,
+        278
+      ],
+      "z": 4,
+      "bone": "sleeve",
+      "blur": true
+    },
+    {
+      "name": "glint",
+      "slot": "fx_glint",
+      "bbox": [
+        229,
+        68,
+        84,
+        84
+      ],
+      "z": 5,
+      "bone": "fx_glint",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        270.6,
+        110.2
+      ]
+    }
+  ]
+}

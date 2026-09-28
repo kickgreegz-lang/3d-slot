@@ -26,8 +26,19 @@
  *   growth at the RUNTIME content fit (SymbolRig.fit scales content to cellScale of the cell;
  *   cellScale from src/games/<GAME>/config.ts for sym_<ID>, else the art bible cellFill, or --cell-scale).
  * --kind auto: sym_W / sym_S -> special, other sym_H* -> high, sym_L* -> royal (nothing
- *   required), chr_* -> character, anything else -> special (strictest). Exit 0 = pass (warnings
- *   allowed unless --strict), 1 = contract failure, 2 = usage / unreadable input.
+ *   required), chr_* -> character, ui_* -> ui, env_* -> env, anything else -> special (strictest).
+ *   With GAME=<id> a symbol takes its `kind` from src/games/<id>/config.ts when that is a contract
+ *   kind (Bass Drop: W -> wild). Exit 0 = pass (warnings allowed unless --strict), 1 = contract
+ *   failure, 2 = usage / unreadable input.
+ * CR-8 kinds (docs/games/bass-drop/ANIMATION_SET.md 10 / 12, contract.json `kinds`): `wild` extends
+ *   `special` (its required animations, plus drop_launch / drop_fall / drop_impact / sticky_lock /
+ *   sticky_idle / mult_up) with 34 bones / 12 slots / 300 mesh vertices / 4 physics, the empty
+ *   txt_wild / txt_mult slots and the default / mult / sticky skins; `ui` and `env` are skeleton
+ *   kinds with budgets and the static checks only. CR-8 rule keys: `overlay` (additive track: the
+ *   first and last pose must be the setup pose, e.g. bass_react), `cellOverflow` (allowed spill
+ *   outside the cell, e.g. drop_impact 20 %), and drop_impact's own squash gate (sy 0.70-0.76,
+ *   error outside 0.68-0.78). Part bones: a bone without a contract prefix is a part bone and must
+ *   carry a slot or mesh weights (else a warning).
  * --kind character (2D mascots, ANIMATION_SET 5 / 10 / 12): character budgets (80 bones, 40 slots,
  *   2400 mesh vertices, 12 physics), biped + ctrl_look bones, look-at constraints, eye states and
  *   per-rig attachment sets, exact clip lengths and event frames from contract.json characters.rigs,
@@ -90,17 +101,34 @@ try {
   process.exit(2);
 }
 const skelName = path.basename(jsonPath).replace(/\.json$/, '');
+const KINDS = CONTRACT.kinds ?? {};
+const gameConfig = (() => {
+  // the active game's symbol registry (GAME env var): per-symbol kind and cellScale
+  const rel = `src/games/${process.env.GAME || 'swamp-funk'}/config.ts`;
+  try {
+    return { rel, text: fs.readFileSync(path.join(REPO, rel), 'utf8') };
+  } catch {
+    return { rel, text: '' };
+  }
+})();
 let kind = opt('kind', 'auto');
 if (kind === 'auto') {
   const id = skelName.replace(/^sym_/, '');
-  kind = /^chr_/.test(skelName) ? 'character' : (CONTRACT.symbolKinds[id] ?? 'special');
+  const m = /^sym_/.test(skelName) ? gameConfig.text.match(new RegExp(`id:\\s*'${id}'[^}]*?kind:\\s*'([a-z]+)'`)) : null;
+  const gameKind = m && (m[1] in KINDS || ['high', 'special', 'royal'].includes(m[1])) ? m[1] : null;
+  kind = /^chr_/.test(skelName) ? 'character' : /^ui_/.test(skelName) ? 'ui' : /^env_/.test(skelName) ? 'env' : (gameKind ?? CONTRACT.symbolKinds[id] ?? 'special');
 }
-if (!['high', 'special', 'royal', 'any', 'character'].includes(kind)) {
-  console.error(`validate: --kind must be auto|high|special|royal|any|character`);
+const KIND_NAMES = ['high', 'special', 'royal', 'any', 'character', ...Object.keys(KINDS).filter((k) => !k.startsWith('$'))];
+if (!KIND_NAMES.includes(kind)) {
+  console.error(`validate: --kind must be auto|${KIND_NAMES.join('|')}`);
   process.exit(2);
 }
 const isChar = kind === 'character';
-const BUD = isChar ? CONTRACT.characters.budgets : CONTRACT.budgets;
+const KD = KINDS[kind] ?? null;             // CR-8 kind (wild / ui / env) or null (contract symbol kinds)
+const isSymbolRig = !isChar && KD?.symbol !== false;
+const BUD = isChar ? CONTRACT.characters.budgets : { ...CONTRACT.budgets, ...(KD?.budgets ?? {}) };
+// the kinds whose `required` animations apply: wild extends special
+const reqKinds = [kind, ...(KD?.extends ? [KD.extends] : [])];
 
 // ---------------------------------------------------------------------- static JSON checks
 const sk = raw.skeleton ?? {};
@@ -116,14 +144,28 @@ const boneByName = new Map(bones.map((b) => [b.name, b]));
 const boneRe = new RegExp(CONTRACT.boneNames.pattern);
 if (isChar) characterStatic(raw, { CONTRACT, err, warn, info: (m) => info.push(m), skelName });
 else {
-  for (const req of ['root', 'squash', 'body']) if (!boneByName.has(req)) err(`bone "${req}" missing (ANIMATION_CONTRACT 2.3)`);
-  if (boneByName.get('squash')?.parent !== 'root') err('bone squash must be a child of root');
-  if (boneByName.get('body')?.parent !== 'squash') err('bone body must be a child of squash');
+  if (isSymbolRig) {
+    for (const req of ['root', 'squash', 'body']) if (!boneByName.has(req)) err(`bone "${req}" missing (ANIMATION_CONTRACT 2.3)`);
+    if (boneByName.get('squash')?.parent !== 'root') err('bone squash must be a child of root');
+    if (boneByName.get('body')?.parent !== 'squash') err('bone body must be a child of squash');
+  }
   if (bones[0]?.name !== 'root') err('first bone must be root');
+  // part bones (ANIMATION_CONTRACT 2.3: "parts hang below body"): a bone without a contract prefix is
+  // named after its part and must move art, i.e. carry a slot or weight mesh vertices
+  const artBones = new Set((raw.slots ?? []).map((s) => s.bone));
+  for (const skin of raw.skins ?? [])
+    for (const ent of Object.values(skin.attachments ?? {}))
+      for (const a of Object.values(ent)) {
+        if (a.type !== 'mesh' || !Array.isArray(a.vertices) || a.vertices.length === a.uvs.length) continue;
+        for (let i = 0; i < a.vertices.length; ) {
+          const n = a.vertices[i++];
+          for (let k = 0; k < n; k++, i += 4) if (bones[a.vertices[i]]) artBones.add(bones[a.vertices[i]].name);
+        }
+      }
   for (const b of bones) {
     if (!boneRe.test(b.name)) err(`bone "${b.name}": not snake_case`);
-    if (!CONTRACT.boneNames.fixed.includes(b.name) && !CONTRACT.boneNames.prefixes.some((p) => b.name.startsWith(p)))
-      warn(`bone "${b.name}": no contract prefix (${CONTRACT.boneNames.prefixes.join(' ')})`);
+    if (!CONTRACT.boneNames.fixed.includes(b.name) && !CONTRACT.boneNames.prefixes.some((p) => b.name.startsWith(p)) && !artBones.has(b.name))
+      warn(`bone "${b.name}": no contract prefix (${CONTRACT.boneNames.prefixes.join(' ')}) and no art (a part bone carries a slot or mesh weights)`);
     if (b.name.startsWith('fx_') && b.parent !== 'root') err(`bone "${b.name}": fx_* bones must be children of root`);
   }
 }
@@ -165,6 +207,16 @@ for (const b of physBones) if (!phys.some((c) => c.bone === b)) err(`bone "${b}"
 
 const slots = raw.slots ?? [];
 if (slots.length > BUD.slots) err(`budget: ${slots.length} slots > ${BUD.slots}`);
+if (BUD.physics !== undefined && !isChar && phys.length > BUD.physics) err(`budget: ${phys.length} physics constraints > ${BUD.physics} (kind ${kind})`);
+for (const n of KD?.requiredEmptySlots ?? []) {
+  const s = slots.find((x) => x.name === n);
+  if (!s) err(`required empty slot "${n}" missing (kind ${kind}: runtime BitmapText via addSlotObject)`);
+  else {
+    if (s.attachment) err(`slot "${n}" must be empty at setup (runtime text), has "${s.attachment}"`);
+    for (const skin of raw.skins ?? []) if (skin.attachments?.[n]) err(`slot "${n}" must carry no attachment (skin ${skin.name})`);
+  }
+}
+for (const n of KD?.requiredSkins ?? []) if (!(raw.skins ?? []).some((s) => s.name === n)) err(`skin "${n}" missing (kind ${kind})`);
 for (const s of slots) {
   if ((s.blend ?? 'normal') !== 'normal' && !String(s.bone).startsWith('fx_'))
     err(`slot "${s.name}": blend "${s.blend}" only allowed on fx_* slots`);
@@ -411,16 +463,18 @@ if (data && isChar) {
   }
   const TOL = 0.02; // px / 0.01 matrix units / colour steps
 
-  const required = Object.entries(CONTRACT.animations)
-    .filter(([, r]) => r.required.includes(kind))
-    .map(([n]) => n);
+  const required = isSymbolRig ? Object.entries(CONTRACT.animations)
+    .filter(([, r]) => r.required.some((k) => reqKinds.includes(k)))
+    .map(([n]) => n) : [];
   for (const n of required) if (!data.findAnimation(n)) err(`missing required animation "${n}" (kind ${kind})`);
-  for (const a of data.animations) if (!(a.name in CONTRACT.animations) && !Object.keys(CONTRACT.runtimeAliases.animations).includes(a.name)) {
+  if (isSymbolRig) for (const a of data.animations) if (!(a.name in CONTRACT.animations) && !Object.keys(CONTRACT.runtimeAliases.animations).includes(a.name)) {
     if (!/^(reveal|expand|sticky_lock|upgrade)$/.test(a.name)) warn(`animation "${a.name}" is not in the contract`);
   }
+  if (!isSymbolRig) info.push(`kind ${kind}: skeleton budgets and static checks only; its clip list is checked per rig (ANIMATION_SET tables, check_bd.mjs)`);
 
   for (const anim of data.animations) {
-    const rule = CONTRACT.animations[anim.name] ?? CONTRACT.animations[CONTRACT.runtimeAliases.animations[anim.name]] ?? { loop: false, frames: [0, 1e9], events: [] };
+    const noRule = { loop: false, frames: [0, 1e9], events: [] };
+    const rule = !isSymbolRig ? noRule : CONTRACT.animations[anim.name] ?? CONTRACT.animations[CONTRACT.runtimeAliases.animations[anim.name]] ?? noRule;
     const frames = Math.round(anim.duration * FPS * 1000) / 1000;
     const rep = { frames, loop: rule.loop, events: [], maxExtent: null };
     report.animations[anim.name] = rep;
@@ -483,6 +537,12 @@ if (data && isChar) {
       }
       if (spec.fromEnd !== undefined && frames - f.frame > spec.fromEnd + 1e-3) warn(`${anim.name}: ${ev} on frame ${f.frame}, more than ${spec.fromEnd} frames before the end (${frames})`);
     }
+    if (rule.cellOverflow !== undefined) {
+      const over = Math.max(ext.x1 - half, -half - ext.x0, ext.y1 - half, -half - ext.y0);
+      rep.overflowPct = Math.round((Math.max(0, over) / cell) * 1000) / 10;
+      if (over > rule.cellOverflow * cell + 1)
+        err(`${anim.name}: spills ${over.toFixed(1)} units outside the ${cell}x${cell} cell (allowed ${Math.round(rule.cellOverflow * 100)}% = ${(rule.cellOverflow * cell).toFixed(0)} units; extent x ${ext.x0.toFixed(1)}..${ext.x1.toFixed(1)}, y ${ext.y0.toFixed(1)}..${ext.y1.toFixed(1)})`);
+    }
     if (rule.inCell) {
       const over = Math.max(ext.x1 - half, -half - ext.x0, ext.y1 - half, -half - ext.y0);
       if (over > 1) err(`${anim.name}: leaves the ${cell}x${cell} cell by ${over.toFixed(1)} units (extent x ${ext.x0.toFixed(1)}..${ext.x1.toFixed(1)}, y ${ext.y0.toFixed(1)}..${ext.y1.toFixed(1)}, physics kick +-${kick})`);
@@ -518,6 +578,13 @@ if (data && isChar) {
     if (rule.endsAtSetup) {
       const d = poseDiff(last, setupSnap);
       if (d.d > TOL) err(`${anim.name}: does not end on the setup pose (diff ${d.d.toFixed(3)}, ${d.why})`);
+    }
+    if (rule.overlay && !rule.loop && anim.duration > 0) {
+      // additive overlay (MixBlend.add): a non-zero delta at either end would jump in or stick
+      for (const [where, snap] of [['first', first], ['last', last]]) {
+        const d = poseDiff(snap, setupSnap);
+        if (d.d > TOL) err(`${anim.name}: additive overlay (track ${rule.overlay}) must ${where === 'first' ? 'start' : 'end'} on the setup pose (diff ${d.d.toFixed(3)}, ${d.why})`);
+      }
     }
     if (rule.endsAt && data.findAnimation(rule.endsAt)) {
       const d = poseDiff(last, sample(data.findAnimation(rule.endsAt), 0));

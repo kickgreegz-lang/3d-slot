@@ -268,7 +268,8 @@ export class OrbField {
     o.halo.rotation = rot;
     o.halo.width = halo * stretch;
     o.halo.height = halo;
-    o.halo.tint = tint;
+    // tint on change only (pixi's tint setter allocates even for an unchanged value)
+    if (o.halo.tint !== tint) o.halo.tint = tint;
   }
 
   private trail(o: Orb, k: number, life: number, x: number, y: number): void {

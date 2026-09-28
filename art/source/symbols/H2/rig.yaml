@@ -1,0 +1,32 @@
+# sym_H2 Vinyl Record (docs/games/bass-drop/ANIMATION_SET.md 2.2: medium, rest angle 0).
+# Parts: art/source/symbols/H2/parts.json (tools/spine/examples/bass_drop/cut/cut_H2.py). Coordinates: 360x360 @2x
+# canvas, image space (y down). Build: tools/spine/examples/bass_drop/build.sh H2 [--cut] [--capture dir].
+# 6 slots: fx_glow, disc, label, fx_groove, sleeve, fx_glint. The record is whole (rebuilt from its radial profile):
+# `record` slides it out of the sleeve, `disc` spins it (the label rides the disc), and the painted reflections
+# (fx_groove, a normal-blend sheen) ride the slide but not the spin, so the light stays put while it turns.
+symbol: H2
+parts: parts.json
+kind: high
+
+bones:
+  - {name: sleeve, parent: body, joint: [122.8, 182.5]}
+  - {name: record, parent: body, joint: [200.4, 179.6]}
+  - {name: disc, parent: record, joint: [200.4, 179.6], tip: [200.4, 130.0]}
+  - {name: label, parent: disc, joint: [200.4, 179.6]}
+  - {name: fx_glint, parent: root, joint: [270.6, 110.2]}
+  - {name: fx_glow, parent: root, joint: [180.0, 180.0]}
+
+motion:
+  idle: {frames: 75, sway: 1.2}
+  land: {squash: 0.85, rebound: 0.06, frames: 12}
+  win: {pop: 1.25}
+  win_loop: {frames: 45, beats: 2}
+  explode: {frames: 15, burst_frame: 2, fade_from: 4, scatter: 60, spin: 20, burst_scale: 1.12, end_scale: 1.15, body_fade: [3, 9]}
+  appear: {frames: 9}
+  blur: {frames: 1}
+
+accents:
+  land:
+    - {bone: sleeve, type: squash, amount: 0.06, at: impact+1}
+  win:
+    - {bone: sleeve, type: squash, amount: 0.07, at: peak}

@@ -1,0 +1,55 @@
+# sym_H1 Golden Boombox (docs/games/bass-drop/ANIMATION_SET.md 2.1: heavy, rest angle -6 degrees).
+# Parts: art/source/symbols/H1/parts.json (tools/spine/examples/bass_drop/cut/cut_H1.py). Coordinates: 360x360 @2x
+# canvas, image space (y down). Build: tools/spine/examples/bass_drop/build.sh H1 [--cut] [--capture dir].
+# 8 slots: fx_glow, antenna, body, cassette_door, speaker_L, speaker_R, handle, fx_glint.
+symbol: H1
+parts: parts.json
+kind: high
+
+bones:
+  # the handle bone lies on the post-socket line: its scaleY / shearX leave the posts in their sockets
+  - {name: handle, parent: body, joint: [181.0, 102.7], tip: [276.6, 91.4]}
+  - {name: speaker_L, parent: body, joint: [140.2, 235.0]}
+  - {name: speaker_R, parent: body, joint: [283.8, 200.8]}
+  # hinged at the bottom edge of the tape door (bone x along the hinge)
+  - {name: cassette_door, parent: body, joint: [218.0, 221.0], tip: [245.2, 215.4]}
+  # telescopic antenna from where it leaves the body's top-right corner (stiff chain)
+  - {name: phys_antenna_1, parent: body, joint: [308.5, 99.1], tip: [312.1, 75.9]}
+  - {name: phys_antenna_2, parent: phys_antenna_1, joint: [312.1, 75.9], tip: [315.8, 52.6]}
+  - {name: phys_antenna_3, parent: phys_antenna_2, joint: [315.8, 52.6], tip: [319.5, 29.4]}
+  - {name: fx_glint, parent: root, joint: [113.3, 196.7]}
+  - {name: fx_glow, parent: root, joint: [180.0, 185.0]}
+
+meshes:
+  antenna: {type: grid, cols: 2, rows: 7, weights: {mode: idw, bones: [phys_antenna_1, phys_antenna_2, phys_antenna_3], power: 3}}
+
+physics:
+  # rotate mix < 1: a stiff telescopic rod whips a few degrees, it does not flop (land + the contract kick)
+  - {bone: phys_antenna_1, preset: stiff, rotate: 0.45, inertia: 0.5}
+  - {bone: phys_antenna_2, preset: stiff, rotate: 0.5, inertia: 0.5}
+  - {bone: phys_antenna_3, preset: stiff, rotate: 0.55, inertia: 0.5}
+
+motion:
+  idle: {frames: 90, sway: 1.2}
+  land: {squash: 0.84, rebound: 0.06, frames: 12}          # heavy: a touch deeper, same single rebound
+  win: {pop: 1.25}
+  win_loop: {frames: 45, beats: 2}
+  explode: {frames: 15, burst_frame: 2, fade_from: 6, scatter: 90, spin: 45, burst_scale: 1.18, end_scale: 1.25, body_fade: [3, 9]}
+  appear: {frames: 9}
+  blur: {frames: 1}
+
+accents:
+  idle:
+    - {bone: speaker_L, type: pulse, amount: 0.03, beats: 2}
+    - {bone: speaker_R, type: pulse, amount: 0.03, beats: 2, offset: 1}
+  land:
+    - {bone: speaker_L, type: pump, amount: 0.1, at: impact+1}
+    - {bone: speaker_R, type: pump, amount: 0.1, at: impact+2}
+    - {bone: handle, type: squash, amount: 0.12, at: impact+1}
+  win:
+    - {bone: speaker_L, type: pump, amount: 0.22, at: peak}
+    - {bone: speaker_R, type: pump, amount: 0.22, at: peak+1}
+    - {bone: handle, type: squash, amount: -0.1, at: dip}
+  win_loop:
+    - {bone: speaker_L, type: pulse, amount: 0.1, beats: 2}
+    - {bone: speaker_R, type: pulse, amount: 0.1, beats: 2, offset: 1}

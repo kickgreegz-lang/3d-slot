@@ -3,7 +3,7 @@
 #   tools/spine/examples/bass_drop/build.sh <H1|H2|H3|H4|W|meter> [--cut] [--capture <dir>] [--scenarios a,b] [--provenance]
 # 1. --cut: re-cut the parts from the approved masters (cut/cut_<ID>.py) and make the _blur variants
 # 2. bdgen.py (stock tools/spine generator + bassdrop.yaml) -> build/spine/bd/<skeleton>.json
-# 3. tools/spine/validate.mjs (stock contract gate; specials use --cell per tools/spine/README "Headroom")
+# 3. tools/spine/validate.mjs --strict (contract + CR-8 kinds wild / ui; the wild uses --cell per tools/spine/README "Headroom")
 # 4. check_bd.mjs (ANIMATION_SET 2 / 3 / 10 / 12 rules: CR-8 clips, exact clip lengths and event frames, budgets)
 # 5. tools/spine/pack.py -> build/spine/bd/<skeleton>.atlas/.png, validate.mjs --atlas
 # 6. --capture: capture_bd.mjs contact sheets on spine-pixi-v8
@@ -27,10 +27,13 @@ while [ $# -gt 0 ]; do
 done
 cd "$REPO"
 if [ "$ID" = meter ]; then
-  SK=ui_groove_meter; SRC=art/source/ui/meter; KINDV=any; CELL=(); CHK=(--kind ui)
+  SK=ui_groove_meter; SRC=art/source/ui/meter; KINDV=ui; CELL=(); CHK=(--kind ui)
 else
-  SK="sym_$ID"; SRC="art/source/symbols/$ID"; KINDV=high; CELL=(); CHK=()
-  [ "$ID" = W ] && { KINDV=special; CELL=(--cell 368); }
+  # highs fill 95-97 % of the cell and the contract land squash (sx 1.09) alone leaves a literal 300-unit cell
+  # (ANIMATION_CONTRACT 3.1 open decision, tools/spine README "Headroom"): gate them on their 360 authoring canvas
+  SK="sym_$ID"; SRC="art/source/symbols/$ID"; KINDV=high; CELL=(--cell 360); CHK=()
+  # the wild is a special-size symbol (cellScale 1.02): contract land gate on a 368 cell (tools/spine README "Headroom")
+  [ "$ID" = W ] && { KINDV=wild; CELL=(--cell 368); }
 fi
 OUT=build/spine/bd
 mkdir -p "$OUT"
@@ -41,12 +44,11 @@ if [ "$CUT" = 1 ]; then
 fi
 PROVARGS=(); [ "$PROV" = 1 ] && PROVARGS=(--manifest art/manifest.json)
 "$PY" "$HERE/bdgen.py" "$SRC/rig.yaml" -o "$OUT/$SK.json" --quiet "${PROVARGS[@]}"
-GAME=bass-drop node tools/spine/validate.mjs "$OUT/$SK.json" --kind "$KINDV" "${CELL[@]}" --report "build/qa/rigs/$SK/validate.json" --quiet \
-  || { echo "build.sh: validate.mjs failed for $SK" >&2; [ "$ID" = meter ] || exit 1; }
-node "$HERE/check_bd.mjs" "$OUT/$SK.json" "${CHK[@]}" --report "build/qa/rigs/$SK/check_bd.json" --quiet
+GAME=bass-drop node tools/spine/validate.mjs "$OUT/$SK.json" --kind "$KINDV" "${CELL[@]}" --strict --report "build/qa/rigs/$SK/validate.json" --quiet \
+  || { echo "build.sh: validate.mjs --strict failed for $SK" >&2; exit 1; }
+node "$HERE/check_bd.mjs" "$OUT/$SK.json" "${CHK[@]}" --strict --report "build/qa/rigs/$SK/check_bd.json" --quiet
 "$PY" tools/spine/pack.py --images art/source/spine/images --skeleton "$OUT/$SK.json" --out "$OUT" --name "$SK" --quiet "${PROVARGS[@]}"
-GAME=bass-drop node tools/spine/validate.mjs "$OUT/$SK.json" --kind "$KINDV" "${CELL[@]}" --atlas "$OUT/$SK.atlas" --quiet \
-  || { [ "$ID" = meter ] || exit 1; }
+GAME=bass-drop node tools/spine/validate.mjs "$OUT/$SK.json" --kind "$KINDV" "${CELL[@]}" --atlas "$OUT/$SK.atlas" --strict --quiet
 echo "build.sh: $SK ok -> $OUT/$SK.{json,atlas,png}"
 if [ -n "$CAP" ]; then
   node "$HERE/capture_bd.mjs" --skel "$OUT/$SK.json" --atlas "$OUT/$SK.atlas" --out "$CAP" --scenarios "$SCEN"

@@ -1,0 +1,50 @@
+# sym_H3 Crawfish (docs/games/bass-drop/ANIMATION_SET.md 2.3: medium, rest angle -14 degrees).
+# Parts: art/source/symbols/H3/parts.json (tools/spine/examples/bass_drop/cut/cut_H3.py). Coordinates: 360x360 @2x
+# canvas, image space (y down). Build: tools/spine/examples/bass_drop/build.sh H3 [--cut] [--capture dir].
+# 8 slots: fx_glow, antenna_R, antenna_L, tail_fan, claw_R, body, eyes, claw_L. The crawfish faces its right
+# (screen left): claw_R is the raised claw, claw_L the lower one in front of the belly.
+# Physics budget (ANIMATION_SET 10: 4 per symbol) -> each antenna is a 2-bone stiff chain (2.3 lists 3 + 3).
+symbol: H3
+parts: parts.json
+kind: high
+
+bones:
+  - {name: tail_fan, parent: body, joint: [271.4, 231.4], tip: [301.2, 228.7]}
+  - {name: claw_R, parent: body, joint: [127.0, 185.3], tip: [75.5, 69.4]}
+  - {name: pincer_R, parent: claw_R, joint: [107.0, 143.3], tip: [112.1, 78.2]}
+  - {name: claw_L, parent: body, joint: [215.8, 181.9], tip: [254.4, 242.2]}
+  - {name: pincer_L, parent: claw_L, joint: [229.7, 224.6], tip: [230.7, 277.8]}
+  - {name: phys_antenna_1_R, parent: body, joint: [133.8, 110.7], tip: [161.0, 41.7]}
+  - {name: phys_antenna_2_R, parent: phys_antenna_1_R, joint: [161.0, 41.7], tip: [232.4, 88.4]}
+  - {name: phys_antenna_1_L, parent: body, joint: [153.1, 110.0], tip: [216.3, 51.1]}
+  - {name: phys_antenna_2_L, parent: phys_antenna_1_L, joint: [216.3, 51.1], tip: [295.1, 78.9]}
+  - {name: face_eyes, parent: body, joint: [161.6, 116.8]}
+  - {name: fx_glow, parent: root, joint: [180.0, 185.0]}
+
+roles: {eyes: []}          # the eye states are attachments (open / half / closed / wide): no generated scale blinks
+
+meshes:
+  claw_R: {type: trace, spacing: 13, weights: {mode: idw, bones: [claw_R, pincer_R], power: 6}}
+  claw_L: {type: trace, spacing: 13, weights: {mode: idw, bones: [claw_L, pincer_L], power: 6}}
+  antenna_R: {type: trace, spacing: 15, weights: {mode: idw, bones: [phys_antenna_1_R, phys_antenna_2_R], power: 3}}
+  antenna_L: {type: trace, spacing: 15, weights: {mode: idw, bones: [phys_antenna_1_L, phys_antenna_2_L], power: 3}}
+
+physics:
+  - {bone: phys_antenna_1_R, preset: stiff, rotate: 0.6, inertia: 0.5}
+  - {bone: phys_antenna_2_R, preset: stiff, rotate: 0.7, inertia: 0.6}
+  - {bone: phys_antenna_1_L, preset: stiff, rotate: 0.6, inertia: 0.5}
+  - {bone: phys_antenna_2_L, preset: stiff, rotate: 0.7, inertia: 0.6}
+
+motion:
+  idle: {frames: 105, sway: 1.5}
+  land: {squash: 0.85, rebound: 0.06, frames: 12}
+  win: {pop: 1.25, wiggle: 5}
+  win_loop: {frames: 45, beats: 2, sway: 3}
+  explode: {frames: 15, burst_frame: 2, fade_from: 5, scatter: 80, spin: 40, burst_scale: 1.15, end_scale: 1.2, body_fade: [3, 9]}
+  appear: {frames: 9}
+  blur: {frames: 1}
+
+accents:
+  land:
+    - {bone: claw_R, type: wiggle, amount: 5, at: impact+1, count: 2, frames: 10}
+    - {bone: tail_fan, type: wiggle, amount: 8, at: impact+1, count: 2, frames: 10}

@@ -60,7 +60,9 @@ if (!isUi) {
   if (isW) {
     Object.assign(SCEN, {
       drop: { frames: 8 + 24 + 15 + 8, every: 1, setup: `${sk('mult')} ${att('badge', 'badge_t3')} ${q("play('drop_launch', false)")}; ${q("queue('drop_fall', true, 0)")}; ${q("queue('drop_impact', false, 0.8 - 0.27)")}; ${q("queue('idle', true, 0)")}` },
-      sticky: { frames: 15 + 12 + 30, every: 1, setup: `${sk('sticky')} ${att('badge', 'badge_t2')} ${q("play('drop_impact', false)")}; ${q("queue('sticky_lock', false, 0)")}; ${q("queue('sticky_idle', true, 0)")}` },
+      // runtime flow: the wild flies and lands in skin mult; the sticky skin (clamps) comes on with sticky_lock f0
+      sticky: { frames: 15 + 12 + 30, every: 1, setup: `${sk('mult')} ${att('badge', 'badge_t2')} ${q("play('drop_impact', false)")}; ${q("queue('sticky_lock', false, 0)")}; ${q("queue('sticky_idle', true, 0)")}`,
+        drive: (f) => (f === 15 ? `${sk('sticky')} ${att('badge', 'badge_t2')}` : '') },
       mult_up: { frames: 70, every: 2, setup: `${sk('sticky')} ${att('badge', 'badge_t2')} ${q("play('sticky_idle', true)")}; ${q("queue('mult_up', false, 0.6)")}; ${q("queue('sticky_idle', true, 0)")}`,
         drive: (f) => (f === 18 + 4 ? att('badge', 'badge_t4') : '') },
       unlock: { frames: 24, every: 1, setup: `${sk('sticky')} ${att('badge', 'badge_t2')} ${q("play('sticky_idle', true)")}; ${q("queue('sticky_unlock', false, 0.3)")}` },

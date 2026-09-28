@@ -86,6 +86,8 @@ def raster(shapes, W: int, H: int) -> np.ndarray:
         elif "rect" in s:
             x0, y0, x1, y1 = map(float, s["rect"])
             d.rectangle([x0, y0, x1, y1], fill=255)
+        elif "wedge" in s:
+            d.polygon([tuple(q) for q in wedge_poly(s["wedge"])], fill=255)
         elif "capsule" in s:
             x0, y0, x1, y1, r = map(float, s["capsule"])
             d.line([(x0, y0), (x1, y1)], fill=255, width=int(round(2 * r)))
@@ -94,6 +96,46 @@ def raster(shapes, W: int, H: int) -> np.ndarray:
         else:
             raise SystemExit(f"unknown shape {s}")
     return np.asarray(im) > 127
+
+
+def rot_pt(h, deg, p):
+    """Rotate p about h by deg, visually clockwise in image space (y down): a jaw opening downward."""
+    a = math.radians(deg)
+    dx, dy = p[0] - h[0], p[1] - h[1]
+    return [h[0] + dx * math.cos(a) - dy * math.sin(a), h[1] + dx * math.sin(a) + dy * math.cos(a)]
+
+
+def resolve_pt(p):
+    if isinstance(p, dict) and "rot" in p:
+        h, deg, q = p["rot"]
+        return rot_pt(h, float(deg), q)
+    return [float(p[0]), float(p[1])]
+
+
+def wedge_poly(w: dict) -> list:
+    """Mouth gap at jaw angle `deg`: the head's lip line (`upper`, hinge first) moved `up` px up, then the jaw's
+    lip line (`lower`, default = upper) rotated by deg about `hinge` and moved `down` px down, back to the hinge."""
+    h = w["hinge"]
+    up = [[x, y - float(w.get("up", 10))] for x, y in w["upper"]]
+    low = [rot_pt(h, float(w["deg"]), q) for q in (w.get("lower") or w["upper"])]
+    dn = float(w.get("down", 10))
+    # push the lower line away from the hinge side (perpendicular to the rotated line, downward)
+    a = math.radians(float(w["deg"]))
+    low = [[x - dn * math.sin(a), y + dn * math.cos(a)] for x, y in low]
+    return [tuple(h)] + [tuple(q) for q in up] + [tuple(q) for q in reversed(low)]
+
+
+def catmull(pts: np.ndarray, samples: int = 12) -> np.ndarray:
+    """Centripetal-free uniform Catmull-Rom through the points (ends duplicated)."""
+    P = np.vstack([pts[0], pts, pts[-1]])
+    out = []
+    for i in range(1, len(P) - 2):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
+        for t in np.linspace(0, 1, samples, endpoint=False):
+            t2, t3 = t * t, t * t * t
+            out.append(0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3))
+    out.append(P[-2])
+    return np.asarray(out)
 
 
 def bbox_of(mask: np.ndarray, pad: int = 0):
@@ -140,8 +182,8 @@ def inpaint(rgb: np.ndarray, known: np.ndarray, todo: np.ndarray, radius: int = 
 
 def similarity_from(src, dst) -> np.ndarray:
     """2 point pairs -> similarity (3x3), 3+ pairs -> least-squares affine."""
-    src = np.asarray(src, np.float64)
-    dst = np.asarray(dst, np.float64)
+    src = np.asarray([resolve_pt(q) for q in src], np.float64)
+    dst = np.asarray([resolve_pt(q) for q in dst], np.float64)
     if len(src) == 2:
         (a, b), (c, d) = src
         (e, f), (g, h) = dst
@@ -197,6 +239,9 @@ class Cut:
         self.fig = self.alpha > 0.5
         lum = sl.luminance(self.rgb)
         self.ink = self.fig & (lum < float(self.S.get("inkLum", 0.2)))
+        if self.S.get("inkChroma"):
+            # outline ink is near-neutral black; dark saturated shading (a maroon fold) is paint
+            self.ink &= (self.rgb.max(axis=2) - self.rgb.min(axis=2)) < float(self.S["inkChroma"])
         inkc = self.rgb[self.ink & (self.alpha > 0.99)]
         self.ink_rgb = np.median(inkc, axis=0) if len(inkc) else np.array([0.07, 0.06, 0.07], np.float32)
         f = self.S["fit"]
@@ -256,6 +301,42 @@ class Cut:
             p.setdefault("z", i)
             p["order"] = i
             P.append(p)
+        # cuts: [{line: [[x0,y0],[x1,y1]], parts: {pidA: [refx,refy], pidB: [..]}, w: 10}] -> a seed strip on each
+        # side of the line (the side of each part's reference point): the watershed cannot move a boundary
+        # that runs through continuous paint with no outline (elbows, knees, the jaw/throat line)
+        byid0 = {}
+        for q in P:
+            byid0.setdefault(q["slot"], q)
+            byid0[q["pid"]] = q
+        for c in self.S.get("cuts") or []:
+            (ax, ay), (bx, by) = c["line"]
+            dx, dy = bx - ax, by - ay
+            L = math.hypot(dx, dy) or 1.0
+            nx, ny = -dy / L, dx / L
+            ext = float(c.get("ext", 0))
+            ax2, ay2, bx2, by2 = ax - dx / L * ext, ay - dy / L * ext, bx + dx / L * ext, by + dy / L * ext
+            w = float(c.get("w", 10))
+            for pid, ref in c["parts"].items():
+                sg = 1.0 if (ref[0] - ax) * nx + (ref[1] - ay) * ny > 0 else -1.0
+                o = 0.75  # half a pixel either side of the line stays unlabelled (the watershed boundary)
+                strip = [[ax2 + sg * nx * o, ay2 + sg * ny * o], [bx2 + sg * nx * o, by2 + sg * ny * o],
+                         [bx2 + sg * nx * w, by2 + sg * ny * w], [ax2 + sg * nx * w, ay2 + sg * ny * w]]
+                q = byid0[pid]
+                q["seed"] = list(q.get("seed") or []) + [strip]
+        # joints: {name: {at, r, child, parent, take: true, extend: 1.0}} -> the child (drawn in front) takes a
+        # disc of master pixels centred on the joint (its overlap cap; exact at rest), the parent fills a disc
+        # under it (so a rotating child never uncovers a hole)
+        byid = byid0
+        for jn, j in (self.S.get("joints") or {}).items():
+            x, y = j["at"]
+            r = float(j["r"])
+            within = j.get("within") or [k for k in (j.get("parent"), j.get("child")) if k]
+            if j.get("child") and j.get("take", True):
+                c = byid[j["child"]]
+                c.setdefault("_jointTake", []).append(({"circle": [x, y, r]}, within))
+            if j.get("parent") and j.get("extend", 1.0):
+                q = byid[j["parent"]]
+                q.setdefault("_jointExtend", []).append(({"circle": [x, y, r * float(j.get("extend", 1.0))]}, within))
         # setup attachment per slot = first listed unless one says setup: true
         by_slot: dict[str, list] = {}
         for p in P:
@@ -272,37 +353,71 @@ class Cut:
         return raster(shapes, self.W, self.H) if shapes else np.zeros((self.H, self.W), bool)
 
     def ownership(self, P):
+        """Who owns each master pixel at rest. `seed` shapes are watershed markers on the painted image
+        (boundaries snap to the outline ink between the markers); `region` shapes are hard claims
+        (front part wins). `limit` shapes bound a part. Figure pixels nobody reached go to the nearest part."""
         setups = [p for p in P if p["isSetup"] and p.get("source", "master") == "master" and not p.get("noOwn")]
-        setups.sort(key=lambda p: -p["z"])  # front first
-        claimed = np.zeros((self.H, self.W), bool)
-        owned = {}
-        for p in setups:
-            r = self.mask(p.get("region")) & self.fig
+        setups.sort(key=lambda p: p["z"])  # back to front: front markers overwrite back ones
+        W, H = self.W, self.H
+        fig = self.fig
+        markers = np.zeros((H, W), np.int32)
+        ids = [p["pid"] for p in setups]
+        for i, p in enumerate(setups, 1):
+            shapes = p.get("seed") or p.get("region")
+            if not shapes:
+                continue
+            m = self.mask(shapes) & fig
             if p.get("minus"):
-                r &= ~self.mask(p["minus"])
-            o = r & ~claimed
-            claimed |= o
+                m &= ~self.mask(p["minus"])
+            markers[m] = i
+        bgl = len(setups) + 1
+        markers[self.alpha < 0.05] = bgl
+        # watershed on the painted image composited over black (the outline and the background merge)
+        img = np.clip(self.rgb * self.alpha[..., None], 0, 1)
+        img = ndi.gaussian_filter(img, (1.2, 1.2, 0))
+        u8 = (img * 255 + 0.5).astype(np.uint8)[..., ::-1].copy()
+        if cv2 is None:
+            raise SystemExit("mastercut: seeds need OpenCV (tools/requirements.txt)")
+        lab = cv2.watershed(u8, markers.copy())
+        # outline ink is a valley the flood runs along: give every ink pixel to the part whose PAINT is
+        # nearest (then the ink grab below hands boundary lines to the front part)
+        if self.S.get("inkNearest", True):
+            paint = fig & ~self.ink & (lab >= 1) & (lab <= len(setups))
+            idx = ndi.distance_transform_edt(~paint, return_distances=False, return_indices=True)
+            nl = lab[idx[0], idx[1]]
+            inkm = fig & self.ink
+            lab = np.where(inkm, nl, lab)
+        owned = {}
+        claimed = np.zeros((H, W), bool)
+        for i, p in enumerate(setups, 1):
+            o = (lab == i) & fig
+            if p.get("limit"):
+                o &= self.mask(p["limit"])
+            # drop fragments that do not touch the part's own markers (leaks along shared outlines)
+            if o.any() and (markers == i).any():
+                cl, n = ndi.label(o, structure=np.ones((3, 3), bool))
+                keep = np.unique(cl[(markers == i) & o])
+                keep = keep[keep > 0]
+                o = np.isin(cl, keep)
             owned[p["pid"]] = o
-        # unowned figure pixels -> nearest owned part
-        rest = self.fig & ~claimed
+            claimed |= o
+        rest = fig & ~claimed
         if rest.any():
-            lab = np.zeros((self.H, self.W), np.int32)
-            ids = list(owned)
+            labm = np.zeros((H, W), np.int32)
             for i, pid in enumerate(ids, 1):
-                lab[owned[pid]] = i
-            idx = ndi.distance_transform_edt(lab == 0, return_distances=False, return_indices=True)
-            near = lab[idx[0], idx[1]]
-            n = int(rest.sum())
+                labm[owned[pid]] = i
+            idx = ndi.distance_transform_edt(labm == 0, return_distances=False, return_indices=True)
+            near = labm[idx[0], idx[1]]
             cnt = {}
             for i, pid in enumerate(ids, 1):
                 m = rest & (near == i)
                 if m.any():
                     owned[pid] |= m
                     cnt[pid] = int(m.sum())
-            self.warnings.append(f"{n} figure px were in no region; given to the nearest part: {cnt}")
             self.unowned = cnt
         else:
             self.unowned = {}
+        setups.sort(key=lambda p: -p["z"])  # front first from here on
         # ink grab: outline pixels on a boundary go to the front part
         band = int(self.S.get("inkBand", 14))
         zof = {p["pid"]: p["z"] for p in setups}
@@ -340,10 +455,15 @@ class Cut:
             if p.get("minus"):
                 own &= ~self.mask(p["minus"])
         take = self.mask(p.get("take")) & self.fig if p.get("take") else np.zeros_like(own)
+        # joint discs only cover the two limbs they join (never the torso next to an elbow)
+        for sh, within in p.get("_jointTake") or []:
+            take |= self.mask([sh]) & self._within(within, owned)
         if p.get("takeMinus"):
             take &= ~self.mask(p["takeMinus"])
         known = own | take
         ext = self.mask(p.get("extend")) if p.get("extend") else np.zeros_like(own)
+        for sh, within in p.get("_jointExtend") or []:
+            ext |= self.mask([sh]) & self._within(within, owned)
         if p.get("extendMinus"):
             ext &= ~self.mask(p["extendMinus"])
         if p.get("clip", True):
@@ -367,11 +487,8 @@ class Cut:
         k = known[y0:y1, x0:x1]
         e = ext[y0:y1, x0:x1]
         s = seam[y0:y1, x0:x1]
-        # ops: paint-outs on the known pixels
-        for op in p.get("ops") or []:
-            if "inpaint" in op:
-                t = raster(op["inpaint"], W, H)[y0:y1, x0:x1] & k
-                rgb = inpaint(rgb, k & ~t, t, radius=int(op.get("radius", 5)), method=op.get("method", "telea"))
+        # ops: paint-outs and paint-overs on the known pixels (face variants)
+        rgb = self.apply_ops(p.get("ops"), rgb, k, (x0, y0))
         fill = p.get("fill", "telea")
         if e.any():
             if isinstance(fill, dict) and "sheet" in fill:
@@ -390,9 +507,23 @@ class Cut:
                 rgb = inpaint(rgb, k, e, radius=int(p.get("fillRadius", 6)), method=fill if isinstance(fill, str) else "telea")
         if s.any():
             rgb = inpaint(rgb, k | e, s, method="nearest")
+            # the first px of the seam (the anti-aliasing zone under the front part's edge) keep the master's
+            # own pixels, so the rest pose composites without a halo line along cut boundaries
+            near = s & (ndi.distance_transform_edt(~(k | e)) <= float(self.S.get("seamExact", 2.5)))
+            rgb[near] = self.rgb[y0:y1, x0:x1][near]
+        if p.get("post"):
+            rgb = self.apply_ops(p["post"], rgb, k | e | s, (x0, y0), fillmask=(e | s))
         a = self.alpha[y0:y1, x0:x1].copy()
         m = k | e | s
         a = np.where(m, a, 0.0).astype(np.float32)
+        if p.get("soft"):
+            # feathered inner edge (an overlay patch blends into the part under it); the figure's own
+            # silhouette keeps its hard anti-aliased edge
+            sf = float(p["soft"])
+            dist = ndi.distance_transform_edt(m)
+            inner = ~ndi.binary_dilation(~self.fig[y0:y1, x0:x1], iterations=3)
+            ramp = np.clip(dist / sf, 0, 1)
+            a = np.where(inner, a * ramp, a).astype(np.float32)
         if not p.get("clip", True):
             a[e] = 1.0
         # ink stroke on the new silhouette of filled areas (never on pixels visible at rest)
@@ -405,6 +536,131 @@ class Cut:
             rgb = rgb * (1 - st[..., None]) + self.ink_rgb[None, None, :] * st[..., None]
         return {"rgb": rgb.astype(np.float32), "alpha": a, "origin": (x0, y0), "fillPx": int(e.sum()), "seamPx": int(s.sum()),
                 "ownPx": int(k.sum())}
+
+    def apply_ops(self, ops, rgb, k, origin, fillmask=None):
+        """Paint operations in master px on a crop (origin = its top-left):
+          {inpaint: shapes, radius, method}      fill the shapes from the surrounding known pixels
+          {paint: shapes, color: [r,g,b] | ink | sample:[x,y], alpha: 0-1, feather: px}
+          {stroke: [[x,y]..], width: px, color: ink|[r,g,b], smooth: true, taper: [a, b]}  anti-aliased line
+          {warp: [[x0,y0,x1,y1]..], sigma: px, shapes: limit}   smooth displacement (pixel at x0,y0 moves to x1,y1)
+          {gradient: shapes, from: [x,y,r,g,b], to: [x,y,r,g,b], alpha, feather}
+        """
+        if not ops:
+            return rgb
+        x0, y0 = origin
+        h, w = rgb.shape[:2]
+        W, H = self.W, self.H
+
+        cur = {"op": None}
+
+        def crop_mask(shapes, feather=0.0):
+            m = raster(shapes, W, H)[y0:y0 + h, x0:x0 + w].astype(np.float32)
+            if feather > 0:
+                m = ndi.gaussian_filter(m, feather)
+            op = cur["op"]
+            if op is not None and op.get("only") == "fill" and fillmask is not None:
+                m = m * fillmask.astype(np.float32)
+            if op is not None and op.get("clipTo"):
+                m = m * raster(op["clipTo"], W, H)[y0:y0 + h, x0:x0 + w].astype(np.float32)
+            return m
+
+        def colour(c):
+            if c is None or c == "ink":
+                return self.ink_rgb
+            if isinstance(c, dict) and "sample" in c:
+                sx, sy = c["sample"]
+                r = int(c.get("r", 3))
+                patch = self.rgb[int(sy) - r:int(sy) + r + 1, int(sx) - r:int(sx) + r + 1].reshape(-1, 3)
+                return np.median(patch, axis=0)
+            return np.asarray(c, np.float32) / (255.0 if max(c) > 1 else 1.0)
+
+        for op in ops:
+            cur["op"] = op
+            if "inpaint" in op:
+                t = raster(op["inpaint"], W, H)[y0:y0 + h, x0:x0 + w] & k
+                rgb = inpaint(rgb, k & ~t, t, radius=int(op.get("radius", 5)), method=op.get("method", "telea"))
+            elif "paint" in op:
+                m = crop_mask(op["paint"], float(op.get("feather", 0))) * float(op.get("alpha", 1.0))
+                c = colour(op.get("color"))
+                rgb = rgb * (1 - m[..., None]) + c[None, None, :] * m[..., None]
+            elif "gradient" in op:
+                m = crop_mask(op["gradient"], float(op.get("feather", 0))) * float(op.get("alpha", 1.0))
+                (ax, ay, *ca), (bx, by, *cb) = op["from"], op["to"]
+                ca = np.asarray(ca, np.float32) / 255
+                cb = np.asarray(cb, np.float32) / 255
+                yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+                xx += x0
+                yy += y0
+                vx, vy = bx - ax, by - ay
+                t = np.clip(((xx - ax) * vx + (yy - ay) * vy) / max(vx * vx + vy * vy, 1e-6), 0, 1)
+                c = ca[None, None, :] * (1 - t[..., None]) + cb[None, None, :] * t[..., None]
+                rgb = rgb * (1 - m[..., None]) + c * m[..., None]
+            elif "stroke" in op:
+                pts = np.asarray(op["stroke"], np.float64)
+                if op.get("smooth", True) and len(pts) >= 3:
+                    pts = catmull(pts, int(op.get("samples", 12)))
+                wid = float(op.get("width", 8))
+                ss = 4
+                im = Image.new("L", (w * ss, h * ss), 0)
+                d = ImageDraw.Draw(im)
+                tap = op.get("taper")
+                n = len(pts)
+                for i in range(n - 1):
+                    t0 = i / max(n - 1, 1)
+                    f = 1.0
+                    if tap:
+                        a0, a1 = tap  # width factor at the ends (fraction of the line where it tapers)
+                        f = min(1.0, (t0 + 1e-6) / a0 if a0 > 0 else 1.0, (1 - t0 + 1e-6) / a1 if a1 > 0 else 1.0)
+                        f = max(0.25, f)
+                    ww = max(1, int(round(wid * f * ss)))
+                    (ax, ay), (bx, by) = pts[i], pts[i + 1]
+                    d.line([((ax - x0) * ss, (ay - y0) * ss), ((bx - x0) * ss, (by - y0) * ss)], fill=255, width=ww)
+                    r = ww / 2
+                    d.ellipse([(bx - x0) * ss - r, (by - y0) * ss - r, (bx - x0) * ss + r, (by - y0) * ss + r], fill=255)
+                m = np.asarray(im.resize((w, h), Image.BOX), np.float32) / 255 * float(op.get("alpha", 1.0))
+                if op.get("clipTo"):
+                    m = m * raster(op["clipTo"], W, H)[y0:y0 + h, x0:x0 + w].astype(np.float32)
+                c = colour(op.get("color"))
+                rgb = rgb * (1 - m[..., None]) + c[None, None, :] * m[..., None]
+            elif "warp" in op:
+                pr = np.asarray(op["warp"], np.float64)
+                sig = float(op.get("sigma", 20))
+                yy, xx = np.mgrid[0:h, 0:w].astype(np.float64)
+                xx += x0 + 0.5
+                yy += y0 + 0.5
+                dx = np.zeros_like(xx)
+                dy = np.zeros_like(yy)
+                wsum = np.zeros_like(xx)
+                # backward map: a pixel near the destination samples from the source
+                for (ax, ay, bx, by) in pr:
+                    g = np.exp(-((xx - bx) ** 2 + (yy - by) ** 2) / (2 * sig * sig))
+                    dx += g * (ax - bx)
+                    dy += g * (ay - by)
+                    wsum += g
+                norm = np.maximum(wsum, 1.0)
+                dx /= norm
+                dy /= norm
+                if op.get("shapes"):
+                    lm = crop_mask(op["shapes"], float(op.get("feather", 4)))
+                    dx *= lm
+                    dy *= lm
+                sx = (xx + dx - x0 - 0.5).astype(np.float32)
+                sy = (yy + dy - y0 - 0.5).astype(np.float32)
+                src = self.rgb[y0:y0 + h, x0:x0 + w] if op.get("fromMaster") else rgb
+                rgb = np.dstack([ndi.map_coordinates(src[..., c], [sy, sx], order=1, mode="nearest") for c in range(3)]).astype(np.float32)
+            else:
+                raise SystemExit(f"unknown op {op}")
+        return np.clip(rgb, 0, 1).astype(np.float32)
+
+    def _within(self, within, owned):
+        if within == "fig":
+            return self.fig
+        m = np.zeros((self.H, self.W), bool)
+        for q in within:
+            for pid, om in owned.items():
+                if pid == q or pid.split("/")[0] == q:
+                    m |= om
+        return m
 
     def _z(self, pid):
         return self._zmap[pid]
@@ -442,8 +698,11 @@ class Cut:
     # --------------------------------------------------------------- canvas
     def place(self, rgb, a, origin, C_extra=None):
         """Master-space crop -> canvas: trimmed premultiplied image + integer box."""
-        x0, y0 = origin
-        C = self.M2C @ sl.trans_m(x0, y0) if C_extra is None else self.M2C @ C_extra
+        if C_extra is None:
+            x0, y0 = origin
+            C = self.M2C @ sl.trans_m(x0, y0)
+        else:
+            C = self.M2C @ C_extra
         h, w = a.shape
         pts = sl.apply(C, [[0, 0], [w, 0], [0, h], [w, h]])
         X0, Y0 = int(math.floor(pts[:, 0].min())) - 2, int(math.floor(pts[:, 1].min())) - 2
@@ -472,6 +731,9 @@ class Cut:
         P = self.parts_list()
         self._zmap = {p["pid"]: p["z"] for p in P}
         owned = self.ownership(P)
+        self.owners_preview(P, owned)
+        if getattr(self, "owners_only", False):
+            return {"owners": str(self.qa / "owners.png")}
         pieces = []
         for p in P:
             src = p.get("source", "master")
@@ -487,6 +749,43 @@ class Cut:
         self.pieces = pieces
         self.write(pieces)
         return self.qa_report(pieces)
+
+    def owners_preview(self, P, owned, scale: float = 0.45):
+        """QA: every setup part tinted over the master, seeds outlined, part names at their centroids."""
+        rng = np.random.default_rng(7)
+        H, W = self.H, self.W
+        base = self.rgb * self.alpha[..., None] + 0.55 * (1 - self.alpha[..., None])
+        tint = np.zeros((H, W, 3), np.float32)
+        tm = np.zeros((H, W), np.float32)
+        cols = {}
+        import colorsys
+        n = max(len(owned), 1)
+        order = rng.permutation(n)
+        for j, (pid, m) in enumerate(owned.items()):
+            c = np.asarray(colorsys.hsv_to_rgb(order[j] / n, 0.85 if j % 2 else 0.6, 1.0 if j % 3 else 0.7), np.float32)
+            cols[pid] = c
+            tint[m] = c
+            tm[m] = 0.55
+            e = boundary(m)
+            tint[e] = 0
+            tm[e] = 1.0
+        out = base * (1 - tm[..., None]) + tint * tm[..., None]
+        im = Image.fromarray((np.clip(out, 0, 1) * 255 + 0.5).astype(np.uint8))
+        im = im.resize((int(W * scale), int(H * scale)), Image.LANCZOS)
+        d = ImageDraw.Draw(im)
+        for p in P:
+            if p["pid"] not in owned:
+                continue
+            for sh in p.get("seed") or []:
+                if isinstance(sh, list):
+                    sh = {"poly": sh}
+                if "poly" in sh:
+                    pts = [(x * scale, y * scale) for x, y in sh["poly"]]
+                    d.line(pts + [pts[0]], fill=(255, 255, 255), width=1)
+            ys, xs = np.nonzero(owned[p["pid"]])
+            if len(xs):
+                d.text((xs.mean() * scale - 12, ys.mean() * scale - 6), p["pid"], fill=(255, 255, 255))
+        im.save(self.qa / "owners.png")
 
     def sheet_piece(self, p):
         src = p["source"]
@@ -572,6 +871,12 @@ class Cut:
                 e["setup"] = True
             parts.append(e)
         lm = {k: self.m2c(v) for k, v in (self.S.get("landmarks") or {}).items()}
+        pts = {k: self.m2c(resolve_pt(v)) for k, v in (self.S.get("points") or {}).items()}
+        if pts:
+            (self.out_parts.parent / "points.json").write_text(json.dumps(
+                {"$comment": f"Named rig points in canvas image space (written by {TOOL} from the cut spec `points`, "
+                             "master px -> canvas): joints/tips for rig.yaml bones and pose targets.",
+                 "points": pts}, indent=1) + "\n")
         rel_images = Path(__import__("os").path.relpath(self.out_images, self.out_parts.parent)).as_posix()
         doc = {"$comment": f"Written by {TOOL} from {self.spec_path.relative_to(REPO).as_posix()} (master cut: setup pose = "
                            f"the approved rig master pixel for pixel; hidden areas, variants and props from the part sheets). "
@@ -582,9 +887,9 @@ class Cut:
         self.out_parts.write_text(json.dumps(doc, indent=1) + "\n")
         self.parts_doc = doc
 
-    def composite(self, pieces, overrides=None):
+    def composite(self, pieces, overrides=None, props=True):
         acc = np.zeros((self.CH, self.CW, 4), np.float32)
-        items = [pc for pc in pieces if pc["p"]["isSetup"]]
+        items = [pc for pc in pieces if pc["p"]["isSetup"] and (props or pc["p"].get("inRest", True))]
         if overrides:
             items = overrides(items)
         for pc in sorted(items, key=lambda q: q["p"]["slotZ"]):
@@ -599,7 +904,7 @@ class Cut:
         return acc
 
     def qa_report(self, pieces):
-        rest = self.composite(pieces)
+        rest = self.composite(pieces, props=False)
         mc = sl.warp_prem(sl.premultiply(self.rgb, self.alpha), self.M2C, (0, 0, self.CW, self.CH))
         met = sl.reassembly_metrics(rest, mc)
         bg = np.full((self.CH, self.CW, 3), 0.5, np.float32)
@@ -645,9 +950,14 @@ class Cut:
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("spec")
+    ap.add_argument("--owners", action="store_true", help="only the ownership preview (qa/owners.png)")
     a = ap.parse_args()
     c = Cut(rp(a.spec))
+    c.owners_only = a.owners
     rep = c.run()
+    if a.owners:
+        print(rep)
+        return
     print(json.dumps({k: rep[k] for k in ("reassembly", "unowned", "warnings", "tests", "parts", "preview")}, indent=1, default=float))
 
 

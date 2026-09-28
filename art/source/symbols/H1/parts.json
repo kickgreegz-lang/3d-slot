@@ -1,0 +1,125 @@
+{
+  "$comment": "sym_H1 parts (ANIMATION_SET 2.1): master-cut body / speakers / door / handle from art/source/symbols/H1/master_rig_1024.png (sym_H1_rig ae6053be); antenna from the c11 sheet (sym_H1_parts 58680e7f); fx sprites drawn by tools/spine/examples/bass_drop/cut/cut_H1.py. Canvas 360 @2x, content 291 (cellScale 0.97).",
+  "symbol": "H1",
+  "canvas": [
+    360,
+    360
+  ],
+  "images": "../../spine/images",
+  "$blur": [
+    "body",
+    "speaker_L",
+    "speaker_R",
+    "cassette_door",
+    "handle"
+  ],
+  "parts": [
+    {
+      "name": "glow",
+      "slot": "fx_glow",
+      "bbox": [
+        15,
+        20,
+        330,
+        330
+      ],
+      "z": 0,
+      "bone": "fx_glow",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        180.0,
+        185.0
+      ]
+    },
+    {
+      "name": "antenna",
+      "bbox": [
+        297,
+        24,
+        33,
+        92
+      ],
+      "z": 0.5,
+      "bone": "body"
+    },
+    {
+      "name": "body",
+      "bbox": [
+        30,
+        80,
+        301,
+        239
+      ],
+      "z": 1,
+      "bone": "body",
+      "blur": true
+    },
+    {
+      "name": "cassette_door",
+      "bbox": [
+        186,
+        168,
+        65,
+        64
+      ],
+      "z": 2,
+      "bone": "cassette_door",
+      "blur": true
+    },
+    {
+      "name": "speaker_L",
+      "bbox": [
+        93,
+        177,
+        95,
+        116
+      ],
+      "z": 2.1,
+      "bone": "speaker_L",
+      "blur": true
+    },
+    {
+      "name": "speaker_R",
+      "bbox": [
+        244,
+        149,
+        79,
+        103
+      ],
+      "z": 2.2,
+      "bone": "speaker_R",
+      "blur": true
+    },
+    {
+      "name": "handle",
+      "bbox": [
+        65,
+        41,
+        229,
+        77
+      ],
+      "z": 3,
+      "bone": "handle",
+      "blur": true
+    },
+    {
+      "name": "glint",
+      "slot": "fx_glint",
+      "bbox": [
+        73,
+        157,
+        80,
+        80
+      ],
+      "z": 5,
+      "bone": "fx_glint",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        113.3,
+        196.7
+      ]
+    }
+  ]
+}

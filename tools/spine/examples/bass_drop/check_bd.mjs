@@ -221,6 +221,7 @@ if (kind === 'ui') {
 } else {
   for (const [n, r] of Object.entries(cr8.animations)) {
     const req = r.required.includes(kind) || (kind === 'wild' && r.required.includes('special'));
+    if (!req && r.required.length) continue; // another kind's clips (the wild's drop / sticky set on a high)
     rules[n] = { ...r, optional: !req };
   }
   for (const [n, r] of Object.entries(perSymbol[symId] ?? {})) {

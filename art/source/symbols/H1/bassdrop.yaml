@@ -1,0 +1,44 @@
+# sym_H1 Bass Drop additions (ANIMATION_SET 2.0 / 2.1), applied by tools/spine/examples/bass_drop/bdgen.py after the
+# stock generator. Frames at 30 fps; scale rows are [sx, sy].
+kind: high
+untouched: [fx_glint]          # the glint is keyed here (one star twinkle), never held on like a glow
+
+clips:
+  idle:
+    merge: true
+    bones:
+      fx_glint: {scale: [[0, 1], [57, 1, stepped], [58, 0.2, quad_out], [61, 1.1, sine_in_out], [66, 0.4, stepped], [67, 1], [90, 1]],
+                 rotate: [[0, 0], [58, 0, sine_in_out], [66, 35, stepped], [67, 0], [90, 0]]}
+    slots:
+      fx_glint: {alpha: [[0, 0], [58, 0, quad_out], [61, 1.0, sine_in_out], [66, 0], [90, 0]]}
+  win:
+    merge: true
+    bones:
+      # the tape door flips open at the pop (hinge at its bottom edge: foreshortened toward the viewer), then snaps shut
+      cassette_door: {scale: [[0, 1], [8, 1, expo_out], [11, [1.03, 0.28], sine_in_out], [14, [1.02, 0.34], quad_in],
+                              [18, [1.0, 0.34], expo_out], [20, [1.0, 1.06], sine_in_out], [22, 1]]}
+      fx_glint: {scale: [[0, 1], [7, 1, stepped], [8, 0.2, quad_out], [10, 1.25, sine_in_out], [15, 0.4, stepped], [16, 1], [24, 1]],
+                 rotate: [[0, 0], [8, 0, sine_in_out], [15, 45, stepped], [16, 0], [24, 0]]}
+    slots:
+      fx_glint: {alpha: [[0, 0], [8, 0, quad_out], [10, 1], [15, 0], [24, 0]]}
+  win_loop:
+    merge: true
+    bones:
+      # the door rattles on each beat
+      cassette_door: {scale: [[0, 1], [2, [1, 0.93], quad_out], [4, 1], [22, 1], [24, [1, 0.93], quad_out], [26, 1], [45, 1]]}
+  explode:
+    merge: true
+    retime: {explode_done: 13}
+    bones:
+      # the speakers blow out first (f0-f2), then everything flies
+      speaker_L: {scale: [[0, 1, quad_in], [2, 1.22, expo_out], [15, 1.3]]}
+      speaker_R: {scale: [[0, 1, quad_in], [2, 1.22, expo_out], [15, 1.3]]}
+  bass_react:
+    frames: 8
+    bones:
+      squash: {scale: [[0, 1, quad_out], [1, [1.03, 0.95]], [4, [0.99, 1.03]], [8, 1]]}
+      # the signature: both speaker cones punch 1.15 on every boom
+      speaker_L: {scale: [[0, 1, expo_out], [1, 1.15, sine_in_out], [4, 0.98], [8, 1]]}
+      speaker_R: {scale: [[0, 1, expo_out], [1, 1.15, sine_in_out], [4, 0.98], [8, 1]]}
+      handle: {scale: [[0, 1, quad_out], [1, [1.0, 0.9]], [4, [1.0, 1.05]], [8, 1]]}
+      phys_antenna_1: {rotate: [[0, 0, quad_out], [1, -5], [4, 2], [8, 0]]}

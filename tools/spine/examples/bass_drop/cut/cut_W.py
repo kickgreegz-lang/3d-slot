@@ -2,9 +2,9 @@
 """sym_W parts (ANIMATION_SET 2.6) from the approved masters:
   - tooth, cap (+ chain, one weighted mesh): cut from art/source/symbols/W/master_rig_1024.png (sym_W_rig);
     the tooth top hidden under the cap is inpainted so the cap can fly off in `explode`;
-  - ribbon, badge_t1..t5, clamps / clamps_open: the approved sym_W_pieces cuts (art/source/symbols/W/pieces);
-    the two clamps are ONE image (left + mirrored right) so one slot carries both, weighted to clamp_L / clamp_R;
-  - fx_glow slot attachments glow / trail_streak / ring and the tooth_cracked explode variant: drawn here.
+  - ribbon, badge_t1..t5, clamp_L / clamp_R (closed + open, the right one mirrored): the approved sym_W_pieces cuts
+    (art/source/symbols/W/pieces);
+  - fx sprites glow (fx_glow), trail_streak (fx_trail), ring (fx_ring) and the tooth_cracked explode variant: drawn here.
 Writes art/source/spine/images/sym_W/*.png, art/source/symbols/W/parts.json and QA to build/qa/rigs/sym_W/.
 
     tools/.venv/bin/python tools/spine/examples/bass_drop/cut/cut_W.py
@@ -92,35 +92,28 @@ def main() -> int:
         return bbox
 
     P = fit.pt  # master px -> canvas
-    # ---------------------------------------------------------------- fx_glow slot (additive, alpha 0 at setup)
+    # ---------------------------------------------------------------- fx slots (additive, alpha 0 at setup)
     glow = radial_glow(300, (0.21, 0.95, 0.88))
     gb = place(glow, (180, 184))
     cl.save(glow, IMG / "glow.png")
     parts.append({"name": "glow", "slot": "fx_glow", "bbox": gb, "z": 0, "bone": "fx_glow", "blend": "additive",
-                  "color": "ffffff00"})
-    trail = streak(170, 320, (0.6, 1.0, 0.96))
-    tb = place(trail, (180, 70))
+                  "color": "ffffff00", "joint": [180, 184]})
+    trail = streak(200, 300, (0.6, 1.0, 0.96))
+    tb = place(trail, (190, -20))      # widest (and brightest) part just above the cap, tapering upward
     cl.save(trail, IMG / "trail_streak.png")
-    parts.append({"name": "trail_streak", "slot": "fx_glow", "bbox": tb, "z": 0, "bone": "fx_glow"})
+    parts.append({"name": "trail_streak", "slot": "fx_trail", "bbox": tb, "z": 0.5, "bone": "fx_trail", "blend": "additive",
+                  "color": "ffffff00", "joint": [180, 184]})
     ring = ring_img(230, 16, (0.75, 1.0, 0.97))
     rb = place(ring, (180, 184))
     cl.save(ring, IMG / "ring.png")
-    parts.append({"name": "ring", "slot": "fx_glow", "bbox": rb, "z": 0, "bone": "fx_glow"})
+    parts.append({"name": "ring", "slot": "fx_ring", "bbox": rb, "z": 9, "bone": "fx_ring", "blend": "additive",
+                  "color": "ffffff00", "joint": [180, 184]})
 
-    # ---------------------------------------------------------------- tooth (mesh) with the WILD ribbon baked in
-    # (8-slot budget of the current contract: the ribbon is static on the tooth, so it shares its slot; the
-    #  live WILD text still has its own empty txt_wild slot on top)
-    rib = cl.load(SRC / "pieces/ribbon.png")
-    rib_img = resize_straight(rib, RIBBON_W / rib.shape[1])
-    rib_c = P(*RIBBON_AT)
-    rbb = place(rib_img, rib_c)
-    cl.save(rib_img, QA / "ribbon_piece.png")
-    rib_canvas = cl.paste((360, 360), rib_img, rbb)
-    tooth_c = cl.over(rib_canvas, fit.canvas(tooth_full))
+    # ---------------------------------------------------------------- tooth (mesh 5x5) + its cracked explode variant
+    tooth_c = fit.canvas(tooth_full)
     img, tbb = cl.trim(tooth_c, 3)
     cl.save(img, IMG / "tooth.png")
     canv["tooth"] = cl.paste((360, 360), img, tbb)
-    tj, tt = P(590, 430), P(250, 790)
     # slot bone `body`: the mesh is weighted to tooth / tooth_tip, and the tooth is the body (it cracks and
     # fades in place in `explode` instead of being scattered like a loose part)
     parts.append({"name": "tooth", "bbox": tbb, "z": 2, "bone": "body"})
@@ -132,31 +125,38 @@ def main() -> int:
     cracked[..., :3] = np.clip(cracked[..., :3] + edge[..., None] * 0.5, 0, 1)
     cl.save(cl.crop(cracked, tbb), IMG / "tooth_cracked.png")
     parts.append({"name": "tooth_cracked", "slot": "tooth", "bbox": tbb, "z": 2, "bone": "body"})
-    canv["ribbon_face"] = rib_c
+
+    # ---------------------------------------------------------------- ribbon (the WILD plate; live text on txt_wild)
+    rib = cl.load(SRC / "pieces/ribbon.png")
+    rib_img = resize_straight(rib, RIBBON_W / rib.shape[1])
+    rib_c = P(*RIBBON_AT)
+    rbb = place(rib_img, rib_c)
+    cl.save(rib_img, IMG / "ribbon.png")
+    canv["ribbon"] = cl.paste((360, 360), rib_img, rbb)
+    parts.append({"name": "ribbon", "bbox": rbb, "z": 2.5, "bone": "ribbon", "parent": "tooth",
+                  "joint": [round(rib_c[0], 1), round(rib_c[1], 1)]})
 
     # ---------------------------------------------------------------- chain (mesh, behind the cap) and cap
-    add("chain", chain, z=1, bone="phys_chain_1")
-    cj = P(595, 330)
+    add("chain", chain, z=1, bone="body")          # weighted to cap_rim / phys_chain_1 / phys_chain_2
     add("cap", cap, z=3, bone="cap")
 
-    # ---------------------------------------------------------------- clamps (skin sticky): one image, two islands
-    for name, src in (("clamps", "clamp.png"), ("clamps_open", "clamp_open.png")):
+    # ---------------------------------------------------------------- clamps (skin sticky): clamp_L / clamp_R slots
+    for name, src in (("shut", "clamp.png"), ("open", "clamp_open.png")):
         cp = cl.load(SRC / "pieces" / src)
         cp = np.rot90(cp, k=-1).copy()          # opening faces right (toward the tooth) for the left clamp
-        s = 84.0 / cp.shape[0]
-        left = resize_straight(cp, s)
+        left = resize_straight(cp, 84.0 / cp.shape[0])
         right = left[:, ::-1].copy()
-        gap = CLAMP_GAP
-        W2 = left.shape[1] * 2 + gap
-        both = np.zeros((left.shape[0], W2, 4), np.float32)
-        both[:, :left.shape[1]] = left
-        both[:, left.shape[1] + gap:] = right
-        cb = place(both, (CLAMP_CX, CLAMP_CY))
-        cl.save(both, IMG / f"{name}.png")
-        parts.append({"name": name, "slot": "clamps", "bbox": cb, "z": 6, "bone": "body"})   # weighted to clamp_L / clamp_R
-        print(f"{name}: left clamp centre x {cb[0] + left.shape[1] / 2:.1f}, right {cb[0] + cb[2] - left.shape[1] / 2:.1f}, y {CLAMP_CY}")
-        if name == "clamps":
-            canv["clamps"] = cl.paste((360, 360), both, cb)
+        lw = left.shape[1]
+        off = (CLAMP_GAP + lw) / 2
+        for side, im, cx in (("L", left, CLAMP_CX - off), ("R", right, CLAMP_CX + off)):
+            nm = f"clamp_{name}_{side}"
+            bb = place(im, (cx, CLAMP_CY))
+            cl.save(im, IMG / f"{nm}.png")
+            parts.append({"name": nm, "slot": f"clamp_{side}", "bbox": bb, "z": 6 if side == "L" else 6.1,
+                          "bone": f"clamp_{side}", "joint": [round(cx, 1), CLAMP_CY]})
+            if name == "shut":
+                canv[f"clamp_{side}"] = cl.paste((360, 360), im, bb)
+                print(f"clamp_{side}: centre x {cx:.1f}, y {CLAMP_CY}")
     # ---------------------------------------------------------------- badge tiers (skins mult / sticky)
     t3 = cl.load(SRC / "pieces/badge_t3.png")
     s_badge = 192.0 / t3.shape[1]
@@ -173,11 +173,14 @@ def main() -> int:
         cl.save(bi, IMG / f"badge_t{t}.png")
         parts.append({"name": f"badge_t{t}", "slot": "badge", "bbox": bb, "z": 7, "bone": "badge"})
 
-    # blur variants (drop_fall/spin): tooth, cap, ribbon via tools/spine/make_blur.py after parts.json
-    comment = ("sym_W parts: master-cut from art/source/symbols/W/master_rig_1024.png (sym_W_rig 7f0557f2) + the "
-               "sym_W_pieces cuts (ribbon, badge tiers, clamps); fx sprites drawn by "
-               "tools/spine/examples/bass_drop/cut/cut_W.py. Canvas 360 @2x, content 306 (cellScale 1.02).")
-    pj = cl.write_parts(SRC, "W", parts, comment=comment)
+    # retired 8-slot layout images (ribbon baked into the tooth, both clamps in one mesh)
+    for old in ("clamps", "clamps_open", "ribbon_face"):
+        (IMG / f"{old}.png").unlink(missing_ok=True)
+    comment = ("sym_W parts (ANIMATION_SET 2.6, 12 slots): master-cut tooth / cap / chain from "
+               "art/source/symbols/W/master_rig_1024.png (sym_W_rig 7f0557f2) + the sym_W_pieces cuts (ribbon, badge "
+               "tiers, clamps); fx sprites drawn by tools/spine/examples/bass_drop/cut/cut_W.py. Canvas 360 @2x, "
+               "content 306 (cellScale 1.02).")
+    pj = cl.write_parts(SRC, "W", parts, comment=comment, blur=["tooth", "cap", "chain", "ribbon"])
 
     # reassembly: rest pose (default skin: fx alpha 0, no badge, no clamps) vs the master on the canvas
     ref = fit.canvas(M)
@@ -186,9 +189,10 @@ def main() -> int:
     pts = {k: [round(v, 1) for v in P(*xy)] for k, xy in KEYPOINTS.items()}
     json.dump({"reassembly": met, "fit": {"s": fit.s, "ox": fit.ox, "oy": fit.oy}, "keypoints": pts}, open(QA / "cut.json", "w"), indent=1)
     print("keypoints (canvas):", pts)
-    cl.preview([canv["chain"], canv["tooth"], canv["cap"]], QA / "rest_default.png")
-    cl.preview([canv["chain"], canv["tooth"], canv["cap"], canv["clamps"], cl.paste((360, 360), cl.load(IMG / "badge_t3.png"),
-                next(p["bbox"] for p in parts if p["name"] == "badge_t3"))], QA / "rest_sticky.png")
+    cl.preview([canv["chain"], canv["tooth"], canv["ribbon"], canv["cap"]], QA / "rest_default.png")
+    cl.preview([canv["chain"], canv["tooth"], canv["ribbon"], canv["cap"], canv["clamp_L"], canv["clamp_R"],
+                cl.paste((360, 360), cl.load(IMG / "badge_t3.png"), next(p["bbox"] for p in parts if p["name"] == "badge_t3"))],
+               QA / "rest_sticky.png")
     cl.preview([canv["tooth"]], QA / "tooth_alone.png")
     cl.preview([canv["chain"]], QA / "chain_alone.png")
     cl.preview([canv["cap"]], QA / "cap_alone.png")
@@ -242,11 +246,14 @@ def streak(w: int, h: int, rgb) -> np.ndarray:
     y, x = np.mgrid[0:h, 0:w] + 0.5
     u = (x - w / 2) / (w / 2)
     v = y / h                      # 0 top .. 1 bottom
-    core = np.clip(1 - np.abs(u) / (0.25 + 0.75 * v), 0, 1) ** 1.6
-    a = core * np.clip(v, 0, 1) ** 1.4 * np.clip((1 - v) * 6, 0, 1)
+    wide = np.clip(1 - np.abs(u) / (0.3 + 0.7 * v), 0, 1) ** 1.3          # soft sheath
+    core = np.clip(1 - np.abs(u) / (0.06 + 0.22 * v), 0, 1) ** 0.8         # hot centre line
+    fade = np.clip(v, 0, 1) ** 0.9 * np.clip((1 - v) * 5, 0, 1)
+    a = np.clip((0.75 * wide + 0.9 * core) * fade * 1.5, 0, 1)
     out = np.zeros((h, w, 4), np.float32)
-    out[..., :3] = rgb
-    out[..., 3] = np.clip(a * 1.35, 0, 1)
+    white = np.clip(core * fade * 1.4, 0, 1)[..., None]
+    out[..., :3] = np.array(rgb, np.float32) * (1 - white) + white          # white-hot core, cyan sheath
+    out[..., 3] = a
     return out
 
 

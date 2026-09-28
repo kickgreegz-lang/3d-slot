@@ -2,7 +2,7 @@
 # All tools/spine tests (no Spine licence, no API keys, no network):
 #   PYTHON=<python with tools/requirements-spine.txt> tools/spine/test/run.sh [--capture]
 # 1. python unit tests (curves, physics, generator, packer, characters)   2. demo chain gen -> validate -> pack -> validate(atlas)
-# 3. validator negative tests (symbols + characters)                      4. export.sh argument tests (fake Spine)
+# 3. validator negative tests (symbols, CR-8 wild/ui kinds, characters)                      4. export.sh argument tests (fake Spine)
 # 5. character demo chain (both mascots): parts drift, gen -> validate --kind character -> pack -> validate(atlas)
 # 6. --capture: Playwright render of the demos on spine-pixi-v8 (headless Chromium, ~60 s)
 set -euo pipefail
@@ -41,6 +41,7 @@ if [ -f public/assets/spine/demo/sym_demo.json ]; then
 fi
 echo "== validator negative tests"
 TAIL=1 quiet_run node tools/spine/test/validate.test.mjs "$TMP/sym_demo.json"
+TAIL=1 quiet_run node tools/spine/test/validate_cr8.test.mjs "$TMP/sym_demo.json"
 echo "== export.sh tests"
 TAIL=1 quiet_run tools/spine/test/export.test.sh
 echo "== character demo chain (chr_gumbo, chr_croak)"

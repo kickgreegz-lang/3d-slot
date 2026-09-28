@@ -1,0 +1,254 @@
+{
+ "timingChanges": [
+  {
+   "file": "src/core/timing.ts",
+   "key": "spin.fallOutColumnStagger",
+   "from": "35",
+   "to": "0",
+   "why": "Reference fall-out is bottom-up by row with all columns together (column gap 0, high confidence). Rule 1 compares per gap: -100%. Applied as a Bass Drop override (CR-12); the core default stays for Swamp Funk."
+  },
+  {
+   "file": "src/core/timing.ts",
+   "key": "spin.fallOutRowStagger",
+   "from": "15",
+   "to": "67",
+   "why": "Reference row gap 67 ms, bottom row first (high). The 6x6 fall-out becomes 260 + 5x67 = 595 (5x5 equivalent 528 vs ref 517). Reads as the floor giving way instead of a wipe. Bass Drop override (CR-12)."
+  },
+  {
+   "file": "src/core/timing.ts",
+   "key": "drop.columnStagger",
+   "from": "60",
+   "to": "90",
+   "why": "Reference 117 ms per gap vs build 50 (-57%, high). Capped at 90 by the ANIMATION_CONTRACT s.9 board-fill gate of 1.0-1.1 s: the 6x6 fill is 1,076 ms, and would be 1,211 at 117. The 5x5 equivalent is 827 vs ref 833. Row stagger stays 25 (a 67 gap would take the fill to 1,286; R-9). Bass Drop override (CR-12)."
+  },
+  {
+   "file": "src/core/timing.ts",
+   "key": "land.squashDuration",
+   "from": "55",
+   "to": "17",
+   "why": "Reference lands with a 1-frame contact dip and is at rest in 125 ms (117-133). Our 55 ms squash hold is most of our measured 225 ms settle, which probably misses our own <=150 ms settle gate. Squash depth 0.86 is unchanged. Bass Drop override (CR-12); promote to core only after a Swamp Funk MotionProbe check."
+  },
+  {
+   "file": "src/core/timing.ts",
+   "key": "land.hopHeight",
+   "from": "6",
+   "to": "10.5",
+   "why": "The reference rebound is one hop of 6.8% of the pitch vs our 3.7% (medium). 10.5 x k(0.831) = 8.7 px = 6.8% of the 128 pitch = 7.0% SH, inside the <=8% SH gate (with the new hopMaxSH cap for heavy/special). Bass Drop override (CR-12)."
+  },
+  {
+   "file": "src/symbols/symbolTiming.ts",
+   "key": "land.hopGravity",
+   "from": "2400",
+   "to": "7000",
+   "why": "The hop rises in about 50 ms (peak about 67 ms after contact) and touches down about 117 ms after contact, matching the reference's 117-133 ms at rest. Today's 2,400 gives a 141 ms airtime that starts 90 ms after contact."
+  },
+  {
+   "file": "src/symbols/symbolTiming.ts",
+   "key": "land.hopDelay (new; replaces the hard-coded 0.85 x quarterPeriod in SymbolRig.releaseSquash)",
+   "from": "0.85",
+   "to": "0",
+   "why": "Launch the hop at the squash release, not 35 ms later, so the whole land (dip + one hop) fits 125 ms."
+  },
+  {
+   "file": "src/symbols/symbolTiming.ts",
+   "key": "land.hopKick",
+   "from": "0.004",
+   "to": "0.002",
+   "why": "With a faster hop the touch-down re-kick of the squash spring doubles in velocity; halve it so the settle stays within +-2% by 150 ms (confirm in the lab MotionProbe)."
+  },
+  {
+   "file": "src/symbols/symbolTiming.ts",
+   "key": "land.hopMaxSH (new)",
+   "from": "none",
+   "to": "0.08",
+   "why": "Clamp heavy/special hops (weights 1.35/1.6 x velocity factor up to 1.15) to the ANIMATION_CONTRACT s.9 rebound gate <= 8% SH."
+  },
+  {
+   "file": "src/symbols/symbolTiming.ts",
+   "key": "land.shakeTrauma",
+   "from": "{heavy: 0.08, special: 0.15}",
+   "to": "{heavy: 0, special: 0}",
+   "why": "The reference never shakes on lands, and DESIGN s.19 says ordinary lands never shake. Ours is invisible (<0.2 px) but still logs fx:shake. Bass Drop override (CR-12)."
+  },
+  {
+   "file": "src/core/timing.ts",
+   "key": "win.dimDuration",
+   "from": "170",
+   "to": "17",
+   "why": "Reference dim is a 1-frame hard cut, in and out (high); ours tweens for 130-170 ms. Contrast does the highlighting. Passes <=3 flashes/s (one opposing pair per present); add the cuts to the IRIS/Harding check. Bass Drop override (CR-12)."
+  },
+  {
+   "file": "src/core/timing.ts",
+   "key": "win.dimTint",
+   "from": "0x5a5a5a",
+   "to": "0x484848",
+   "why": "Non-winners go to 44% of their settled luminance in the reference vs 54% measured on ours. Tune the exact tint on the win.dim instrument. Bass Drop override (CR-12)."
+  },
+  {
+   "file": "src/board/boardTiming.ts",
+   "key": "revealResolveLead (new, normal profile only; CR-13)",
+   "from": "await every land settle (build: last land -> present 400 ms)",
+   "to": "50",
+   "why": "The reference starts the present 33-67 ms after the last contact, while that symbol is still hopping. This saves about 350 ms per win round and returns the spin button earlier on losses. Turbo and super turbo keep waiting for the settle, as the reference's turbo waits for its block."
+  },
+  {
+   "file": "src/board/boardTiming.ts",
+   "key": "explodeSpread (new; via GameFeatures.explodeSequence, CR-13)",
+   "from": "0 (all winners burst together)",
+   "to": "300 (Bass Drop passes BASS_DROP_TIMING.orbs.spreadCap)",
+   "why": "Reference explode is a sequential per-symbol freeze of 660 ms (633-684) vs our 400 (-39%, high). Bursts in BFS order from each cluster's overlay cell, evenly over 300 ms: 80 + 300 + 180 + 100 hit-stop = 660 for every 5+ cluster. Hit-stop, shake and SFX play at the first burst, and board:burst is emitted per cell."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "orbs.depthStagger / orbs.orbStagger",
+   "from": "22 / 6",
+   "to": "0 / 0",
+   "why": "Each orb now leaves at its own symbol's burst. The BFS order and the 300 ms spread move to the explode, so orb arrivals are unchanged and every tick has a visible cause: a 5-symbol cluster ticks every 75 ms (ref median 83) instead of a 1-per-frame roll."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "speed.fallOutCut (new)",
+   "from": "none (fall-out 130 turbo / 87 super)",
+   "to": "['turbo', 'superTurbo'] (old board hidden on the first frame)",
+   "why": "Reference turbo cuts the old board in 1 frame (turbo/normal 0.03 vs ours 0.27, high). Rule 5: a Bass Drop per-key value, SPEED_SCALE unchanged. Turbo loss round goes from about 467 to about 300 (ref 383)."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "speed.presentMinTurbo (new)",
+   "from": "none (turbo present 500 by s())",
+   "to": "800",
+   "why": "Reference turbo present 800-833 (x0.84 of normal) vs ours 483 (x0.51), high confidence. Turbo keeps the payoff readable. Super turbo stays at 333 (\u00f73), because the reference has no third state."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "speed.explodeTurbo (new)",
+   "from": "none (turbo explode 130)",
+   "to": "'normal' (normal squeeze/spread/burst, no hit-stop = 560)",
+   "why": "Reference turbo explode 516 (x0.78) vs ours 133 (x0.33). Rule 5 per-key value; +9% vs ref. Super turbo stays at 87."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "shake.boom",
+   "from": "0.45",
+   "to": "0.62",
+   "why": "The reference stomp is 21 px per wild; our boom measured 5.6 px. 0.62 gives 8.5 px (per-axis s.19 formula): toward the reference, inside the 4-10 px boom gate and above the trigger's 7.9 px (pillar 2). Back off to 0.6 if the golden trace measures above 10 px."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "shake.boomChainAdd / shake.boomMax",
+   "from": "0.1 / 0.65",
+   "to": "0.05 / 0.67",
+   "why": "Chained max 0.67 = 9.9 px, the top of the boom gate, still below the 14 px big-win ceiling."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "shake.wildImpact",
+   "from": "0.2",
+   "to": "0",
+   "why": "The 0.2 trauma measured <1 px (invisible). It is replaced by a directional vertical stage stomp per wild (reference: one stomp per wild)."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "drop.thumpPx",
+   "from": "5 (grid container only)",
+   "to": "7 (stage container, HUD excluded; also the displacement cap)",
+   "why": "Per-wild vertical stomp of 7 x k = 5.8 px landscape, one per wild in normal and one per drop in turbo/super, not speed-scaled (reference 21 px, capped under the boom for pillar 2). The cap keeps impacts 110 ms apart from adding up past the boom."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "drop.stompHz / drop.stompZeta (new)",
+   "from": "none (thump uses BOARD_TIMING.thumpHz 9 / thumpZeta 0.5)",
+   "to": "2 / 0.8",
+   "why": "Peak at about 85 ms and about 300 ms long with no visible oscillation, matching the reference stomp (peak +83, ~300 ms, no oscillation)."
+  },
+  {
+   "file": "src/games/bass-drop/timing.ts",
+   "key": "punch.spin (new; fired via fx:punch, CR-14)",
+   "from": "none (only the HUD button reacts)",
+   "to": "{ scale: 0.019, hz: 3.2, zeta: 0.55 }",
+   "why": "Reference spin-click feedback is a +1.9% stage zoom, peak 67, rest 317, the same in turbo, HUD static (high). This spring peaks at about 60 ms with one ~0.25% undershoot and rests at about 350 ms. It runs in real time, excludes the HUD, and is off in reduced motion."
+  },
+  {
+   "file": "src/games/bass-drop/screens/look.ts",
+   "key": "introCards.out",
+   "from": "400 (12 f)",
+   "to": "967 (29 f)",
+   "why": "The reference intro out is 1,450 ms of main motion vs our 500 build (medium, +190%); no gate or pillar is touched. The cards pop (0-5 f), then leave at f9/f13/f17, 12 f each."
+  },
+  {
+   "file": "src/games/bass-drop/screens/look.ts",
+   "key": "introCards.outPop / outStagger / stageSettleAt / stageSettle / outInputAt (new)",
+   "from": "none",
+   "to": "167 / 133 / 600 / 850 / 567",
+   "why": "Staged out: the stage settles in last (dim off, meter and logo) and ends at 1,450. The spin input is live from 567 ms and a spin during the settle snaps it (closeNow), so the extra motion costs no wait."
+  },
+  {
+   "file": "src/games/bass-drop/meter/geometry.ts",
+   "key": "METER_LOOK.breathScale",
+   "from": "1.02",
+   "to": "1.01",
+   "why": "Idle meter energy is 0.8 in the reference vs 1.74 ours; calm the edges while keeping the beat grid (pillar 3). Needs art-lead sign-off (R-8)."
+  },
+  {
+   "file": "src/games/bass-drop/stage/look.ts",
+   "key": "STAGE_LOOK.cabinet.breathe",
+   "from": "1.022",
+   "to": "1.011",
+   "why": "Same as the meter: halve the idle beat pump of the cabinet and horns so the frame edges read calmer than the board (R-8, art lead)."
+  },
+  {
+   "file": "src/symbols/symbolTiming.ts",
+   "key": "idle.loopKinds / idle.loopBeats (new; CR-16)",
+   "from": "none (1-2 random idle accents every 2.5-5 s on any symbol)",
+   "to": "['high', 'wild'] / 4 (2,400 ms at 100 BPM, seeded phase)",
+   "why": "Reference highs and wilds loop about every 1 s while lows stay still (grid idle energy 4.9 vs ours 0.74). Loop H1-H4 and W on the music grid, inside the contract's 2-4 s idle window, with no unison; lows keep the accents (BOARD_TIMING.idleMin/idleMax 2500/5000 kept)."
+  }
+ ],
+ "behaviourChanges": [
+  "Fall-out becomes gravity-ordered: bottom row first, rows 67 ms apart, all columns together. The drop-in starts on an empty board (every column clears together), so there is a clean empty-board beat without copying the reference's power-up ritual. The loss round goes from 1.27 s (build) to about 1.7 s board-still; the reference is 2.8 s.",
+  "Turbo and super turbo cut the old board on the first frame (BASS_DROP_TIMING.speed.fallOutCut). Turbo loss is about 0.3 s (ref 0.38), super turbo about 0.22 s.",
+  "Crisper landing: a 1-frame contact dip (sy 0.86 unchanged), then one quick hop of 6.8% of the pitch, at rest by 125 ms. This replaces today's 67 ms squash hold plus a slow 3.7% hop that settles at about 225 ms, which probably misses our own <=150 ms settle gate. Confirm the settle, the rebound and no column overlap during the hop with the lab MotionProbe before promoting to core.",
+  "Drop-in column stagger rises to 90 ms per gap, so the fill reads as a left-to-right wave instead of one mass (board fill 1,076 ms, inside the 1.0-1.1 s gate).",
+  "In normal speed the first present of a spin starts 50 ms after the drop-in's last contact (Board.reveal resolves on contact and the lands keep animating; win() already interrupts a winner that is still hopping). This saves about 350 ms per win round. Tumbles keep resolving at land settle, and so do turbo and super turbo.",
+  "Hard dim: the non-winners cut to about 44% in 1 frame and come back in 1 frame, instead of a 130-170 ms tween to 54%. Add the cuts to the IRIS/Harding golden check (one opposing pair per present, <=3/s).",
+  "Sequential explode in our own vocabulary (CR-13): each winner bursts in BFS order from its cluster's overlay cell, evenly over 300 ms, and each burst launches its own orb. The explode goes from 400 to 660 ms (ref 660). Hit-stop, shake and SFX play at the first burst, and board:burst is emitted per cell. Orb arrival times are unchanged, but the counter now ticks in a countable rhythm tied 1:1 to visible bursts (75 ms apart for a 5-symbol cluster; ref median 83).",
+  "Turbo = fast spins, full wins (reference model, R-5), done as Bass Drop per-key values with SPEED_SCALE unchanged: fall-out cut, present floor 800 ms, explode at normal pace without the hit-stop (560). Turbo tumble cycle is about 1.63 s (ref 1.73, today 0.97); a one-cluster round goes from 1.3 to 1.9 s in turbo while turbo losses get faster. Super turbo stays the 'everything fast' state (\u00f73, plus the fall-out cut).",
+  "Slam scope (CR-15): a slam speeds up only the interrupted reveal (fall-out and drop-in at super turbo); the win steps of that round keep the selected profile, and a slam in turbo changes nothing (reference quick stop: present x1.0). Today a slam plays the rest of the round at super turbo. Medium confidence (n = 3 loss + 2 win steps); capture our own quick stop after it lands.",
+  "Heavier bass drop, same length (R-6): like-for-like (refill settle to next present) ours and the reference's summon are both about 1.85 s, so the durations stay. The boom rises from 0.45 to 0.62 trauma (8.5 px, still the biggest non-big-win shake), with chain max 0.67 (9.9 px). Each wild impact gets a vertical stage stomp (7 x k = 5.8 px, 2 Hz, zeta 0.8, about 300 ms, not speed-scaled, one per drop in turbo/super) instead of the invisible 0.2 trauma.",
+  "Camera motion never moves the HUD (CR-14): shake, stomp and the spin punch move a 'stage' container (everything in root except hud and overlay). Today the HUD sits inside the shaken root; the reference HUD is always static. This also changes Swamp Funk.",
+  "Spin-click stage punch (R-8, CR-14): a +1.9% zoom of the stage about the screen centre at every spin start, peak about 60 ms, rest about 350 ms, real time (identical in every profile), HUD excluded, off in reduced motion. The hex spin button keeps its own press and rotation.",
+  "Ordinary lands never shake: the heavy/special land trauma goes to 0 for Bass Drop, matching DESIGN s.19. There is no visible change (<0.2 px), but the logs and the doc now agree.",
+  "Staged intro out: 1,450 ms (cards pop, leave 133 ms apart, then the stage settles in with meter and logo last). The spin input is live from 567 ms and a spin during the settle snaps it, so there is no added wait.",
+  "Idle life moves from the edges to the board (R-8, art lead): H1-H4 and W loop idle on a 4-beat grid with seeded phases (CR-16) while lows stay calm. The meter and cabinet idle breathe is halved. Gumbo and Croak get a calm base loop plus 2-3 scripted acts per ~10 s cycle, offset from each other, instead of continuous motion (ANIMATION_SET).",
+  "Contract requests added to DESIGN s.23: CR-12 (per-game overrides of core timing via @game/config TIMING_OVERRIDES), CR-13 (Board explode sequence, reveal resolve lead, fall-out cut, turbo present floor), CR-14 (stage container, fx:punch, fx:stomp, HUD static), CR-15 (slam scope 'reveal'), CR-16 (idle loop mode per kind).",
+  "Optional art-lead call (DESIGN s.23 art-lead list): once the hard dim lands, consider dropping the neon ClusterOutline for Bass Drop if the golden captures read cluttered, since the dim and the groove links already carry the cluster. Default is keep.",
+  "Not changed, pending data: bonus flow (trigger/intro/outro: n = 1, low confidence, R-10, needs a fresh demo session), big-win tiers (2 samples, R-7), drop-in row stagger and pour model (R-9), refill (+5%), orb flight (pillar 1)."
+ ],
+ "keep": [
+  "Energy orbs and groove links (pillar 1). The reference's instant per-symbol tick is faster to read but has no travel. Ours shows symbol -> link -> orb -> meter, and now pairs every orb with its own burst. The orb flight stays at 520 ms (rule 7: removing the travel would break the pillar).",
+  "Bass drop length and beat structure (charge 500 with its 160 ms super-turbo floor, boom, arc flight 640, impact, settle 300). Like-for-like it is the same length as the reference summon (about 1.85 s from refill settle to next present), with a richer read: the meter is the source, the mascots sync, and target reticles show the landing.",
+  "No empty-board power-up ritual. That is the reference's identity (power-up tiles plus mini map), and we have no per-spin information to reveal, so a loss stays at about 1.7 s against 2.8 s.",
+  "Phases already matched in normal speed: press to first pixel 33 ms, cluster present 1,000 (ref 950), refill 775 (ref 700), per-row fall-out 260 (ref about 250), and the turbo summon ratio (0.48 vs 0.5).",
+  "Three speed states. Super turbo stays a full \u00f73 'everything fast' option (plus the fall-out cut) for players who want it; the reference only has two.",
+  "The next-drop chip under the meter as our forward-looking information, instead of a copied side grid (R-4 closed).",
+  "Gold links through wilds and the badge-to-label multiplier-sum flight. They explain why xN applies, where the reference just prints a summed label (the add rule itself is identical: 6 + 10 = 16).",
+  "Normal-only hit-stops (impact without shake), the <=3/s flash limiter, reduced motion, and the 4-10 px boom gate with big-win tiers as the strongest shake (the reference's 21 px and 37 px stomps would break it, so they are capped).",
+  "Loops on the music grid (pillar 3). The new idle loops and calmer edge pulses stay on the 100/106/112 BPM beat.",
+  "The Swamp Funk hex HUD and its rotating spin icon (the reference's button only greys out).",
+  "Stateless per-round meter reset (the reference does the same: R-3 confirmed).",
+  "Tap-controlled big-win tiers 5/7/9/13/18 s and thresholds 15/30/50/100x until R-7 has enough samples. The reference's 1.3-1.4 s self-timed celebrations are noted, not adopted.",
+  "Feature flow (trigger 1,800, intro 2,600, outro 2,200 + count) until R-10 has a fresh every-frame capture. The n = 1 reference is much shorter, but it is low confidence.",
+  "Drop model as column stacks from 5.5 cells (row stagger 25) until R-9 is decided in the lab, because the board-fill gate leaves no room for the reference's 67 ms row gap on our fall.",
+  "The whole Swamp Funk identity (speaker-woofer meter, horns, cypress frame, Gumbo and Croak, orbs that fly). No ice, dragons, comets, dissolving ice orbs, power-up tiles or mini map (ART_BIBLE s.0)."
+ ],
+ "docsUpdated": [
+  "/home/user/3d-slot/docs/games/bass-drop/DESIGN.md - header: the [RM] tag now points to the 2026-09-28 measurement instead of 'not measured yet'.",
+  "/home/user/3d-slot/docs/games/bass-drop/DESIGN.md s.0: capture status (session 2 captured 2026-09-26, measured 2026-09-28, what is and is not measured). In the stills table, the meter cell has the R-2/R-3 answers and the mini-panel cell the R-4 answer (per-spin power-up map; no equivalent needed).",
+  "/home/user/3d-slot/docs/games/bass-drop/DESIGN.md s.18.1: all 13 [RM] rows marked 'measured: <ref> (kept/adopted/not adopted)'. Adopted targets are in bold with the 'was' values in Derivation, plus a status note that src/ still runs the old values. Also added: the turbo policy paragraph (R-5), the adopted land row, the orb-spread/tumble-step/refill values re-derived from the adopted phases, the bass-drop R-6 measure, and new typical round totals with the previous values in brackets (loss about 1.7/0.3/0.22 s; one cluster about 4.2/1.9/0.8 s; three tumbles + two drops about 13.0/6.9/3.2 s).",
+  "/home/user/3d-slot/docs/games/bass-drop/DESIGN.md s.22.1: rewritten as 'Status (2026-09-28): measured, step 4 applied, src/ change pending'. It has the step-4 result, the capture log with the s2-* runs, the method, a per-[RM]-row decision table (reference vs our build with the same instrument, rule check, decision), the other measured rows (spin punch, empty board, summon, shake, idle, RGS), the step-5 re-check of s.0/6.3/8/10/11/12/19, the full src/ change list (file, key, old -> new, why), the behaviour changes without a single key, and the kept-on-purpose list. The row map and comparison rules are kept for re-measures, annotated with how they were applied (per-cell instruments for rule 3, the board-fill gate for rule 6).",
+  "/home/user/3d-slot/docs/games/bass-drop/DESIGN.md s.23: new contract requests CR-12 to CR-16. The reference decisions table is restructured as Question / Measured / Decision / Still open. R-1 is closed for the base game, but a fresh demo session is still needed. R-2, R-3, R-4, R-5, R-6 and R-8 are answered with decisions. R-7 (big-win tiers) stays open. New R-9 covers the drop model (pour vs stack). New R-10 covers the bonus-flow rows (trigger, intro, outro), which still need a fresh demo session with a live sessionID: every frame, at least 3 natural triggers plus one bought and one super bonus, with our own feature flow captured with the same instruments. One art-lead item was added: the neon cluster outline once the hard dim lands.",
+  "/home/user/3d-slot/docs/games/bass-drop/README.md: the stale 'still to be captured' line now gives the measurement status and points to DESIGN s.18.1/s.22.1/s.23.",
+  "/home/user/3d-slot/docs/games/bass-drop/reference-timings.json: appended a 2026-09-28 'step 4 applied' entry to decisions (5 adopted rows with from/to, kept, not adopted, also adopted) and updated $comment. The numbers only; the file was already committed by the other workflow in ce8e2ea.",
+  "Not touched: src/ (another workflow; its uncommitted src/, art/ and tools/ changes in the working tree are not mine), s.6.3/7/8.1/12/18.2/19 body text (they change in the same PR as the src/ change list, as 22.1 says), and ANIMATION_CONTRACT.md (CR-16 asks for its s.3 idle note to change). Nothing committed; no reference pixels copied."
+ ]
+}

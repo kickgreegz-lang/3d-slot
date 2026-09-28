@@ -188,7 +188,8 @@ export type CoreGameEvents = {
   'board:hold': { cells: Array<Position & { id: string }> };
   /**
    * Emitted BY the Board (not the flow) during 'board:tumble', at the explode-burst frame
-   * (explode start + TIMING.explode.anticipateDuration, s()-scaled, slam-safe), once per
+   * (the first symbol rig's `explode_burst`, frame 2-3, or explode start +
+   * TIMING.explode.anticipateDuration when no rig bursts first; s()-scaled, slam-safe), once per
    * tumble with every exploding position, just before the explode hit-stop starts. Never
    * for 'impact' crushes. Orbs, link snaps and count pops sync to it. Synchronous.
    */

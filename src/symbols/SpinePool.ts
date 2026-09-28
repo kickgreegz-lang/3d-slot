@@ -19,7 +19,8 @@
  *                                        (alias: `anticipation`, the art-pipeline name)
  *   anticipation_out              once   ≈ TIMING.anticipation.outroDuration
  *   explode                       once   event `burst` on the frame the symbol breaks apart
- *   blur                          loop   optional fast-fall pose (else the 'blur' texture is used)
+ *   blur                          loop   fast-fall pose of a view that HOLDS its rig (a look); every other
+ *                                        falling symbol shows the `blur` board sprite (no borrow per fall)
  *   bass_react                    once   TRACK 1, additive: board-wide bass reaction (optional)
  *   drop_impact                   once   heavy impact of a dropped wild (board:transform 'impact'; optional)
  *   any other clip                once / loop   SymbolView.play ('board:play'): the W's drop_launch / drop_fall /

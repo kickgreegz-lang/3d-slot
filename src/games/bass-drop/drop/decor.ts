@@ -28,6 +28,8 @@ type BadgeClip = 'slam' | 'appear' | 'mult_up' | 'maxed';
  * (tips at |x| <= 0.51, y >= +0.25 of the cell, flicker included), never over the word.
  */
 const FLAME = { x: 30, y: 6, rot: 0.8, scale: 0.66, flickerY: 1.1, flickerX: 0.96 } as const;
+/** painted rig plates in ref units: the rig cell is 300 units = REF; the value keeps W_RIG.multMaxW */
+const PAINTED = { scale: REF / 300, maxW: 150 * (REF / 300) } as const;
 
 /** Multiplier badge: tier plate (shape + colour per tier), t5 flame crown, live "×N". */
 export class MultBadge extends Container {
@@ -75,22 +77,33 @@ export class MultBadge extends Container {
     this.position.set(0, onCell ? LOOK.badgeY * cell : 0);
   }
 
-  /** Value + tier look (plate shape / colour, flame at t5). */
+  /** Value + tier look (plate shape / colour, flame at t5; the rig's painted plates when loaded). */
   setValue(mult: number): void {
     this.value = mult;
     const tier = multTier(mult).tier;
+    const painted = this.art.tex.painted;
     this.text.text = label('bd.drop.mult', '×{n}', { n: mult });
-    const w = PLATE_SIZE[tier].w * PLATE_SIZE[tier].inner;
+    const w = painted ? PAINTED.maxW : PLATE_SIZE[tier].w * PLATE_SIZE[tier].inner;
     this.text.scale.set(1);
     const tw = this.text.width;
     this.text.scale.set(tw > w ? w / tw : 1);
     this.text.position.set(0, 1.5);
     if (tier === this.tier) return;
     this.tier = tier;
-    this.plate.texture = this.art.tex.plates[tier];
     this.flicker?.kill();
     this.flicker = null;
     const [l, r] = this.flames;
+    if (painted) {
+      // the rig's plate art (t5 carries its own flame crown): rig units -> ref units
+      this.plate.texture = painted.tex[tier];
+      this.plate.scale.set(PAINTED.scale);
+      this.plate.position.set(0, painted.y[tier] * PAINTED.scale);
+      l.visible = r.visible = false;
+      return;
+    }
+    this.plate.texture = this.art.tex.plates[tier];
+    this.plate.scale.set(1);
+    this.plate.position.set(0, 0);
     l.visible = r.visible = tier === 5;
     l.scale.set(FLAME.scale);
     r.scale.set(FLAME.scale);

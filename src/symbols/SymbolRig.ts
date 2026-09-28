@@ -681,6 +681,8 @@ export class SymbolRig implements SymbolView {
   }
 
   reset(): void {
+    // whatever rig action was running is over: its completion must not settle the rig any more
+    this.actionId++;
     this.interrupt();
     this.stopBreath();
     this.dimTween?.kill();

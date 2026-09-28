@@ -81,6 +81,8 @@ export class BassDrop implements GameModule {
   init(): void {
     const { ctx } = this;
     this.art = new DropArt(ctx.app.renderer);
+    // off-rig badges (the label-sum clones) wear the W rig's painted plates
+    this.art.usePaintedPlates(ctx.art.spine('W'));
     this.fx = new DropFx(ctx, this.art);
     this.registry = new WildRegistry(ctx, this.art, this.fx);
     this.sticky = new StickyDirector(ctx, this.fx, this.registry);

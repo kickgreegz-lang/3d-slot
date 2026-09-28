@@ -110,6 +110,8 @@ export class Background implements GameModule {
   private readonly neonA = new Sprite({ anchor: 0.5, blendMode: 'add' });
   private readonly neonB = new Sprite({ anchor: 0.5, blendMode: 'add' });
   private readonly sets = new Map<string, PlateSet>();
+  /** replaced sets still on screen (released by prune once off it) */
+  private retired: PlateSet[] = [];
   private readonly loading = new Map<string, Promise<PlateSet | null>>();
   private readonly calls = new Set<gsap.core.Tween>();
   private offs: Array<() => void> = [];
@@ -204,8 +206,9 @@ export class Background implements GameModule {
     const regrow = !!shownSet?.half && this.need01(orient) > this.halfLimit() * HALF_HYSTERESIS;
     this.fit();
     if (orient !== this.orient || regrow || !shownSet) {
+      const rotated = orient !== this.orient;
       this.orient = orient;
-      void this.sync();
+      void this.sync(rotated);
     }
   }
 
@@ -218,8 +221,9 @@ export class Background implements GameModule {
     this.fadeTween?.kill();
     this.root.destroy({ children: true });
     this.glow.destroy({ children: true });
-    for (const set of this.sets.values()) this.release(set);
+    for (const set of [...this.sets.values(), ...this.retired]) this.release(set);
     this.sets.clear();
+    this.retired = [];
   }
 
   // ======================================================================= looks
@@ -303,8 +307,9 @@ export class Background implements GameModule {
         this.sets.set(key, set);
         if (old) {
           // a sharper copy replaces a halved one on screen, then the old one goes
+          this.retired.push(old);
           this.apply();
-          this.release(old);
+          this.prune();
         }
         return set;
       },
@@ -314,17 +319,18 @@ export class Background implements GameModule {
   }
 
   /** Show the current orientation's shown (+ incoming) look once it is loaded. */
-  private async sync(): Promise<void> {
+  private async sync(rotated = false): Promise<void> {
     const ep = ++this.syncEpoch;
     const orient = this.orient;
     const set = await this.need(orient, this.shown);
     if (this.dead || ep !== this.syncEpoch || orient !== this.orient) return;
     if (this.incoming) await this.need(orient, this.incoming);
     if (this.dead || ep !== this.syncEpoch) return;
-    if (set) {
-      this.apply();
-      this.prune();
-    }
+    if (!set) return;
+    this.apply();
+    this.prune();
+    // a switch that could not land while the orientation changed lands now (the rotation hides it)
+    if (rotated && this.target !== this.shown && !this.incoming) this.show(this.target, true);
   }
 
   /** Put the loaded textures of (orient, shown / incoming) on the sprites; keeps what is there otherwise. */
@@ -350,11 +356,17 @@ export class Background implements GameModule {
   private prune(): void {
     const keep = new Set([this.shown, this.incoming, this.target, this.upcoming].filter(Boolean).map((l) => this.key(this.orient, l as PlateLook)));
     const onScreen = new Set<Texture>([this.plateA.texture, this.plateB.texture, this.neonA.texture, this.neonB.texture]);
+    const shown = (set: PlateSet): boolean => onScreen.has(set.plate.tex) || (!!set.neon && onScreen.has(set.neon.tex));
     for (const [key, set] of this.sets) {
-      if (keep.has(key) || onScreen.has(set.plate.tex) || (set.neon && onScreen.has(set.neon.tex))) continue;
+      if (keep.has(key) || shown(set)) continue;
       this.sets.delete(key);
       this.release(set);
     }
+    this.retired = this.retired.filter((set) => {
+      if (shown(set)) return true;
+      this.release(set);
+      return false;
+    });
   }
 
   private release(set: PlateSet): void {

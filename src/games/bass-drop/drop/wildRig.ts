@@ -19,8 +19,8 @@ import { clipMs, W_CLIPS } from './look';
  */
 export const W_RIG = {
   /** ribbon word: Luckiest Guy, warm white, ink stroke; fits the ribbon's inner band */
-  wordSize: 50,
-  wordMaxW: 138,
+  wordSize: 54,
+  wordMaxW: 144,
   wordFill: 0xfff1c9,
   wordStroke: 7,
   wordShadow: 0x4b283d,

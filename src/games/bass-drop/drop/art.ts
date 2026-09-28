@@ -1,4 +1,6 @@
-import { BitmapFont, Container, Graphics, Rectangle, type Renderer, Texture } from 'pixi.js';
+import type { TextureAtlas } from '@esotericsoftware/spine-pixi-v8';
+import { Assets, BitmapFont, Container, Graphics, Rectangle, type Renderer, Texture } from 'pixi.js';
+import type { SpineRef } from '../../../assets/art';
 import { FONTS } from '../../../assets/fonts';
 import { TILE_RADIUS } from '../../../board/tileArt';
 import { canvasToTexture, createCanvas, glowTexture } from '../../../fx/textures';
@@ -281,9 +283,23 @@ const glintTexture = (): Texture => {
   return canvasToTexture(c);
 };
 
+/**
+ * The sym_W rig's painted badge plates (atlas regions `sym_W/badge_t1..t5`), for the displays that
+ * show a badge OFF the rig (the label-sum clones): same art as the W's own `badge` slot.
+ * Rig units: plate 192 x 112 (t5 172 tall with its flame crown, centred 27 units above the plate).
+ */
+export interface PaintedPlates {
+  /** per tier 1..5 (index 0 unused) */
+  tex: Texture[];
+  /** plate-centre offset of the texture centre per tier (rig units, y-down) */
+  y: number[];
+}
+
 export interface DropTextures {
   /** badge plate per tier 1..5 (index 0 unused) */
   plates: Texture[];
+  /** the rig's painted plates when the sym_W atlas is loaded (MultBadge prefers them) */
+  painted: PaintedPlates | null;
   flame: Texture;
   clamp: Texture;
   marker: Texture;
@@ -342,6 +358,7 @@ export class DropArt {
     }
     this.tex = {
       plates,
+      painted: null,
       flame: this.bake(drawFlame(), new Rectangle(-28, -54, 56, 46)),
       clamp: this.bake(drawClamp(), new Rectangle(-10, -25, 30, 52)),
       marker: this.bakeCentered(drawHomeMarker(), LOOK.ref / 2 + 3, LOOK.ref / 2 + 3),
@@ -352,6 +369,28 @@ export class DropArt {
       glint: glintTexture(),
       glow: glowTexture(128),
     };
+  }
+
+  /**
+   * Use the W rig's painted plates (atlas regions of its loaded atlas) for off-rig badges. The
+   * regions share the page texture: nothing is baked or uploaded twice. Skipped (code plates stay)
+   * when a region is missing or rotated.
+   */
+  usePaintedPlates(ref: SpineRef | null): void {
+    if (!ref) return;
+    const atlas = Assets.get<TextureAtlas>(ref.atlas);
+    if (!atlas?.findRegion) return;
+    const tex: Texture[] = [Texture.EMPTY];
+    const y: number[] = [0];
+    for (let t = 1; t <= 5; t++) {
+      const r = atlas.findRegion(`sym_W/badge_t${t}`);
+      const page = r?.page.texture as unknown as { texture?: Texture } | null;
+      if (!r || r.degrees !== 0 || !page?.texture) return;
+      tex.push(new Texture({ source: page.texture.source, frame: new Rectangle(r.x, r.y, r.width, r.height) }));
+      // the t5 attachment sits 27 units up (its flame crown); the others are centred on the plate
+      y.push(t === 5 ? -27 : 0);
+    }
+    this.tex.painted = { tex, y };
   }
 
   /** Brightened tier colour for additive garnish (sparks, trail). */
@@ -372,6 +411,8 @@ export class DropArt {
   destroy(): void {
     const t = this.tex;
     for (const p of t.plates) if (p !== Texture.EMPTY) p.destroy(true);
+    // painted plates are views into the rig's atlas page (owned by Assets): frames only
+    for (const p of t.painted?.tex ?? []) if (p !== Texture.EMPTY) p.destroy(false);
     for (const x of [t.flame, t.clamp, t.marker, t.reticle, t.shadow, t.trail, t.ring, t.glint]) x.destroy(true);
   }
 }

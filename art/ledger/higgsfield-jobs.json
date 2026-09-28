@@ -1418,7 +1418,7 @@
           "name": "mascot_croak_sheet.c1",
           "index": 0,
           "job_id": "63e2a0a8-c1ab-4222-b0af-59fa61685868",
-          "status": "in_progress",
+          "status": "completed",
           "template": "mascot_turnaround.txt#A",
           "vars": {
             "mascot": "croak",
@@ -1429,7 +1429,7 @@
           "resolution": "4k",
           "aspect_ratio": "21:9",
           "credits": 4,
-          "result_url": null,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173841_63e2a0a8-c1ab-4222-b0af-59fa61685868.png",
           "medias": [
             {
               "value": "23387c1a-08e0-48e8-a11f-1fde33df94fa",
@@ -1443,7 +1443,11 @@
           "asset": "mascot_croak_sheet",
           "stage": "mascot-sheets",
           "model": "nano_banana_2",
-          "type": "image"
+          "type": "image",
+          "sha256": "16cd930e440c8c5347777b53b5315f43f7e0ef4470c54454136ec1c5446a2884",
+          "width": 6336,
+          "height": 2688,
+          "bytes": 20815495
         },
         {
           "name": "chr_gumbo_rig_master.c1",
@@ -1524,7 +1528,7 @@
           "name": "sym_H1_parts.c1",
           "index": 0,
           "job_id": "58680e7f-b1e9-4b7e-9ca3-acd81488c745",
-          "status": "pending",
+          "status": "completed",
           "template": "symbol_parts_sheet.txt#A",
           "vars": {
             "symbol": "H1",
@@ -1534,7 +1538,7 @@
           "resolution": "2k",
           "aspect_ratio": "16:9",
           "credits": 2,
-          "result_url": null,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173906_58680e7f-b1e9-4b7e-9ca3-acd81488c745.png",
           "medias": [
             {
               "value": "ae6053be-6e34-4715-9b4b-e4375c29387f",
@@ -1542,13 +1546,19 @@
             }
           ],
           "asset": "sym_H1_parts",
-          "stage": "2d-image"
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "9c1f721d2f91e59a9f09b59ef153c92d22bb6f316874bc3f020054286dbfdb13",
+          "width": 2752,
+          "height": 1536,
+          "bytes": 6144064
         },
         {
           "name": "sym_H2_parts.c1",
           "index": 1,
           "job_id": "cb9e6e2b-8f8a-4af9-b1bb-4ed68ee7e496",
-          "status": "pending",
+          "status": "completed",
           "template": "symbol_parts_sheet.txt#A",
           "vars": {
             "symbol": "H2",
@@ -1558,7 +1568,7 @@
           "resolution": "2k",
           "aspect_ratio": "16:9",
           "credits": 2,
-          "result_url": null,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173905_cb9e6e2b-8f8a-4af9-b1bb-4ed68ee7e496.png",
           "medias": [
             {
               "value": "434527a1-ae53-4b11-bf93-358d052ee42c",
@@ -1566,13 +1576,19 @@
             }
           ],
           "asset": "sym_H2_parts",
-          "stage": "2d-image"
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "cbf66bbc839a65fed1c5fb0db35e452cf6121deb543aaba28fdce6b701f8a257",
+          "width": 2752,
+          "height": 1536,
+          "bytes": 4693458
         },
         {
           "name": "sym_H3_parts.c1",
           "index": 2,
           "job_id": "e2747512-f822-40cc-86ab-caaed97af105",
-          "status": "pending",
+          "status": "completed",
           "template": "symbol_parts_sheet.txt#A",
           "vars": {
             "symbol": "H3",
@@ -1582,7 +1598,7 @@
           "resolution": "2k",
           "aspect_ratio": "16:9",
           "credits": 2,
-          "result_url": null,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173905_e2747512-f822-40cc-86ab-caaed97af105.png",
           "medias": [
             {
               "value": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
@@ -1590,13 +1606,19 @@
             }
           ],
           "asset": "sym_H3_parts",
-          "stage": "2d-image"
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "65450631197e7ce046d9669c1f410377dfb55d2085982ae52df6f09c76daa0d3",
+          "width": 2752,
+          "height": 1536,
+          "bytes": 5780278
         },
         {
           "name": "sym_H4_parts.c1",
           "index": 3,
           "job_id": "6a9d8342-5d17-4bbe-a30e-1b0c65e3676d",
-          "status": "pending",
+          "status": "completed",
           "template": "symbol_parts_sheet.txt#A",
           "vars": {
             "symbol": "H4",
@@ -1606,7 +1628,7 @@
           "resolution": "2k",
           "aspect_ratio": "16:9",
           "credits": 2,
-          "result_url": null,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173905_6a9d8342-5d17-4bbe-a30e-1b0c65e3676d.png",
           "medias": [
             {
               "value": "3432f2f5-b229-48b1-b766-2db51d8538fc",
@@ -1614,13 +1636,19 @@
             }
           ],
           "asset": "sym_H4_parts",
-          "stage": "2d-image"
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "a3d521ee7648ed111ef966505de6a32ee6d95a2c73005111d6acb34a7dc4e418",
+          "width": 2752,
+          "height": 1536,
+          "bytes": 5254469
         },
         {
           "name": "sym_H3_eyes_half.c1",
           "index": 4,
           "job_id": "7442ab08-6de4-45aa-87c6-f274ca6dbe9c",
-          "status": "pending",
+          "status": "completed",
           "template": "symbol_parts_sheet.txt#D",
           "vars": {
             "symbol": "H3",
@@ -1630,7 +1658,7 @@
           "resolution": "2k",
           "aspect_ratio": "1:1",
           "credits": 2,
-          "result_url": null,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173906_7442ab08-6de4-45aa-87c6-f274ca6dbe9c.png",
           "medias": [
             {
               "value": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
@@ -1638,13 +1666,19 @@
             }
           ],
           "asset": "sym_H3_eyes_half",
-          "stage": "2d-image"
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "6f5dac27f07361c76b9fda23b6624ba52d0e8fa8e7928f3d93597b7151fe4996",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5787237
         },
         {
           "name": "sym_H3_eyes_closed.c1",
           "index": 5,
           "job_id": "b434fd6d-cf9b-40ec-89ec-2774db22445d",
-          "status": "pending",
+          "status": "completed",
           "template": "symbol_parts_sheet.txt#D",
           "vars": {
             "symbol": "H3",
@@ -1654,7 +1688,7 @@
           "resolution": "2k",
           "aspect_ratio": "1:1",
           "credits": 2,
-          "result_url": null,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173905_b434fd6d-cf9b-40ec-89ec-2774db22445d.png",
           "medias": [
             {
               "value": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
@@ -1662,13 +1696,19 @@
             }
           ],
           "asset": "sym_H3_eyes_closed",
-          "stage": "2d-image"
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "e31d9624fa64df1e3bc4dcbe532568e136c49c8e36a2c8b6132672133c755b0f",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5739246
         },
         {
           "name": "sym_H3_eyes_wide.c1",
           "index": 6,
           "job_id": "d44a3c0c-3d60-413e-bbe9-cb3dce83ed9b",
-          "status": "pending",
+          "status": "completed",
           "template": "symbol_parts_sheet.txt#D",
           "vars": {
             "symbol": "H3",
@@ -1678,7 +1718,7 @@
           "resolution": "2k",
           "aspect_ratio": "1:1",
           "credits": 2,
-          "result_url": null,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_173905_d44a3c0c-3d60-413e-bbe9-cb3dce83ed9b.png",
           "medias": [
             {
               "value": "0d5d1a66-2b34-4807-bc7c-188ab5935ceb",
@@ -1686,7 +1726,447 @@
             }
           ],
           "asset": "sym_H3_eyes_wide",
-          "stage": "2d-image"
+          "stage": "2d-image",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "0ef5e821171be687b6c70faa093fb8e1adc734f0e3f71c3d3555c616914ee6bc",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5845402
+        }
+      ]
+    },
+    {
+      "id": "bd_c09",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c09: chr_croak_rig_master",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "chr_croak_rig_master.c1",
+          "index": 0,
+          "job_id": "6b18395f-3064-4813-97df-b7843827ba3c",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#A",
+          "vars": {
+            "mascot": "croak",
+            "CHARACTER": "Baron Croak, a lanky adult bullfrog DJ: broad flat head with a very wide confident grin, big bulging golden eyes with narrow horizontal pupils set high on the head, a large inflatable throat pouch, mottled dark olive skin with a pale yellow belly and hot-pink toe pads, wearing a flat-brim cap backwards, an open hot-pink bowling shirt with a black lightning pattern over a black tank top, baggy black cargo shorts, big over-ear headphones around his neck and a heavy gold chain with a vinyl-record pendant",
+            "FACING": "toward the left side of the image",
+            "POSE_NOTE": "The headphones rest around his neck and the throat pouch is relaxed.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "8c79b3c4da368cb0d3d71fb443fef6db5394dc67a0581be9a35b06fd5a0341ec",
+          "resolution": "2k",
+          "aspect_ratio": "2:3",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_174641_6b18395f-3064-4813-97df-b7843827ba3c.png",
+          "medias": [
+            {
+              "value": "63e2a0a8-c1ab-4222-b0af-59fa61685868",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_croak_rig_master",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "8aba8306d7c3523f8e2a9ef1619d6d1568906f5996d1ad791833c6c0aff6ebde",
+          "width": 1696,
+          "height": 2528,
+          "bytes": 6555092
+        },
+        {
+          "name": "chr_croak_rig_master.c2",
+          "index": 1,
+          "job_id": "d6e8b3b6-1f0f-47f4-99e9-f911662bd718",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#A",
+          "vars": {
+            "mascot": "croak",
+            "CHARACTER": "Baron Croak, a lanky adult bullfrog DJ: broad flat head with a very wide confident grin, big bulging golden eyes with narrow horizontal pupils set high on the head, a large inflatable throat pouch, mottled dark olive skin with a pale yellow belly and hot-pink toe pads, wearing a flat-brim cap backwards, an open hot-pink bowling shirt with a black lightning pattern over a black tank top, baggy black cargo shorts, big over-ear headphones around his neck and a heavy gold chain with a vinyl-record pendant",
+            "FACING": "toward the left side of the image",
+            "POSE_NOTE": "The headphones rest around his neck and the throat pouch is relaxed.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "8c79b3c4da368cb0d3d71fb443fef6db5394dc67a0581be9a35b06fd5a0341ec",
+          "resolution": "2k",
+          "aspect_ratio": "2:3",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_174641_d6e8b3b6-1f0f-47f4-99e9-f911662bd718.png",
+          "medias": [
+            {
+              "value": "63e2a0a8-c1ab-4222-b0af-59fa61685868",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_croak_rig_master",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "17ac058d2d6b29f3e877f4cb50a81c82385f4bedabed0422dc9ea2bd447c897b",
+          "width": 1696,
+          "height": 2528,
+          "bytes": 5520725
+        }
+      ]
+    },
+    {
+      "id": "bd_c10",
+      "date": "2026-09-26",
+      "purpose": "Bass Drop Phase C batch c10: chr_gumbo_parts_body, chr_gumbo_parts_face, chr_gumbo_parts_hands, chr_gumbo_parts_props, chr_croak_parts_body, chr_croak_parts_face, chr_croak_parts_hands, chr_croak_parts_props",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "chr_gumbo_parts_body.c1",
+          "index": 0,
+          "job_id": "b369e03b-aabb-4ce2-9efe-65d53bddd0af",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#B",
+          "vars": {
+            "mascot": "gumbo",
+            "PART_LIST": "bare scaled torso without the tank top, maroon tank top on its own, shaped to fit the torso, pale khaki belly plate, neck, near upper arm, near forearm, far upper arm, far forearm, near thigh in dark blue jeans, near shin in dark blue jeans, near foot in a black rubber boot, far thigh in dark blue jeans, far shin in dark blue jeans, far foot in a black rubber boot, long thick tail",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "b003e9a062f59f73b3f492cc0e8378b7709db69b381d3624f9ff3175851ce5ab",
+          "resolution": "4k",
+          "aspect_ratio": "16:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175025_b369e03b-aabb-4ce2-9efe-65d53bddd0af.png",
+          "medias": [
+            {
+              "value": "156d6517-b845-4ab2-a618-66747120bb5b",
+              "role": "image_references"
+            },
+            {
+              "value": "93e002fa-cf13-42ce-86d1-96359077b355",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_gumbo_parts_body",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "f40ce0f0d556f34bf54cf0addbc8ea7bbea118e5cc0c7d7781372368aaa16e28",
+          "width": 5504,
+          "height": 3072,
+          "bytes": 20269774
+        },
+        {
+          "name": "chr_gumbo_parts_body.c2",
+          "index": 1,
+          "job_id": "2d7567c9-9b84-42a8-b926-9db679cbee9a",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#B",
+          "vars": {
+            "mascot": "gumbo",
+            "PART_LIST": "bare scaled torso without the tank top, maroon tank top on its own, shaped to fit the torso, pale khaki belly plate, neck, near upper arm, near forearm, far upper arm, far forearm, near thigh in dark blue jeans, near shin in dark blue jeans, near foot in a black rubber boot, far thigh in dark blue jeans, far shin in dark blue jeans, far foot in a black rubber boot, long thick tail",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "b003e9a062f59f73b3f492cc0e8378b7709db69b381d3624f9ff3175851ce5ab",
+          "resolution": "4k",
+          "aspect_ratio": "16:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175026_2d7567c9-9b84-42a8-b926-9db679cbee9a.png",
+          "medias": [
+            {
+              "value": "156d6517-b845-4ab2-a618-66747120bb5b",
+              "role": "image_references"
+            },
+            {
+              "value": "93e002fa-cf13-42ce-86d1-96359077b355",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_gumbo_parts_body",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "2d72b34e729f248e6fc42c5b2d4aa099eb928544054c017516ab9ffd13a36733",
+          "width": 5504,
+          "height": 3072,
+          "bytes": 20004908
+        },
+        {
+          "name": "chr_gumbo_parts_face.c1",
+          "index": 2,
+          "job_id": "10ed3cfd-d540-49d1-a224-e1ceb938daf8",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#C",
+          "vars": {
+            "mascot": "gumbo",
+            "PART_LIST": "head with the skull and the long upper snout, no lower jaw, lower jaw, upper teeth row, lower teeth row, gold tooth, nostrils, near eye in its usual heavy-lidded look, near eye half closed, near eye closed, near eye wide open, far eye in its usual heavy-lidded look, far eye half closed, far eye closed, far eye wide open, two pupils, two heavy brow ridges, mouth closed around a toothpick, mouth in a toothy grin, mouth open, mouth roaring, jowl fold",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "2cfde1d5d07e1d13c912c3474ee68ff17dcb41fde1ce899ef604595f182352d0",
+          "resolution": "4k",
+          "aspect_ratio": "16:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175026_10ed3cfd-d540-49d1-a224-e1ceb938daf8.png",
+          "medias": [
+            {
+              "value": "156d6517-b845-4ab2-a618-66747120bb5b",
+              "role": "image_references"
+            },
+            {
+              "value": "93e002fa-cf13-42ce-86d1-96359077b355",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_gumbo_parts_face",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "06b0f00bdaac166c7fe05b2386319b2513c12f55920e2a9b54a233c54ca5f264",
+          "width": 5504,
+          "height": 3072,
+          "bytes": 21921728
+        },
+        {
+          "name": "chr_gumbo_parts_hands.c1",
+          "index": 3,
+          "job_id": "2d441cd7-a63b-42f4-bce0-f36bd749ec45",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#D",
+          "vars": {
+            "mascot": "gumbo",
+            "PART_LIST": "near hand open, near hand in a fist, near hand pointing, far hand open, far hand in a fist, far hand pointing, far hand resting flat as if leaning on a surface",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "cfe7f4913ba6637a235ff5a8fe8637a612f9efc4fbc47600801105084b331af3",
+          "resolution": "2k",
+          "aspect_ratio": "3:2",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175025_2d441cd7-a63b-42f4-bce0-f36bd749ec45.png",
+          "medias": [
+            {
+              "value": "156d6517-b845-4ab2-a618-66747120bb5b",
+              "role": "image_references"
+            },
+            {
+              "value": "93e002fa-cf13-42ce-86d1-96359077b355",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_gumbo_parts_hands",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "540e0e1c588665f87c809b01690ed2e30572211583f54fec1768ff3f2eb5187c",
+          "width": 2528,
+          "height": 1696,
+          "bytes": 6435900
+        },
+        {
+          "name": "chr_gumbo_parts_props.c1",
+          "index": 4,
+          "job_id": "51942690-c26b-4418-bea2-5951550f3099",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#E",
+          "vars": {
+            "mascot": "gumbo",
+            "PART_LIST": "red cooler box with its white lid removed, white cooler lid, toothpick",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "db9ef4bf38966a4a1bd65c20524f6994652dae3e315cbfdcc1a6969999583ce3",
+          "resolution": "2k",
+          "aspect_ratio": "3:2",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175026_51942690-c26b-4418-bea2-5951550f3099.png",
+          "medias": [
+            {
+              "value": "156d6517-b845-4ab2-a618-66747120bb5b",
+              "role": "image_references"
+            },
+            {
+              "value": "93e002fa-cf13-42ce-86d1-96359077b355",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_gumbo_parts_props",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "2b4ab717e44d298bdc813b7f41763cab40aaf75e74ab34f437ddd25144665c73",
+          "width": 2528,
+          "height": 1696,
+          "bytes": 5762692
+        },
+        {
+          "name": "chr_croak_parts_body.c1",
+          "index": 5,
+          "job_id": "3ff26048-250d-47d8-a632-ed3a45c6d009",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#B",
+          "vars": {
+            "mascot": "croak",
+            "PART_LIST": "torso in a black tank top, open hot-pink bowling shirt with a black lightning pattern, on its own, large throat pouch, near upper arm, near forearm, far upper arm, far forearm, near thigh in baggy black cargo shorts, near shin, near foot with hot-pink toe pads, far thigh in baggy black cargo shorts, far shin, far foot with hot-pink toe pads",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "1d625f684d689daa1be37f61ab2664fd193333c52be0e773ba15325439f72a8e",
+          "resolution": "4k",
+          "aspect_ratio": "16:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175025_3ff26048-250d-47d8-a632-ed3a45c6d009.png",
+          "medias": [
+            {
+              "value": "6b18395f-3064-4813-97df-b7843827ba3c",
+              "role": "image_references"
+            },
+            {
+              "value": "63e2a0a8-c1ab-4222-b0af-59fa61685868",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_croak_parts_body",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "11da1a9cfb26b5499307401c76518fbf6b0cc34487f9f9d0c25badeb766c8f53",
+          "width": 5504,
+          "height": 3072,
+          "bytes": 18140149
+        },
+        {
+          "name": "chr_croak_parts_body.c2",
+          "index": 6,
+          "job_id": "85485027-e783-46a8-adcf-7a1cdf2c9fa8",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#B",
+          "vars": {
+            "mascot": "croak",
+            "PART_LIST": "torso in a black tank top, open hot-pink bowling shirt with a black lightning pattern, on its own, large throat pouch, near upper arm, near forearm, far upper arm, far forearm, near thigh in baggy black cargo shorts, near shin, near foot with hot-pink toe pads, far thigh in baggy black cargo shorts, far shin, far foot with hot-pink toe pads",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "1d625f684d689daa1be37f61ab2664fd193333c52be0e773ba15325439f72a8e",
+          "resolution": "4k",
+          "aspect_ratio": "16:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175026_85485027-e783-46a8-adcf-7a1cdf2c9fa8.png",
+          "medias": [
+            {
+              "value": "6b18395f-3064-4813-97df-b7843827ba3c",
+              "role": "image_references"
+            },
+            {
+              "value": "63e2a0a8-c1ab-4222-b0af-59fa61685868",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_croak_parts_body",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "a2e2575289b975e47ea1f01ccd244dbb11c4e57c17c5796329fb1bbf96d264ae",
+          "width": 5504,
+          "height": 3072,
+          "bytes": 21769843
+        },
+        {
+          "name": "chr_croak_parts_face.c1",
+          "index": 7,
+          "job_id": "acb45dd4-0f9f-40a5-92e6-82d0e34c3d41",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#C",
+          "vars": {
+            "mascot": "croak",
+            "PART_LIST": "broad flat head without the eyes, near eye bulge, far eye bulge, near golden eye open, near eye half closed, near eye closed, near eye wide open, far golden eye open, far eye half closed, far eye closed, far eye wide open, two narrow horizontal pupils, near eyelid, far eyelid, mouth closed in a very wide confident grin, wide open smile, mouth open, mouth pursed round as if saying oh",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "f2b19a36c3ae9f7284cd5e0c2acd264bc1dbb8d781546e9ff487463ae3f22caa",
+          "resolution": "4k",
+          "aspect_ratio": "16:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175025_acb45dd4-0f9f-40a5-92e6-82d0e34c3d41.png",
+          "medias": [
+            {
+              "value": "6b18395f-3064-4813-97df-b7843827ba3c",
+              "role": "image_references"
+            },
+            {
+              "value": "63e2a0a8-c1ab-4222-b0af-59fa61685868",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_croak_parts_face",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "87a7f610e9ed1dacc82914f8ca802f130214a89e00829ca79fca03487a53bf0b",
+          "width": 5504,
+          "height": 3072,
+          "bytes": 22336279
+        },
+        {
+          "name": "chr_croak_parts_hands.c1",
+          "index": 8,
+          "job_id": "e6c3c2d4-5280-4a0e-b6b7-f336483f3651",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#D",
+          "vars": {
+            "mascot": "croak",
+            "PART_LIST": "near hand open, near hand pointing, near hand in a fist, near hand pinching a small slider knob, far hand open, far hand pointing, far hand in a fist, far hand with fingertips pressed down as if scratching a record, far hand pressing down flat, palm first",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "96eae7ac1033fa59609869991c3a0fb4a23a0d44dc6296b50dd03242d8422d07",
+          "resolution": "2k",
+          "aspect_ratio": "3:2",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175026_e6c3c2d4-5280-4a0e-b6b7-f336483f3651.png",
+          "medias": [
+            {
+              "value": "6b18395f-3064-4813-97df-b7843827ba3c",
+              "role": "image_references"
+            },
+            {
+              "value": "63e2a0a8-c1ab-4222-b0af-59fa61685868",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_croak_parts_hands",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "076513517e0d6660e13a3a109a0a1acf5fd6be4fcf9c293700e0ee636ca6259b",
+          "width": 2528,
+          "height": 1696,
+          "bytes": 6093987
+        },
+        {
+          "name": "chr_croak_parts_props.c1",
+          "index": 9,
+          "job_id": "95f4515e-9f0c-4ac6-893b-b5b0301c48e4",
+          "status": "completed",
+          "template": "mascot_parts_sheet.txt#E",
+          "vars": {
+            "mascot": "croak",
+            "PART_LIST": "flat-brim cap worn backwards, headphone band, near headphone cup, far headphone cup, short coiled headphone cable, heavy gold chain with a vinyl-record pendant, small vintage gold stage microphone",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters."
+          },
+          "promptHash": "9c8e4facf2ddb7830968a5af3c53baa83550b4d3a8b270d525edf422d68ab02f",
+          "resolution": "2k",
+          "aspect_ratio": "3:2",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20260926_175025_95f4515e-9f0c-4ac6-893b-b5b0301c48e4.png",
+          "medias": [
+            {
+              "value": "6b18395f-3064-4813-97df-b7843827ba3c",
+              "role": "image_references"
+            },
+            {
+              "value": "63e2a0a8-c1ab-4222-b0af-59fa61685868",
+              "role": "image_references"
+            }
+          ],
+          "asset": "chr_croak_parts_props",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "dc795d18c24615febbdc8ae8e37236feff706fcd766e91052fd99bbb0a8e8321",
+          "width": 2528,
+          "height": 1696,
+          "bytes": 5229180
         }
       ]
     }

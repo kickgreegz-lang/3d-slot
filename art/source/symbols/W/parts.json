@@ -1,0 +1,181 @@
+{
+  "$comment": "sym_W parts: master-cut from art/source/symbols/W/master_rig_1024.png (sym_W_rig 7f0557f2) + the sym_W_pieces cuts (ribbon, badge tiers, clamps); fx sprites drawn by tools/spine/examples/bass_drop/cut/cut_W.py. Canvas 360 @2x, content 306 (cellScale 1.02).",
+  "symbol": "W",
+  "canvas": [
+    360,
+    360
+  ],
+  "images": "../../spine/images",
+  "parts": [
+    {
+      "name": "glow",
+      "slot": "fx_glow",
+      "bbox": [
+        30,
+        34,
+        300,
+        300
+      ],
+      "z": 0,
+      "bone": "fx_glow",
+      "blend": "additive",
+      "color": "ffffff00"
+    },
+    {
+      "name": "trail_streak",
+      "slot": "fx_glow",
+      "bbox": [
+        105,
+        -80,
+        150,
+        300
+      ],
+      "z": 0,
+      "bone": "fx_glow"
+    },
+    {
+      "name": "ring",
+      "slot": "fx_glow",
+      "bbox": [
+        65,
+        69,
+        230,
+        230
+      ],
+      "z": 0,
+      "bone": "fx_glow"
+    },
+    {
+      "name": "tooth",
+      "bbox": [
+        47,
+        120,
+        260,
+        218
+      ],
+      "z": 2,
+      "bone": "tooth",
+      "blur": true
+    },
+    {
+      "name": "tooth_cracked",
+      "slot": "tooth",
+      "bbox": [
+        47,
+        120,
+        260,
+        218
+      ],
+      "z": 2,
+      "bone": "tooth"
+    },
+    {
+      "name": "chain",
+      "bbox": [
+        173,
+        23,
+        140,
+        104
+      ],
+      "z": 1,
+      "bone": "phys_chain_1",
+      "blur": true
+    },
+    {
+      "name": "cap",
+      "bbox": [
+        109,
+        59,
+        196,
+        119
+      ],
+      "z": 3,
+      "bone": "cap",
+      "blur": true
+    },
+    {
+      "name": "clamps",
+      "slot": "clamps",
+      "bbox": [
+        66,
+        151,
+        273,
+        90
+      ],
+      "z": 6,
+      "bone": "clamps"
+    },
+    {
+      "name": "clamps_open",
+      "slot": "clamps",
+      "bbox": [
+        73,
+        151,
+        259,
+        90
+      ],
+      "z": 6,
+      "bone": "clamps"
+    },
+    {
+      "name": "badge_t1",
+      "slot": "badge",
+      "bbox": [
+        81,
+        250,
+        198,
+        118
+      ],
+      "z": 7,
+      "bone": "badge"
+    },
+    {
+      "name": "badge_t2",
+      "slot": "badge",
+      "bbox": [
+        81,
+        250,
+        198,
+        118
+      ],
+      "z": 7,
+      "bone": "badge"
+    },
+    {
+      "name": "badge_t3",
+      "slot": "badge",
+      "bbox": [
+        81,
+        250,
+        198,
+        118
+      ],
+      "z": 7,
+      "bone": "badge"
+    },
+    {
+      "name": "badge_t4",
+      "slot": "badge",
+      "bbox": [
+        81,
+        250,
+        198,
+        118
+      ],
+      "z": 7,
+      "bone": "badge"
+    },
+    {
+      "name": "badge_t5",
+      "slot": "badge",
+      "bbox": [
+        81,
+        196,
+        198,
+        172
+      ],
+      "z": 7,
+      "bone": "badge"
+    }
+  ]
+}

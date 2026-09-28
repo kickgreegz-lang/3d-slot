@@ -1,0 +1,49 @@
+# sym_W, Bass Drop wild (docs/games/bass-drop/ANIMATION_SET.md 2.6). Parts: art/source/symbols/W/parts.json
+# (tools/spine/examples/bass_drop/cut/cut_W.py: master-cut tooth / cap / chain from sym_W_rig + the sym_W_pieces
+# cuts). Coordinates: 360x360 @2x canvas, image space (y down).
+# Build: tools/spine/examples/bass_drop/build.sh W   (bdgen.py = stock gen.py + bassdrop.yaml: skins, empty
+# txt_* slots, the CR-8 drop / sticky / multiplier clips and bass_react).
+# 8 slots so it passes today's contract budget (CR-8 'wild' allows 12): the WILD ribbon is baked into the tooth
+# (static on it), both sticky clamps are ONE mesh weighted to clamp_L / clamp_R, and fx_glow carries the glow,
+# the drop_fall speed streak and the drop_impact ring as attachments.
+symbol: W
+parts: parts.json
+kind: special
+
+bones:
+  - {name: tooth, parent: body, joint: [205.5, 153.2], tip: [148.9, 273.1]}
+  - {name: tooth_tip, parent: tooth, joint: [148.9, 273.1], tip: [63.9, 243.1]}
+  - {name: txt_wild, parent: tooth, joint: [201.5, 209.0]}
+  - {name: cap, parent: body, joint: [207.1, 119.9], tip: [207.1, 73.3]}
+  - {name: cap_rim, parent: cap, joint: [195.5, 69.3], tip: [297.4, 109.9]}     # chain base line (weights only)
+  - {name: phys_chain_1, parent: cap, joint: [238.8, 39.3], tip: [238.8, 12.0]} # the chain loop's apex (sags / jingles)
+  - {name: clamp_L, parent: body, joint: [101.0, 196.0], tip: [140.0, 196.0]}
+  - {name: clamp_R, parent: body, joint: [304.0, 196.0], tip: [265.0, 196.0]}
+  - {name: ctrl_badge_scale, parent: root, joint: [180.0, 309.0]}              # runtime scale of the plate
+  - {name: badge, parent: ctrl_badge_scale, joint: [180.0, 309.0]}
+  - {name: txt_mult, parent: badge, joint: [180.0, 309.0]}
+  - {name: fx_glow, parent: root, joint: [180.0, 184.0]}
+
+meshes:
+  tooth: {type: grid, cols: 4, rows: 4, weights: {mode: idw, bones: [tooth, tooth_tip], power: 3}}
+  tooth_cracked: {type: grid, cols: 4, rows: 4, weights: {mode: idw, bones: [tooth, tooth_tip], power: 3}}
+  chain: {type: trace, spacing: 26, weights: {mode: idw, bones: [cap_rim, phys_chain_1], power: 3}}
+  clamps: {type: grid, cols: 3, rows: 1, weights: {mode: idw, bones: [clamp_L, clamp_R], power: 8}}
+  clamps_open: {type: grid, cols: 3, rows: 1, weights: {mode: idw, bones: [clamp_L, clamp_R], power: 8}}
+
+physics:
+  - {bone: phys_chain_1, preset: floppy, x: 0.5, y: 0.6, rotate: 0, inertia: 0.5}
+
+motion:
+  idle: {frames: 90}
+  win: {pop: 1.25}
+  win_loop: {frames: 45, beats: 2}
+  explode: {frames: 15, burst_frame: 2, fade_from: 6, scatter: 110, spin: 50}
+  appear: {frames: 9}
+  blur: {frames: 1}
+
+accents:
+  win:
+    - {bone: badge, type: pump, amount: 0.15, at: peak}
+  win_loop:
+    - {bone: tooth, type: sway, amount: 4, cycles: 1}

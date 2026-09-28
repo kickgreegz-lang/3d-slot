@@ -17,13 +17,15 @@ export const SCENE_LOOK = registerTiming('bassDropScene', {
   /** feature upgrade: the Mega Mix emblem slams at f28 of ui_feature_upgrade (DESIGN §10.4) */
   upgradeAt: 933,
   /**
-   * Additive neon layer alpha: rest + beat x (1 - phase)^3 (the kick envelope the stage uses).
-   * Per look: Juke Jam's dimmed string lights pulse softer, Mega Mix's party beams harder.
+   * Additive neon layer alpha: rest + beat x (1 - phase)^3 (the kick envelope the stage uses); the
+   * kick peaks at plate + neon x 1, the "beat" frame of tools/bdart/backgrounds.py's pulse sheet.
+   * Juke Jam's dimmed string lights pulse softer; Mega Mix's layer also holds the party beams and
+   * specks (11 % of the plate), so it rests higher and swings less (a large area stays gentle).
    */
   neon: {
-    base: { rest: 0.28, beat: 0.5 },
-    jukejam: { rest: 0.26, beat: 0.42 },
-    megamix: { rest: 0.3, beat: 0.62 },
+    base: { rest: 0.3, beat: 0.7 },
+    jukejam: { rest: 0.26, beat: 0.55 },
+    megamix: { rest: 0.35, beat: 0.6 },
   },
   /** reduced motion: the neon holds this fraction of its beat amplitude (no pulse) */
   neonStill: 0.35,

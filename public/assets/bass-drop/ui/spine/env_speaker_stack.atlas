@@ -1,0 +1,22 @@
+env_speaker_stack.webp
+size: 1280,992
+filter: Linear,Linear
+pma: true
+env_speaker_stack/cabinet
+bounds: 2,204,608,640
+env_speaker_stack/cable_1
+bounds: 612,608,150,380
+env_speaker_stack/cable_2
+bounds: 1016,2,127,293
+env_speaker_stack/floor_light
+bounds: 2,2,720,200
+env_speaker_stack/glow_ring
+bounds: 1016,297,262,262
+env_speaker_stack/port_L
+bounds: 2,846,131,131
+env_speaker_stack/port_R
+bounds: 135,846,131,131
+env_speaker_stack/woofer
+bounds: 764,608,298,298
+env_speaker_stack/woofer_rim
+bounds: 612,204,402,402

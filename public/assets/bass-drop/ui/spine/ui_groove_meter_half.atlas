@@ -1,0 +1,95 @@
+ui_groove_meter_half.webp
+size: 1004,1012
+filter: Linear,Linear
+pma: true
+ui_groove_meter/burst_star
+bounds: 917,2,85,85
+ui_groove_meter/cabinet_back
+bounds: 2,2,356,424
+ui_groove_meter/cabinet_front
+bounds: 2,428,302,379
+ui_groove_meter/cap_flash
+bounds: 360,328,92,92
+offsets: 1,1,94,94
+ui_groove_meter/cone
+bounds: 686,233,228,228
+ui_groove_meter/dust_cap
+bounds: 189,809,171,171
+ui_groove_meter/glow_ring
+bounds: 2,809,185,185
+ui_groove_meter/grill_cloth
+bounds: 306,428,224,376
+offsets: 1,1,225,378
+ui_groove_meter/notch_jj_lit
+bounds: 362,955,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_jj_next
+bounds: 418,955,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_jj_off
+bounds: 474,955,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_jj_spent
+bounds: 530,955,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_mm_lit
+bounds: 586,955,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_mm_next
+bounds: 642,955,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_mm_off
+bounds: 454,328,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_mm_spent
+bounds: 917,89,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w1_lit
+bounds: 917,145,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w1_next
+bounds: 917,201,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w1_off
+bounds: 916,257,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w1_spent
+bounds: 916,313,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w2_lit
+bounds: 916,369,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w2_next
+bounds: 916,425,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w2_off
+bounds: 532,592,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w2_spent
+bounds: 532,648,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w3_lit
+bounds: 532,704,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w3_next
+bounds: 588,592,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w3_off
+bounds: 588,648,54,54
+offsets: 1,1,56,56
+ui_groove_meter/notch_w3_spent
+bounds: 588,704,54,54
+offsets: 1,1,56,56
+ui_groove_meter/rim
+bounds: 360,2,324,324
+ui_groove_meter/surround
+bounds: 686,2,229,229
+ui_groove_meter/swirl
+bounds: 532,477,117,113
+offsets: 0,2,117,117
+ui_groove_meter/trim_base
+bounds: 532,328,147,147
+ui_groove_meter/trim_jukejam
+bounds: 362,806,147,147
+ui_groove_meter/trim_megamix
+bounds: 511,806,147,147

@@ -64,8 +64,8 @@ const bend = (w: BakedWord, radius: number): void => {
  *    stacked beside it, the group centred.
  * Emblem + word-mark are baked into ONE texture per layout kind and display resolution (the shared
  * glyph cache may be released by the screens at any time, so no live glyph sprite stays on screen).
- * Motion: static + a shine sweep every few seconds (UI time; not on the low tier), as ANIMATION_SET
- * `logo_bd`. A missing crest leaves the word-mark alone.
+ * Motion: static + a glint sweeping the word-mark every few seconds (UI time; not on the low tier),
+ * as ANIMATION_SET `logo_bd`. A missing crest leaves the word-mark alone.
  */
 export class Logo implements GameModule {
   private readonly view = new Container({ label: 'bdLogo' });
@@ -75,6 +75,8 @@ export class Logo implements GameModule {
   private readonly shineHolder = new Container({ label: 'bdLogoShine' });
   private emblem: Texture | null = null;
   private baked: Texture | null = null;
+  /** the word-mark alone (same frame): the shine's mask, so the glint crosses the letters only */
+  private bakedWords: Texture | null = null;
   private band: Texture | null = null;
   private shineTl: gsap.core.Timeline | null = null;
   private key = '';
@@ -103,19 +105,25 @@ export class Logo implements GameModule {
     const key = `${L.kind}@${res}`;
     if (key === this.key) return;
     this.key = key;
-    const comp = this.compose(L.logo, res);
+    const { comp, emblem } = this.compose(L.logo, res);
     const frame = comp.getLocalBounds().rectangle.clone().pad(4);
-    const tex = ctx.app.renderer.generateTexture({ target: comp, frame, resolution: res, antialias: true });
+    const renderer = ctx.app.renderer;
+    const tex = renderer.generateTexture({ target: comp, frame, resolution: res, antialias: true });
+    let words: Texture | null = null;
+    if (ctx.tier !== 'low') {
+      if (emblem) emblem.visible = false;
+      words = renderer.generateTexture({ target: comp, frame, resolution: res, antialias: true });
+    }
     comp.destroy({ children: true });
-    const old = this.baked;
+    const old = [this.baked, this.bakedWords];
     this.baked = tex;
+    this.bakedWords = words;
     const cx = L.logo.x + L.logo.w / 2;
     const cy = L.logo.y + L.logo.h / 2;
-    for (const s of [this.sprite, this.mask]) {
-      s.texture = tex;
-      s.position.set(cx + frame.x, cy + frame.y);
-    }
-    old?.destroy(true);
+    this.sprite.texture = tex;
+    this.mask.texture = words ?? Texture.EMPTY;
+    for (const s of [this.sprite, this.mask]) s.position.set(cx + frame.x, cy + frame.y);
+    for (const t of old) t?.destroy(true);
     this.setupShine(frame.width, frame.height, cx + frame.x, cy + frame.y);
   }
 
@@ -125,6 +133,7 @@ export class Logo implements GameModule {
     this.shineTl?.kill();
     this.view.destroy({ children: true });
     this.baked?.destroy(true);
+    this.bakedWords?.destroy(true);
     this.band?.destroy(true);
     if (this.emblem) void Assets.unload(LOGO_ART.url).catch(() => undefined);
   }
@@ -132,7 +141,7 @@ export class Logo implements GameModule {
   // ======================================================================= composition
 
   /** Emblem + word-mark in design px around the rect centre (0, 0); glyphs baked at `res`. */
-  private compose(r: Rect, res: number): Container {
+  private compose(r: Rect, res: number): { comp: Container; emblem: Sprite | null } {
     const comp = new Container();
     const top = label('bd.intro.logoTop', 'SWAMP FUNK');
     const main = label('bd.intro.logoMain', 'BASS DROP');
@@ -160,7 +169,7 @@ export class Logo implements GameModule {
       bend(topWord, radius * 0.94);
       bend(mainWord, radius);
       comp.addChild(topWord, mainWord);
-      return comp;
+      return { comp, emblem: em };
     }
 
     // wide lock-up: [emblem] [SWAMP FUNK / BASS DROP]
@@ -184,12 +193,12 @@ export class Logo implements GameModule {
     topWord.position.set(tx, -h * 0.27);
     mainWord.position.set(tx, h * 0.15);
     comp.addChild(topWord, mainWord);
-    return comp;
+    return { comp, emblem: em };
   }
 
   // ======================================================================= shine
 
-  /** Additive diagonal band masked by the logo's alpha, swept every few seconds (UI time). */
+  /** A diagonal glint masked by the word-mark's alpha, swept every few seconds (UI time). */
   private setupShine(w: number, h: number, x: number, y: number): void {
     this.shineTl?.kill();
     this.shineTl = null;
@@ -204,9 +213,9 @@ export class Logo implements GameModule {
     const shine = this.shine;
     shine.texture = this.shineBand();
     shine.height = h * 1.8;
-    shine.width = Math.max(24, h * 0.55);
+    shine.width = Math.max(16, h * 0.3);
     shine.angle = 18;
-    shine.alpha = 0.7;
+    shine.alpha = 0.55;
     shine.y = y + h / 2;
     this.shineTl = gsap
       .timeline({ repeat: -1, repeatDelay: SCENE_LOOK.shineGap, delay: SCENE_LOOK.shineDelay })

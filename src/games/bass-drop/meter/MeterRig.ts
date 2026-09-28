@@ -3,23 +3,23 @@ import { Container, Matrix, Sprite } from 'pixi.js';
 import { followSpeed, s } from '../../../core/timing';
 import { glowTexture, godRaysTexture } from '../../../fx/textures';
 import { BASS_DROP_TIMING, TEAL } from '../timing';
+import type { MeterMode } from '../events';
 import type { MeterArt, MeterTextures } from './art';
 import { Counter } from './Counter';
 import { GEOM, METER_LOOK as LOOK, R_REF, type RigLayout } from './geometry';
 import { LedArc } from './LedArc';
 import { Notches } from './Notches';
+import type { GrooveRig, MeterLoop } from './rig';
 
 const M = BASS_DROP_TIMING.meter;
 const FPS = 30;
 /** authored frames (30 fps) -> gameplay seconds */
 const f = (frames: number): number => s((frames * 1000) / FPS);
 
-export type MeterLoop = 'idle' | 'heat_loop' | 'armed_loop' | 'overdrive_loop';
-
 /**
- * UI_GROOVE_METER placeholder rig: the upper speaker cabinet with the woofer gauge, drawn
- * in code until the Spine rig of ANIMATION_SET §3 lands. The class mirrors that rig so the
- * swap is local: the containers are its slots (`cabinet`, `ring`, `led_arc`, `cone`,
+ * UI_GROOVE_METER code rig: the upper speaker cabinet with the woofer gauge drawn in code. Since
+ * the art integration the production meter is the Spine rig (MeterSpine); this placeholder stays
+ * as its FALLBACK (the rig failed to load) and implements the same GrooveRig contract: the containers are its slots (`cabinet`, `ring`, `led_arc`, `cone`,
  * `txt_count`, `notch_1..6`, `fx_swirl`, `fx_glow`, `fx_blast`), the loops are its track-0
  * loops (`idle`, `heat_loop`, `armed_loop`, `overdrive_loop`) and the methods are its clips
  * (`tick`, `pump`, `charge`, `charge_chained`, `boom`, `feature_trigger` pumps, `drain`).
@@ -28,7 +28,7 @@ export type MeterLoop = 'idle' | 'heat_loop' | 'armed_loop' | 'overdrive_loop';
  * Poses compose multiplicatively: cone scale = clip pose x overlay (tick / pump) x loop
  * (beat breath, heat flutter), so a boom never fights the idle breathing.
  */
-export class MeterRig {
+export class MeterRig implements GrooveRig {
   readonly view = new Container({ label: 'ui_groove_meter' });
   readonly led: LedArc;
   readonly counter = new Counter();
@@ -72,9 +72,13 @@ export class MeterRig {
   /** state glow of the rim / LED arc (cold .. locked) */
   private glowLevel: number = LOOK.glow.cold;
   private t = 0;
-  private beat = 0;
 
-  constructor(art: MeterArt, tex: MeterTextures) {
+  constructor(
+    private readonly art: MeterArt,
+    g: RigLayout,
+    res: number,
+  ) {
+    const tex = art.build(g.cabinet, res);
     const icons = art.icons;
     this.led = new LedArc(tex.tick);
     this.notches = new Notches(tex.notchPlate, tex.notchRing, (d) => art.notchIcon(d.kind, d.pips));
@@ -121,8 +125,8 @@ export class MeterRig {
   }
 
   /** Place the rig for a design space (ring centre, scale, cabinet pivot at its bottom centre). */
-  layout(rig: RigLayout, tex: MeterTextures): void {
-    this.setTextures(tex);
+  layout(rig: RigLayout, res: number): void {
+    this.setTextures(this.art.build(rig.cabinet, res));
     this.view.position.set(rig.cx, rig.cy);
     this.view.scale.set(rig.scale);
     const c = rig.cabinet;
@@ -130,6 +134,15 @@ export class MeterRig {
     this.cabinet.pivot.set(0, pivotY);
     this.cabinet.position.set(0, pivotY);
     this.counter.setFontSize(rig.countFont);
+  }
+
+  /** The code rig has no skins: the trim colour carries the mode. */
+  setSkin(_mode: MeterMode): void {}
+
+  /** The code cabinet squashes about its foot, the chip hangs on the rect: it stays put. */
+  chipOffset(out: { x: number; y: number }): void {
+    out.x = 0;
+    out.y = 0;
   }
 
   /** Skin trim (base teal / jukejam gold / megamix pink; also the locked 40 / 60 trims). */
@@ -314,12 +327,11 @@ export class MeterRig {
 
   // ---------------------------------------------------------------- per frame
 
-  /** dt game seconds; beatMs = beat period of the current music stem. */
-  update(dt: number, beatMs: number): void {
+  /** dt game seconds; `beat` = 0..1 phase of the shared music beat. */
+  update(dt: number, beat: number): void {
     this.t += dt;
-    this.beat = (this.beat + (dt * 1000) / beatMs) % 1;
     const t = this.t;
-    const env = (1 - this.beat) ** 3;
+    const env = (1 - beat) ** 3;
     let loopCone = 1 + (LOOK.breathScale - 1) * env;
     let pulse = 1;
     let swirlA = 0;

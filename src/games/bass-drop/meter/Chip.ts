@@ -87,6 +87,12 @@ export class Chip {
     if (this.model) this.set(this.model, false);
   }
 
+  /** Offset from the rect centre (design px): the rig's `chip_anchor` moving with the cabinet squash. */
+  ride(dx: number, dy: number): void {
+    const r = this.rect;
+    this.view.position.set(r.x + r.w / 2 + dx, r.y + r.h / 2 + dy);
+  }
+
   set(m: ChipModel, punch = true): void {
     const key = sig(m);
     const changed = key !== this.key;

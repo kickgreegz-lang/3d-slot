@@ -8,6 +8,7 @@ import { OverlayStage, releaseTitlesIfIdle } from '../../../present/common/Overl
 import { visibleDesignRect } from '../../../present/common/placement';
 import { BASS_DROP_TIMING } from '../timing';
 import { screenArt } from './art/ScreenArt';
+import { type UiArtKey, uiArt } from './art/uiArt';
 import { ensureScreenFonts } from './fonts';
 import { IntroCards } from './IntroCards';
 import { SCREENS_TIMING, introRects } from './look';
@@ -19,6 +20,8 @@ import { ModalGate, TapCatcher, onScreenKey } from './ui';
  * guarded and the game works without storage.
  */
 const SKIP_KEY = `${GAME_META.storagePrefix}.skipIntro`;
+/** The three card illustrations, held from boot until the intro is done (or not shown). */
+const CARD_ART: readonly UiArtKey[] = ['cardMeter', 'cardJukeJam', 'cardMegaMix'];
 const readSkip = (): boolean => {
   try {
     return window.localStorage.getItem(SKIP_KEY) === '1';
@@ -60,15 +63,21 @@ export class IntroScreen implements GameModule {
   private skip = false;
   private spaceAllowed = true;
   private calls: gsap.core.Tween[] = [];
+  private artHeld = false;
 
   constructor(private readonly ctx: GameContext) {
     this.stage = new OverlayStage(ctx, 'introScreen');
   }
 
-  init(): void {
+  async init(): Promise<void> {
     const { ctx } = this;
     ensureScreenFonts(ctx.app.renderer);
     screenArt.retain(ctx.app.renderer);
+    // the card art loads with the boot: the intro shows at the first idle (never in replay)
+    if (!ctx.params.replay) {
+      this.artHeld = true;
+      await uiArt.acquire(CARD_ART);
+    }
     this.cards = new IntroCards(ctx, BET_MODES.BASE?.maxWinX ?? 0, (on) => {
       this.skip = on;
       writeSkip(on);
@@ -91,8 +100,16 @@ export class IntroScreen implements GameModule {
     this.closeNow();
     this.gate.destroy();
     this.cards.destroy();
+    this.dropArt();
     this.stage.destroy();
     screenArt.release();
+  }
+
+  /** The intro is over or will not show: its card art goes (2.25 MiB each). */
+  private dropArt(): void {
+    if (!this.artHeld) return;
+    this.artHeld = false;
+    uiArt.release(CARD_ART);
   }
 
   private onState(st: HudState): void {
@@ -100,17 +117,20 @@ export class IntroScreen implements GameModule {
     if (this.decided) return;
     if (this.ctx.params.replay || st.replay) {
       this.decided = true;
+      this.dropArt();
       return;
     }
     const phase = st.phase;
     if (phase === 'resume' || phase === 'error' || phase === 'replay') {
       this.decided = true;
+      this.dropArt();
       return;
     }
     if (phase !== 'idle') return;
     this.decided = true;
     this.skip = readSkip();
     if (!this.skip) this.show();
+    else this.dropArt();
   }
 
   private res(): number {
@@ -180,6 +200,7 @@ export class IntroScreen implements GameModule {
     this.offKey = null;
     this.catcher.handler = null;
     this.cards.clear();
+    this.dropArt();
     this.gate.close();
     releaseTitlesIfIdle(this.ctx);
   }

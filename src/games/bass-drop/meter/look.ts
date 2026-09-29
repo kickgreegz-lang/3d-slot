@@ -4,7 +4,7 @@ import type { GrooveFeature, MeterMode } from '../events';
 import { GOLD, PINK, TEAL } from '../timing';
 import type { ChipModel } from './Chip';
 import { METER_LOOK as LOOK, NOTCHES, type NotchState } from './geometry';
-import type { MeterLoop } from './MeterRig';
+import type { MeterLoop } from './rig';
 
 const MAX = GROOVE.displayMax;
 /** Mega Mix home registry cap ([M-10], mock FEATURES.super.maxSticky) */

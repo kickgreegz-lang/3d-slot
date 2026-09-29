@@ -9,10 +9,14 @@ import { visibleDesignRect } from '../../../present/common/placement';
 import { modalState, uiBus } from '../../../ui/bus';
 import { buyModes } from '../../../ui/dom/gameInfo';
 import { screenArt } from './art/ScreenArt';
+import { type UiArtKey, uiArt } from './art/uiArt';
 import { type BuyOffer, BuyCards } from './BuyCards';
 import { ensureScreenFonts } from './fonts';
 import { SCREENS_TIMING, buyRects } from './look';
 import { ModalGate, TapCatcher, onScreenKey } from './ui';
+
+/** Buy card illustrations (crops of the Juke Jam / Mega Mix intro art until the P2 buy cards). */
+const BUY_ART: readonly UiArtKey[] = ['cardJukeJam', 'cardMegaMix'];
 
 /**
  * BONUS BUY SCREEN (DESIGN §13): the canvas 2-card buy screen, opened by the bonus-buy hex
@@ -44,6 +48,9 @@ export class BuyScreen implements GameModule {
   private offers: BuyOffer[] = [];
   private selected = -1;
   private destroyed = false;
+  /** the card art is loading for an open request (a second tap is ignored meanwhile) */
+  private opening = false;
+  private artHeld = false;
 
   constructor(private readonly ctx: GameContext) {
     this.stage = new OverlayStage(ctx, 'buyScreen');
@@ -64,7 +71,7 @@ export class BuyScreen implements GameModule {
     this.stage.under.addChild(this.catcher);
     this.stage.front.addChild(this.cards.view);
     this.offs.push(
-      uiBus.on('dialog:buy', () => this.tryOpen()),
+      uiBus.on('dialog:buy', () => void this.tryOpen()),
       ctx.hud.on('hud:state', (st) => this.onState(st)),
       ctx.game.on('round:start', () => this.closeNow()),
       ctx.game.on('layout:change', () => this.layout()),
@@ -82,6 +89,7 @@ export class BuyScreen implements GameModule {
     this.destroyed = true;
     this.gate.destroy();
     this.cards.destroy();
+    this.dropArt();
     this.stage.destroy();
     screenArt.release();
   }
@@ -138,8 +146,17 @@ export class BuyScreen implements GameModule {
     this.cards.setOffers(this.offers);
   }
 
-  private tryOpen(): void {
-    if (this.open || modalState.open || !this.allowed(this.state) || buyModes().length === 0) return;
+  /** The two card illustrations load on open (from the HTTP cache after the first time) and go on close. */
+  private async tryOpen(): Promise<void> {
+    if (this.open || this.opening || modalState.open || !this.allowed(this.state) || buyModes().length === 0) return;
+    this.opening = true;
+    this.artHeld = true;
+    await uiArt.acquire(BUY_ART);
+    this.opening = false;
+    if (this.destroyed || this.open || modalState.open || !this.allowed(this.state)) {
+      this.dropArt();
+      return;
+    }
     const { ctx } = this;
     const B = SCREENS_TIMING.buy;
     this.open = true;
@@ -226,7 +243,14 @@ export class BuyScreen implements GameModule {
     this.offKey?.();
     this.offKey = null;
     this.cards.clear();
+    this.dropArt();
     this.gate.close();
     releaseTitlesIfIdle(this.ctx);
+  }
+
+  private dropArt(): void {
+    if (!this.artHeld) return;
+    this.artHeld = false;
+    uiArt.release(BUY_ART);
   }
 }

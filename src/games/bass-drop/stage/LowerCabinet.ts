@@ -10,15 +10,29 @@ const C = STAGE_LOOK.cabinet;
 
 export type CabinetClip = 'boom_follow' | 'feature_follow' | 'pump';
 
+/** The lower cabinet as the Stage drives it: the Spine rig (SpeakerStack) or this code fallback. */
+export interface CabinetView {
+  readonly view: Container;
+  /** 0..1 screen-space motion (reduced motion: 0) */
+  motion: number;
+  build(renderer: Renderer, w: number, h: number, res: number): void;
+  setColor(color: number): void;
+  play(name: CabinetClip): void;
+  /** dt game seconds, env = beat envelope (1 at the kick), beats = the shared beat count */
+  update(dt: number, env: number, beats: number): void;
+  destroy(): void;
+}
+
 /**
- * `env_speaker_stack` placeholder (ANIMATION_SET §4.1): the lower speaker cabinet under the
+ * `env_speaker_stack` code placeholder, the FALLBACK of the Spine rig (SpeakerStack) when it cannot
+ * load (ANIMATION_SET §4.1): the lower speaker cabinet under the
  * Groove Meter, behind Gumbo and the menu / bonus-buy hexes. Anchor = bottom centre of the
  * lowerCabinet rect. Clips (Spine names): `idle` (woofer breathes per beat, runs always),
  * `pump` (overlay, woofer 1.06), `boom_follow` (18 f: woofer punch at f2, squash-stretch,
  * 3 px hop, cable whip, glow + floor light flash), `feature_follow` (54 f: pumps at f2 / f20
  * / f38). Parts: cabinet, woofer (pumps), fx_glow, floor_light (additive), skin trim, cable.
  */
-export class LowerCabinet {
+export class LowerCabinet implements CabinetView {
   readonly view = new Container({ label: 'envSpeakerStack' });
   /** squash / hop pivot at the feet */
   private readonly body = new Container();
@@ -89,7 +103,7 @@ export class LowerCabinet {
   }
 
   /** Per frame: dt game seconds, env = beat envelope (1 at the kick, decaying). */
-  update(dt: number, env: number): void {
+  update(dt: number, env: number, _beats = 0): void {
     if (!this.w) return;
     const f = this.clip.advance(dt);
     const o = this.overlay.advance(dt);

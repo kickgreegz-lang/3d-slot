@@ -8,6 +8,7 @@ import type { GlyphStyle } from '../../../present/common/glyphs';
 import { label } from '../../../present/common/text';
 import { Title } from '../../../present/common/Title';
 import { GOLD, PINK, TEAL } from '../timing';
+import { CardArt } from './art/cardArt';
 import { cardFrame, closeIcon } from './art/chrome';
 import { jukebox, speakerStack } from './art/emblems';
 import { screenArt, useBaked } from './art/ScreenArt';
@@ -32,8 +33,10 @@ export interface BuyOffer {
 
 /**
  * One buy card: root (rect centre; moves to the confirm rect on select) -> lift (hover) ->
- * frame, glow, emblem + wild, live title / spins / price / "×100 BET", BUY button, the
- * INSUFFICIENT BALANCE line, and the confirm-step COST + big price.
+ * frame, glow, the painted illustration (a crop of art_jukejam / art_megamix, ART_STATUS §7.6
+ * `card_N_art` until the P2 buy cards; the code emblem + wild only if it failed to load), live
+ * title / spins / price / "×100 BET", BUY button, the INSUFFICIENT BALANCE line, and the
+ * confirm-step COST + big price.
  */
 class BuyCard {
   readonly root = new Container({ label: 'buyCard' });
@@ -44,6 +47,8 @@ class BuyCard {
   private readonly art = new Container();
   private readonly emblem = new Sprite();
   private readonly wild: Sprite;
+  private readonly painted: CardArt;
+  private hasArt = false;
   private readonly titleHolder = new Container();
   private title: Title | null = null;
   private readonly spins: BitmapText;
@@ -70,7 +75,8 @@ class BuyCard {
     onSelect: () => void,
   ) {
     this.wild = new Sprite({ texture: ctx.art.symbol('W'), anchor: 0.5 });
-    this.art.addChild(this.glow, this.emblem, this.wild);
+    this.painted = new CardArt(skin);
+    this.art.addChild(this.glow, this.emblem, this.wild, this.painted);
     this.spins = new BitmapText({ text: '', style: { fontFamily: SCR_LABEL, fontSize: 40 }, anchor: 0.5 });
     this.price = new BitmapText({ text: '', style: { fontFamily: SCR_NUM, fontSize: 52 }, anchor: 0.5 });
     this.price.tint = GOLD;
@@ -124,6 +130,10 @@ class BuyCard {
     this.wild.rotation = this.skin === 'megamix' ? 0.12 : -0.1;
     this.glow.tint = this.skin === 'megamix' ? PINK : TEAL;
     this.glow.width = this.glow.height = box * 1.6;
+    // the painted illustration in a rounded window over the same box
+    const winH = box + 6 * k;
+    this.hasArt = this.painted.layout(Math.min(w - 70 * k, winH * 1.12), winH, 16 * k, k);
+    this.emblem.visible = this.wild.visible = !this.hasArt;
     // text lines (wide portrait cards read from further away: type x 1.15)
     const tk = w / h > 1.1 ? k * 1.15 : k;
     this.titleY = top + 365 * k;
@@ -173,6 +183,7 @@ class BuyCard {
     this.frame.tint = grey;
     this.art.alpha = o.affordable ? 1 : 0.55;
     this.emblem.tint = this.wild.tint = grey;
+    this.painted.setGrey(grey);
     this.price.tint = o.affordable ? GOLD : GREY;
     this.spins.tint = o.affordable ? 0xffffff : GREY;
     this.root.cursor = o.affordable ? 'pointer' : 'default';
@@ -236,6 +247,11 @@ class BuyCard {
     this.title = null;
   }
 
+  /** Drop the illustration's crop (the screen releases its art after closing). */
+  clearArt(): void {
+    this.painted.clear();
+  }
+
   kill(): void {
     this.hoverTween?.kill();
     gsap.killTweensOf([this.hoverGlow, this.button, this.price, this.costX, this.costCaption, this.bigPrice]);
@@ -249,7 +265,8 @@ class BuyCard {
 export type BuyStep = 'choose' | 'confirm';
 
 /**
- * BONUS BUY CARDS — placeholder for the `ui_buy_cards` rig (DESIGN §13, ANIMATION_SET §6.2):
+ * BONUS BUY CARDS — the `ui_buy_cards` screen (DESIGN §13, ANIMATION_SET §6.2; the UI rig is not
+ * built, ART_STATUS §5, so the runtime plays its clips):
  * title, two cards, close X, and the confirm step (CONFIRM in #F828C8 + CANCEL). UI time:
  *   in       18 f: title drops, cards rise, card_land f10 / f14 (`onLand`);
  *   hover_N   6 f: card lift + frame glow;
@@ -483,6 +500,7 @@ export class BuyCards {
     this.title = null;
     for (const c of this.cards) {
       c.clearTitle();
+      c.clearArt();
       c.kill();
     }
     this.view.visible = false;

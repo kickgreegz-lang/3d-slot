@@ -11,6 +11,8 @@ import type { GameEvents } from '../../../game/events';
 import { GROOVE } from '../config';
 import type { GrooveFeature, MeterMode } from '../events';
 import { BASS_DROP_TIMING, PINK, TEAL } from '../timing';
+import { grooveBeat } from '../stage/beat';
+import { type RigDensity, type RigRef, loadRig, releaseRig, rigDensity } from '../stage/spineAssets';
 import { MeterArt } from './art';
 import { Beats } from './beats';
 import { Chip } from './Chip';
@@ -20,6 +22,8 @@ import { ensureMeterFonts } from './fonts';
 import { METER_LOOK as LOOK, R_REF, type RigLayout, polar, rigLayout } from './geometry';
 import { deriveLook } from './look';
 import { MeterRig } from './MeterRig';
+import { MeterSpine } from './MeterSpine';
+import type { GrooveRig } from './rig';
 import { TubeLight } from './Tube';
 import { type OrbMode, type PlanCell, cellKey, orbsFor, planStep } from './plan';
 
@@ -62,6 +66,11 @@ interface PendingBurst {
  * free-spin plate in portrait / compact), plus the energy orbs that carry every exploded
  * symbol into it.
  *
+ * The cabinet, woofer, rim, notch badges and their clips are the `ui_groove_meter` Spine rig
+ * (MeterSpine; ./assets/bass-drop/ui/spine, full or half texel density by display density, a
+ * later bigger layout upgrades it); the code rig (MeterRig) stands in only if the rig cannot load.
+ * Both implement GrooveRig, so everything below is the same for either.
+ *
  * Scene contract:
  *  - 'meter:update'  arms the step (resolves at once; delta 0 = silent set, CR-2);
  *  - 'board:tumble'  returns a promise that resolves at the LAST orb arrival. Orbs launch on
@@ -85,7 +94,12 @@ interface PendingBurst {
  */
 export class GrooveMeter implements GameModule {
   private art!: MeterArt;
-  private rig!: MeterRig;
+  private rig!: GrooveRig;
+  /** the loaded Spine rig's atlas (null: the code rig draws) */
+  private rigRef: RigRef | null = null;
+  private upgrading = false;
+  private dead = false;
+  private readonly chipAt = { x: 0, y: 0 };
   private chip!: Chip;
   private fx!: MeterFx;
   private tube!: TubeLight;
@@ -131,13 +145,22 @@ export class GrooveMeter implements GameModule {
 
   constructor(private readonly ctx: GameContext) {}
 
-  init(): void {
+  async init(): Promise<void> {
     const { ctx } = this;
+    // the shared beat first: the stage and the meter breathe on the same kick
+    grooveBeat.retain();
     ensureMeterFonts(ctx.app.renderer);
     this.art = new MeterArt(ctx.app.renderer);
     this.geo = rigLayout(ctx.layout);
-    this.rig = new MeterRig(this.art, this.art.build(this.geo.cabinet, this.bakeRes()));
+    this.rigRef = await loadRig('ui_groove_meter', this.density());
+    this.rig = this.rigRef ? new MeterSpine(this.rigRef, this.art, this.bakeRes()) : new MeterRig(this.art, this.geo, this.bakeRes());
     this.body.addChild(this.rig.view);
+    // DEV / QA: captures read which rig draws and its texel density (stripped from production)
+    if (import.meta.env.DEV) {
+      Object.defineProperty(this.body, 'bdStats', {
+        get: () => ({ rig: this.rigRef ? 'spine' : 'code', density: this.rigRef?.density ?? null, loop: this.rig.currentLoop, mode: this.mode }),
+      });
+    }
     // under the frame (the portrait cabinet base hides behind the beam); the chip rides above it
     ctx.layers.panel.addChildAt(this.body, 0);
     const icons = this.art.icons;
@@ -199,13 +222,48 @@ export class GrooveMeter implements GameModule {
 
   layout(L: LayoutSpec): void {
     this.geo = rigLayout(L);
-    this.rig.layout(this.geo, this.art.build(this.geo.cabinet, this.bakeRes()));
+    this.rig.layout(this.geo, this.bakeRes());
     this.chip.layout(this.geo.chip);
     this.tube.layout(L);
+    this.refresh();
+    void this.upgradeRig();
+  }
+
+  /** Texel density the Spine rig needs now (screen px per skeleton unit; the rig is authored at 2x). */
+  private density(): RigDensity {
+    const px = this.ctx.scale * this.ctx.app.renderer.resolution * (this.geo.scale / 2);
+    return rigDensity(px, this.ctx.tier);
+  }
+
+  /** A bigger layout (window grown, rotation, 4K) swaps a half-density rig for the full one; never back. */
+  private async upgradeRig(): Promise<void> {
+    if (this.upgrading || !this.rigRef || this.rigRef.density === 'full' || this.density() !== 'full') return;
+    this.upgrading = true;
+    const ref = await loadRig('ui_groove_meter', 'full');
+    this.upgrading = false;
+    if (!ref) return;
+    if (this.dead || !this.rigRef) {
+      releaseRig(ref);
+      return;
+    }
+    const old = this.rig;
+    const oldRef = this.rigRef;
+    const next = new MeterSpine(ref, this.art, this.bakeRes());
+    this.ctx.layers.winLayer.detach(old.counter.view);
+    old.destroy();
+    releaseRig(oldRef);
+    this.rig = next;
+    this.rigRef = ref;
+    this.body.addChildAt(next.view, 0);
+    this.ctx.layers.winLayer.attach(next.counter.view);
+    next.layout(this.geo, this.bakeRes());
+    next.led.fillTo(this.ringLevel(this.shown), 0);
     this.refresh();
   }
 
   destroy(): void {
+    this.dead = true;
+    grooveBeat.release();
     for (const off of this.offs) off();
     this.offs = [];
     this.dropBeats.cancel();
@@ -218,6 +276,8 @@ export class GrooveMeter implements GameModule {
     this.tube.destroy();
     this.chip.destroy();
     this.rig.destroy();
+    if (this.rigRef) releaseRig(this.rigRef);
+    this.rigRef = null;
     this.body.destroy({ children: true });
     this.art.destroy();
   }
@@ -684,6 +744,8 @@ export class GrooveMeter implements GameModule {
       fs: this.fs,
     });
     const rig = this.rig;
+    rig.setSkin(this.mode);
+    grooveBeat.setPeriod(LOOK.beatMs[this.mode]);
     rig.led.setLevel(look.level, look.hot);
     rig.counter.set(look.count, look.max, look.laps);
     rig.setTrim(look.trim);
@@ -713,10 +775,14 @@ export class GrooveMeter implements GameModule {
   private update(dt: number): void {
     this.now += dt * 1000;
     this.roll(dt);
-    const beat = LOOK.beatMs[this.mode];
-    this.rig.update(dt, beat);
+    this.rig.update(dt, grooveBeat.beats);
     this.tube.update(dt);
     this.rig.syncMount(this.ctx.layers.root);
+    // landscape / tablet: the chip hangs in the gauge gap and rides the cabinet squash
+    if (!this.geo.chipHasFs) {
+      this.rig.chipOffset(this.chipAt);
+      this.chip.ride(this.chipAt.x, this.chipAt.y);
+    }
     // overdrive crackle: a few pink sparks off the rim (seeded, idle garnish)
     if (this.rig.currentLoop === 'overdrive_loop' && dt > 0) {
       this.sparkAcc += dt;

@@ -66,6 +66,7 @@ import {
   type Event as SpineEvent,
   Interpolation,
   Physics,
+  type Slot,
   Spine,
 } from '@esotericsoftware/spine-pixi-v8';
 import { type Container, Matrix } from 'pixi.js';
@@ -289,7 +290,13 @@ export class SpineRig {
   private readonly mounted = new Map<string, Container>();
   /** runtime bone channels of the current look */
   private drives: Array<readonly [Bone, SymbolBoneDrive]> = [];
-  private readonly applyDrives = (): void => {
+  /**
+   * Mounted txt_* slot -> its host slot (the slot on the txt bone's parent bone: `ribbon` for
+   * `txt_wild`, `badge` for `txt_mult`). The text takes the host's alpha every update, so it fades,
+   * appears and explodes with the plate it is printed on (the clips key the plate, never the text).
+   */
+  private follows: Array<readonly [Slot, Slot]> = [];
+  private readonly beforeWorld = (): void => {
     for (const [bone, d] of this.drives) {
       const p = bone.pose;
       if (d.x !== undefined) p.x = d.x;
@@ -297,6 +304,11 @@ export class SpineRig {
       if (d.rotation !== undefined) p.rotation = d.rotation;
       if (d.scaleX !== undefined) p.scaleX = d.scaleX;
       if (d.scaleY !== undefined) p.scaleY = d.scaleY;
+    }
+    for (const [txt, host] of this.follows) {
+      const a = host.appliedPose.attachment ? host.appliedPose.color.a : 0;
+      txt.pose.color.a = a;
+      txt.appliedPose.color.a = a;
     }
   };
 
@@ -431,7 +443,11 @@ export class SpineRig {
         if (bone) this.drives.push([bone, d] as const);
       }
     }
-    this.spine.beforeUpdateWorldTransforms = this.drives.length ? this.applyDrives : noop;
+    this.hook();
+  }
+
+  private hook(): void {
+    this.spine.beforeUpdateWorldTransforms = this.drives.length || this.follows.length ? this.beforeWorld : noop;
   }
 
   /** Mount exactly `mounts` (slot -> live object) in their slots; others are removed (not destroyed). */
@@ -439,7 +455,7 @@ export class SpineRig {
     for (const [slot, obj] of [...this.mounted]) {
       if (mounts.get(slot) === obj) continue;
       this.mounted.delete(slot);
-      if (obj.parent === this.spine) this.spine.removeSlotObject(obj);
+      if (this.spine.getSlotObject(slot) === obj) this.spine.removeSlotObject(slot);
     }
     for (const [slot, obj] of mounts) {
       if (this.mounted.get(slot) === obj && obj.parent === this.spine) continue;
@@ -447,6 +463,14 @@ export class SpineRig {
       this.spine.addSlotObject(slot, obj);
       this.mounted.set(slot, obj);
     }
+    const sk = this.spine.skeleton;
+    this.follows = [];
+    for (const name of this.mounted.keys()) {
+      const txt = sk.findSlot(name);
+      const host = txt ? sk.slots.find((x) => x.bone === txt.bone.parent) : undefined;
+      if (txt && host) this.follows.push([txt, host] as const);
+    }
+    this.hook();
   }
 
   /** Physics ignores container motion (fast drops would fling the parts off). */
@@ -481,6 +505,7 @@ export class SpineRig {
     this.cue = null;
     this.mounted.clear();
     this.drives = [];
+    this.follows = [];
     this.skin = null;
     spinePool.release(this.ref, this.spine);
   }

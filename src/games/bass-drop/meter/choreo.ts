@@ -5,7 +5,7 @@ import { BASS_DROP_TIMING, GOLD, PINK, TEAL } from '../timing';
 import type { MeterFx } from './effects';
 import { GEOM, METER_LOOK as LOOK, NOTCHES, R_REF, type RigLayout, notchIndex, polar, valueDeg } from './geometry';
 import { lockOf } from './look';
-import type { MeterRig } from './MeterRig';
+import type { GrooveRig } from './rig';
 import { Notches } from './Notches';
 
 const T = BASS_DROP_TIMING;
@@ -29,7 +29,7 @@ export const notchPoint = (g: RigLayout, t: number): { x: number; y: number } =>
  * notch/6); major 40/60 (`threshold_major`, 900 ms, gold / pink wave twice around, trauma
  * 0.3 / 0.4, one flash α 0.25, hit-stop 60 (normal only), meter_lock_*, cue featureLock 1/2).
  */
-export const thresholdBurst = (rig: MeterRig, fx: MeterFx, g: RigLayout, mode: MeterMode, t: number): void => {
+export const thresholdBurst = (rig: GrooveRig, fx: MeterFx, g: RigLayout, mode: MeterMode, t: number): void => {
   const i = notchIndex(t);
   const lock = lockOf(mode, t);
   const major = lock !== null || t === GROOVE.superAt;
@@ -61,7 +61,7 @@ export const thresholdBurst = (rig: MeterRig, fx: MeterFx, g: RigLayout, mode: M
  * additive sound-wave rings from the woofer 90 ms apart and the speaker-blast puff. The boom's
  * shake / flash / hit-stop / shockwave / SFX belong to the BassDrop module.
  */
-export const boomBeat = (rig: MeterRig, fx: MeterFx, g: RigLayout): void => {
+export const boomBeat = (rig: GrooveRig, fx: MeterFx, g: RigLayout): void => {
   rig.boom();
   fx.soundRings(g.cx, g.cy, g.k, g.R * GEOM.counterR, TEAL);
   fx.smoke(g.cx, g.cy, g.k, g.R * 0.9, LOOK.blastSmoke, SMOKE);
@@ -73,7 +73,7 @@ export const boomBeat = (rig: MeterRig, fx: MeterFx, g: RigLayout): void => {
  * (`fx_feature_blast` fallback: the big explode burst + rings + smoke).
  */
 export const triggerPump = (
-  rig: MeterRig,
+  rig: GrooveRig,
   fx: MeterFx,
   g: RigLayout,
   i: number,

@@ -10,13 +10,16 @@ import type { GameEvents } from '../../../game/events';
 import type { MeterMode } from '../events';
 import { BASS_DROP_LAYOUT } from '../layout';
 import { BASS_DROP_TIMING } from '../timing';
+import { grooveBeat } from './beat';
 import { Booth } from './Booth';
 import { Horn } from './Horn';
 import { HORN_REF_W } from './hornArt';
 import { STAGE_LOOK } from './look';
-import { LowerCabinet } from './LowerCabinet';
-import { SKIN_COLOR, type StageSkin } from './palette';
+import { type CabinetView, LowerCabinet } from './LowerCabinet';
+import { SKIN_COLOR, type StageSkin, releaseGradients } from './palette';
 import { bakeRes } from './rig';
+import { SpeakerStack } from './SpeakerStack';
+import { type RigDensity, type RigRef, loadRig, releaseRig, rigDensity } from './spineAssets';
 
 const D = BASS_DROP_TIMING.drop;
 const F = BASS_DROP_TIMING.feature;
@@ -30,10 +33,11 @@ const UPGRADE_SKIN_AT = 933;
 const skinOf = (mode: MeterMode): StageSkin => (mode === 'bonus' ? 'jukejam' : mode === 'super' ? 'megamix' : 'base');
 
 /**
- * STAGE — the room around the reels (DESIGN.md §15, §8.1 horns / lower cabinet, §10.1):
- * procedural placeholders of the lower speaker cabinet (`env_speaker_stack`, under the
- * Groove Meter, behind Gumbo and the menu / bonus-buy hexes), the two frame horns
- * (`env_horn`, bolted on the frame's top corners) and Croak's DJ booth (`env_dj_booth`).
+ * STAGE — the room around the reels (DESIGN.md §15, §8.1 horns / lower cabinet, §10.1): the
+ * lower speaker cabinet (`env_speaker_stack` Spine rig, SpeakerStack; the code LowerCabinet is its
+ * fallback), under the Groove Meter, behind Gumbo and the menu / bonus-buy hexes; the two frame
+ * horns (`env_horn`) and Croak's DJ booth (`env_dj_booth`), which stay code-drawn (their art is
+ * unfunded, ART_STATUS §5) in the formula-D finish of the painted set.
  * A null rect in BASS_DROP_LAYOUT hides the piece (compact: none; portrait: no cabinet).
  *
  * Reactions are timed from BASS_DROP_TIMING alone (never by talking to the meter or the drop
@@ -54,13 +58,16 @@ export class Stage implements GameModule {
   private readonly back = new Container({ label: 'stageBack' });
   private readonly horns = new Container({ label: 'stageHorns' });
   private readonly front = new Container({ label: 'stageBooth' });
-  private readonly cabinet = new LowerCabinet();
+  private cabinet: CabinetView = new LowerCabinet();
+  /** the loaded speaker-stack rig's atlas (null: the code cabinet draws) */
+  private cabinetRef: RigRef | null = null;
+  private upgrading = false;
+  private dead = false;
   private readonly hornL = new Horn(0x40a1);
   private readonly hornR = new Horn(0x40a2);
   private readonly booth = new Booth();
   private readonly beats = new Set<gsap.core.Tween>();
   private offs: Array<() => void> = [];
-  private beat = 0;
   private mode: MeterMode = 'base';
   private revealed = false;
   private skin: StageSkin = 'base';
@@ -69,9 +76,20 @@ export class Stage implements GameModule {
 
   constructor(private readonly ctx: GameContext) {}
 
-  init(): void {
+  async init(): Promise<void> {
     const { ctx } = this;
+    // the shared beat first: the meter and the stage breathe on the same kick
+    grooveBeat.retain();
+    grooveBeat.setPeriod(STAGE_LOOK.beatMs[this.mode]);
+    const cab = BASS_DROP_LAYOUT[ctx.layout.kind].lowerCabinet;
+    this.cabinetRef = await loadRig('env_speaker_stack', this.density(cab?.w ?? 0));
+    if (this.cabinetRef) this.cabinet = new SpeakerStack(this.cabinetRef);
     this.back.addChild(this.cabinet.view);
+    if (import.meta.env.DEV) {
+      Object.defineProperty(this.back, 'bdStats', {
+        get: () => ({ cabinet: this.cabinetRef ? 'spine' : 'code', density: this.cabinetRef?.density ?? null, skin: this.skin }),
+      });
+    }
     this.horns.addChild(this.hornL.view, this.hornR.view);
     this.front.addChild(this.booth.view);
     ctx.layers.panel.addChildAt(this.back, 0);
@@ -115,6 +133,36 @@ export class Stage implements GameModule {
     );
   }
 
+  /** Speaker-stack texel density for a cabinet rect `w` wide (the rig is 608 units wide at 2x). */
+  private density(w: number): RigDensity {
+    const px = this.ctx.scale * this.ctx.app.renderer.resolution * (w / 608);
+    return rigDensity(px, this.ctx.tier);
+  }
+
+  /** A bigger layout swaps a half-density speaker stack for the full one (never back). */
+  private async upgradeCabinet(w: number): Promise<void> {
+    if (this.upgrading || !this.cabinetRef || this.cabinetRef.density === 'full' || this.density(w) !== 'full') return;
+    this.upgrading = true;
+    const ref = await loadRig('env_speaker_stack', 'full');
+    this.upgrading = false;
+    if (!ref) return;
+    if (this.dead || !this.cabinetRef) {
+      releaseRig(ref);
+      return;
+    }
+    const old = this.cabinet;
+    const oldRef = this.cabinetRef;
+    const next = new SpeakerStack(ref);
+    next.motion = old.motion;
+    this.back.addChildAt(next.view, this.back.getChildIndex(old.view));
+    old.destroy();
+    releaseRig(oldRef);
+    this.cabinet = next;
+    this.cabinetRef = ref;
+    this.applyTint();
+    this.layout(this.ctx.layout);
+  }
+
   layout(L: LayoutSpec): void {
     const X = BASS_DROP_LAYOUT[L.kind];
     const r = this.ctx.app.renderer;
@@ -127,6 +175,7 @@ export class Stage implements GameModule {
     if (cab) {
       this.cabinet.view.position.set(cab.x + cab.w / 2, cab.y + cab.h);
       this.cabinet.build(r, cab.w, cab.h, bakeRes(display));
+      void this.upgradeCabinet(cab.w);
     }
 
     const horns = X.frameHorns;
@@ -151,17 +200,22 @@ export class Stage implements GameModule {
   }
 
   destroy(): void {
+    this.dead = true;
+    grooveBeat.release();
     for (const off of this.offs) off();
     this.offs = [];
     this.cancelBeats();
     this.skinTween?.kill();
     this.cabinet.destroy();
+    if (this.cabinetRef) releaseRig(this.cabinetRef);
+    this.cabinetRef = null;
     this.hornL.destroy();
     this.hornR.destroy();
     this.booth.destroy();
     this.back.destroy({ children: true });
     this.horns.destroy({ children: true });
     this.front.destroy({ children: true });
+    releaseGradients();
   }
 
   // ======================================================================= choreography
@@ -230,6 +284,7 @@ export class Stage implements GameModule {
 
   private setMode(mode: MeterMode, instant = false): void {
     this.mode = mode;
+    grooveBeat.setPeriod(STAGE_LOOK.beatMs[mode]);
     const skin = skinOf(mode);
     if (skin === this.skin && !instant) return;
     this.skin = skin;
@@ -258,15 +313,14 @@ export class Stage implements GameModule {
   }
 
   private update(dt: number): void {
-    const beatMs = STAGE_LOOK.beatMs[this.mode];
-    this.beat = (this.beat + (dt * 1000) / beatMs) % 1;
-    const env = (1 - this.beat) ** 3;
-    if (this.cabinet.view.visible) this.cabinet.update(dt, env);
+    const beat = grooveBeat.phase;
+    const env = (1 - beat) ** 3;
+    if (this.cabinet.view.visible) this.cabinet.update(dt, env, grooveBeat.beats);
     if (this.hornL.view.visible) {
       this.hornL.update(dt, env);
       this.hornR.update(dt, env);
     }
-    if (this.booth.view.visible) this.booth.update(dt, this.beat, env);
+    if (this.booth.view.visible) this.booth.update(dt, beat, env);
   }
 
   // ======================================================================= scheduling

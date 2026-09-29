@@ -12,6 +12,7 @@ import { label } from '../../../present/common/text';
 import { Title } from '../../../present/common/Title';
 import { GROOVE } from '../config';
 import { GOLD, PINK, TEAL, multTier } from '../timing';
+import { CardArt, type CardArtKey } from './art/cardArt';
 import { badgePlate, cardFrame } from './art/chrome';
 import { clamp, jukebox, speakerStack, woofer } from './art/emblems';
 import { screenArt, useBaked } from './art/ScreenArt';
@@ -23,6 +24,8 @@ type CardKey = 'meter' | 'jukeJam' | 'megaMix';
 
 interface CardDef {
   key: CardKey;
+  /** the painted illustration (ART_STATUS §7.6 card_N_art) */
+  art: CardArtKey;
   accent: number;
   palette: GlyphPalette;
   title: [string, string];
@@ -32,6 +35,7 @@ interface CardDef {
 const CARDS: CardDef[] = [
   {
     key: 'meter',
+    art: 'meter',
     accent: TEAL,
     palette: CYAN,
     title: ['bd.intro.meter.title', 'GROOVE METER'],
@@ -39,6 +43,7 @@ const CARDS: CardDef[] = [
   },
   {
     key: 'jukeJam',
+    art: 'jukejam',
     accent: GOLD,
     palette: JAM_GOLD,
     title: ['bd.intro.jukeJam.title', 'JUKE JAM'],
@@ -50,6 +55,7 @@ const CARDS: CardDef[] = [
   },
   {
     key: 'megaMix',
+    art: 'megamix',
     accent: PINK,
     palette: HOT_PINK,
     title: ['bd.intro.megaMix.title', 'MEGA MIX'],
@@ -83,8 +89,9 @@ class Badge extends Container {
 }
 
 /**
- * One intro card: root (rect centre) -> bob (loop) -> motion (in / out) -> frame, glow,
- * illustration, live title and body, shine sweep (masked to the panel).
+ * One intro card: root (rect centre) -> bob (loop) -> motion (in / out) -> frame, glow, the
+ * painted illustration in its window (CardArt; the code emblem + extras only if it failed to load),
+ * live title and body, shine sweep (masked to the panel).
  */
 class IntroCard {
   readonly root = new Container({ label: 'introCard' });
@@ -95,6 +102,7 @@ class IntroCard {
   private readonly art = new Container();
   private readonly emblem = new Sprite();
   private readonly extras = new Container();
+  private readonly painted: CardArt;
   private readonly wilds: Sprite[] = [];
   private readonly badges: Badge[] = [];
   private readonly clamps: Sprite[] = [];
@@ -117,9 +125,10 @@ class IntroCard {
     private readonly ctx: GameContext,
   ) {
     this.body = bodyText(34, 380);
+    this.painted = new CardArt(def.art);
     this.art.addChild(this.glow, this.emblem, this.extras);
     this.shine.mask = this.shineMask;
-    this.motion.addChild(this.frame, this.art, this.titleHolder, this.body, this.shineMask, this.shine);
+    this.motion.addChild(this.frame, this.art, this.painted, this.titleHolder, this.body, this.shineMask, this.shine);
     this.bob.addChild(this.motion);
     this.root.addChild(this.bob);
     this.buildExtras();
@@ -226,6 +235,26 @@ class IntroCard {
     this.glow.width = this.glow.height = 420;
     for (const b of this.badges) b.paint(artRes);
     for (const cl of this.clamps) useBaked(cl, screenArt.get('clamp', artRes, clamp));
+    // the painted illustration: a rounded window at the top (tall crop) or on the left (wide crop)
+    const inset = pad + 4 * k;
+    let winW: number;
+    let winH: number;
+    if (horizontal) {
+      winH = h - inset * 2;
+      winW = Math.min(box + 24 * k, winH);
+      this.painted.position.set(-w / 2 + inset + winW / 2, 0);
+    } else {
+      winH = h * 0.545 - inset;
+      winW = Math.min(w - inset * 2, winH * 1.12);
+      this.painted.position.set(0, -h / 2 + inset + winH / 2);
+    }
+    const painted = this.painted.layout(winW, winH, 16 * k, k);
+    this.emblem.visible = this.extras.visible = !painted;
+    if (painted) {
+      this.art.position.copyFrom(this.painted.position);
+      this.art.scale.set(1);
+      this.glow.width = this.glow.height = Math.max(winW, winH) * 1.5;
+    }
     // text
     const bodySize = Math.round((horizontal ? 42 : 33) * k);
     let wrap: number;
@@ -284,6 +313,11 @@ class IntroCard {
     this.title = null;
   }
 
+  /** Drop the illustration's crop (the intro releases its art after closing). */
+  clearArt(): void {
+    this.painted.clear();
+  }
+
   /** Shine position 0..1 across the card (negative / >1 = off). */
   setShine(u: number): void {
     const vis = u > -0.2 && u < 1.2;
@@ -309,8 +343,9 @@ class IntroCard {
 }
 
 /**
- * GAME INTRO CARDS — placeholder for the `ui_intro_cards` rig (DESIGN §12, ANIMATION_SET §6.1):
- * logo, three cards (GROOVE METER / JUKE JAM / MEGA MIX) with illustrations and live copy, the
+ * GAME INTRO CARDS — the `ui_intro_cards` screen (DESIGN §12, ANIMATION_SET §6.1; the UI rig is not
+ * built, ART_STATUS §5, so the runtime plays its clips): logo, three cards (GROOVE METER / JUKE JAM
+ * / MEGA MIX) with the painted illustrations (art_meter / art_jukejam / art_megamix) and live copy, the
  * max-win footer, PRESS TO CONTINUE and the don't-show-again toggle. UI time (sUi):
  *   in    27 f: cards drop from -150 px 4 f apart and settle from -4 / +3 / -2 deg, card_land
  *         f12 / f16 / f20 (`onLand`), logo 0.6 -> 1.05 -> 1.0 (f6 - f18, `onTitleHit` f18);
@@ -523,7 +558,10 @@ export class IntroCards {
     this.logoTop?.destroy();
     this.logoMain?.destroy();
     this.logoTop = this.logoMain = null;
-    for (const c of this.cards) c.clearTitle();
+    for (const c of this.cards) {
+      c.clearTitle();
+      c.clearArt();
+    }
     this.view.visible = false;
   }
 

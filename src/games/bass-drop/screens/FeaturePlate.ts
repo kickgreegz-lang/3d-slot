@@ -6,6 +6,7 @@ import { punchScale } from '../../../present/common/anim';
 import { Plate } from '../../../present/common/Plate';
 import { label } from '../../../present/common/text';
 import { jukebox, speakerStack } from './art/emblems';
+import { useEmblem } from './art/emblemArt';
 import { type Baked, screenArt, useBaked } from './art/ScreenArt';
 import { SCR_LABEL, SCR_NUM, fitText } from './fonts';
 import { type FeatureSkin, SCREENS_TIMING, SKINS } from './look';
@@ -15,7 +16,8 @@ import { type FeatureSkin, SCREENS_TIMING, SKINS } from './look';
  * fsPlate rect (landscape / tablet, under the logo): a Plate in the feature accent with the
  * feature's mini emblem, the caption JUKE JAM / MEGA MIX and the live "3 / 8". Punches on
  * every count, re-titles (and flashes its total) on the upgrade. Portrait / compact have no
- * plate: the Groove Meter chip carries the merged line there, so `place(null)` hides it.
+ * plate: the Groove Meter chip carries the merged line there, so `place(null)` hides it. The icon is
+ * the painted emblem's 256 px icon (jukebox / mega_speaker; the code emblem if it failed to load).
  * Gameplay time (s()-scaled durations are passed in by the owner).
  */
 export class FeaturePlate {
@@ -75,9 +77,11 @@ export class FeaturePlate {
     const h = r.h;
     // mini emblem on the left, text centred in the rest
     const iconH = h * 0.86;
-    useBaked(this.icon, this.emblem());
-    this.icon.scale.set(1);
-    this.icon.scale.set(iconH / this.icon.texture.height);
+    if (!useEmblem(this.icon, this.skin === 'megamix' ? 'megaSpeakerIcon' : 'jukeboxIcon', iconH)) {
+      useBaked(this.icon, this.emblem());
+      this.icon.scale.set(1);
+      this.icon.scale.set(iconH / this.icon.texture.height);
+    }
     this.icon.position.set(-r.w / 2 + h * 0.52, h * 0.02);
     const textX = (h * 0.95) / 2;
     const textW = r.w - h * 0.95 - 24;

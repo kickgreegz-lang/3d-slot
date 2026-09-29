@@ -14,6 +14,7 @@ import type { GrooveFeature } from '../events';
 import { BASS_DROP_LAYOUT } from '../layout';
 import { BASS_DROP_TIMING, GOLD, PINK } from '../timing';
 import { screenArt } from './art/ScreenArt';
+import { SHARD_KEYS, type UiArtKey, uiArt } from './art/uiArt';
 import { type BannerEvent, FeatureBanner } from './FeatureBanner';
 import { FeaturePlate } from './FeaturePlate';
 import { FeatureWipe } from './FeatureWipe';
@@ -24,6 +25,12 @@ import { type UpgradeEvent, UpgradeBanner } from './UpgradeBanner';
 
 const T = BASS_DROP_TIMING;
 const S = SCREENS_TIMING;
+/** Painted art a feature holds (ART_STATUS §7.6): Juke Jam also holds the upgrade pieces, ready for the slam. */
+const FEATURE_ART: Record<GrooveFeature, readonly UiArtKey[]> = {
+  bonus: ['jukebox', 'jukeboxCracked', ...SHARD_KEYS, 'megaSpeaker'],
+  super: ['megaSpeaker'],
+};
+const PLATE_ART: readonly UiArtKey[] = ['jukeboxIcon', 'megaSpeakerIcon'];
 /** Music tempo per feature (DESIGN §17): the emblem pump sits on the beat. */
 const BPM = { bonus: 106, super: 112 } as const;
 
@@ -88,15 +95,21 @@ export class FeatureScreens implements GameModule {
   private rnd = mulberry32(0xb0d5);
   /** set by destroy(): running sequences stop at their next step */
   private dead = false;
+  /** the painted emblems this feature holds (uiArt refs) and their load */
+  private heldArt: readonly UiArtKey[] | null = null;
+  private heldFor: GrooveFeature | null = null;
+  private artReady: Promise<void> = Promise.resolve();
 
   constructor(private readonly ctx: GameContext) {
     this.stage = new OverlayStage(ctx, 'featureScreens');
   }
 
-  init(): void {
+  async init(): Promise<void> {
     const { ctx } = this;
     ensureScreenFonts(ctx.app.renderer);
     screenArt.retain(ctx.app.renderer);
+    // the plate's two icons stay for the session (0.5 MiB); the emblems load per feature
+    await uiArt.acquire(PLATE_ART);
     this.banner = new FeatureBanner(ensureAmountFont(ctx.app.renderer, ctx.money));
     this.stage.under.addChild(this.wipe);
     this.stage.backdrop.addChild(this.banner.back, this.upgrade.back);
@@ -146,6 +159,8 @@ export class FeatureScreens implements GameModule {
 
   destroy(): void {
     this.dead = true;
+    this.releaseArt();
+    uiArt.release(PLATE_ART);
     for (const off of this.offs) off();
     this.offs = [];
     for (const done of [...this.pending]) done();
@@ -160,6 +175,32 @@ export class FeatureScreens implements GameModule {
     this.dim.destroy();
     this.stage.destroy();
     screenArt.release();
+  }
+
+  // ------------------------------------------------------------------ painted art
+
+  /**
+   * Hold the painted emblems of `feature` (trigger, resume, outro); resolves once they are loaded
+   * (or failed: the banners then draw their code emblems). Switching features releases the others.
+   */
+  private holdArt(feature: GrooveFeature): Promise<void> {
+    if (this.heldFor === feature) return this.artReady;
+    const keys = FEATURE_ART[feature];
+    const old = this.heldArt;
+    this.heldArt = keys;
+    this.heldFor = feature;
+    this.artReady = uiArt.acquire(keys);
+    if (old) uiArt.release(old);
+    return this.artReady;
+  }
+
+  /** The feature is over: its emblems go (the banners have cleared their sprites). */
+  private releaseArt(): void {
+    if (!this.heldArt) return;
+    uiArt.release(this.heldArt);
+    this.heldArt = null;
+    this.heldFor = null;
+    this.artReady = Promise.resolve();
   }
 
   // ------------------------------------------------------------------ plumbing
@@ -281,12 +322,15 @@ export class FeatureScreens implements GameModule {
     this.plate.hide(s(S.plate.hide));
     this.feature = null;
     this.fs = { current: 0, total: 0 };
+    // back in the base game with no screen up: the feature's emblems go
+    if (!this.busy && !this.stage.isOpen) this.releaseArt();
   }
 
   /** Resume / replay start: the folded feature (plate title, Mega Mix music). */
   private onMeterSet(mode: 'base' | GrooveFeature): void {
     if (mode === 'base') return;
     this.feature = mode;
+    void this.holdArt(mode);
     this.plate.setSkin(skinOf(mode));
     if (mode === 'super') this.ctx.game.broadcast('music:stem', { stem: 'megamix' });
   }
@@ -304,6 +348,8 @@ export class FeatureScreens implements GameModule {
     const { ctx } = this;
     const skin = skinOf(p.feature);
     this.feature = p.feature;
+    // the emblems load while the meter pumps (1.8 s before the intro needs them)
+    const art = this.holdArt(p.feature);
     this.fs = { current: 0, total: p.totalFs };
     this.plate.setSkin(skin);
     this.plate.set(0, p.totalFs, 0);
@@ -335,6 +381,8 @@ export class FeatureScreens implements GameModule {
     // behind the curtain: the grid un-dims, Mega Mix switches the music variant
     this.dimBoard(0, 0);
     if (p.feature === 'super') ctx.game.broadcast('music:stem', { stem: 'megamix' });
+    await art;
+    if (this.dead) return;
     await this.featureIntro(p.feature, p.totalFs);
   }
 
@@ -440,6 +488,9 @@ export class FeatureScreens implements GameModule {
     const { ctx } = this;
     const U = S.upgrade;
     const addFs = p.addFs;
+    // held since the Juke Jam trigger (or its resume); only a feature entered some other way waits
+    await this.holdArt('bonus');
+    if (this.dead) return;
     this.stage.open({ dim: 0.6, fadeIn: s(220), liftMascots: true, liftFx: true });
     this.setTap(null);
     this.block();
@@ -525,11 +576,13 @@ export class FeatureScreens implements GameModule {
     const feature = this.feature ?? 'bonus';
     const skin = skinOf(feature);
     const finalApi = money.fromBook(Math.max(0, p.amount));
+    const art = this.holdArt(feature);
     this.stage.open({ dim: S.trigger.stageDim, fadeIn: s(300), liftMascots: true, liftFx: true });
     this.setTap(null);
     this.block();
     ctx.game.broadcast('sfx', { id: 'fs_outro' });
     await this.wipe.coverIn(visibleDesignRect(ctx), SKINS[skin], s(S.trigger.wipe));
+    await art;
     if (this.dead) return;
     const banner = this.banner;
     this.rnd = mulberry32(0x0e7d + (p.amount % 9973));
@@ -605,6 +658,7 @@ export class FeatureScreens implements GameModule {
     await this.wait(O.out);
     if (this.dead) return;
     banner.clear();
+    this.releaseArt();
     this.handOff();
   }
 }

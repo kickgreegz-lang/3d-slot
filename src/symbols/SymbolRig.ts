@@ -1095,7 +1095,8 @@ export class SymbolRig implements SymbolView {
 
   private startBreath(): void {
     if (this.breath || this.destroyed || !this.ctx.budget.idleShaders) return;
-    if (this.def.kind === 'royal' || this._state !== 'static') return;
+    // a look-holder breathes through its rig's rest loop
+    if (this.def.kind === 'royal' || this._state !== 'static' || this.look) return;
     const I = T.idle;
     const period = lerp(I.breathPeriodMin, I.breathPeriodMax, this.seed);
     this.pose.scale.set(1);

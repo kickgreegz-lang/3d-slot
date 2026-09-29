@@ -1,5 +1,5 @@
 import { gsap } from 'gsap';
-import { BitmapText, Container, Sprite } from 'pixi.js';
+import { BitmapText, Container, Sprite, Texture } from 'pixi.js';
 import { followSpeed } from '../../../core/timing';
 import { GodRays } from '../../../fx/filters/GodRays';
 import { reducedMotion } from '../../../fx/motion';
@@ -10,6 +10,7 @@ import { Title } from '../../../present/common/Title';
 import { FONTS } from '../../../assets/fonts';
 import { ribbon } from './art/chrome';
 import { jukebox, speakerStack } from './art/emblems';
+import { useEmblem } from './art/emblemArt';
 import { type Baked, screenArt, useBaked } from './art/ScreenArt';
 import { type FeatureSkin, HOT_PINK, JAM_GOLD, SCREENS_TIMING, SKINS } from './look';
 import { PressPrompt, wordSlam } from './ui';
@@ -44,8 +45,10 @@ const AMOUNT_Y = 196;
 const AMOUNT_MAX_W = 860;
 
 /**
- * FEATURE BANNER — placeholder for the `ui_feature_intro` and `ui_feature_outro` rigs (skins
- * jukejam / megamix): god rays + glow (backdrop), emblem, ribbon `banner_plate`, live
+ * FEATURE BANNER — the `ui_feature_intro` and `ui_feature_outro` screens (skins jukejam /
+ * megamix; the UI rigs are not built, ART_STATUS §5, so the runtime plays their clips): god rays
+ * + glow (backdrop), the painted emblem (`emblem` = jukebox / mega_speaker, ART_STATUS §7.6; the
+ * code-drawn emblem only if the art failed to load), ribbon `banner_plate`, live
  * titles (engine glyph baker), the intro count "8" + "FREE SPINS" or the outro "TOTAL WIN" +
  * amount, and the pulsing prompt. `playIn()` returns the rig's `in` timeline (gameplay time,
  * registered with followSpeed) and reports `title_hit` / `count_hit` / `shine` at the
@@ -107,6 +110,13 @@ export class FeatureBanner {
       : screenArt.get('emblem:jukejam', res, jukebox);
   }
 
+  /** The painted emblem at `h` px (drawing height), or the baked code emblem when the art is missing. */
+  private placeEmblem(res: number, h: number): void {
+    if (useEmblem(this.emblem, this.skin === 'megamix' ? 'megaSpeaker' : 'jukebox', h)) return;
+    useBaked(this.emblem, this.emblemTex(res * (h / 430)));
+    this.fitEmblem(h);
+  }
+
   /**
    * Build for one show. `count` = free spins (intro); the outro's amount text is set by the
    * owner through `amount`. `bpm` phases the emblem pump.
@@ -122,9 +132,7 @@ export class FeatureBanner {
     this.glow.tint = look.second;
     this.glow.width = this.glow.height = P.emblemH * 2.1;
     this.glow.y = P.emblemY;
-    // emblem (baked at the display size)
-    useBaked(this.emblem, this.emblemTex(o.res * (P.emblemH / 430)));
-    this.fitEmblem(P.emblemH);
+    this.placeEmblem(o.res, P.emblemH);
     this.emblemHolder.position.set(0, P.emblemY);
     // ribbon + title
     const dark = o.skin === 'megamix' ? 0x7a0f5c : 0x0f6a70;
@@ -173,9 +181,7 @@ export class FeatureBanner {
   /** Re-bake the emblem / ribbon for a new resolution (layout change while showing). */
   rebake(res: number): void {
     if (!this.front.visible) return;
-    const P = PLACE[this.mode];
-    useBaked(this.emblem, this.emblemTex(res * (P.emblemH / 430)));
-    this.fitEmblem(P.emblemH);
+    this.placeEmblem(res, PLACE[this.mode].emblemH);
   }
 
   /** Fit the outro amount to the plate width. */
@@ -313,6 +319,8 @@ export class FeatureBanner {
     this.looping = false;
     this.press.stop();
     this.back.visible = this.front.visible = false;
+    // the painted emblem may be unloaded once the feature ends: never keep a stale texture
+    this.emblem.texture = Texture.EMPTY;
   }
 
   destroy(): void {

@@ -1,5 +1,5 @@
 import { gsap } from 'gsap';
-import { Container, Sprite } from 'pixi.js';
+import { Container, Sprite, Texture } from 'pixi.js';
 import { mulberry32 } from '../../../board/model';
 import { followSpeed } from '../../../core/timing';
 import { GodRays } from '../../../fx/filters/GodRays';
@@ -10,7 +10,9 @@ import { Title } from '../../../present/common/Title';
 import { FONTS } from '../../../assets/fonts';
 import { cracks, ribbon, shard } from './art/chrome';
 import { jukebox, speakerStack } from './art/emblems';
+import { SHARDS, SHARD_CANVAS, SHARD_SCALE, useEmblem } from './art/emblemArt';
 import { screenArt, useBaked } from './art/ScreenArt';
+import { uiArt } from './art/uiArt';
 import { HOT_PINK, JAM_GOLD, SCREENS_TIMING, SKINS } from './look';
 import { wordSlam } from './ui';
 
@@ -22,10 +24,12 @@ const ADD_STYLE: GlyphStyle = { ...TYPE, size: 200, palette: JAM_GOLD, outline: 
 const SUB_STYLE: GlyphStyle = { ...TYPE, size: 84, palette: CYAN, outline: 0.075, tracking: 0.03 };
 
 const P = { emblemY: -150, emblemH: 380, ribbonY: 92, ribbonW: 780, ribbonH: 132, addY: 250, subY: 250 };
-const SHARDS = 6;
+const SHARD_COUNT = 6;
 
 interface ShardFlight {
   sprite: Sprite;
+  /** sprite scale at launch */
+  scale: number;
   /** launch offset from the emblem centre */
   ox: number;
   oy: number;
@@ -35,9 +39,13 @@ interface ShardFlight {
 }
 
 /**
- * UPGRADE BANNER — placeholder for the `ui_feature_upgrade` rig (DESIGN §10.4, ANIMATION_SET
- * §6.4): the Juke Jam jukebox cracks (f12) and shatters into six shards (f18), the crowned
- * speaker stack slams in (f28) with the MEGA MIX ribbon, then "+4" and FREE SPINS slam (f34).
+ * UPGRADE BANNER — the `ui_feature_upgrade` screen (DESIGN §10.4, ANIMATION_SET §6.4; the UI rig
+ * is not built, ART_STATUS §5, so the runtime plays its clip with the painted pieces of §7.6):
+ * the Juke Jam jukebox (`emblem_old` = jukebox) swaps to jukebox_cracked at `crack` (f12) and
+ * shatters into its six cut shards at `shatter` (f18), each flying out along its shards.json burst
+ * vector; the crowned speaker wall (`emblem_new` = mega_speaker) slams in (f28) with the MEGA MIX
+ * ribbon, then "+4" and FREE SPINS slam (f34). The code-drawn emblem, crack lines and shards
+ * stand in only if the art failed to load.
  * `playIn()` is `in` (gameplay time, followSpeed) and reports the four events at their
  * frames; `playOut()` is `out`. Shard flights are seeded (same every time).
  */
@@ -61,6 +69,8 @@ export class UpgradeBanner {
   private sub: Title | null = null;
   private tl: gsap.core.Timeline | null = null;
   private flying = false;
+  /** the painted pieces are loaded (else the code emblems / cracks / shards) */
+  private painted = false;
 
   constructor() {
     this.back.addChild(this.rays, this.glow);
@@ -68,10 +78,10 @@ export class UpgradeBanner {
     this.newHolder.addChild(this.newEmblem);
     this.ribbonHolder.addChild(this.ribbon);
     this.front.addChild(this.oldHolder, this.shardLayer, this.newHolder, this.ribbonHolder, this.textHolder);
-    for (let i = 0; i < SHARDS; i++) {
+    for (let i = 0; i < SHARD_COUNT; i++) {
       const sprite = new Sprite();
       this.shardLayer.addChild(sprite);
-      this.shards.push({ sprite, ox: 0, oy: 0, vx: 0, vy: 0, spin: 0 });
+      this.shards.push({ sprite, scale: 1, ox: 0, oy: 0, vx: 0, vy: 0, spin: 0 });
     }
     this.back.visible = this.front.visible = false;
   }
@@ -86,14 +96,22 @@ export class UpgradeBanner {
 
   setup(res: number, addFs: number): void {
     this.clear();
-    const k = P.emblemH / 430;
-    useBaked(this.oldEmblem, screenArt.get('emblem:jukejam', res * k, jukebox));
-    this.oldEmblem.scale.set(P.emblemH / this.oldEmblem.texture.height);
-    useBaked(this.crackSprite, screenArt.get('cracks', res * k, cracks));
-    this.crackSprite.scale.set(this.oldEmblem.scale.x);
+    this.painted =
+      !!uiArt.get('jukeboxCracked') &&
+      SHARDS.every((d) => !!uiArt.get(d.key)) &&
+      useEmblem(this.oldEmblem, 'jukebox', P.emblemH) &&
+      useEmblem(this.newEmblem, 'megaSpeaker', P.emblemH);
+    if (!this.painted) {
+      const k = P.emblemH / 430;
+      useBaked(this.oldEmblem, screenArt.get('emblem:jukejam', res * k, jukebox));
+      this.oldEmblem.scale.set(P.emblemH / this.oldEmblem.texture.height);
+      useBaked(this.crackSprite, screenArt.get('cracks', res * k, cracks));
+      this.crackSprite.scale.set(this.oldEmblem.scale.x);
+      useBaked(this.newEmblem, screenArt.get('emblem:megamix', res * k, speakerStack));
+      this.newEmblem.scale.set(P.emblemH / this.newEmblem.texture.height);
+    }
+    this.crackSprite.visible = !this.painted;
     this.crackSprite.alpha = 0;
-    useBaked(this.newEmblem, screenArt.get('emblem:megamix', res * k, speakerStack));
-    this.newEmblem.scale.set(P.emblemH / this.newEmblem.texture.height);
     useBaked(this.ribbon, screenArt.get(`ribbon:megamix:${P.ribbonW}`, res, () => ribbon(P.ribbonW, P.ribbonH, SKINS.megamix.accent, 0x7a0f5c)));
     this.oldHolder.position.set(0, P.emblemY);
     this.newHolder.position.set(0, P.emblemY);
@@ -102,18 +120,37 @@ export class UpgradeBanner {
     this.glow.y = P.emblemY;
     this.glow.width = this.glow.height = P.emblemH * 2.1;
     this.glow.tint = SKINS.jukejam.second;
-    // seeded shard directions: fan out and up, fall with gravity
+    // seeded shard flights (same every time): the painted shards leave from their place in the
+    // jukebox along their burst vectors; the code shards fan out and up; both fall with gravity
     const rnd = mulberry32(0x5ad0 + addFs);
+    const old = this.oldEmblem;
+    // display px per 1024-canvas px, and the sprite anchor in canvas px
+    const sc = old.scale.x * (old.texture.width / SHARD_CANVAS);
+    const ax = old.anchor.x * SHARD_CANVAS;
+    const ay = old.anchor.y * SHARD_CANVAS;
     this.shards.forEach((s, i) => {
-      const b = screenArt.get(`shard:${i}`, res, () => shard(i));
-      useBaked(s.sprite, b);
-      const a = -Math.PI / 2 + (i / (SHARDS - 1) - 0.5) * Math.PI * 1.25 + (rnd() - 0.5) * 0.3;
-      const v = 900 + rnd() * 500;
-      s.ox = Math.cos(a) * 70;
-      s.oy = Math.sin(a) * 90 + 40;
-      s.vx = Math.cos(a) * v;
-      s.vy = Math.sin(a) * v - 200;
-      s.spin = (rnd() - 0.5) * 14;
+      if (this.painted) {
+        const d = SHARDS[i];
+        s.sprite.texture = uiArt.get(d.key) ?? Texture.EMPTY;
+        s.sprite.anchor.set(0.5);
+        s.scale = sc / SHARD_SCALE;
+        s.ox = (d.x + d.w / 2 - ax) * sc;
+        s.oy = (d.y + d.h / 2 - ay) * sc;
+        const v = 620 + rnd() * 380;
+        s.vx = d.bx * v;
+        s.vy = d.by * v - 260;
+        s.spin = (d.bx >= 0 ? 1 : -1) * (2 + rnd() * 5);
+      } else {
+        useBaked(s.sprite, screenArt.get(`shard:${i}`, res, () => shard(i)));
+        const a = -Math.PI / 2 + (i / (SHARD_COUNT - 1) - 0.5) * Math.PI * 1.25 + (rnd() - 0.5) * 0.3;
+        const v = 900 + rnd() * 500;
+        s.scale = 1;
+        s.ox = Math.cos(a) * 70;
+        s.oy = Math.sin(a) * 90 + 40;
+        s.vx = Math.cos(a) * v;
+        s.vy = Math.sin(a) * v - 200;
+        s.spin = (rnd() - 0.5) * 14;
+      }
       s.sprite.visible = false;
     });
     this.title = new Title([{ text: label('bd.feature.megaMix', 'MEGA MIX'), style: TITLE_STYLE }], res, { maxWidth: P.ribbonW - 80 });
@@ -151,8 +188,10 @@ export class UpgradeBanner {
     this.oldHolder.alpha = 1;
     tl.to(this.oldHolder.scale, { x: 1, y: 1, duration: ms(220), ease: 'back.out(2.4)' }, 0);
     tl.to(this.oldHolder, { rotation: 0.04, duration: ms(40), yoyo: true, repeat: 5, ease: 'sine.inOut' }, crack - ms(120));
-    // crack (f12): lines appear, a jolt
-    tl.set(this.crackSprite, { alpha: 1 }, crack);
+    // crack (f12): the cracked jukebox (painted) or the crack lines (code), a jolt
+    if (this.painted) {
+      tl.call(() => void useEmblem(this.oldEmblem, 'jukeboxCracked', P.emblemH), undefined, crack);
+    } else tl.set(this.crackSprite, { alpha: 1 }, crack);
     tl.fromTo(this.oldHolder.scale, { x: 1.06, y: 0.95 }, { x: 1, y: 1, duration: ms(160), ease: 'back.out(3)', immediateRender: false }, crack);
     tl.call(() => onEvent('crack'), undefined, crack);
     // shatter (f18): the emblem is gone, shards fly
@@ -164,7 +203,7 @@ export class UpgradeBanner {
           s.sprite.position.set(s.ox, P.emblemY + s.oy);
           s.sprite.rotation = 0;
           s.sprite.alpha = 1;
-          s.sprite.scale.set(1);
+          s.sprite.scale.set(s.scale);
         }
         this.flying = true;
         onEvent('shatter');
@@ -240,6 +279,12 @@ export class UpgradeBanner {
     this.flying = false;
     for (const s of this.shards) s.sprite.visible = false;
     this.back.visible = this.front.visible = false;
+    // painted pieces may be unloaded once the feature ends: never keep a stale texture
+    if (this.painted) {
+      this.oldEmblem.texture = this.newEmblem.texture = Texture.EMPTY;
+      for (const s of this.shards) s.sprite.texture = Texture.EMPTY;
+      this.painted = false;
+    }
   }
 
   destroy(): void {

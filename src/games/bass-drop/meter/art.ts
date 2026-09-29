@@ -419,6 +419,8 @@ export interface MeterIcons {
 export class MeterArt {
   private rigTex: MeterTextures | null = null;
   private iconTex: MeterIcons | null = null;
+  private tickTex: Texture | null = null;
+  private tickRes = 0;
   private key = '';
 
   constructor(private readonly renderer: Renderer) {}
@@ -454,6 +456,18 @@ export class MeterArt {
       notchRing: this.square(drawNotchRing(), R * GEOM.notchR, Math.max(res, 1)),
     };
     return this.rigTex;
+  }
+
+  /** The LED tick alone, for the Spine rig (it draws every other rig part); re-baked when `res` changes. */
+  tick(res: number): Texture {
+    const r = Math.max(res, 1.5);
+    if (this.tickTex && this.tickRes === r) return this.tickTex;
+    const old = this.tickTex;
+    this.tickTex = this.square(drawTick(), 12, r);
+    this.tickRes = r;
+    // the LED arc swaps to the new texture right after this call
+    if (old) queueMicrotask(() => old.destroy(true));
+    return this.tickTex;
   }
 
   get icons(): MeterIcons {
@@ -494,6 +508,8 @@ export class MeterArt {
 
   destroy(): void {
     this.destroyRig();
+    this.tickTex?.destroy(true);
+    this.tickTex = null;
     if (this.iconTex) {
       const i = this.iconTex;
       for (const tex of [...i.w, i.jj, i.mm, i.sticky, i.arrow, i.glowRing, i.swirl, i.wave, i.orbCore, i.orbHalo, i.puff]) tex.destroy(true);

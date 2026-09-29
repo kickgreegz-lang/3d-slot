@@ -1,8 +1,11 @@
 import { Container, Graphics } from 'pixi.js';
-import { BRASS, CAB, INK, LINE, METAL, OUTLINE, PLUM, bolt } from './palette';
+import { BRASS, CAB, INK, LINE, METAL, OUTLINE, RIM, bolt, orb, ramp } from './palette';
 
 /**
- * `env_horn` placeholder parts (ANIMATION_SET §4.3): a brass PA horn bolted onto the frame's
+ * `env_horn` code parts (ANIMATION_SET §4.3; the generated horn is unfunded, ART_STATUS §5), in
+ * the formula-D finish of the painted set (palette.ts: soft ramps lit from the top-left, glossy
+ * brass with white speculars, a thin cool rim on the shade side, one bold outline, no plum
+ * extrusion). A brass PA horn bolted onto the frame's
  * top corner, flaring up and out of the frame. Local space = the LEFT horn at landscape size
  * (frameHorns rect 116 x 100) with the anchor (0, 0) on the bolt point, i.e. the frame's
  * top-left corner (the beam runs toward +x, the post toward +y); the right horn is the same
@@ -42,9 +45,14 @@ const add = (a: { x: number; y: number }, b: { x: number; y: number }, k: number
 export const drawHornBracket = (): Graphics => {
   const g = new Graphics();
   g.poly([-7, -6, 66, -6, 66, 9, 9, 9, 9, 46, -7, 46], true)
-    .fill(METAL.shade)
+    .fill(ramp([
+      [0, METAL.light],
+      [0.45, METAL.base],
+      [1, METAL.shade],
+    ], 0.1, 0, 0.6, 1))
     .stroke({ width: OUTLINE * 0.8, color: INK, join: 'round' });
-  g.poly([-3, -2, 62, -2, 62, 2, 1, 2, 1, 42, -3, 42], true).fill(METAL.base);
+  g.moveTo(-3, -2).lineTo(62, -2).stroke({ width: 1.4, color: 0xffffff, alpha: 0.4 });
+  g.moveTo(9, 46).lineTo(9, 12).lineTo(64, 12).stroke({ width: 1.1, color: RIM, alpha: 0.35 });
   bolt(g, 1, 36, 3.4);
   bolt(g, 54, 2, 3.4);
   bolt(g, 2, 2, 3.4);
@@ -58,29 +66,52 @@ export const drawHornCan = (): Container => {
   const back = add(H.D, H.u, -13);
   const front = add(H.D, H.u, 12);
   const r = H.canR;
+  // lit side = +n (the upper contour); the ramp runs across the can in its local box
+  const across = (): [number, number, number, number] => [0.5 + H.n.x * 0.42, 0.5 + H.n.y * 0.42, 0.5 - H.n.x * 0.42, 0.5 - H.n.y * 0.42];
+  const [ax, ay, bx, by] = across();
   const can = new Graphics();
-  // plum extrusion lower-right, then the body
-  can.poly(capsule(back.x + 5, back.y + 5, front.x + 5, front.y + 5, r), true).fill(PLUM).stroke({ width: OUTLINE, color: INK, join: 'round' });
-  can.poly(capsule(back.x, back.y, front.x, front.y, r), true).fill(METAL.base).stroke({ width: OUTLINE, color: INK, join: 'round' });
-  // light band on the +n side (faces the top-left key light), shade band on -n
-  can.poly(band(back, front, H.n, r * 0.45, r * 0.85), true).fill(METAL.light);
-  can.poly(band(back, front, H.n, -r * 0.85, -r * 0.4), true).fill(METAL.shade);
+  can.poly(capsule(back.x, back.y, front.x, front.y, r), true)
+    .fill(ramp([
+      [0, METAL.light],
+      [0.4, METAL.base],
+      [1, METAL.dark],
+    ], ax, ay, bx, by))
+    .stroke({ width: OUTLINE, color: INK, join: 'round' });
+  // soft sheen along the lit side, thin cool rim on the shade side
+  const s0 = add(back, H.n, r * 0.55);
+  const s1 = add(front, H.n, r * 0.55);
+  can.moveTo(s0.x, s0.y).lineTo(s1.x, s1.y).stroke({ width: 2.2, color: 0xffffff, alpha: 0.45, cap: 'round' });
+  const c0 = add(back, H.n, -r * 0.82);
+  const c1 = add(front, H.n, -r * 0.82);
+  can.moveTo(c0.x, c0.y).lineTo(c1.x, c1.y).stroke({ width: 1.2, color: RIM, alpha: 0.55, cap: 'round' });
   // gold clamp band around the middle
-  const c0 = add(H.D, H.u, -2);
-  const c1 = add(H.D, H.u, 4);
-  can.poly(band(c0, c1, H.n, -r - 2, r + 2), true).fill(BRASS.base).stroke({ width: LINE, color: INK, join: 'round' });
-  bolt(can, H.D.x + H.u.x + H.n.x * (r + 1), H.D.y + H.u.y + H.n.y * (r + 1), 3);
+  const b0 = add(H.D, H.u, -2);
+  const b1 = add(H.D, H.u, 4);
+  can.poly(band(b0, b1, H.n, -r - 2, r + 2), true)
+    .fill(ramp([
+      [0, BRASS.light],
+      [0.45, BRASS.base],
+      [1, BRASS.deep],
+    ], ax, ay, bx, by))
+    .stroke({ width: LINE, color: INK, join: 'round' });
+  bolt(can, H.D.x + H.u.x + H.n.x * (r + 1), H.D.y + H.u.y + H.n.y * (r + 1), 3, 0xe8c070);
   root.addChild(can);
   // rear cap (rotated ellipse)
-  const cap = new Graphics().ellipse(0, 0, r * 0.4, r * 0.96).fill(METAL.shade).stroke({ width: LINE, color: INK });
-  cap.ellipse(-r * 0.05, -r * 0.2, r * 0.18, r * 0.5).fill(METAL.base);
+  const cap = new Graphics()
+    .ellipse(0, 0, r * 0.4, r * 0.96)
+    .fill(ramp([
+      [0, METAL.base],
+      [1, METAL.dark],
+    ]))
+    .stroke({ width: LINE, color: INK });
+  cap.ellipse(-r * 0.05, -r * 0.2, r * 0.16, r * 0.46).fill({ color: 0xffffff, alpha: 0.3 });
   cap.position.set(back.x, back.y);
   cap.rotation = Math.atan2(H.u.y, H.u.x);
   root.addChild(cap);
   return root;
 };
 
-/** A cel dust puff (fx_puff fallback): three lumps, lavender with a shade band, black outline. */
+/** A painted dust puff (fx_puff fallback): three soft lumps lit from the top-left, one outline. */
 export const drawPuff = (): Graphics => {
   const g = new Graphics();
   const lumps: Array<[number, number, number]> = [
@@ -89,10 +120,14 @@ export const drawPuff = (): Graphics => {
     [8, 6, 7],
   ];
   // merged silhouette: all outlines first, then the fills over them
-  for (const [x, y, r] of lumps) g.circle(x, y, r + 2.2).fill(INK);
-  for (const [x, y, r] of lumps) g.circle(x, y, r).fill(0xd6cce2);
-  for (const [x, y, r] of lumps) g.circle(x + r * 0.25, y + r * 0.3, r * 0.62).fill(0xa99bbd);
-  for (const [x, y, r] of lumps) g.circle(x - r * 0.3, y - r * 0.35, r * 0.28).fill(0xf4efff);
+  for (const [x, y, r] of lumps) g.circle(x, y, r + 1.8).fill(INK);
+  for (const [x, y, r] of lumps) {
+    g.circle(x, y, r).fill(orb([
+      [0, 0xf6f1ff],
+      [0.5, 0xd6cce2],
+      [1, 0x9a8bb0],
+    ]));
+  }
   return g;
 };
 
@@ -126,40 +161,58 @@ export const drawHornBell = (): Container => {
     return out;
   };
   const g = new Graphics();
-  // extrusion toward the lower right, then the brass body
-  g.poly(outline().map((v) => v + 5), true).fill(PLUM).stroke({ width: OUTLINE, color: INK, join: 'round' });
-  g.poly(outline(), true).fill(BRASS.base).stroke({ width: OUTLINE, color: INK, join: 'round' });
-  // cel bands: light along the +n contour, shade along -n (inner edges follow the flare)
-  const lit: number[] = [];
+  // brass body: a soft ramp across the flare (lit +n contour -> shade), glossy
+  const nx = 0.5 + H.n.x * 0.45;
+  const ny = 0.5 + H.n.y * 0.45;
+  g.poly(outline(), true)
+    .fill(ramp([
+      [0, BRASS.light],
+      [0.3, BRASS.base],
+      [0.75, BRASS.shade],
+      [1, BRASS.deep],
+    ], nx, ny, 1 - nx, 1 - ny))
+    .stroke({ width: OUTLINE, color: INK, join: 'round' });
+  // thin cool rim along the shade-side contour, warm bounce under it
   const shade: number[] = [];
-  for (let i = 0; i <= 16; i++) {
+  for (let i = 3; i <= 16; i++) {
     const t = i / 16;
     const r = H.throatR + (H.mouthR - H.throatR) * t ** 2.2;
     const c = add(T, H.u, L * t);
-    lit.push(c.x + H.n.x * r * 0.92, c.y + H.n.y * r * 0.92);
-    shade.push(c.x - H.n.x * r * 0.92, c.y - H.n.y * r * 0.92);
+    shade.push(c.x - H.n.x * (r - 2.2), c.y - H.n.y * (r - 2.2));
   }
-  for (let i = 16; i >= 0; i--) {
-    const t = i / 16;
-    const r = H.throatR + (H.mouthR - H.throatR) * t ** 2.2;
-    const c = add(T, H.u, L * t);
-    lit.push(c.x + H.n.x * r * 0.5, c.y + H.n.y * r * 0.5);
-    shade.push(c.x - H.n.x * r * 0.45, c.y - H.n.y * r * 0.45);
-  }
-  g.poly(lit, true).fill(BRASS.light);
-  g.poly(shade, true).fill(BRASS.shade);
-  // specular streak
+  g.poly(shade, false).stroke({ width: 1.4, color: RIM, alpha: 0.55, cap: 'round', join: 'round' });
+  // specular streak + a crisp hotspot
   const s0 = add(add(T, H.u, L * 0.3), H.n, 4.5);
   const s1 = add(add(T, H.u, L * 0.72), H.n, 10);
-  g.moveTo(s0.x, s0.y).lineTo(s1.x, s1.y).stroke({ width: 2.6, color: 0xffffff, cap: 'round' });
+  g.moveTo(s0.x, s0.y).lineTo(s1.x, s1.y).stroke({ width: 2.4, color: 0xffffff, alpha: 0.85, cap: 'round' });
+  g.circle(s1.x + H.u.x * 4, s1.y + H.u.y * 4, 1.6).fill(0xffffff);
   root.addChild(g);
 
   // mouth: rim ellipse, dark interior, phase plug
   const mouth = new Graphics();
   const ang = Math.atan2(H.n.y, H.n.x);
-  mouth.ellipse(0, 0, H.mouthR + 2, H.mouthDepth + 2).fill(BRASS.light).stroke({ width: OUTLINE, color: INK });
-  mouth.ellipse(0.5, 1.5, H.mouthR - 3.5, H.mouthDepth - 3).fill(CAB.hole).stroke({ width: LINE, color: INK });
-  mouth.ellipse(0, 2, H.mouthR * 0.22, H.mouthDepth * 0.45).fill(METAL.base).stroke({ width: 1.8, color: INK });
+  mouth
+    .ellipse(0, 0, H.mouthR + 2, H.mouthDepth + 2)
+    .fill(ramp([
+      [0, 0xfff6c8],
+      [0.5, BRASS.light],
+      [1, BRASS.shade],
+    ], 0.5, 0, 0.5, 1))
+    .stroke({ width: OUTLINE, color: INK });
+  mouth
+    .ellipse(0.5, 1.5, H.mouthR - 3.5, H.mouthDepth - 3)
+    .fill(ramp([
+      [0, 0x05020a],
+      [1, CAB.shade],
+    ], 0.5, 0, 0.5, 1))
+    .stroke({ width: LINE, color: INK });
+  mouth
+    .ellipse(0, 2, H.mouthR * 0.22, H.mouthDepth * 0.45)
+    .fill(orb([
+      [0, METAL.light],
+      [1, METAL.shade],
+    ]))
+    .stroke({ width: 1.4, color: INK });
   mouth.position.set(M.x, M.y);
   mouth.rotation = ang;
   root.addChild(mouth);

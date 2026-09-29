@@ -15,8 +15,8 @@ const PLUS_POOL = 6;
 const TAU = Math.PI * 2;
 
 /**
- * The drop's live effects (ANIMATION_SET §7.2), on a container attached to `winLayer` (above
- * the symbols and the frame; the label-sum director owns a second, small instance on the
+ * The drop's live effects (ANIMATION_SET §7.2), on the drop's flight holder (above
+ * the symbols, the frame, the mascots and the booth; the label-sum director owns a second, small instance on the
  * overlay, above the cluster labels and the win-elevated symbols): the impact dust crown + debris + shock ring (the P0 fallback of
  * the `fx_wild_impact` flipbook), `fx_mult_spark`, `fx_lock_glint`, the home return ring
  * flash and the sticky "+1" preview. Its own particle system (a share of the tier budget),

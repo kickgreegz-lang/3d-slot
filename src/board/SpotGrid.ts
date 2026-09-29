@@ -6,6 +6,7 @@ import { GRID, SPOT_BANDS, isVisibleRow, spotTier, toSpotRow } from '../config/g
 import { type LayoutSpec, cellCenter } from '../config/layout';
 import { TIMING, followSpeed, s, sUi, stagger } from '../core/timing';
 import type { GameContext } from '../game/context';
+import { fontResolutionOr } from '../present/common/fonts';
 import { BOARD_TIMING } from './boardTiming';
 import { type SpotTier, overlayTexture, tileTexture } from './tileArt';
 
@@ -113,7 +114,8 @@ export class SpotGrid {
         stroke: { color: 0x000000, width: 10, join: 'round' },
       },
       chars: [['0', '9'], 'x'],
-      resolution: this.res,
+      // the game's font policy when it set one (present/common/fonts.ts), else the tile resolution
+      resolution: ctx.tier === 'low' ? 1 : fontResolutionOr(ctx.app.renderer, this.res),
       padding: 6,
     });
     ctx.layers.tiles.addChild(this.tileRoot, this.heatRoot, this.washRoot, this.fxRoot);

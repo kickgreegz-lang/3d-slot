@@ -1,5 +1,6 @@
 import { BitmapFont, BitmapText, type Renderer } from 'pixi.js';
 import { FONTS } from '../../../assets/fonts';
+import { fontResolution } from '../../../present/common/fonts';
 
 /**
  * Screen bitmap fonts (live text only, nothing is baked into the art):
@@ -19,7 +20,7 @@ let installed = false;
 export const ensureScreenFonts = (renderer: Renderer): void => {
   if (installed) return;
   installed = true;
-  const resolution = Math.min(2, Math.max(1, renderer.resolution));
+  const resolution = fontResolution(renderer);
   BitmapFont.install({
     name: SCR_LABEL,
     chars: [['A', 'Z'], ['a', 'z'], ['0', '9'], " /×x+-–!?.,:'’$€£%()"],

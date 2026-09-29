@@ -1,4 +1,5 @@
-import { CanvasSource, Texture } from 'pixi.js';
+import { Texture } from 'pixi.js';
+import { canvasSource } from '../render/canvasSource';
 import type { SpotBand } from '../config/game';
 
 /**
@@ -34,7 +35,7 @@ const canvas = (w: number, h: number, res: number): { c: HTMLCanvasElement; g: C
 };
 
 const toTexture = (c: HTMLCanvasElement, res: number): Texture =>
-  new Texture({ source: new CanvasSource({ resource: c, resolution: res }) });
+  new Texture({ source: canvasSource(c, res) });
 
 const rrPath = (g: Ctx2D, x: number, y: number, w: number, h: number, r: number): void => {
   const rr = Math.min(r, w / 2, h / 2);

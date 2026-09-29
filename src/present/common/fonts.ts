@@ -19,7 +19,19 @@ const charsFor = (money: MoneyApi, extra: string): string[] => {
   return [...new Set([...`0123456789.,+-x×/ ${extra}`, ...sample])];
 };
 
-const resolutionFor = (renderer: Renderer): number => Math.min(2, Math.max(1, renderer.resolution));
+/**
+ * Bitmap-font page resolution. Default: the renderer's (1..2). A game may install a policy
+ * (setFontResolutionPolicy) before its modules init, e.g. from what its screen can show: a
+ * dynamic font page is (512 x resolution)^2 texels, 4 MiB each at 2, and a font holds 1-5 pages.
+ */
+let fontPolicy: ((renderer: Renderer) => number) | null = null;
+export const setFontResolutionPolicy = (policy: ((renderer: Renderer) => number) | null): void => {
+  fontPolicy = policy;
+};
+/** The policy's resolution, or `fallback` when the game installed none. */
+export const fontResolutionOr = (renderer: Renderer, fallback: number): number => (fontPolicy ? fontPolicy(renderer) : fallback);
+export const fontResolution = (renderer: Renderer): number => fontResolutionOr(renderer, Math.min(2, Math.max(1, renderer.resolution)));
+const resolutionFor = fontResolution;
 
 /** White value numerals with a black outline and plum extrusion (cluster labels, plates). */
 export const ensureValueFont = (renderer: Renderer, money: MoneyApi): string => {

@@ -1,5 +1,6 @@
 import { BitmapFont, FillGradient, type Renderer } from 'pixi.js';
 import { FONTS } from '../../../assets/fonts';
+import { fontResolution } from '../../../present/common/fonts';
 
 /**
  * Connection count-pop font `bd-connect-pop`: Titan One in meter teal with hard cel bands
@@ -31,7 +32,7 @@ export const ensureConnectFonts = (renderer: Renderer): void => {
   BitmapFont.install({
     name: CONNECT_POP_FONT,
     chars: [['0', '9'], '+×x'],
-    resolution: Math.min(2, Math.max(1, renderer.resolution)),
+    resolution: fontResolution(renderer),
     padding: 10,
     style: {
       fontFamily: FONTS.value,

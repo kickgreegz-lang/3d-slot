@@ -6,6 +6,7 @@ import { WinPresenter } from '../../present/WinPresenter';
 import { Sound } from '../../audio/Sound';
 import { Hud } from '../../ui/hud/Hud';
 import { DomUi } from '../../ui/dom/DomUi';
+import { setFontResolutionPolicy } from '../../present/common/fonts';
 // Swamp Funk's Frame (glass, neon tube, 3-slice pieces) with Bass Drop's painted frame art (manifest/env.ts).
 import { Frame } from '../swamp-funk/scene/Frame';
 import { Connections } from './connect/Connections';
@@ -18,6 +19,7 @@ import { BassDropMascots } from './mascots/Mascots';
 import { Background } from './scene/Background';
 import { Logo } from './scene/Logo';
 import { Stage } from './stage/Stage';
+import { bassDropFontResolution } from './fontRes';
 
 /**
  * SWAMP FUNK: BASS DROP visual modules, in init order (draw order comes from the layers;
@@ -25,24 +27,28 @@ import { Stage } from './stage/Stage';
  * the Bass Drop feature modules, which subscribe to the game scene events (./events.ts).
  * The engine FreeSpins presenter is replaced by FeatureScreens (feature intros, plate, outro).
  */
-export const createModules = (ctx: GameContext): GameModule[] => [
-  new Background(ctx),
-  new Frame(ctx, { logo: false }),
-  new Logo(ctx),
-  new Stage(ctx),
-  new GrooveMeter(ctx),
-  new Board(ctx),
-  new Connections(ctx),
-  new WinPresenter(ctx),
-  new BassDrop(ctx),
-  new Fx(ctx),
-  // 2D Spine Gumbo + Croak (DESIGN §16) in place of the engine's three.js mascots
-  new BassDropMascots(ctx),
-  new FeatureScreens(ctx),
-  new BigWin(ctx),
-  new Hud(ctx),
-  new DomUi(ctx),
-  new BuyScreen(ctx),
-  new IntroScreen(ctx),
-  new Sound(ctx),
-];
+export const createModules = (ctx: GameContext): GameModule[] => {
+  // before any module installs a bitmap font: page resolution from what the screen can show (./fontRes.ts)
+  setFontResolutionPolicy(bassDropFontResolution);
+  return [
+    new Background(ctx),
+    new Frame(ctx, { logo: false }),
+    new Logo(ctx),
+    new Stage(ctx),
+    new GrooveMeter(ctx),
+    new Board(ctx),
+    new Connections(ctx),
+    new WinPresenter(ctx),
+    new BassDrop(ctx),
+    new Fx(ctx),
+    // 2D Spine Gumbo + Croak (DESIGN §16) in place of the engine's three.js mascots
+    new BassDropMascots(ctx),
+    new FeatureScreens(ctx),
+    new BigWin(ctx),
+    new Hud(ctx),
+    new DomUi(ctx),
+    new BuyScreen(ctx),
+    new IntroScreen(ctx),
+    new Sound(ctx),
+  ];
+};

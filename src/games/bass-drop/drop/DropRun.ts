@@ -49,7 +49,7 @@ export interface DropHost {
   releaseProxy(p: WildProxy): void;
   /** launch layering: parent the proxy into the meter's fx_blast slot (meter:blastSlot); false if no meter took it */
   mountProxy(p: WildProxy): boolean;
-  /** back to the winLayer holder (past the rim, contact, abort) */
+  /** back to the flight holder (past the rim, contact, abort) */
   unmountProxy(p: WildProxy): void;
   /** hide now (abort / board:set): back on the holder, invisible, free */
   endProxy(p: WildProxy): void;
@@ -96,7 +96,7 @@ export const chargeSeconds = (chainIndex: number): number =>
  *   C + 40 + i x 110  wild i launches from the woofer: Bezier to its cell, scale 0.55 -> 1.75 at
  *              60% -> 1.0 (power2.in), 1.25 turns easing to 0, trail; shadow grows from 55%;
  *              inside the meter's fx_blast slot (meter:blastSlot) until its centre passes the
- *              rim (ring radius x LOOK.rimExit), then on winLayer; the trail starts at the rim;
+ *              rim (ring radius x LOOK.rimExit), then on the flight holder; the trail starts at the rim;
  *   contact - 80  board:transform {style:'impact'} (the Board crushes the doomed symbol);
  *   contact    the proxy hides on the placement frame; dust crown + debris + shock ring,
  *              board:thump, trauma 0.2, hit-stop 40, wild_impact, cue wildLand; the registry
@@ -254,7 +254,7 @@ export class DropRun {
     const spin = 1 - p2out(clamp01(u / LOOK.spinEndAt));
     proxy.place(this.pt.x, this.pt.y, scale, -f.spinDir * D.spinTurns * Math.PI * 2 * spin);
     if (f.mounted) {
-      // launch layering: winLayer from the frame the centre passes the rim's inner edge
+      // launch layering: the flight holder from the frame the centre passes the rim's inner edge
       const m = meterCentre(L, this.meter);
       const rim = BASS_DROP_LAYOUT[L.kind].meter.ringOuterD * 0.5 * LOOK.rimExit;
       if (Math.hypot(this.pt.x - m.x, this.pt.y - m.y) >= rim) {

@@ -1,5 +1,6 @@
 import { BitmapFont, type Renderer } from 'pixi.js';
 import { FONTS } from '../../../assets/fonts';
+import { fontResolution } from '../../../present/common/fonts';
 
 /**
  * Groove Meter bitmap fonts (live text only, nothing baked into art):
@@ -18,7 +19,7 @@ let installed = false;
 export const ensureMeterFonts = (renderer: Renderer): void => {
   if (installed) return;
   installed = true;
-  const resolution = Math.min(2, Math.max(1, renderer.resolution));
+  const resolution = fontResolution(renderer);
   BitmapFont.install({
     name: METER_NUM_FONT,
     chars: [['0', '9'], ' /×x+-'],

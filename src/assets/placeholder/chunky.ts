@@ -1,4 +1,5 @@
-import { CanvasSource, Container, Graphics, Rectangle, type Renderer, Sprite, Texture } from 'pixi.js';
+import { Container, Graphics, Rectangle, type Renderer, Sprite, Texture } from 'pixi.js';
+import { canvasSource } from '../../render/canvasSource';
 import { INK, type Light, PLUM, PLUM_LIGHT, WHITE } from './palette';
 
 /**
@@ -113,7 +114,7 @@ const glyphTexture = (run: GlyphRun, ink: InkMetrics, frame: Rectangle, resoluti
     g.strokeText(run.text, ink.ox, ink.oy);
   }
   g.fillText(run.text, ink.ox, ink.oy);
-  return new Texture({ source: new CanvasSource({ resource: c, resolution }) });
+  return new Texture({ source: canvasSource(c, resolution) });
 };
 
 export interface ChunkyResult {

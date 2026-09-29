@@ -1,5 +1,5 @@
 import { gsap } from 'gsap';
-import { Container } from 'pixi.js';
+import { Container, RenderLayer } from 'pixi.js';
 import { slotPos } from '../../../board/model';
 import type { LayoutSpec } from '../../../config/layout';
 import { clock } from '../../../core/clock';
@@ -26,7 +26,7 @@ const FOCUS_GRACE = 60;
  * BASS DROP — everything the wilds do (DESIGN.md §7 step 6, §8, §9):
  *  - 'wild:drop'     the drop choreography (DropRun): charge, boom (shockwave, board wave,
  *                    shake, hit-stop, flash, SFX, mascot cues), target reticles + landing
- *                    shadows, flying proxies on winLayer, the 'impact' handoff to the Board,
+ *                    shadows, flying proxies above the mascots, the 'impact' handoff to the Board,
  *                    contact feedback; resolves settle ms after the last contact;
  *  - multiplier badges ('board:decorate' key 'mult') and sticky clamps (key 'clamp') on the
  *    landed W views, tracked by cell through tumbles (WildRegistry, SDK tumble rule);
@@ -41,11 +41,11 @@ const FOCUS_GRACE = 60;
  * The Groove Meter plays its own charge / boom / rings from the same BASS_DROP_TIMING beats.
  *
  * Layers: home markers on `tiles`; reticles + shadows on `board` above the masked symbols
- * (below the frame); flights, trails and impact FX on a `winLayer`-attached holder (they cross
- * the frame), except that a launching proxy first draws in the Groove Meter's fx_blast slot
+ * (below the frame); flights, trails and impact FX on a holder drawn through its own RenderLayer
+ * right above `fx` (they cross the frame, the mascots and the booth), except that a launching proxy first draws in the Groove Meter's fx_blast slot
  * ('meter:blastSlot': over the cone, under the rim and the counter) until it passes the rim,
  * where its trail starts; label-sum clones, their arrival sparks and the "+1" pops on `overlay`, above the
- * cluster labels and the win-elevated symbols (which join winLayer after our holder).
+ * cluster labels and the win-elevated symbols (winLayer).
  * A proxy hides on the frame AFTER its contact beat: the Board places its W in the promise
  * continuation of its own anticipateDuration wait, i.e. one rendered frame later.
  * Speed: gameplay beats go through s() / followSpeed (slam-safe), hit-stops through the gated
@@ -59,6 +59,8 @@ export class BassDrop implements GameModule {
   private sums!: MultSumDirector;
   private readonly targets = new Container({ label: 'bassDropTargets' });
   private readonly flights = new Container({ label: 'bassDropFlights' });
+  /** draws the flights above the mascots and the booth (see init) */
+  private readonly flightLayer = new RenderLayer();
   private readonly trails = new Container({ label: 'bassDropTrails' });
   private readonly bodies = new Container({ label: 'bassDropProxies' });
   private readonly proxies: WildProxy[] = [];
@@ -92,7 +94,13 @@ export class BassDrop implements GameModule {
     ctx.layers.board.addChild(this.targets);
     this.flights.addChild(this.trails, this.bodies, this.fx.view);
     ctx.layers.logo.addChild(this.flights);
-    ctx.layers.winLayer.attach(this.flights);
+    // the flights draw right above layers.fx (the mascots, Croak's booth at fx index 0, the
+    // particles), under the HUD: a flying wild never passes behind a character. In portrait the
+    // arcs to the outer columns cross Gumbo (reel 0) and Croak's booth (reel 5); on winLayer
+    // (below the mascots) the wild vanished behind them.
+    const root = ctx.layers.root;
+    root.addChildAt(this.flightLayer, root.getChildIndex(ctx.layers.fx) + 1);
+    this.flightLayer.attach(this.flights);
     ctx.layers.overlay.addChild(this.sums.view);
     for (let i = 0; i < PREWARM; i++) {
       this.newProxy();
@@ -192,14 +200,14 @@ export class BassDrop implements GameModule {
   /**
    * DESIGN §8.2: during the launch the proxy draws in the Groove Meter's fx_blast slot (over the
    * cone, under the rim and the counter) through 'meter:blastSlot'; the meter keeps the design
-   * px transform. False when no meter took it (it stays on the winLayer holder).
+   * px transform. False when no meter took it (it stays on the flight holder).
    */
   private mountProxy(p: WildProxy): boolean {
     this.ctx.game.broadcast('meter:blastSlot', { display: p.view, attach: true });
     return p.view.parent !== this.bodies && p.view.parent !== null;
   }
 
-  /** Back onto the winLayer holder (same design px), e.g. on the frame it passes the rim. */
+  /** Back onto the flight holder (same design px), e.g. on the frame it passes the rim. */
   private unmountProxy(p: WildProxy): void {
     if (p.view.parent === this.bodies || p.view.destroyed) return;
     this.ctx.game.broadcast('meter:blastSlot', { display: p.view, attach: false });
@@ -300,8 +308,10 @@ export class BassDrop implements GameModule {
     for (const p of this.proxies) p.destroy();
     for (const r of this.reticles) r.destroy();
     this.fx.destroy();
-    this.ctx.layers.winLayer.detach(this.flights);
+    this.flightLayer.detach(this.flights);
+    this.flightLayer.removeFromParent();
     this.flights.destroy({ children: true });
+    this.flightLayer.destroy();
     this.targets.destroy({ children: true });
     this.art.destroy();
   }

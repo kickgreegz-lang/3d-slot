@@ -7,6 +7,7 @@ import { canvasToTexture, createCanvas, glowTexture } from '../../../fx/textures
 import { darken, lighten, mixColor } from '../../../fx/util';
 import { GOLD, MULT_TIERS } from '../timing';
 import { DROP_LOOK as LOOK } from './look';
+import { fontResolution } from '../../../present/common/fonts';
 
 /**
  * BASS DROP placeholder art: the parts of the extended `sym_W` rig (multiplier badge per
@@ -317,7 +318,7 @@ let fontsInstalled = false;
 const installFonts = (renderer: Renderer): void => {
   if (fontsInstalled) return;
   fontsInstalled = true;
-  const resolution = Math.min(2, Math.max(1, renderer.resolution));
+  const resolution = fontResolution(renderer);
   BitmapFont.install({
     name: MULT_FONT,
     chars: [['0', '9'], ' ×x+'],

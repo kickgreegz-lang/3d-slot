@@ -10,7 +10,7 @@ type ProxyClip = 'drop_launch' | 'drop_fall';
 
 /**
  * The flying wild of a bass drop (DESIGN.md §8.1 / §8.2): a pooled W symbol view on the
- * drop's winLayer holder, an additive glow flare and the `fx_wild_trail` ribbon (a 12-point
+ * drop's flight holder, an additive glow flare and the `fx_wild_trail` ribbon (a 12-point
  * MeshRope, tier-tinted, laid along the last stretch of the flight path by the controller). The flight controller owns the path, depth scale and spin (they
  * are runtime-owned, ANIMATION_SET §2.6); this class plays the body clips on top:
  *   drop_launch (8 f)  f0 compressed sy 0.8 / sx 1.15, f2 released sy 1.25 / sx 0.86, glow flare 1.4;

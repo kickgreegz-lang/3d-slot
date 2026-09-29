@@ -1,4 +1,5 @@
-import { CanvasSource, Container, Sprite, Texture } from 'pixi.js';
+import { Container, Sprite, Texture } from 'pixi.js';
+import { canvasSource } from '../../render/canvasSource';
 
 /**
  * Display-type baker for titles ("MEGA WIN", "10 FREE SPINS", "TOTAL WIN").
@@ -224,7 +225,7 @@ const bakeGlyph = (char: string, st: GlyphStyle, res: number): BakedGlyph => {
   const tw = canvas.width / res;
   const th = canvas.height / res;
   const texture = new Texture({
-    source: new CanvasSource({ resource: canvas, resolution: res, width: tw, height: th, transparent: true }),
+    source: canvasSource(canvas, res, { transparent: true }),
     defaultAnchor: { x: (ox + cx) / tw, y: (oy + cy) / th },
   });
   const baked: BakedGlyph = { texture, advance: met.width + st.size * (st.tracking ?? 0.02), cx, cy, res };

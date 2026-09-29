@@ -85,6 +85,10 @@ export const drawBooth = (w: number, h: number, button?: { x: number; y: number 
   const cw = w - 11;
   const g = new Graphics();
 
+  // ---- plinth: a shadowed kick strip closes the crate down to the floor between the feet, so
+  // nothing standing behind the booth (Croak's toes, portrait) peeks through under the crate
+  g.roundRect(x0 + 3, -13, cw - 6, 13, 3).fill(0x140a1c).stroke({ width: LINE, color: INK });
+
   // ---- crate: dark interior, record sleeves, planks, posts, feet
   g.roundRect(x0, G.crateY, cw, G.crateH, 10)
     .fill(ramp([

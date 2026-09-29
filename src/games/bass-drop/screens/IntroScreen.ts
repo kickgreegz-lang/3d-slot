@@ -1,4 +1,5 @@
 import { gsap } from 'gsap';
+import type { Container } from 'pixi.js';
 import { BET_MODES, GAME_META } from '../../../config/game';
 import { clock } from '../../../core/clock';
 import { sUi } from '../../../core/timing';
@@ -22,6 +23,8 @@ import { ModalGate, TapCatcher, onScreenKey } from './ui';
 const SKIP_KEY = `${GAME_META.storagePrefix}.skipIntro`;
 /** The three card illustrations, held from boot until the intro is done (or not shown). */
 const CARD_ART: readonly UiArtKey[] = ['cardMeter', 'cardJukeJam', 'cardMegaMix'];
+/** HUD alpha under the portrait intro's footer (times the 0.8 dim: the balance / bet row is a ghost). */
+const HUD_UNDER_FOOTER = 0.3;
 const readSkip = (): boolean => {
   try {
     return window.localStorage.getItem(SKIP_KEY) === '1';
@@ -64,7 +67,9 @@ export class IntroScreen implements GameModule {
   private spaceAllowed = true;
   private calls: gsap.core.Tween[] = [];
   private artHeld = false;
-  private logoTween: gsap.core.Tween | null = null;
+  private layerTweens: gsap.core.Tween[] = [];
+  /** layout kind the layer fades were decided for (a rotation re-decides them) */
+  private fadedKind: string | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.stage = new OverlayStage(ctx, 'introScreen');
@@ -144,20 +149,30 @@ export class IntroScreen implements GameModule {
     if (!this.open) return;
     this.stage.layout();
     this.cards.layout(introRects(this.ctx.layout), this.res());
+    // a rotation re-decides which layers sit out (the portrait footer covers the HUD's bottom row)
+    if (!this.closing && this.fadedKind !== null && this.fadedKind !== this.ctx.layout.kind) this.fadeGameLayers(true, 0);
   }
 
   /**
    * The intro sets its own logo: the game's logo layer fades out with the dim and back in on close.
    * Through the dimmer it read as a second word-mark (portrait: right under the intro's; compact:
-   * stacked above it).
+   * stacked above it). In portrait the footer (toggle + "press to continue", y 1850) lies on the
+   * HUD's balance / bet row, so the HUD fades to a ghost there too (it still reads through, and is
+   * back at full alpha before the first spin can start).
    */
-  private fadeGameLogo(hide: boolean, duration: number): void {
-    const layer = this.ctx.layers.logo;
-    const alpha = hide ? 0 : 1;
-    this.logoTween?.kill();
-    this.logoTween = null;
-    if (duration <= 0 || layer.alpha === alpha) layer.alpha = alpha;
-    else this.logoTween = gsap.to(layer, { alpha, duration, ease: 'power2.out' });
+  private fadeGameLayers(hide: boolean, duration: number): void {
+    const { layers, layout } = this.ctx;
+    const targets: Array<[Container, number]> = [
+      [layers.logo, hide ? 0 : 1],
+      [layers.hud, hide && layout.kind === 'portrait' ? HUD_UNDER_FOOTER : 1],
+    ];
+    this.fadedKind = hide ? layout.kind : null;
+    for (const t of this.layerTweens) t.kill();
+    this.layerTweens = [];
+    for (const [layer, alpha] of targets) {
+      if (duration <= 0 || layer.alpha === alpha) layer.alpha = alpha;
+      else this.layerTweens.push(gsap.to(layer, { alpha, duration, ease: 'power2.out' }));
+    }
   }
 
   private show(): void {
@@ -169,7 +184,7 @@ export class IntroScreen implements GameModule {
     this.gate.open();
     this.stage.open({ dim: I.dim, fadeIn: sUi(I.dimIn) });
     this.layout();
-    this.fadeGameLogo(true, sUi(I.dimIn));
+    this.fadeGameLayers(true, sUi(I.dimIn));
     this.cards.toggle.set(this.skip);
     this.catcher.handler = () => this.dismiss();
     this.offKey = onScreenKey((k) => {
@@ -194,7 +209,7 @@ export class IntroScreen implements GameModule {
     const I = SCREENS_TIMING.introCards;
     this.calls.push(
       gsap.delayedCall(sUi(I.out * 0.6), () => {
-        this.fadeGameLogo(false, sUi(I.out * 0.6));
+        this.fadeGameLayers(false, sUi(I.out * 0.6));
         void this.stage.close(sUi(I.out * 0.6)).then(() => this.finish());
       }),
     );
@@ -213,7 +228,7 @@ export class IntroScreen implements GameModule {
     this.closing = false;
     for (const c of this.calls) c.kill();
     this.calls = [];
-    this.fadeGameLogo(false, 0);
+    this.fadeGameLayers(false, 0);
     this.offKey?.();
     this.offKey = null;
     this.catcher.handler = null;

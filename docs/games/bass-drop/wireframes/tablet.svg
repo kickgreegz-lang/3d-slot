@@ -55,10 +55,10 @@
 <rect x="-2" y="1024" width="400" height="456" rx="4" fill="none" fill-opacity="1.0" stroke="#3f9d3a" stroke-width="3" stroke-dasharray="14,8"/>
 <text x="198.0" y="1054" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="600" fill="#3f9d3a" text-anchor="middle" dominant-baseline="middle">GUMBO</text>
 <circle cx="198" cy="1480" r="7" fill="#3f9d3a"/>
-<rect x="1402" y="932" width="317" height="554" rx="4" fill="none" fill-opacity="1.0" stroke="#8fbf3a" stroke-width="3" stroke-dasharray="14,8"/>
-<text x="1560.5" y="962" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="600" fill="#8fbf3a" text-anchor="middle" dominant-baseline="middle">CROAK</text>
-<circle cx="1560.5" cy="1486" r="7" fill="#8fbf3a"/>
-<rect x="1432" y="1278" width="236" height="212" rx="6" fill="none" fill-opacity="1.0" stroke="#ff5fa2" stroke-width="2.5" stroke-dasharray="6,5"/>
+<rect x="1414" y="932" width="317" height="554" rx="4" fill="none" fill-opacity="1.0" stroke="#8fbf3a" stroke-width="3" stroke-dasharray="14,8"/>
+<text x="1572.5" y="962" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="600" fill="#8fbf3a" text-anchor="middle" dominant-baseline="middle">CROAK</text>
+<circle cx="1572.5" cy="1486" r="7" fill="#8fbf3a"/>
+<rect x="1426" y="1272" width="248" height="218" rx="6" fill="none" fill-opacity="1.0" stroke="#ff5fa2" stroke-width="2.5" stroke-dasharray="6,5"/>
 <text x="1550.0" y="1468" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ff5fa2" text-anchor="middle" dominant-baseline="middle">DJ booth</text>
 <circle cx="248" cy="738" r="160.0" fill="#15102a" stroke="#35f2e0" stroke-width="3.0"/>
 <circle cx="248" cy="738" r="140.0" fill="none" stroke="#4b3bff" stroke-width="2.0"/>

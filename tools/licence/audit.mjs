@@ -34,6 +34,11 @@ Options:
   --allowlist FILE    --denylist FILE   --schema FILE   --package FILE (default <root>/package.json)
   --release           release blockers (pending clearances, missing ToS archives, placeholder
                       exemptions) become errors
+  --game ID           audit only what ships in dist/<ID>/: public files and shipped rows under
+                      another game's assets/<id>/ or ID's meta.json publicExclude are out of
+                      scope (tools/licence/public-scope.json, as vite.config.ts builds it)
+DEV-only public files (tools/licence/public-scope.json devOnly, stripped from every dist) still need a
+row or an exemption, but a placeholder there is never a release blocker.
   --strict            warnings become errors
   --no-sha            skip the sha256 drift check (fast)
   --json FILE         write the full report as JSON
@@ -44,7 +49,7 @@ function args(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (['--release', '--strict', '--no-sha', '--help', '-h'].includes(a)) { o.flags.add(a.replace(/^-+/, '')); continue; }
-    const m = /^--(root|manifest|public|exemptions|allowlist|denylist|schema|package|json)(?:=(.*))?$/.exec(a);
+    const m = /^--(root|manifest|public|exemptions|allowlist|denylist|schema|package|json|game)(?:=(.*))?$/.exec(a);
     if (!m) throw new Error(`unknown option ${a}`);
     o[m[1]] = m[2] ?? argv[++i];
     if (o[m[1]] === undefined) throw new Error(`${a} needs a value`);
@@ -71,6 +76,22 @@ export function globToRe(g) {
   return new RegExp(`^${re}$`);
 }
 
+/**
+ * public/ paths outside a build (tools/licence/public-scope.json, mirrored by vite.config.ts): `devOnly`
+ * never ships in any dist; with a game id, `other` = every other game's assets/<id>/ folder plus
+ * that game's meta.json publicExclude (none of it ships in dist/<game>/).
+ */
+export function publicScope(root, game) {
+  const policy = [path.join(root, 'tools/licence/public-scope.json'), path.join(REPO, 'tools/licence/public-scope.json')].find((f) => fs.existsSync(f));
+  const devOnly = policy ? (readJson(policy).devOnly ?? []) : [];
+  if (!game) return { devOnly, other: [] };
+  const gamesDir = path.join(root, 'src/games');
+  const games = fs.existsSync(gamesDir) ? fs.readdirSync(gamesDir).filter((d) => fs.existsSync(path.join(gamesDir, d, 'config.ts'))) : [];
+  if (!games.includes(game)) throw new Error(`--game ${game}: src/games/${game}/config.ts not found`);
+  const meta = readJson(path.join(gamesDir, game, 'meta.json'));
+  return { devOnly, other: [...games.filter((g) => g !== game).map((g) => `assets/${g}`), ...(meta.publicExclude ?? [])] };
+}
+
 const VENDOR_KINDS = new Set(['service', 'hosted-model', 'commercial-software']);
 // rows made locally from other rows (their licence is inherited from the upstream generation)
 const LOCAL_ROUTES = new Set(['code', 'ffmpeg', 'blender', 'spine-cli', 'human', 'comfyui-local']);
@@ -90,6 +111,14 @@ export function audit(opt) {
   const errors = [];
   const warnings = [];
   const info = {};
+  // public/ paths (relative to the folder holding public/assets) this audit leaves out / treats as DEV-only
+  const pubScope = publicScope(root, opt.game);
+  const publicBase = path.dirname(files.public);
+  const within = (prefixes, abs) => {
+    const rel = posix(path.relative(publicBase, abs));
+    return prefixes.some((p) => rel === p || rel.startsWith(`${p.replace(/\/$/, '')}/`));
+  };
+  if (opt.game) info.game = opt.game;
   const E = (m) => errors.push(m);
   const W = (m) => warnings.push(m);
   const allow = readJson(files.allowlist);
@@ -190,7 +219,8 @@ export function audit(opt) {
     } else if (entry && vendorMade(r) && !r.shipped) {
       W(`${tag}: vendor '${entry.id}' generation has no archived ToS (tosVersion null); it cannot ship like this`);
     }
-    if (r.shipped) shipCheck(r, 'shipped');
+    const outOfScope = typeof r.path === 'string' && (within(pubScope.other, path.join(root, r.path)) || within(pubScope.devOnly, path.join(root, r.path)));
+    if (r.shipped && !outOfScope) shipCheck(r, 'shipped');
     if (typeof r.path === 'string') {
       const abs = path.join(root, r.path);
       if (fs.existsSync(abs)) {
@@ -221,17 +251,19 @@ export function audit(opt) {
   for (const r of rows) if (typeof r.path === 'string') (rowsByPath.get(r.path) ?? rowsByPath.set(r.path, []).get(r.path)).push(r);
   const folderRows = rows.filter((r) => typeof r.path === 'string' && fs.existsSync(path.join(root, r.path)) && fs.statSync(path.join(root, r.path)).isDirectory());
   const pub = walk(files.public).filter((f) => !path.basename(f).startsWith('.')).sort();
-  const coverage = { rows: 0, folderRows: 0, exempt: 0, uncovered: 0 };
+  const coverage = { rows: 0, folderRows: 0, exempt: 0, uncovered: 0, ...(opt.game ? { outOfScope: 0 } : {}) };
   const folderDigest = new Map();
   for (const abs of pub) {
     const relp = posix(path.relative(root, abs));
+    if (within(pubScope.other, abs)) { coverage.outOfScope++; continue; }
+    const devOnly = within(pubScope.devOnly, abs);
     const direct = rowsByPath.get(relp);
     if (direct?.length) {
       const d = opt.noSha ? null : sha256File(abs);
       const match = opt.noSha ? direct[direct.length - 1] : direct.find((r) => r.sha256 === d);
       if (!match) { E(`${relp}: changed since its manifest row(s) ${direct.map((r) => r.id).join(', ')}`); continue; }
       if (!match.shipped) W(`${relp}: row ${match.id} covers a shipped file but has shipped:false`);
-      shipCheck(match, `public file ${relp} ->`, relp);
+      if (!devOnly) shipCheck(match, `public file ${relp} ->`, relp);
       coverage.rows++;
       continue;
     }
@@ -240,7 +272,7 @@ export function audit(opt) {
       const fabs = path.join(root, folder.path);
       if (!opt.noSha && !folderDigest.has(fabs)) folderDigest.set(fabs, digestFiles(walk(fabs).sort(), fabs));
       if (!opt.noSha && folderDigest.get(fabs) !== folder.sha256) { E(`${relp}: folder ${folder.path} changed since row ${folder.id}`); continue; }
-      shipCheck(folder, `public file ${relp} ->`, relp);
+      if (!devOnly) shipCheck(folder, `public file ${relp} ->`, relp);
       coverage.folderRows++;
       continue;
     }
@@ -253,7 +285,8 @@ export function audit(opt) {
           E(`${relp}: exemption '${e.id}' requires a licence file matching ${e.licencePerFile.replace('{family}', family)}`);
         }
       }
-      if (e.placeholder) (opt.release ? E : W)(`${relp}: placeholder asset (exemption '${e.id}')${opt.release ? ' must be replaced before release' : ''}`);
+      if (e.placeholder && devOnly) W(`${relp}: placeholder asset (exemption '${e.id}'), DEV-only: stripped from every dist (tools/licence/public-scope.json)`);
+      else if (e.placeholder) (opt.release ? E : W)(`${relp}: placeholder asset (exemption '${e.id}')${opt.release ? ' must be replaced before release' : ''}`);
       coverage.exempt++;
       continue;
     }
@@ -320,6 +353,6 @@ if (isMain(import.meta.url)) {
   for (const e of rep.errors) console.log(`error:   ${e}`);
   const c = rep.info.coverage ?? {};
   const rb = rep.info.releaseBlockers?.rows ?? 0;
-  console.log(`licence-audit${o.flags.has('release') ? ' --release' : ''}: ${rep.info.rows} rows, ${rep.info.publicFiles} public files (rows ${c.rows}, folder rows ${c.folderRows}, exempt ${c.exempt}, uncovered ${c.uncovered}), ${rb} release blocker(s), ${rep.errors.length} error(s), ${rep.warnings.length} warning(s) -> ${rep.passed ? 'PASS' : 'FAIL'}`);
+  console.log(`licence-audit${o.flags.has('release') ? ' --release' : ''}${o.game ? ` --game ${o.game}` : ''}: ${rep.info.rows} rows, ${rep.info.publicFiles} public files (rows ${c.rows}, folder rows ${c.folderRows}, exempt ${c.exempt}, uncovered ${c.uncovered}${c.outOfScope !== undefined ? `, other builds ${c.outOfScope}` : ''}), ${rb} release blocker(s), ${rep.errors.length} error(s), ${rep.warnings.length} warning(s) -> ${rep.passed ? 'PASS' : 'FAIL'}`);
   process.exit(rep.passed ? 0 : 1);
 }

@@ -56,7 +56,7 @@ export const LANDSCAPE: LayoutSpec = {
   logo: { x: 1472, y: 40, w: 428, h: 236 },
   mascots: {
     left: { x: -2, y: 604, w: 400, h: 456 },
-    right: { x: 1422, y: 512, w: 317, h: 554 },
+    right: { x: 1414, y: 512, w: 317, h: 554 },
   },
   hud: {
     spin: { x: 1790, y: 800, size: 230, tilt: 20 },
@@ -131,7 +131,7 @@ export const TABLET: LayoutSpec = {
   logo: { x: 1472, y: 460, w: 428, h: 236 },
   mascots: {
     left: { x: -2, y: 1024, w: 400, h: 456 },
-    right: { x: 1422, y: 932, w: 317, h: 554 },
+    right: { x: 1414, y: 932, w: 317, h: 554 },
   },
   hud: {
     ...LANDSCAPE.hud,
@@ -202,7 +202,7 @@ export const BASS_DROP_LAYOUT: Record<LayoutKind, BassDropExtras> = {
     lowerCabinet: { x: 96, y: 532, w: 304, h: 320 },
     meterChip: { x: 112, y: 478, w: 272, h: 56 },
     fsPlate: { x: 1514, y: 300, w: 344, h: 110 },
-    booth: { x: 1426, y: 852, w: 236, h: 218, button: { x: 1460, y: 865 } },
+    booth: { x: 1426, y: 852, w: 248, h: 218, button: { x: 1460, y: 865 } },
     frameHorns: [
       { x: 452, y: 30, w: 116, h: 100 },
       { x: 1352, y: 30, w: 116, h: 100 },
@@ -230,7 +230,7 @@ export const BASS_DROP_LAYOUT: Record<LayoutKind, BassDropExtras> = {
     lowerCabinet: { x: 96, y: 952, w: 304, h: 320 },
     meterChip: { x: 112, y: 898, w: 272, h: 56 },
     fsPlate: { x: 1514, y: 720, w: 344, h: 110 },
-    booth: { x: 1426, y: 1272, w: 236, h: 218, button: { x: 1460, y: 1285 } },
+    booth: { x: 1426, y: 1272, w: 248, h: 218, button: { x: 1460, y: 1285 } },
     frameHorns: [
       { x: 452, y: 450, w: 116, h: 100 },
       { x: 1352, y: 450, w: 116, h: 100 },

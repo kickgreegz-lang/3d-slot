@@ -20,7 +20,7 @@ if (!existsSync(resolve(GAMES_DIR, GAME, 'config.ts'))) {
   const known = readdirSync(GAMES_DIR).filter((d) => existsSync(resolve(GAMES_DIR, d, 'config.ts')));
   throw new Error(`Unknown GAME "${GAME}" (src/games/${GAME}/config.ts not found). Known games: ${known.join(', ')}`);
 }
-const GAME_META = JSON.parse(readFileSync(resolve(GAMES_DIR, GAME, 'meta.json'), 'utf8')) as { title?: string };
+const GAME_META = JSON.parse(readFileSync(resolve(GAMES_DIR, GAME, 'meta.json'), 'utf8')) as { title?: string; publicExclude?: string[] };
 
 /** index.html <title> per game. */
 const gameHtml = (): Plugin => ({
@@ -45,18 +45,30 @@ const stripLibraryUrls = (): Plugin => ({
   },
 });
 
-/** Dev-only public assets (the demo Spine rig) never ship in dist/. */
-const DEV_ONLY_PUBLIC = ['assets/spine/demo'];
-const dropDevOnlyAssets = (): Plugin => {
+/**
+ * public/ paths that never ship in this game's dist/ (tools/licence/public-scope.json, also read by
+ * `licence:audit --game`): the DEV-only assets (the demo Spine rig), every OTHER game's
+ * assets/<id>/ folder (a game never carries another game's art or its licences), and this
+ * game's meta.json `publicExclude` (shared assets it never loads).
+ */
+const PUBLIC_POLICY = JSON.parse(readFileSync(resolve(ROOT, 'tools/licence/public-scope.json'), 'utf8')) as { devOnly: string[] };
+const OTHER_GAMES = readdirSync(GAMES_DIR).filter((d) => d !== GAME && existsSync(resolve(GAMES_DIR, d, 'config.ts')));
+const UNSHIPPED_PUBLIC = [...PUBLIC_POLICY.devOnly, ...OTHER_GAMES.map((g) => `assets/${g}`), ...(GAME_META.publicExclude ?? [])];
+const dropUnshippedPublic = (): Plugin => {
   let outDir = 'dist';
   return {
-    name: 'drop-dev-only-assets',
+    name: 'drop-unshipped-public',
     apply: 'build',
     configResolved: (c) => {
       outDir = resolve(c.root, c.build.outDir);
     },
     closeBundle: () => {
-      for (const p of DEV_ONLY_PUBLIC) rmSync(resolve(outDir, p), { recursive: true, force: true });
+      for (const p of UNSHIPPED_PUBLIC) {
+        const abs = resolve(outDir, p);
+        rmSync(abs, { recursive: true, force: true });
+        // and the folders that leaves empty (assets/spine/ once the demo rig is gone)
+        for (let d = dirname(abs); d.startsWith(`${outDir}/`) && existsSync(d) && readdirSync(d).length === 0; d = dirname(d)) rmSync(d, { recursive: true });
+      }
     },
   };
 };
@@ -75,7 +87,7 @@ export default defineConfig({
     __GAME_ID__: JSON.stringify(GAME),
   },
   // DEV-only (apply: 'serve'): mock Stake RGS at /__rgs backed by mock/games/<GAME>/books.
-  plugins: [gameHtml(), rgsMockPlugin({ game: GAME }), stripLibraryUrls(), dropDevOnlyAssets()],
+  plugins: [gameHtml(), rgsMockPlugin({ game: GAME }), stripLibraryUrls(), dropUnshippedPublic()],
   build: {
     outDir: `dist/${GAME}`,
     emptyOutDir: true,

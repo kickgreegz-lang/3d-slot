@@ -2,5 +2,8 @@
   "id": "bass-drop",
   "title": "Swamp Funk: Bass Drop",
   "rgsGameId": "swamp-funk-bass-drop-6x6",
-  "storagePrefix": "bassdrop"
+  "storagePrefix": "bassdrop",
+  "publicExclude": [
+    "assets/characters"
+  ]
 }

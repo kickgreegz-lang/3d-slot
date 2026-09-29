@@ -56,7 +56,7 @@
 <rect x="720" y="76" width="260" height="454" rx="4" fill="none" fill-opacity="1.0" stroke="#8fbf3a" stroke-width="3" stroke-dasharray="14,8"/>
 <text x="850.0" y="106" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="600" fill="#8fbf3a" text-anchor="middle" dominant-baseline="middle">CROAK</text>
 <circle cx="850" cy="530" r="7" fill="#8fbf3a"/>
-<rect x="718" y="320" width="210" height="200" rx="6" fill="none" fill-opacity="1.0" stroke="#ff5fa2" stroke-width="2.5" stroke-dasharray="6,5"/>
+<rect x="718" y="355" width="210" height="165" rx="6" fill="none" fill-opacity="1.0" stroke="#ff5fa2" stroke-width="2.5" stroke-dasharray="6,5"/>
 <text x="823.0" y="498" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ff5fa2" text-anchor="middle" dominant-baseline="middle">DJ booth</text>
 <circle cx="540" cy="340" r="150.0" fill="#15102a" stroke="#35f2e0" stroke-width="3.0"/>
 <circle cx="540" cy="340" r="131.2" fill="none" stroke="#4b3bff" stroke-width="2.0"/>

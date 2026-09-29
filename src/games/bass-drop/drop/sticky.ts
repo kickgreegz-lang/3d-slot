@@ -181,12 +181,17 @@ export class StickyDirector {
     this.ctx.game.broadcast('sfx', { id: 'sticky_mult_up', rate: pentaRate(5) });
   }
 
-  /** fs:end (the outro): the clamps release, the home markers fade with the board dimmer. */
+  /**
+   * fs:end (the outro): the clamps release, the home markers fade with the board dimmer. Once the
+   * outro wipe covers the board, every wild left on it drops its feature look (badge, sticky skin):
+   * the base game has no multiplier wilds, so the board the curtain lifts from shows plain wilds.
+   */
   release(): void {
     this.cancelHold();
     const R = this.registry;
     for (const h of R.homes.values()) if (h.entity) void R.unlock(h.entity);
     R.clearHomes(clipMs(W_CLIPS.sticky_unlock));
+    this.sched.at(s(Math.max(clipMs(W_CLIPS.sticky_unlock), BASS_DROP_TIMING.feature.outroCover)), () => R.killAll(true));
   }
 
   /** mode:change basegame / reset: no homes, no hold. */

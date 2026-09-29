@@ -7,8 +7,16 @@ Dependency-free (Node 22): `schema-lite.mjs` validates the JSON Schema subset th
 node tools/licence/audit.mjs                     # dev / preview: release blockers warn (pnpm licence:audit)
 node tools/licence/audit.mjs --release           # release: release blockers fail
 node tools/licence/audit.mjs --release --strict  # release gate: blockers and every warning fail
+node tools/licence/audit.mjs --release --game bass-drop   # release gate for one game's dist/
 node tools/licence/audit.mjs --json build/qa/licence-audit.json
 ```
+
+**Per-game scope (`--game <id>`).** Only what ships in `dist/<id>/` is audited: public files and
+shipped rows under another game's `assets/<id>/` folder or under the game's `meta.json`
+`publicExclude` are out of scope (`tools/licence/public-scope.json`; `vite.config.ts` drops the same paths
+from the build). Without `--game` every game counts. DEV-only paths (`public-scope.json` `devOnly`, the
+demo Spine rig) still need a row or an exemption, but a placeholder there never blocks a release:
+no dist carries it.
 
 **Release blockers** (a warning per shipped row in the dev audit, an error with `--release`):
 
@@ -81,6 +89,8 @@ exemptions warn in dev and fail with `--release`; CLI exit codes 0/1/2, `--stric
 dev-pass / release-fail pair on a pending chain; every provenance sidecar written by the other tools'
 tests passes the schema.
 
-**Current repo state (2026-09-28):** `pnpm licence:audit` passes; the shipped Higgsfield-derived
+**Current repo state (2026-09-29):** `pnpm licence:audit` passes; the shipped Higgsfield-derived
 Bass Drop art is reported as release blockers (Higgsfield `clearance: pending`, no archived ToS), so
-`pnpm licence:audit --release` fails until the clearance is filed (docs/games/bass-drop/ART_STATUS.md §5).
+`pnpm licence:audit --release --game bass-drop` fails on exactly those 77 rows until the clearance is
+filed (docs/games/bass-drop/ART_STATUS.md §5). `--release --game swamp-funk` fails only on the
+RobotExpressive placeholder mascot; the repo-wide `--release` reports both.

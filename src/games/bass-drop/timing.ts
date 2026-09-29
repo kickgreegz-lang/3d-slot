@@ -94,6 +94,8 @@ export const BASS_DROP_TIMING = registerTiming('bassDrop', {
     introTapLock: 900,
     /** UI time, sUi() */
     introCardsTapLock: 600,
+    /** the outro wipe covers the board this long after fs:end (FeatureWipe, SCREENS_TIMING.trigger.wipe) */
+    outroCover: 620,
   },
   shake: {
     explodeBase: 0.08,

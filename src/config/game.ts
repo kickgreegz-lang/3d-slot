@@ -140,6 +140,8 @@ export interface GameMeta {
   rgsGameId: string;
   /** localStorage key prefix for player preferences */
   storagePrefix: string;
+  /** build only (vite.config.ts, tools/licence/public-scope.json): shared public/ paths this game never loads */
+  publicExclude?: string[];
 }
 
 export const GAME_META: GameMeta = META;

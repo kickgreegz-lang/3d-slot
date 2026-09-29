@@ -65,8 +65,6 @@ export class IntroScreen implements GameModule {
   private calls: gsap.core.Tween[] = [];
   private artHeld = false;
   private logoTween: gsap.core.Tween | null = null;
-  /** layout kind the game-logo fade was decided for (a rotation re-decides it) */
-  private logoKind: string | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.stage = new OverlayStage(ctx, 'introScreen');
@@ -146,21 +144,16 @@ export class IntroScreen implements GameModule {
     if (!this.open) return;
     this.stage.layout();
     this.cards.layout(introRects(this.ctx.layout), this.res());
-    if (!this.closing && this.logoKind !== null && this.logoKind !== this.ctx.layout.kind) this.fadeGameLogo(true, 0);
   }
 
   /**
-   * Where the intro's logo sits over the game's own logo (portrait: 240,90 over 240,40), the game
-   * logo layer fades with the dim; through the dimmer it would ghost as a second word-mark.
+   * The intro sets its own logo: the game's logo layer fades out with the dim and back in on close.
+   * Through the dimmer it read as a second word-mark (portrait: right under the intro's; compact:
+   * stacked above it).
    */
   private fadeGameLogo(hide: boolean, duration: number): void {
-    const L = this.ctx.layout;
-    const a = introRects(L).logo;
-    const b = L.logo;
-    const under = a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-    const alpha = hide && under ? 0 : 1;
-    this.logoKind = hide ? L.kind : null;
     const layer = this.ctx.layers.logo;
+    const alpha = hide ? 0 : 1;
     this.logoTween?.kill();
     this.logoTween = null;
     if (duration <= 0 || layer.alpha === alpha) layer.alpha = alpha;

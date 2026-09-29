@@ -189,6 +189,40 @@ test('placeholder exemption: warning by default, error with --release', () => {
   assert.ok(has(rel, /must be replaced before release/));
 });
 
+test('--game scopes the audit to dist/<id>; a DEV-only placeholder never blocks a release', () => {
+  const games = (c) => {
+    // game 'a' never loads the shared characters folder; game 'b' owns public/assets/b/
+    for (const [id, meta] of [['a', { publicExclude: ['assets/characters'] }], ['b', {}]]) {
+      fs.mkdirSync(path.join(c.root, 'src/games', id), { recursive: true });
+      fs.writeFileSync(path.join(c.root, 'src/games', id, 'config.ts'), '');
+      fs.writeFileSync(path.join(c.root, 'src/games', id, 'meta.json'), JSON.stringify({ id, ...meta }));
+    }
+    fs.mkdirSync(path.join(c.pub, 'b'), { recursive: true });
+    fs.writeFileSync(path.join(c.pub, 'b/art.png'), 'b-art');
+    c.rows.push(row({ id: 'b.art.dddd4444', path: 'public/assets/b/art.png', shipped: true, parents: ['sym_h2.raw.v01'], sha256: sha256File(path.join(c.pub, 'b/art.png')) }));
+    fs.mkdirSync(path.join(c.pub, 'characters/placeholder'), { recursive: true });
+    fs.writeFileSync(path.join(c.pub, 'characters/placeholder/Robot.glb'), 'glb');
+    fs.writeFileSync(path.join(c.pub, 'characters/placeholder/LICENSE.txt'), 'CC0');
+    c.exemptions.exemptions.push({ id: 'robot', paths: ['public/assets/characters/placeholder/*'], licence: 'CC0-1.0', licenceFiles: ['public/assets/characters/placeholder/LICENSE.txt'], placeholder: true });
+    // tools/licence/public-scope.json devOnly (this repo's): stripped from every dist
+    fs.mkdirSync(path.join(c.pub, 'spine/demo'), { recursive: true });
+    fs.writeFileSync(path.join(c.pub, 'spine/demo/demo.json'), '{}');
+    c.exemptions.exemptions.push({ id: 'demo', paths: ['public/assets/spine/demo/*'], allowlistId: 'owned-code', placeholder: true });
+  };
+  const a = fixture('game-a', games, { release: true, game: 'a' });
+  assert.deepEqual(a.errors, [], "game b's pending art and the shared placeholder are not in dist/a");
+  assert.equal(a.info.coverage.outOfScope, 3);
+  assert.equal(a.info.releaseBlockers.rows, 0);
+  const b = fixture('game-b', games, { release: true, game: 'b' });
+  assert.ok(has(b, /RELEASE REFUSED: 1 shipped row\(s\)/));
+  assert.ok(has(b, /Robot.glb: placeholder asset \(exemption 'robot'\) must be replaced before release/));
+  assert.ok(!b.errors.some((e) => /spine\/demo/.test(e)), 'DEV-only placeholder is not a release error');
+  assert.ok(warned(b, /spine\/demo\/demo.json: placeholder asset \(exemption 'demo'\), DEV-only/));
+  const all = fixture('game-all', games, { release: true });
+  assert.ok(has(all, /RELEASE REFUSED: 1 shipped row\(s\)/) && has(all, /Robot.glb/), 'no --game: every game');
+  assert.throws(() => fixture('game-x', games, { game: 'x' }), /src\/games\/x\/config.ts not found/);
+});
+
 test('font without its licence text fails', () => {
   assert.ok(has(fixture('font-licence', (c) => fs.writeFileSync(path.join(c.pub, 'fonts/Bar-Regular.woff2'), 'x')), /requires a licence file matching/));
 });

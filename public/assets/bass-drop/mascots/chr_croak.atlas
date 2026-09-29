@@ -1,0 +1,109 @@
+chr_croak.webp
+size: 1272,1020
+filter: Linear,Linear
+pma: true
+chr_croak/cap
+bounds: 758,806,236,165
+offsets: 3,3,242,171
+chr_croak/chain
+bounds: 873,290,153,212
+chr_croak/cup_L
+bounds: 1049,2,126,121
+offsets: 3,3,132,127
+chr_croak/cup_R
+bounds: 1098,125,82,114
+offsets: 3,3,88,120
+chr_croak/eye_L/closed
+bounds: 2,923,93,93
+offsets: 3,3,99,99
+chr_croak/eye_L/half
+bounds: 97,923,93,93
+offsets: 3,3,99,99
+chr_croak/eye_L/open
+bounds: 1028,396,93,93
+offsets: 3,3,99,99
+chr_croak/eye_L/wide
+bounds: 1177,2,93,93
+offsets: 3,3,99,99
+chr_croak/eye_R/closed
+bounds: 192,923,51,87
+offsets: 3,3,57,93
+chr_croak/eye_R/half
+bounds: 809,360,51,87
+offsets: 3,3,57,93
+chr_croak/eye_R/open
+bounds: 809,449,51,87
+offsets: 3,3,57,93
+chr_croak/eye_R/wide
+bounds: 423,364,51,87
+offsets: 3,3,57,93
+chr_croak/forearm_L
+bounds: 504,566,106,258
+offsets: 3,3,112,264
+chr_croak/forearm_R
+bounds: 996,833,107,138
+offsets: 3,3,113,144
+chr_croak/hand_L/fader
+bounds: 1006,504,95,139
+offsets: 3,3,101,145
+chr_croak/hand_L/fist
+bounds: 1028,273,88,121
+offsets: 3,3,94,127
+chr_croak/hand_L/open
+bounds: 760,566,135,215
+offsets: 3,3,141,221
+chr_croak/hand_L/point
+bounds: 897,504,107,165
+offsets: 3,3,113,171
+chr_croak/hand_R/fist
+bounds: 1084,645,108,122
+offsets: 3,3,114,128
+chr_croak/hand_R/open
+bounds: 897,671,79,134
+offsets: 3,3,85,140
+chr_croak/hand_R/point
+bounds: 996,671,86,160
+offsets: 3,3,92,166
+chr_croak/hand_R/press
+bounds: 879,132,112,147
+offsets: 3,3,118,153
+chr_croak/hand_R/scratch
+bounds: 993,132,103,139
+offsets: 3,3,109,145
+chr_croak/head
+bounds: 504,364,303,200
+offsets: 3,3,309,206
+chr_croak/leg_L
+bounds: 2,473,249,448
+chr_croak/leg_R
+bounds: 253,473,249,389
+chr_croak/mic
+bounds: 879,2,168,128
+offsets: 3,3,174,134
+chr_croak/mouth/O
+bounds: 516,826,240,129
+offsets: 3,3,246,135
+chr_croak/mouth/closed
+bounds: 611,290,260,68
+offsets: 3,3,266,74
+chr_croak/mouth/open
+bounds: 253,864,261,133
+offsets: 3,3,267,139
+chr_croak/mouth/smile
+bounds: 611,201,261,87
+offsets: 3,3,267,93
+chr_croak/pouch
+bounds: 611,2,266,197
+chr_croak/pupil_L
+bounds: 809,538,52,28
+offsets: 3,3,58,34
+chr_croak/pupil_R
+bounds: 863,504,34,22
+offsets: 3,3,40,28
+chr_croak/torso
+bounds: 2,2,419,469
+chr_croak/upper_arm_L
+bounds: 423,2,186,360
+chr_croak/upper_arm_R
+bounds: 612,566,146,238
+offsets: 3,3,152,244

@@ -18016,6 +18016,382 @@
       "sha256": "7ee86e7382292a9fe341bb5d25b9ce6400d44db5bbb2c51c48927998fe24495a",
       "notes": "card art megamix: 768 px WebP (q88)",
       "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_gumbo.json.2f6aff16",
+      "path": "public/assets/bass-drop/mascots/chr_gumbo.json",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "35b4034a60edb781445f26dfb677cbaba7d8530f6070784d822d482d7c40a053"
+      ],
+      "parents": [
+        "mascot.gumbo.spine.chr_gumbo.35b4034a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "2f6aff16a8ac2f73f721af8c2afb3633bf4946e52aa736e9aee4633609f379b4",
+      "notes": "chr_gumbo rig: skeleton JSON (4.3, compact)",
+      "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_gumbo.webp.9e737978",
+      "path": "public/assets/bass-drop/mascots/chr_gumbo.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "058ab5f3fd63bd0c1ba55b49774e97fb57a7fb7aa3aa2489ee88545a769bb528",
+        "d7c38599b17354ca7014d9c9eebb77f03695f452f5877d20fc0b8693fd83946b"
+      ],
+      "parents": [
+        "mascot.gumbo.spine.chr_gumbo.058ab5f3",
+        "mascot.gumbo.spine.chr_gumbo.d7c38599"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "9e737978be180aa82a7cdcc471859fd3512df8a16da1192229ea5bc8c7122601",
+      "notes": "chr_gumbo rig, full texel density (PMA, page 1144x1024): atlas page, lossless WebP",
+      "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_gumbo.atlas.68a2f05b",
+      "path": "public/assets/bass-drop/mascots/chr_gumbo.atlas",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "058ab5f3fd63bd0c1ba55b49774e97fb57a7fb7aa3aa2489ee88545a769bb528",
+        "d7c38599b17354ca7014d9c9eebb77f03695f452f5877d20fc0b8693fd83946b"
+      ],
+      "parents": [
+        "mascot.gumbo.spine.chr_gumbo.058ab5f3",
+        "mascot.gumbo.spine.chr_gumbo.d7c38599"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "68a2f05b12930f1b759777991d8b15f98e3a0fe627c01b63fb927fc48f648276",
+      "notes": "chr_gumbo rig, full texel density (PMA, page 1144x1024): atlas",
+      "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_gumbo_half.webp.6f091d6e",
+      "path": "public/assets/bass-drop/mascots/chr_gumbo_half.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "4ed6ba97426de405c649dc604978d0436d15cf04366eb0ad2a9c4fa4749267d2",
+        "77c313f3a874a2e71dfaf60c3749c59028cf7ea478a70eeff1b0178bf82637c6"
+      ],
+      "parents": [
+        "mascot.gumbo.spine.chr_gumbo_0.5x.4ed6ba97",
+        "mascot.gumbo.spine.chr_gumbo_0.5x.77c313f3"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "6f091d6e839e3bfcbef7dd6eed40a9b5f19ca6d3455b625f3b1a264e924ee90e",
+      "notes": "chr_gumbo rig, half texel density (PMA, page 648x512): atlas page, lossless WebP",
+      "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_gumbo_half.atlas.a396a4c8",
+      "path": "public/assets/bass-drop/mascots/chr_gumbo_half.atlas",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "4ed6ba97426de405c649dc604978d0436d15cf04366eb0ad2a9c4fa4749267d2",
+        "77c313f3a874a2e71dfaf60c3749c59028cf7ea478a70eeff1b0178bf82637c6"
+      ],
+      "parents": [
+        "mascot.gumbo.spine.chr_gumbo_0.5x.4ed6ba97",
+        "mascot.gumbo.spine.chr_gumbo_0.5x.77c313f3"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "a396a4c8035d5f064d49a7388d6ee9a4fc869447d84948dd6e62825483cf69ba",
+      "notes": "chr_gumbo rig, half texel density (PMA, page 648x512): atlas",
+      "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_croak.json.f9a37d26",
+      "path": "public/assets/bass-drop/mascots/chr_croak.json",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "6ddb8c8b8f98c907b3b0a804edc2592c289627a8539de25edf509b6caa289309"
+      ],
+      "parents": [
+        "mascot.croak.spine.chr_croak.6ddb8c8b"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "f9a37d2604a2796efb3714e130060b2e11dca269936d12e9c53a89bd322a8099",
+      "notes": "chr_croak rig: skeleton JSON (4.3, compact)",
+      "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_croak.webp.538cb0a2",
+      "path": "public/assets/bass-drop/mascots/chr_croak.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3b0453ae42b54be56cd8182a7af81ccbca333ec9d2377bc89e3557837a41950b",
+        "b970196702fa36a92760e03d5d3d924f06bd0299d827f83ec4fa12ac94df382a"
+      ],
+      "parents": [
+        "mascot.croak.spine.chr_croak.3b0453ae",
+        "mascot.croak.spine.chr_croak.b9701967"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "538cb0a2ef9815e09b7f1ab5c2acdfd0936182f78f6f8e08cd0015d61def0d38",
+      "notes": "chr_croak rig, full texel density (PMA, page 1272x1020): atlas page, lossless WebP",
+      "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_croak.atlas.552b16f8",
+      "path": "public/assets/bass-drop/mascots/chr_croak.atlas",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3b0453ae42b54be56cd8182a7af81ccbca333ec9d2377bc89e3557837a41950b",
+        "b970196702fa36a92760e03d5d3d924f06bd0299d827f83ec4fa12ac94df382a"
+      ],
+      "parents": [
+        "mascot.croak.spine.chr_croak.3b0453ae",
+        "mascot.croak.spine.chr_croak.b9701967"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "552b16f8536a80056399fb26bfee80e17ad150837d1eedb87cf2e29212c5bc06",
+      "notes": "chr_croak rig, full texel density (PMA, page 1272x1020): atlas",
+      "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_croak_half.webp.1099093e",
+      "path": "public/assets/bass-drop/mascots/chr_croak_half.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "14d64aa9196d7bff44d34ee692fef0559f60a3ef2c496c5b0131339c597f4f7b",
+        "b68e1c099edc586d812d15e5e20900fc6f7e7914ecf63b4e36b40b5668b19b52"
+      ],
+      "parents": [
+        "mascot.croak.spine.chr_croak_0.5x.14d64aa9",
+        "mascot.croak.spine.chr_croak_0.5x.b68e1c09"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "1099093eb48593e0949a96a893d3cba4de4f206200e3472e7a831268280da8d0",
+      "notes": "chr_croak rig, half texel density (PMA, page 632x512): atlas page, lossless WebP",
+      "route": "code"
+    },
+    {
+      "id": "bd_ship_mascots.chr_croak_half.atlas.292c8163",
+      "path": "public/assets/bass-drop/mascots/chr_croak_half.atlas",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/artqa/ship_mascots.py",
+      "version": "phase-d",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "14d64aa9196d7bff44d34ee692fef0559f60a3ef2c496c5b0131339c597f4f7b",
+        "b68e1c099edc586d812d15e5e20900fc6f7e7914ecf63b4e36b40b5668b19b52"
+      ],
+      "parents": [
+        "mascot.croak.spine.chr_croak_0.5x.14d64aa9",
+        "mascot.croak.spine.chr_croak_0.5x.b68e1c09"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-09-29T10:51:36Z",
+      "sha256": "292c816325cdb453bd605e3de881e1f158dfbb4d2cd8ac1fc1c123c858a3a0c9",
+      "notes": "chr_croak rig, half texel density (PMA, page 632x512): atlas",
+      "route": "code"
     }
   ]
 }

@@ -1,0 +1,78 @@
+chr_croak_half.webp
+size: 632,512
+filter: Linear,Linear
+pma: true
+chr_croak/cap
+bounds: 309,2,121,86
+chr_croak/chain
+bounds: 482,2,76,106
+chr_croak/cup_L
+bounds: 560,2,66,64
+chr_croak/cup_R
+bounds: 585,184,44,60
+chr_croak/eye_L/closed
+bounds: 457,452,50,50
+chr_croak/eye_L/half
+bounds: 509,452,50,50
+chr_croak/eye_L/open
+bounds: 535,396,50,50
+chr_croak/eye_L/wide
+bounds: 561,448,50,50
+chr_croak/eye_R/closed
+bounds: 2,464,28,46
+chr_croak/eye_R/half
+bounds: 32,464,28,46
+chr_croak/eye_R/open
+bounds: 62,464,28,46
+chr_croak/eye_R/wide
+bounds: 92,464,28,46
+chr_croak/forearm_L
+bounds: 399,328,56,132
+chr_croak/forearm_R
+bounds: 482,110,56,72
+chr_croak/hand_L/fader
+bounds: 540,110,50,72
+chr_croak/hand_L/fist
+bounds: 573,258,47,64
+chr_croak/hand_L/open
+bounds: 410,90,70,110
+chr_croak/hand_L/point
+bounds: 410,202,56,86
+chr_croak/hand_R/fist
+bounds: 535,330,57,64
+chr_croak/hand_R/open
+bounds: 529,258,42,70
+chr_croak/hand_R/point
+bounds: 432,2,46,83
+chr_croak/hand_R/press
+bounds: 468,202,59,76
+chr_croak/hand_R/scratch
+bounds: 529,184,54,72
+chr_croak/head
+bounds: 254,184,154,103
+chr_croak/leg_L
+bounds: 2,238,124,224
+chr_croak/leg_R
+bounds: 128,238,124,194
+chr_croak/mic
+bounds: 309,90,87,67
+chr_croak/mouth/O
+bounds: 264,437,123,68
+chr_croak/mouth/closed
+bounds: 390,289,133,37
+chr_croak/mouth/open
+bounds: 128,434,134,70
+chr_croak/mouth/smile
+bounds: 254,289,134,46
+chr_croak/pouch
+bounds: 264,337,133,98
+chr_croak/pupil_L
+bounds: 482,184,29,17
+chr_croak/pupil_R
+bounds: 309,159,20,14
+chr_croak/torso
+bounds: 2,2,210,234
+chr_croak/upper_arm_L
+bounds: 214,2,93,180
+chr_croak/upper_arm_R
+bounds: 457,328,76,122

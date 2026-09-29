@@ -260,7 +260,7 @@ export class Stage implements GameModule {
   private onWildDrop(p: GameEvents['wild:drop']): void {
     const first = p.chainIndex <= 0;
     const charge = first ? Math.max(s(D.charge), D.chargeFloor / 1000) : Math.max(s(D.chargeChained), CHAINED_FLOOR);
-    this.booth.play('drop_press', charge, first);
+    this.booth.play('drop_press', charge);
     this.later(charge, () => {
       this.cabinet.play('boom_follow');
       this.hornL.play('boom_follow');

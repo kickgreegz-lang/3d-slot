@@ -462,7 +462,9 @@ export class SymbolRig implements SymbolView {
       this.track(gsap.to(this.decor, { alpha: 0, duration: burst, delay: burstAt, ease: X.fadeEase }));
     }
 
-    const ref = this.spineRef();
+    // a crush is not a blow-up: the rig's `explode` flings parts that show above the landing
+    // wild's squash, so a crushed symbol is always pressed flat on the (setup-pose) sprite
+    const ref = C ? null : this.spineRef();
     const rig = ref && SpineRig.supports(ref, 'explode') ? this.useSpine(ref) : null;
     this.hold('explode');
     if (rig) {
@@ -483,7 +485,9 @@ export class SymbolRig implements SymbolView {
       });
     }
 
-    this.releaseSpine();
+    // a crushed look-holder (a badge / sticky W under a new drop) keeps its rig and is flattened
+    // with it (no dissolve shader on a rig), so its badge does not vanish before the press
+    if (!(C && this.look)) this.releaseSpine();
     const j = this.ensureJelly();
     if (j) {
       j.setFx(true);

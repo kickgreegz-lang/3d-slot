@@ -1,0 +1,79 @@
+chr_gumbo_half.webp
+size: 648,512
+filter: Linear,Linear
+pma: true
+chr_gumbo/cooler_body
+bounds: 427,235,114,131
+chr_gumbo/cooler_lid
+bounds: 532,2,111,61
+chr_gumbo/eye_L/closed
+bounds: 277,158,20,16
+chr_gumbo/eye_L/half
+bounds: 299,158,20,16
+chr_gumbo/eye_L/open
+bounds: 321,158,20,16
+chr_gumbo/eye_L/wide
+bounds: 2,488,20,16
+chr_gumbo/eye_R/closed
+bounds: 482,100,30,20
+chr_gumbo/eye_R/half
+bounds: 482,122,30,20
+chr_gumbo/eye_R/open
+bounds: 346,158,30,20
+chr_gumbo/eye_R/wide
+bounds: 346,180,30,20
+chr_gumbo/forearm_L
+bounds: 491,368,55,109
+chr_gumbo/forearm_R
+bounds: 344,310,81,135
+chr_gumbo/hand_L/fist
+bounds: 377,235,36,44
+chr_gumbo/hand_L/lean
+bounds: 397,100,40,56
+chr_gumbo/hand_L/open
+bounds: 297,310,47,72
+chr_gumbo/hand_L/point
+bounds: 543,306,33,60
+chr_gumbo/hand_R/fist
+bounds: 439,100,41,54
+chr_gumbo/hand_R/open
+bounds: 235,310,60,78
+chr_gumbo/hand_R/point
+bounds: 543,232,52,72
+chr_gumbo/head
+bounds: 2,389,197,97
+offsets: 0,1,197,98
+chr_gumbo/jaw
+bounds: 189,174,155,56
+chr_gumbo/leg_L
+bounds: 277,2,118,154
+chr_gumbo/leg_R
+bounds: 189,2,86,170
+chr_gumbo/mouth/closed_pick
+bounds: 201,445,132,33
+chr_gumbo/mouth/grin
+bounds: 201,389,141,54
+offsets: 1,0,142,54
+chr_gumbo/mouth/open
+bounds: 377,158,134,75
+chr_gumbo/mouth/roar
+bounds: 397,2,133,96
+chr_gumbo/neck
+bounds: 235,232,140,76
+chr_gumbo/pupil_L
+bounds: 415,235,12,9
+chr_gumbo/pupil_R
+bounds: 482,144,14,10
+chr_gumbo/tail
+bounds: 2,260,231,127
+chr_gumbo/teeth_lower
+bounds: 201,480,81,28
+offsets: 0,0,82,28
+chr_gumbo/toothpick
+bounds: 532,65,28,35
+chr_gumbo/torso
+bounds: 2,2,185,256
+chr_gumbo/upper_arm_L
+bounds: 427,368,62,116
+chr_gumbo/upper_arm_R
+bounds: 513,100,94,130

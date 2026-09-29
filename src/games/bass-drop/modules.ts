@@ -1,7 +1,6 @@
 import { Board } from '../../board/Board';
 import { Fx } from '../../fx/Fx';
 import type { GameContext, GameModule } from '../../game/context';
-import { Mascots } from '../../mascots/Mascots';
 import { BigWin } from '../../present/BigWin';
 import { WinPresenter } from '../../present/WinPresenter';
 import { Sound } from '../../audio/Sound';
@@ -15,6 +14,7 @@ import { GrooveMeter } from './meter/GrooveMeter';
 import { BuyScreen } from './screens/BuyScreen';
 import { FeatureScreens } from './screens/FeatureScreens';
 import { IntroScreen } from './screens/IntroScreen';
+import { BassDropMascots } from './mascots/Mascots';
 import { Background } from './scene/Background';
 import { Logo } from './scene/Logo';
 import { Stage } from './stage/Stage';
@@ -36,7 +36,8 @@ export const createModules = (ctx: GameContext): GameModule[] => [
   new WinPresenter(ctx),
   new BassDrop(ctx),
   new Fx(ctx),
-  new Mascots(ctx),
+  // 2D Spine Gumbo + Croak (DESIGN §16) in place of the engine's three.js mascots
+  new BassDropMascots(ctx),
   new FeatureScreens(ctx),
   new BigWin(ctx),
   new Hud(ctx),

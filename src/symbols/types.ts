@@ -30,7 +30,11 @@ export type SymbolState =
 export interface ExplodeOptions {
   /** particle energy (default 1) */
   power?: number;
-  /** crushed under a landing wild instead of blown up (DESIGN bass-drop §8.3) */
+  /**
+   * crushed under a landing wild instead of blown up (DESIGN bass-drop §8.3): always the procedural
+   * press on the sprite (a rig's `explode` would fling parts over the wild's squash); a view holding
+   * a look keeps its rig and is pressed with it
+   */
   crush?: boolean;
   /**
    * Called once on the burst frame: the rig's `explode_burst` (frame 2-3) or the procedural burst

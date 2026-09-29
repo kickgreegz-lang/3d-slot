@@ -61,7 +61,13 @@ export class Stage implements GameModule {
   private cabinet: CabinetView = new LowerCabinet();
   /** the loaded speaker-stack rig's atlas (null: the code cabinet draws) */
   private cabinetRef: RigRef | null = null;
+  /**
+   * The rig loads when a layout first shows the cabinet (portrait / compact have none, so a phone
+   * held upright never pays its page); 'done' with no ref = the load failed, the code cabinet draws.
+   */
+  private cabinetLoad: 'idle' | 'loading' | 'done' = 'idle';
   private upgrading = false;
+  private inited = false;
   private dead = false;
   private readonly hornL = new Horn(0x40a1);
   private readonly hornR = new Horn(0x40a2);
@@ -82,12 +88,12 @@ export class Stage implements GameModule {
     grooveBeat.retain();
     grooveBeat.setPeriod(STAGE_LOOK.beatMs[this.mode]);
     const cab = BASS_DROP_LAYOUT[ctx.layout.kind].lowerCabinet;
-    this.cabinetRef = await loadRig('env_speaker_stack', this.density(cab?.w ?? 0));
-    if (this.cabinetRef) this.cabinet = new SpeakerStack(this.cabinetRef);
     this.back.addChild(this.cabinet.view);
+    // landscape / tablet boot with the rig in place (no code cabinet flashes first)
+    if (cab) await this.loadCabinet(cab.w);
     if (import.meta.env.DEV) {
       Object.defineProperty(this.back, 'bdStats', {
-        get: () => ({ cabinet: this.cabinetRef ? 'spine' : 'code', density: this.cabinetRef?.density ?? null, skin: this.skin }),
+        get: () => ({ cabinet: this.cabinetRef ? 'spine' : this.cabinetLoad === 'done' ? 'code' : 'none', density: this.cabinetRef?.density ?? null, skin: this.skin }),
       });
     }
     this.horns.addChild(this.hornL.view, this.hornR.view);
@@ -101,6 +107,7 @@ export class Stage implements GameModule {
     };
     this.applyMotion(reducedMotion());
     this.applyTint();
+    this.inited = true;
     this.layout(ctx.layout);
 
     const g = ctx.game;
@@ -139,6 +146,24 @@ export class Stage implements GameModule {
     return rigDensity(px, this.ctx.tier);
   }
 
+  /** First load of the speaker-stack rig (once); a failed load leaves the code cabinet. */
+  private async loadCabinet(w: number): Promise<void> {
+    if (this.cabinetLoad !== 'idle') return;
+    this.cabinetLoad = 'loading';
+    const ref = await loadRig('env_speaker_stack', this.density(w));
+    this.cabinetLoad = 'done';
+    if (!ref) {
+      // the code cabinet stands in (a rotation hid it while the rig loaded)
+      if (this.inited && !this.dead) this.layout(this.ctx.layout);
+      return;
+    }
+    if (this.dead) {
+      releaseRig(ref);
+      return;
+    }
+    this.swapCabinet(new SpeakerStack(ref), ref);
+  }
+
   /** A bigger layout swaps a half-density speaker stack for the full one (never back). */
   private async upgradeCabinet(w: number): Promise<void> {
     if (this.upgrading || !this.cabinetRef || this.cabinetRef.density === 'full' || this.density(w) !== 'full') return;
@@ -150,17 +175,22 @@ export class Stage implements GameModule {
       releaseRig(ref);
       return;
     }
+    this.swapCabinet(new SpeakerStack(ref), ref);
+  }
+
+  /** Put `next` where the current cabinet draws and drop the old one (and its atlas). */
+  private swapCabinet(next: CabinetView, ref: RigRef): void {
     const old = this.cabinet;
     const oldRef = this.cabinetRef;
-    const next = new SpeakerStack(ref);
     next.motion = old.motion;
-    this.back.addChildAt(next.view, this.back.getChildIndex(old.view));
+    this.back.addChildAt(next.view, Math.max(0, this.back.getChildIndex(old.view)));
     old.destroy();
-    releaseRig(oldRef);
+    if (oldRef) releaseRig(oldRef);
     this.cabinet = next;
     this.cabinetRef = ref;
     this.applyTint();
-    this.layout(this.ctx.layout);
+    // init lays out once everything is in place
+    if (this.inited) this.layout(this.ctx.layout);
   }
 
   layout(L: LayoutSpec): void {
@@ -171,8 +201,11 @@ export class Stage implements GameModule {
     if (this.back.parent) this.back.parent.setChildIndex(this.back, 0);
 
     const cab = X.lowerCabinet;
-    this.cabinet.view.visible = !!cab;
-    if (cab) {
+    // hidden while the rig loads (a rotation into landscape): the code cabinet is only the fallback
+    const loading = !!cab && this.cabinetLoad !== 'done';
+    this.cabinet.view.visible = !!cab && !loading;
+    if (cab && loading) void this.loadCabinet(cab.w);
+    else if (cab) {
       this.cabinet.view.position.set(cab.x + cab.w / 2, cab.y + cab.h);
       this.cabinet.build(r, cab.w, cab.h, bakeRes(display));
       void this.upgradeCabinet(cab.w);

@@ -74,6 +74,12 @@ export interface SymbolLook {
   mounts?: Readonly<Record<string, Container>>;
   /** runtime bone channels (live objects, see SymbolBoneDrive) */
   bones?: Readonly<Record<string, SymbolBoneDrive>>;
+  /**
+   * slot -> RGB tint (0xRRGGBB) written every update after the clips, e.g. the W's additive `fx_glow`
+   * "tinted per badge tier by the runtime" (ANIMATION_SET §2.6). Only for slots whose clips key alpha
+   * alone: the alpha stays the clip's.
+   */
+  tints?: Readonly<Record<string, number>>;
   /** loop between actions (default 'idle') */
   rest?: string;
 }

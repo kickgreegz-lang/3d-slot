@@ -166,6 +166,7 @@ class SpineNotch implements NotchView {
  *    and the bursts are stretched to the conductor's s()-scaled lengths; the other one-shots play at
  *    30 fps x speedScale(); a slam retimes every one-shot (like followSpeed). Events are garnish only
  *    and the conductor fires the gameplay beats itself, so none are listened to here.
+ *  - `ctrl_cone` is the runtime's beat pump under the heat / armed / overdrive loops (coneBeat).
  *  - `fx_glow` is tinted by state (trim colour, so the trigger pumps glow in the feature's colour;
  *    the rim-flash colour; the clip's own pink in overdrive) and never dims below the state's level.
  * Updated from the engine clock by the module (hit-stop freezes it); autoUpdate off.
@@ -193,6 +194,8 @@ export class MeterSpine implements GrooveRig {
   private readonly txtBone: Bone;
   private readonly chipBone: Bone;
   private readonly cabinetBone: Bone;
+  /** runtime additive beat pump (ANIMATION_SET §3): no clip keys it */
+  private readonly ctrlCone: Bone;
   private readonly fxNotch: Bone;
   private readonly glowSlot: Slot;
   private readonly burstSlot: Slot;
@@ -232,6 +235,7 @@ export class MeterSpine implements GrooveRig {
     };
     this.txtBone = bone('txt_count');
     this.cabinetBone = bone('cabinet');
+    this.ctrlCone = bone('ctrl_cone');
     this.chipBone = bone('chip_anchor');
     this.fxNotch = bone('fx_notch');
     this.glowSlot = slot('fx_glow');
@@ -490,6 +494,8 @@ export class MeterSpine implements GrooveRig {
       const p = n.bone.pose;
       p.scaleX = p.scaleY = n.scale;
     }
+    const cc = this.ctrlCone.pose;
+    cc.scaleX = cc.scaleY = this.coneBeat();
     const c = this.glowSlot.pose.color;
     const flash = this.flash.a;
     let a = Math.max(c.a, this.glowLevel * GLOW_FLOOR);
@@ -505,6 +511,19 @@ export class MeterSpine implements GrooveRig {
       c.b = (col & 255) / 255;
     }
   };
+
+  /**
+   * `ctrl_cone` on the music beat (the kick at each whole beat, decaying (1 - phase)^3), as the code
+   * rig's cone: heat / armed keep a 1.02 breath under their own flutter, overdrive (MAX, the Mega
+   * Mix home stretch) pumps 1.035 because its clip leaves the cone still; idle's clip already
+   * breathes on the locked beat and the track-0 one-shots (charge, boom, trigger pumps) own the cone.
+   */
+  private coneBeat(): number {
+    if (this.clips[0] || this.loop === 'idle') return 1;
+    const env = (1 - (this.beats - Math.floor(this.beats))) ** 3;
+    const amp = this.loop === 'overdrive_loop' ? LOOK.heatFlutter - 1 : LOOK.breathScale - 1;
+    return 1 + amp * env;
+  }
 
   /** afterUpdateWorldTransforms: the cabinet's authored scale back in place (see drive). */
   private readonly undrive = (): void => {

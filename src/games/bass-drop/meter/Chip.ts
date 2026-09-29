@@ -12,6 +12,14 @@ import { METER_LOOK as LOOK } from './geometry';
 
 const CAPTION = 0xf8d828;
 const MAX_ICONS = 4;
+/**
+ * An overflowing line first fans its W icons into a stack (each overlaps the previous by this share
+ * of its width), then scales: base play at 50+ in portrait ("NEXT DROP 60" + three W + the MM icon)
+ * otherwise shrank to ~7.8 CSS px at Mobile S. Every wild keeps its own icon (DESIGN §6.8).
+ */
+const STACK_OVERLAP = 0.5;
+/** ... and the stacked icons draw this much smaller */
+const STACK_SHRINK = 0.88;
 
 /** What the chip says (DESIGN §6.8); the module derives it from the meter state. */
 export interface ChipModel {
@@ -132,6 +140,7 @@ export class Chip {
     const numPx = cap * 0.93;
     const iconPx = cap * (two ? 1.12 : 1.3);
     const parts: Container[] = [];
+    const stack: Container[] = [];
     for (const t of [this.caption, this.num, this.tag, this.upNum, this.upLabel, this.extra]) t.visible = false;
     for (const i of this.icons) i.visible = false;
     this.arrow.visible = false;
@@ -180,6 +189,7 @@ export class Chip {
         const ic = show(this.icons[i]);
         ic.texture = m.sticky ? this.art.sticky : this.art.w[0];
         ic.width = ic.height = iconPx;
+        stack.push(ic);
       }
       if (m.feature) {
         const ic = show(this.icons[MAX_ICONS]);
@@ -204,20 +214,35 @@ export class Chip {
       }
     }
     // keep clear of the plate's slanted ends (the taller two-line plate has wider ones)
-    this.flow(this.dropLine, parts, lineH * 0.12, two ? w - plateH * 0.5 : w - h * 0.9);
+    this.flow(this.dropLine, parts, lineH * 0.12, two ? w - plateH * 0.5 : w - h * 0.9, stack);
     this.dropLine.y = two ? plateH * 0.24 : 0;
   }
 
-  /** Lay `parts` out left to right (sprites are centre-anchored, texts left-anchored), centred, fitted to maxW. */
-  private flow(line: Container, parts: Container[], gap: number, maxW: number): void {
-    let x = 0;
-    for (const p of parts) {
-      const pw = p.width;
-      p.x = p instanceof Sprite ? x + pw / 2 : x;
-      p.y = p instanceof Sprite ? 0 : -1;
-      x += pw + gap;
+  /**
+   * Lay `parts` out left to right (sprites are centre-anchored, texts left-anchored), centred, fitted
+   * to maxW; when the line overflows, consecutive `stack` icons overlap first (STACK_OVERLAP).
+   */
+  private flow(line: Container, parts: Container[], gap: number, maxW: number, stack: readonly Container[] = []): void {
+    const lay = (overlap: number): number => {
+      let x = 0;
+      let prevStacked = false;
+      for (const p of parts) {
+        const pw = p.width;
+        const stacked = overlap > 0 && stack.includes(p);
+        if (stacked && prevStacked) x -= gap + pw * overlap;
+        p.x = p instanceof Sprite ? x + pw / 2 : x;
+        p.y = p instanceof Sprite ? 0 : -1;
+        x += pw + gap;
+        prevStacked = stacked;
+      }
+      return Math.max(0, x - gap);
+    };
+    let total = lay(0);
+    if (total > maxW && stack.length > 1) {
+      // build() sets every icon's size before each flow, so this never accumulates
+      for (const p of stack) p.scale.set(p.scale.x * STACK_SHRINK, p.scale.y * STACK_SHRINK);
+      total = lay(STACK_OVERLAP);
     }
-    const total = Math.max(0, x - gap);
     for (const p of parts) p.x -= total / 2;
     line.scale.set(total > maxW ? maxW / total : 1);
   }

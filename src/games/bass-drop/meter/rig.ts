@@ -49,7 +49,7 @@ export interface GrooveRig {
   syncMount(root: Container): void;
   /** Displacement (design px) of the chip anchor from its rest place (the chip rides the cabinet squash). */
   chipOffset(out: { x: number; y: number }): void;
-  /** dt game seconds; `beat` = 0..1 phase of the shared music beat (0 = the kick). */
-  update(dt: number, beat: number): void;
+  /** dt game seconds; `beats` = the shared music beat count (grooveBeat.beats: continuous, the kick at each integer). */
+  update(dt: number, beats: number): void;
   destroy(): void;
 }

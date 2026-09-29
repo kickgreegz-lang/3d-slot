@@ -104,13 +104,15 @@ export const drawBooth = (w: number, h: number): Container => {
   const ph = (G.crateH - gap * planks) / planks;
   for (let i = 0; i < planks; i++) {
     const py = G.crateY + gap * (i + 0.5) + ph * i + gap * 0.5;
-    // painted cypress: key light from the top-left, the lower planks a touch darker
+    // painted cypress: key light from the top-left, the lower planks a touch darker. The ramp sits
+    // on the frame's measured range (mean ~ #7a4a2a at display size), so the crate reads as the
+    // same wood as the reel frame beside it rather than a lighter prop
     const dim = i / Math.max(1, planks - 1);
     g.roundRect(x0 - 3, py, cw + 6, ph, 5)
       .fill(ramp([
-        [0, mixColor(CYPRESS.top, CYPRESS.face, dim * 0.5)],
-        [0.55, mixColor(CYPRESS.mid, CYPRESS.low, dim * 0.4)],
-        [1, CYPRESS.low],
+        [0, mixColor(mixColor(CYPRESS.face, CYPRESS.top, 0.4), CYPRESS.mid, dim * 0.5)],
+        [0.55, mixColor(CYPRESS.mid, CYPRESS.low, 0.35 + dim * 0.3)],
+        [1, mixColor(CYPRESS.low, CYPRESS.deep, 0.35)],
       ], 0.2, 0, 0.35, 1))
       .stroke({ width: OUTLINE * 0.85, color: INK });
     // grain streaks (thin interior lines) + a soft sheen along the top edge
@@ -121,7 +123,7 @@ export const drawBooth = (w: number, h: number): Container => {
         .bezierCurveTo(gx + 14, gy - 2.5, gx + 30, gy + 2.5, gx + 44 + rnd() * 26, gy + (rnd() - 0.5) * 2)
         .stroke({ width: 1.2, color: CYPRESS.grain, alpha: 0.55 });
     }
-    g.roundRect(x0 + 4, py + 2.5, cw * 0.62, Math.max(2, ph * 0.12), 2).fill({ color: 0xfff0d8, alpha: 0.22 });
+    g.roundRect(x0 + 4, py + 2.5, cw * 0.62, Math.max(2, ph * 0.12), 2).fill({ color: 0xfff0d8, alpha: 0.16 });
     // thin cool rim along the far (right / lower) edges
     g.moveTo(x0 + cw * 0.55, py + ph - 1.6).lineTo(x0 + cw + 1, py + ph - 1.6).stroke({ width: 1.3, color: RIM, alpha: 0.45 });
     // brass nails

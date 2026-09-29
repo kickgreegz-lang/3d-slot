@@ -35,8 +35,9 @@
  * LOOKS (SymbolView.setLook): a view that carries a persistent skin / attachment / live-mount state
  * (a multiplier or sticky W) HOLDS its instance and loops the look's rest clip between actions;
  * SpineRig.applyLook sets the skin (+ setupPoseSlots), re-applies the attachments, mounts the live
- * objects in their empty txt_* slots (addSlotObject) and drives runtime bone channels
- * (ctrl_badge_scale) in beforeUpdateWorldTransforms. release() undoes all of it (skin, mounts, drivers).
+ * objects in their empty txt_* slots (addSlotObject), drives runtime bone channels
+ * (ctrl_badge_scale) and slot tints (the W's fx_glow per tier) in beforeUpdateWorldTransforms.
+ * release() undoes all of it (skin, mounts, drivers, tints).
  * CAP: transient borrows (land, blur, idle, bass_react, win) stop at SYMBOL_TIMING.spine.maxActive
  * (low tier maxActiveLow); the view then falls back to its procedural rig for that action. Looks,
  * impacts and explicit plays are never refused (ANIMATION_SET §2.7: at most 24 animated symbols).
@@ -296,7 +297,16 @@ export class SpineRig {
    * appears and explodes with the plate it is printed on (the clips key the plate, never the text).
    */
   private follows: Array<readonly [Slot, Slot]> = [];
+  /** look slot tints: slot + linear RGB 0..1 (the clips key the alpha only) */
+  private tints: Array<readonly [Slot, number, number, number]> = [];
   private readonly beforeWorld = (): void => {
+    for (const [slot, r, g, b] of this.tints) {
+      for (const c of [slot.pose.color, slot.appliedPose.color]) {
+        c.r = r;
+        c.g = g;
+        c.b = b;
+      }
+    }
     for (const [bone, d] of this.drives) {
       const p = bone.pose;
       if (d.x !== undefined) p.x = d.x;
@@ -443,11 +453,28 @@ export class SpineRig {
         if (bone) this.drives.push([bone, d] as const);
       }
     }
+    // a tint that goes away returns the slot to its setup RGB (alpha untouched: the clip's)
+    for (const [slot] of this.tints) {
+      const c = slot.data.setupPose.color;
+      for (const p of [slot.pose.color, slot.appliedPose.color]) {
+        p.r = c.r;
+        p.g = c.g;
+        p.b = c.b;
+      }
+    }
+    this.tints = [];
+    if (look?.tints) {
+      for (const [name, rgb] of Object.entries(look.tints)) {
+        const slot = sk.findSlot(name);
+        if (slot) this.tints.push([slot, ((rgb >> 16) & 255) / 255, ((rgb >> 8) & 255) / 255, (rgb & 255) / 255] as const);
+      }
+    }
     this.hook();
   }
 
   private hook(): void {
-    this.spine.beforeUpdateWorldTransforms = this.drives.length || this.follows.length ? this.beforeWorld : noop;
+    this.spine.beforeUpdateWorldTransforms =
+      this.drives.length || this.follows.length || this.tints.length ? this.beforeWorld : noop;
   }
 
   /** Mount exactly `mounts` (slot -> live object) in their slots; others are removed (not destroyed). */
@@ -506,6 +533,7 @@ export class SpineRig {
     this.mounted.clear();
     this.drives = [];
     this.follows = [];
+    this.tints = [];
     this.skin = null;
     spinePool.release(this.ref, this.spine);
   }

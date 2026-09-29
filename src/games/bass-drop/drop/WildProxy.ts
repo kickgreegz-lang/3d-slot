@@ -16,8 +16,8 @@ type ProxyClip = 'drop_launch' | 'drop_fall';
  *   drop_launch (8 f)  f0 compressed sy 0.8 / sx 1.15, f2 released sy 1.25 / sx 0.86, glow flare 1.4;
  *   drop_fall (12 f)   stretch pulses sy 1.10 <-> 1.14 along the body axis (loop).
  * With the sym_W rig loaded, `sym` plays those clips itself (SymbolView.play: drop_launch -> the
- * drop_fall loop, mix 0; its own fx_glow flare and fx_trail streak; the live "WILD" rides its
- * ribbon slot) and the procedural body keys go; the code halo stays, dimmer, behind the rig.
+ * drop_fall loop, mix 0; its own fx_glow flare, tinted like the trail, and fx_trail streak; the live
+ * "WILD" rides its ribbon slot) and the procedural body keys go; the code halo stays, dimmer, behind the rig.
  * The Spine instance is stepped by the symbol pool on the game clock (hit-stop, slam retiming).
  */
 export class WildProxy {
@@ -74,7 +74,12 @@ export class WildProxy {
     }
     this.place(x, y, 0.001, 0);
     this.play('drop_launch');
-    if (this.rigged) void this.sym.play('drop_launch', { next: 'drop_fall' });
+    if (this.rigged) {
+      void this.sym.play('drop_launch', { next: 'drop_fall' });
+      // the rig's own fx_glow flare wears the flight tint (tier colour / gold), like the trail
+      // (set after the clip: a look on an idle rig would start its rest loop and mix out of it)
+      this.sym.setLook({ tints: { fx_glow: tint } });
+    }
   }
 
   play(clip: ProxyClip): void {
@@ -152,6 +157,8 @@ export class WildProxy {
     this.busy = false;
     this.view.visible = false;
     this.trail.visible = false;
+    // no look while pooled: the view hands its Spine instance back
+    this.sym.setLook(null);
     this.sym.reset();
   }
 

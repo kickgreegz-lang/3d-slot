@@ -327,11 +327,11 @@ export class MeterRig implements GrooveRig {
 
   // ---------------------------------------------------------------- per frame
 
-  /** dt game seconds; `beat` = 0..1 phase of the shared music beat. */
-  update(dt: number, beat: number): void {
+  /** dt game seconds; `beats` = the shared music beat count (continuous; the kick at each integer). */
+  update(dt: number, beats: number): void {
     this.t += dt;
     const t = this.t;
-    const env = (1 - beat) ** 3;
+    const env = (1 - (beats - Math.floor(beats))) ** 3;
     let loopCone = 1 + (LOOK.breathScale - 1) * env;
     let pulse = 1;
     let swirlA = 0;

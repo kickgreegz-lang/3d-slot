@@ -110,6 +110,8 @@ export class RigWild {
       attachments: { badge: `badge_t${this.tier}` },
       mounts: { txt_mult: this.text },
       bones: { ctrl_badge_scale: this.badge },
+      // the additive glow is white in the art, "tinted per badge tier by the runtime"
+      tints: { fx_glow: multTier(this.value).color },
       rest: this.skin === 'sticky' ? 'sticky_idle' : 'idle',
     };
   }

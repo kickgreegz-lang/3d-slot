@@ -158,7 +158,7 @@ export class GrooveMeter implements GameModule {
     // DEV / QA: captures read which rig draws and its texel density (stripped from production)
     if (import.meta.env.DEV) {
       Object.defineProperty(this.body, 'bdStats', {
-        get: () => ({ rig: this.rigRef ? 'spine' : 'code', density: this.rigRef?.density ?? null, loop: this.rig.currentLoop, mode: this.mode }),
+        get: () => ({ rig: this.rigRef ? 'spine' : 'code', density: this.rigRef?.density ?? null, loop: this.rig.currentLoop, mode: this.mode, shown: this.shown }),
       });
     }
     // under the frame (the portrait cabinet base hides behind the beam); the chip rides above it

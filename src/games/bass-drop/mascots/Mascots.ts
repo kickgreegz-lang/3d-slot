@@ -264,6 +264,8 @@ export class BassDropMascots implements GameModule {
         break;
       }
       case 'meterHeat':
+        // held until meterHeat 0, the next reveal or the round end (the meter's drains send no
+        // 0 cue: GrooveMeter relies on those releases, as it did with the 3D mascots)
         for (const m of live) {
           if (intensity > 0) m.setBase(m.def.heatClip);
           else if (m.base === m.def.heatClip) m.setBase('idle');
@@ -292,14 +294,21 @@ export class BassDropMascots implements GameModule {
         croak?.play('bass_drop_charge', { rate, mix: 0.08, next: 'bass_drop' });
         break;
       }
-      case 'bassDrop':
+      case 'bassDrop': {
+        // the charged boom: Gumbo's bass_drop is at its f15 and Croak's charge hands over by itself
+        // (mix 0 queue); a chained boom (no charge cue) replays the blow-back / follow-through
+        const hit = T.frames.chargeHit / FPS;
         if (gumbo) {
-          if (gumbo.current === 'bass_drop') gumbo.normalRate();
-          else gumbo.play('bass_drop', { from: T.frames.chargeHit / FPS, mix: 0.08 });
+          if (gumbo.current === 'bass_drop' && gumbo.clipTime < hit + 0.1) gumbo.normalRate();
+          else gumbo.play('bass_drop', { from: hit, mix: 0.08 });
         }
-        // a charged drop hands over by itself (mix 0 queue); a chained one follows through now
-        if (croak && croak.current !== 'bass_drop_charge' && croak.current !== 'bass_drop') croak.play('bass_drop', { mix: 0.08 });
+        if (croak) {
+          const cur = croak.current;
+          const handing = cur === 'bass_drop_charge' || (cur === 'bass_drop' && croak.clipTime < 0.1);
+          if (!handing) croak.play('bass_drop', { mix: 0.08 });
+        }
         break;
+      }
       case 'wildLand':
         this.each((m) => m.overlayClip('wild_land_react'));
         break;

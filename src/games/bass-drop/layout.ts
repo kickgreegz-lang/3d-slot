@@ -5,8 +5,11 @@ import type { LayoutKind, LayoutSpec, Pt, Rect } from '../../config/layout';
  * design track's docs/games/bass-drop/layout.json (DESIGN.md section 15 is authoritative;
  * fix both together). The square grid sits slightly right of centre in landscape, leaving
  * the left column for the Groove Meter speaker cabinet above Gumbo, with Baron Croak and
- * his DJ booth on the right. Portrait / compact HUD anchors are the collision-free
- * placements (label baselines keep the values inside the design space).
+ * his DJ booth on the right. Mascot rects are the 2D Spine rigs' 2x canvases at the space's
+ * scale (contain-fit, feet = the rect's bottom centre; src/games/bass-drop/mascots). The
+ * landscape / tablet HUD is placed around them (no hex on a head or torso, DESIGN §15.1);
+ * portrait / compact HUD anchors are the collision-free placements (label baselines keep
+ * the values inside the design space).
  */
 
 /** Groove Meter ring (every other meter radius is a fraction of ringOuterD / 2, see layout.json meterGeometry). */
@@ -26,8 +29,12 @@ export interface BassDropExtras {
   meterChip: Rect;
   /** free-spin counter plate ('meterChip' = shares the chip slot) */
   fsPlate: Rect | 'meterChip';
-  /** Baron Croak's DJ booth (null: no mascots) */
-  booth: Rect | null;
+  /**
+   * Baron Croak's DJ booth (null: no mascots). `button`: the drop button's centre, where the palm
+   * of his bass_drop_charge slam comes down (f14, the boom): the dome top meets the palm's lower
+   * edge just above the deck's back edge, so the hand stays in view (the booth is drawn over him).
+   */
+  booth: (Rect & { button: Pt }) | null;
   /** decorative speaker horns on the frame beam */
   frameHorns: [Rect, Rect] | null;
   /** running tumble-win plate */
@@ -49,10 +56,10 @@ export const LANDSCAPE: LayoutSpec = {
   logo: { x: 1472, y: 40, w: 428, h: 236 },
   mascots: {
     left: { x: -2, y: 604, w: 400, h: 456 },
-    right: { x: 1416, y: 562, w: 288, h: 504 },
+    right: { x: 1422, y: 512, w: 317, h: 554 },
   },
   hud: {
-    spin: { x: 1782, y: 800, size: 230, tilt: 20 },
+    spin: { x: 1790, y: 800, size: 230, tilt: 20 },
     autoplay: { x: 1698, y: 628 },
     turbo: { x: 1866, y: 628 },
     menu: { x: 430, y: 578 },
@@ -124,11 +131,11 @@ export const TABLET: LayoutSpec = {
   logo: { x: 1472, y: 460, w: 428, h: 236 },
   mascots: {
     left: { x: -2, y: 1024, w: 400, h: 456 },
-    right: { x: 1416, y: 982, w: 288, h: 504 },
+    right: { x: 1422, y: 932, w: 317, h: 554 },
   },
   hud: {
     ...LANDSCAPE.hud,
-    spin: { x: 1782, y: 1220, size: 230, tilt: 20 },
+    spin: { x: 1790, y: 1220, size: 230, tilt: 20 },
     autoplay: { x: 1698, y: 1048 },
     turbo: { x: 1866, y: 1048 },
     menu: { x: 430, y: 998 },
@@ -195,7 +202,7 @@ export const BASS_DROP_LAYOUT: Record<LayoutKind, BassDropExtras> = {
     lowerCabinet: { x: 96, y: 532, w: 304, h: 320 },
     meterChip: { x: 112, y: 478, w: 272, h: 56 },
     fsPlate: { x: 1514, y: 300, w: 344, h: 110 },
-    booth: { x: 1432, y: 858, w: 236, h: 212 },
+    booth: { x: 1426, y: 852, w: 236, h: 218, button: { x: 1460, y: 865 } },
     frameHorns: [
       { x: 452, y: 30, w: 116, h: 100 },
       { x: 1352, y: 30, w: 116, h: 100 },
@@ -209,7 +216,7 @@ export const BASS_DROP_LAYOUT: Record<LayoutKind, BassDropExtras> = {
     lowerCabinet: null,
     meterChip: { x: 370, y: 504, w: 340, h: 60 },
     fsPlate: 'meterChip',
-    booth: { x: 718, y: 320, w: 210, h: 200 },
+    booth: { x: 718, y: 355, w: 210, h: 165, button: { x: 750, y: 364 } },
     frameHorns: [
       { x: 58, y: 486, w: 92, h: 80 },
       { x: 930, y: 486, w: 92, h: 80 },
@@ -223,7 +230,7 @@ export const BASS_DROP_LAYOUT: Record<LayoutKind, BassDropExtras> = {
     lowerCabinet: { x: 96, y: 952, w: 304, h: 320 },
     meterChip: { x: 112, y: 898, w: 272, h: 56 },
     fsPlate: { x: 1514, y: 720, w: 344, h: 110 },
-    booth: { x: 1432, y: 1278, w: 236, h: 212 },
+    booth: { x: 1426, y: 1272, w: 236, h: 218, button: { x: 1460, y: 1285 } },
     frameHorns: [
       { x: 452, y: 450, w: 116, h: 100 },
       { x: 1352, y: 450, w: 116, h: 100 },

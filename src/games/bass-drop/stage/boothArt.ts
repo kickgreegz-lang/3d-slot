@@ -37,7 +37,12 @@ export interface BoothGeom {
   socket: { x: number; y: number };
 }
 
-export const boothGeom = (w: number, h: number): BoothGeom => {
+/**
+ * `button`: the drop button's centre in booth space (origin = bottom centre, design px), where
+ * Croak's charge palm comes down; clamped so the collar stays inside the deck plate (it may sit at
+ * the deck's back edge, the dome rising over it). Default: 0.2 w from the left, mid-deck.
+ */
+export const boothGeom = (w: number, h: number, button?: { x: number; y: number }): BoothGeom => {
   const deckH = Math.min(64, Math.max(40, h * 0.3));
   const lipH = Math.min(18, Math.max(12, h * 0.07));
   const deckY = -h;
@@ -46,7 +51,11 @@ export const boothGeom = (w: number, h: number): BoothGeom => {
   const cy = deckY + deckH * 0.52;
   const pr = Math.min(w * 0.26, deckH * 1.15);
   const platter = { x: w * 0.1, y: cy, r: pr, squash: 0.42 };
-  const button = { x: -w / 2 + w * 0.2, y: cy - deckH * 0.02, r: Math.min(w * 0.1, deckH * 0.34) };
+  const br = Math.min(w * 0.1, deckH * 0.34);
+  const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+  const btn = button
+    ? { x: clamp(button.x, -w / 2 + br + w * 0.05, -w * 0.02 - br), y: clamp(button.y, deckY + br * 0.45, deckY + deckH - br * 0.6), r: br }
+    : { x: -w / 2 + w * 0.2, y: cy - deckH * 0.02, r: br };
   const ledY = deckY + deckH + lipH / 2;
   const leds = [0, 1, 2, 3].map((i) => ({ x: -w * 0.2 + i * w * 0.12, y: ledY }));
   return {
@@ -57,7 +66,7 @@ export const boothGeom = (w: number, h: number): BoothGeom => {
     lipH,
     crateY,
     crateH,
-    button,
+    button: btn,
     platter,
     arm: { x: platter.x + pr * 1.08, y: cy - deckH * 0.28, len: pr * 0.92 },
     fader: { x0: -w / 2 + w * 0.08, x1: -w / 2 + w * 0.34, y: deckY + deckH * 0.86 },
@@ -68,8 +77,8 @@ export const boothGeom = (w: number, h: number): BoothGeom => {
 };
 
 /** Crate + deck (static): planks, sleeves in the gaps, corner posts, deck plate, collar, fader slot. */
-export const drawBooth = (w: number, h: number): Container => {
-  const G = boothGeom(w, h);
+export const drawBooth = (w: number, h: number, button?: { x: number; y: number }): Container => {
+  const G = boothGeom(w, h, button);
   const rnd = mulberry32(0xb007);
   const root = new Container();
   const x0 = -w / 2 + 2;

@@ -1,8 +1,10 @@
 # Bass Drop 2D mascots: Gumbo (`chr_gumbo`) and Baron Croak (`chr_croak`)
 
 Production Spine 4.3 rigs on the real formula-D art (Phase C, batches `bd_c08`–`bd_c10`), built without the
-Spine editor. Runtime integration (`src/`, `public/assets/`) is a later step; this folder is the source of
-truth for it.
+Spine editor. This folder is the source of truth; the game loads the shipped copies in
+`public/assets/bass-drop/mascots/` (`tools/.venv/bin/python tools/artqa/ship_mascots.py [--check]`: lossless-WebP
+PMA pages, `_half` = the @0.5x pack, one provenance row per file) through `src/games/bass-drop/mascots/`
+(cue → clip mapping, tracks, look-at and sync rules: DESIGN §16).
 
 ```
 art/source/mascots/
@@ -113,4 +115,5 @@ Deltas from ANIMATION_SET 5.1 / 5.2, forced by the approved masters:
 ## Licence
 
 Built from Higgsfield generations (Nano Banana Pro): build and preview only until the written Higgsfield
-clearance is filed (`licenses/allowlist.json` → `higgsfield`). Nothing here is in `public/`.
+clearance is filed (`licenses/allowlist.json` → `higgsfield`). The shipped copies are release blockers:
+`pnpm licence:audit` warns, `pnpm licence:audit --release` refuses them until the clearance is filed.

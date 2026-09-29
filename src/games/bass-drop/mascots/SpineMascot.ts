@@ -239,6 +239,11 @@ export class SpineMascot {
     return this.oneShot?.name ?? this.loopName ?? this.base;
   }
 
+  /** Animation time (s) of the running one-shot, -1 on a loop. */
+  get clipTime(): number {
+    return this.oneShot ? this.oneShot.entry.trackTime : -1;
+  }
+
   /** Retime the running one-shot to normal playback from now (e.g. after the boom). */
   normalRate(): void {
     const os = this.oneShot;
@@ -541,6 +546,7 @@ const drawNote = (): Graphics => {
   g.rect(3, -54, 7, 50).fill(col).stroke({ width: 4, color: ink });
   g.ellipse(-4, 0, 14, 10).fill(col).stroke({ width: 4, color: ink });
   g.ellipse(-8, -3, 5, 3).fill({ color: 0xffffff, alpha: 0.7 });
+  g.scale.set(1.35);
   g.blendMode = 'add';
   return g;
 };

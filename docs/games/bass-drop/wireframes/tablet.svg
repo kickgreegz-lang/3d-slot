@@ -52,14 +52,14 @@
 <rect x="72" y="532" width="352" height="420" rx="12" fill="#4b283d" fill-opacity="0.55" stroke="#4b283d" stroke-width="2"/>
 <rect x="96" y="952" width="304" height="320" rx="12" fill="#4b283d" fill-opacity="0.4" stroke="#4b283d" stroke-width="2"/>
 <text x="248.0" y="978" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="600" fill="#e8e8e8" text-anchor="middle" dominant-baseline="middle">lower cabinet</text>
-<rect x="0" y="977" width="434" height="496" rx="4" fill="none" fill-opacity="1.0" stroke="#3f9d3a" stroke-width="3" stroke-dasharray="14,8"/>
-<text x="217.0" y="1007" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="600" fill="#3f9d3a" text-anchor="middle" dominant-baseline="middle">GUMBO</text>
-<circle cx="217" cy="1473" r="7" fill="#3f9d3a"/>
-<rect x="1560" y="850" width="360" height="630" rx="4" fill="none" fill-opacity="1.0" stroke="#8fbf3a" stroke-width="3" stroke-dasharray="14,8"/>
-<text x="1740.0" y="880" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="600" fill="#8fbf3a" text-anchor="middle" dominant-baseline="middle">CROAK</text>
-<circle cx="1740" cy="1480" r="7" fill="#8fbf3a"/>
-<rect x="1436" y="1060" width="230" height="300" rx="6" fill="none" fill-opacity="1.0" stroke="#ff5fa2" stroke-width="2.5" stroke-dasharray="6,5"/>
-<text x="1551.0" y="1338" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ff5fa2" text-anchor="middle" dominant-baseline="middle">DJ booth</text>
+<rect x="-2" y="1024" width="400" height="456" rx="4" fill="none" fill-opacity="1.0" stroke="#3f9d3a" stroke-width="3" stroke-dasharray="14,8"/>
+<text x="198.0" y="1054" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="600" fill="#3f9d3a" text-anchor="middle" dominant-baseline="middle">GUMBO</text>
+<circle cx="198" cy="1480" r="7" fill="#3f9d3a"/>
+<rect x="1402" y="932" width="317" height="554" rx="4" fill="none" fill-opacity="1.0" stroke="#8fbf3a" stroke-width="3" stroke-dasharray="14,8"/>
+<text x="1560.5" y="962" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="600" fill="#8fbf3a" text-anchor="middle" dominant-baseline="middle">CROAK</text>
+<circle cx="1560.5" cy="1486" r="7" fill="#8fbf3a"/>
+<rect x="1432" y="1278" width="236" height="212" rx="6" fill="none" fill-opacity="1.0" stroke="#ff5fa2" stroke-width="2.5" stroke-dasharray="6,5"/>
+<text x="1550.0" y="1468" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ff5fa2" text-anchor="middle" dominant-baseline="middle">DJ booth</text>
 <circle cx="248" cy="738" r="160.0" fill="#15102a" stroke="#35f2e0" stroke-width="3.0"/>
 <circle cx="248" cy="738" r="140.0" fill="none" stroke="#4b3bff" stroke-width="2.0"/>
 <path d="M186.0,845.4 A124.0,124.0 0 1 1 310.0,845.4" fill="none" stroke="#243056" stroke-width="24.0"/>
@@ -150,17 +150,17 @@
 <text x="864.9545102481703" y="829.0308544538241" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#35f2e0" text-anchor="middle" dominant-baseline="middle">orb path</text>
 <rect x="825.0" y="1358.5" width="270.0" height="45.0" rx="22.5" fill="#0a0420" fill-opacity="0.8" stroke="#ffd54a" stroke-width="2"/>
 <text x="960" y="1381" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ffd54a" text-anchor="middle" dominant-baseline="middle">tumble win</text>
-<polygon points="1801.2,1074.0 1770.0,1092.0 1738.8,1074.0 1738.8,1038.0 1770.0,1020.0 1801.2,1038.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
-<polygon points="1872.2,1100.0 1841.0,1118.0 1809.8,1100.0 1809.8,1064.0 1841.0,1046.0 1872.2,1064.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
-<polygon points="197.2,1150.0 166.0,1168.0 134.8,1150.0 134.8,1114.0 166.0,1096.0 197.2,1114.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
-<polygon points="1560.2,1578.0 1529.0,1596.0 1497.8,1578.0 1497.8,1542.0 1529.0,1524.0 1560.2,1542.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
-<polygon points="1885.2,1578.0 1854.0,1596.0 1822.8,1578.0 1822.8,1542.0 1854.0,1524.0 1885.2,1542.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
-<polygon points="226.2,1310.0 150.0,1354.0 73.8,1310.0 73.8,1222.0 150.0,1178.0 226.2,1222.0" fill="#f828c8" fill-opacity="0.35" stroke="#f828c8" stroke-width="3"/>
-<text x="150" y="1266" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">BUY</text>
-<polygon points="1837.0,1327.2 1699.1,1351.6 1609.1,1244.3 1657.0,1112.8 1794.9,1088.4 1884.9,1195.7" fill="#000000" fill-opacity="0.35" stroke="#ffffff" stroke-width="3"/>
-<text x="1747" y="1220" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">SPIN</text>
-<text x="46" y="1551" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="600" fill="#f8d828" text-anchor="start" dominant-baseline="middle">BALANCE</text>
-<text x="1692" y="1551" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">BET</text>
+<polygon points="1729.2,1066.0 1698.0,1084.0 1666.8,1066.0 1666.8,1030.0 1698.0,1012.0 1729.2,1030.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
+<polygon points="1897.2,1066.0 1866.0,1084.0 1834.8,1066.0 1834.8,1030.0 1866.0,1012.0 1897.2,1030.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
+<polygon points="461.2,1016.0 430.0,1034.0 398.8,1016.0 398.8,980.0 430.0,962.0 461.2,980.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
+<polygon points="1606.2,1581.0 1575.0,1599.0 1543.8,1581.0 1543.8,1545.0 1575.0,1527.0 1606.2,1545.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
+<polygon points="1881.2,1581.0 1850.0,1599.0 1818.8,1581.0 1818.8,1545.0 1850.0,1527.0 1881.2,1545.0" fill="#000000" fill-opacity="0.35" stroke="#8a8a8a" stroke-width="3"/>
+<polygon points="454.2,1300.0 378.0,1344.0 301.8,1300.0 301.8,1212.0 378.0,1168.0 454.2,1212.0" fill="#f828c8" fill-opacity="0.35" stroke="#f828c8" stroke-width="3"/>
+<text x="378" y="1256" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">BUY</text>
+<polygon points="1872.8,1318.7 1745.9,1341.0 1663.2,1242.4 1707.2,1121.3 1834.1,1099.0 1916.8,1197.6" fill="#000000" fill-opacity="0.35" stroke="#ffffff" stroke-width="3"/>
+<text x="1790" y="1220" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">SPIN</text>
+<text x="300" y="1551" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="600" fill="#f8d828" text-anchor="start" dominant-baseline="middle">BALANCE</text>
+<text x="1712" y="1551" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">BET</text>
 <text x="960" y="1480" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="600" fill="#f8d828" text-anchor="middle" dominant-baseline="middle">WIN</text>
 <circle cx="960" cy="951" r="6" fill="none" stroke="#ffffff" stroke-width="2"/>
 <text x="12" y="1906" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="500" fill="#6b6b8a" text-anchor="start" dominant-baseline="middle">Bass Drop · tablet 1920x1920 · generated from layout.json</text>

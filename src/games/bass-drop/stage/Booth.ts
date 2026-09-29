@@ -70,14 +70,15 @@ export class Booth {
     this.view.addChild(this.cable.rope, this.crate);
   }
 
-  build(renderer: Renderer, w: number, h: number, res: number): void {
-    const key = `${w}x${h}@${res}`;
+  /** `at`: the drop button's centre in booth space (bottom centre origin), under Croak's charge palm. */
+  build(renderer: Renderer, w: number, h: number, res: number, at?: { x: number; y: number }): void {
+    const key = `${w}x${h}@${res}:${at ? `${at.x},${at.y}` : '-'}`;
     if (key === this.key) return;
     this.key = key;
     for (const t of this.textures) t.destroy(true);
-    const G = boothGeom(w, h);
+    const G = boothGeom(w, h, at);
     this.geom = G;
-    const deck = bake(renderer, drawBooth(w, h), new Rectangle(-w / 2 - 12, -h - 10, w + 34, h + 22), res);
+    const deck = bake(renderer, drawBooth(w, h, at), new Rectangle(-w / 2 - 12, -h - 10, w + 34, h + 22), res);
     const record = bakeCentred(renderer, drawRecord(G.platter.r), G.platter.r + 4, res * 1.5);
     const arm = bake(renderer, drawTonearm(G.arm.len), new Rectangle(-4, -8, G.arm.len + 14, 16), res);
     const button = bakeCentred(renderer, drawButton(G.button.r), G.button.r * 1.3, res);

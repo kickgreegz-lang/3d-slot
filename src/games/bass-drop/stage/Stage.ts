@@ -228,7 +228,8 @@ export class Stage implements GameModule {
     this.booth.view.visible = !!booth;
     if (booth) {
       this.booth.view.position.set(booth.x + booth.w / 2, booth.y + booth.h);
-      this.booth.build(r, booth.w, booth.h, bakeRes(display));
+      const button = { x: booth.button.x - (booth.x + booth.w / 2), y: booth.button.y - (booth.y + booth.h) };
+      this.booth.build(r, booth.w, booth.h, bakeRes(display), button);
     }
   }
 

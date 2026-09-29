@@ -552,7 +552,7 @@ Bass Drop differences:
 
 | Element | Change |
 |---|---|
-| Positions | Unchanged in landscape, tablet and compact (win value re-centred to x 960 in landscape). Portrait is re-flowed for the taller grid (section 15) |
+| Positions | Compact unchanged. Landscape and tablet keep the Swamp Funk clusters (spin + autoplay + turbo on the right, menu + bonus buy on the left, balance / win / bet along the bottom) but re-placed so no hex covers a mascot's head or torso (2D mascots, section 15.1; the win value is re-centred to x 960). Portrait is re-flowed for the taller grid (section 15) |
 | FS counter | Becomes the **feature plate**: `JUKE JAM` / `MEGA MIX` caption + `3 / 8`. Landscape/tablet: under the logo. Portrait/compact: merged into the meter chip |
 | Bonus buy | Opens the 2-card buy screen (section 13) |
 | Turbo | Unchanged cycle normal → turbo → super turbo (`turboProfiles`); the icon shows the profile |
@@ -576,14 +576,14 @@ All numbers are design px. The same values are in [layout.json](layout.json) (th
 | Logo | (1472, 40, 428, 236) | Stacked emblem: "SWAMP FUNK" over "BASS DROP" |
 | Groove Meter | centre **(248, 318)**, ring Ø 320 | Orb target and wild origin |
 | Upper cabinet | (72, 112, 352, 420) | Holds the meter |
-| Lower cabinet | (96, 532, 304, 320) | Behind Gumbo, menu and bonus-buy hexes |
+| Lower cabinet | (96, 532, 304, 320) | Behind Gumbo; the menu hex sits on its right edge |
 | Meter chip | (112, 478, 272, 56) | Hangs in the gauge gap |
 | Feature plate | (1514, 300, 344, 110) | Free games only |
-| Gumbo | (0, 557, 434, 496), feet (217, 1053) | His left forearm rests on the lower cabinet top (y ≈ 540), so the boom shoves him |
-| Croak | (1560, 430, 360, 630), feet (1740, 1060) | Behind the booth |
-| DJ booth | (1436, 640, 230, 300) | Turntable crate with the drop button, left of Croak, touching the frame post. The spin hex (r 140 at (1747, 800)) covers the booth's right edge below y ≈ 690, so the drop button sits on the deck's top-left (x < 1600, y < 690) |
+| Gumbo | (−2, 604, 400, 456), feet (198, 1060), scale 0.46 | 2D Spine `chr_gumbo`, the 2× canvas contain-fitted with the feet on the rect's bottom centre. In front of the lower cabinet, clear of every hex. The cabinet top (y 532) is above his head, so he does not lean on it (the rig's far hand is FK; ART_STATUS 3.4) |
+| Croak | (1402, 512, 317, 554), feet (1560, 1066), scale 0.44 | 2D Spine `chr_croak`, standing behind the booth (a step further back than Gumbo, so a smaller scale): the booth hides him from the hips down, his near hand rests on the deck and his palm comes down on the deck beside the drop button at `bass_drop_charge` f14 |
+| DJ booth | (1432, 858, 236, 212) | Turntable crate with the drop button, in front of Croak's waist, touching the frame post; the deck top (y 858) is at his hip. Its bottom stands on the floor (y 1070), below his feet |
 | Tumble plate | (960, 961) scale 0.9 | On the sill |
-| HUD | current LANDSCAPE.hud; win (960, 1030) | |
+| HUD | spin (1790, 800) size 230 · autoplay (1698, 628) · turbo (1866, 628) · menu (430, 578) · bonus buy (378, 836) · bet − (1575, 1012) · bet value (1712, 1000) · bet + (1850, 1012) · balance (300, 1000) · win (960, 1030) | The spin cluster sits right of Croak (the hex's left edge reaches his back hand only), menu and bonus buy between Gumbo and the frame post (the BONUS BUY edge label ends at x ≈ 488, left of the post), balance right of Gumbo's boots. The bet row overlaps the lower crate of the booth, never the deck. Small hexes keep r 36 (touch r 40), bonus buy r 88, spin r 129 |
 | Overlay centre | (960, 531) | Grid centre |
 | Wild arc apex | y ≥ 132 | Arcs pass over the beam; the floor keeps the whole spinning 1.6–1.75× wild on screen at the apex (its bounding box reaches ≈ 150 px above its centre) |
 
@@ -593,19 +593,19 @@ All numbers are design px. The same values are in [layout.json](layout.json) (th
 |---|---|
 | Grid | cell **132**, gap 4 · (134, 584, 812, 812) (same cell as the Swamp Funk portrait) |
 | Panel / frame | (122, 572, 836, 836) / (88, 520, 904, 940) · post 34, beam 52, sill 52 |
-| Horns | (58, 486, 92, 80) · (930, 486, 92, 80) |
+| Horns | (58, 486, 92, 80) · (930, 486, 92, 80), bolted on the beam ends (clear of Gumbo's tail and Croak's feet, below) |
 | Logo | (240, 40, 600, 110) |
 | Groove Meter | centre **(540, 340)**, Ø 300; cabinet (380, 176, 320, 360), base hidden by the beam |
 | Meter chip = feature plate | (370, 504, 340, 60), on the beam. In free spins the plate grows to 1.55 × the height (≈ 488–580) for two lines; captions measure 33–35 design px, digits 31 (≈ 10 / 9 CSS px on a 320 px wide phone; they were ≈ 22 px) |
-| Gumbo / Croak | (0, 150, 400, 430) feet (200, 580) / (680, 150, 400, 430) feet (880, 580); both stand behind the beam, flanking the speaker |
-| DJ booth | (730, 380, 210, 140), on the beam in front of Croak |
+| Gumbo / Croak | (119, 165, 321, 367) feet (280, 532), scale 0.37 / (720, 76, 260, 454) feet (850, 530), scale 0.36. Both stand on the beam top, flanking the speaker: Gumbo's tail tip ends at x ≈ 116 (left horn ≤ 105), his snout at the cabinet edge (x ≈ 384, ring from 390); Croak stands behind the booth, feet hidden, clear of the right horn |
+| DJ booth | (718, 320, 210, 200), on the beam in front of Croak (bottom = beam top 520); the deck top (y 320) is at his chest, his charge palm lands on the deck by the button |
 | Tumble plate | (540, 1434) scale 1.0 |
 | HUD (re-flowed; touch targets 150) | win (540, 1500) · bonus buy (130, 1650) · autoplay (330, 1690) · **spin (540, 1665) size 250** · turbo (750, 1690) · menu (950, 1650) · bet − (715, 1856) · bet value (848, 1834) · bet + (980, 1856) · balance (40, 1834, left-aligned). Balance/bet y are label baselines and the 48 px value hangs below, so the labels sit at 1834 to keep the values inside 1920 (checked in the running build) |
 | Overlay centre / apex | (540, 990) / y ≥ 160 |
 
 ### 15.3 Tablet 1920×1920
 
-The landscape composition moves down by **+420**, as the current TABLET does: grid (578, 569), frame (491, 492), meter (248, 738), logo (1472, 460), feature plate (1514, 720), Gumbo (0, 977), Croak (1560, 850), booth (1436, 1060), tumble plate (960, 1381), centre (960, 951). The HUD is the current `TABLET.hud` with win (960, 1480). Wild arc apex y ≥ 300 (never binding: the computed apex is ≈ 415).
+The landscape composition moves down by **+420**, as the current TABLET does: grid (578, 569), frame (491, 492), meter (248, 738), logo (1472, 460), feature plate (1514, 720), Gumbo (−2, 1024, 400, 456), Croak (1402, 932, 317, 554), booth (1432, 1278, 236, 212), tumble plate (960, 1381), centre (960, 951). The HUD is the landscape HUD + 420 (spin (1790, 1220), autoplay / turbo y 1048, menu (430, 998), bonus buy (378, 1256)) with the bottom row lower, as before: balance (300, 1551), bet − / value / + (1575, 1563) · (1712, 1551) · (1850, 1563), win (960, 1480). Wild arc apex y ≥ 300 (never binding: the computed apex is ≈ 415).
 
 ### 15.4 Compact 960×540 (popouts, small landscape phones)
 
@@ -652,6 +652,16 @@ Mascots are **2D Spine characters** in Bass Drop (rigs in ANIMATION_SET §5), no
 | Feature end | `fsEnd` | `fs_end` | `fs_end` |
 
 Look-at (track 3, `ctrl_look` aim bone): both look at the active cluster during `board:showWins`, at the meter during orbs/charge, at each flying wild, and at the player during `celebrate`.
+
+**Runtime** (`src/games/bass-drop/mascots/`, rigs shipped to `public/assets/bass-drop/mascots/` by `tools/artqa/ship_mascots.py`):
+
+- **Sync points come from the gameplay timeline, never from the rigs.** Gumbo's `bass_drop` and Croak's `bass_drop_charge` are timescaled so their f15 lands on the boom at t = C (the charge length, turbo included); Croak's charge hands over to `bass_drop` with mix 0. `fsTrigger` plays with no react delay, so both hits (f36) land on the meter's third pump (cue + 1.2 s). On `featureUpgrade`, Gumbo's `win_big` cooler slam (f24) and Croak's `fs_trigger` mic drop (f36) are lined up with the Mega Mix emblem slam (+933 ms). A slam-stop retimes running one-shots live.
+- **Foley:** the rigs' `sfx` events (`cooler_slam`, `button_slam`, `mic_drop`, `dj_scratch`) are broadcast as `sfx`. The booth no longer plays `button_slam` (Croak's palm does); without a live Croak rig the module schedules it at f14 of the charge. Croak's scratches start with the booth's `scratch` (react delay 0; the audio engine merges the two `dj_scratch` within 30 ms).
+- **React delays:** Croak 0 ms (the DJ is on the beat with his booth), Gumbo 130 ms (the heavy bouncer lands late).
+- **Loops:** Croak's `idle` (8 beats) and both `celebrate` loops (4 beats) are phase-locked to the room's music beat (the same accumulator as the meter and the stage, 100 / 106 / 112 BPM); Gumbo's `idle` (breathing) free-runs from a seeded phase. `idle_bored` after 20–26 s without a cue. Runtime blink every 4–7 s (seeded), never across an authored eye swap.
+- **Kicks:** `spinStart` = a damped lean (Gumbo) / nod (Croak) spring on the chest / head; `spotUpgrade` = Gumbo's nod.
+- **Look-at:** `ctrl_look` is aimed from the head (elevation → head, +5° per 100 units, clamped at 12° by the rig; direction → pupils), blended in and out over ≈ 0.15 s. Each flying wild is followed on the DropRun schedule (launch C + 40 ms + i × 110 ms, 640 ms along `dropArc`).
+- **Tiers and memory:** one atlas density resident per character: the half pages (Gumbo 648×512, Croak 632×512, 2.5 MiB for both) below 0.62 screen px per skeleton unit (0.9 on the low tier), the full pages (1144×1024 + 1272×1020, 9.4 MiB for both) above; upgrades only. Low tier: skeleton updates at 30 Hz. Compact: nothing loads or runs. Croak's `fx_note` puffs carry a code-drawn music note; Gumbo's `fx_sweat` is keyed by no clip and stays empty.
 
 ---
 

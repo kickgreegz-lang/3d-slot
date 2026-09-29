@@ -64,6 +64,9 @@ export class IntroScreen implements GameModule {
   private spaceAllowed = true;
   private calls: gsap.core.Tween[] = [];
   private artHeld = false;
+  private logoTween: gsap.core.Tween | null = null;
+  /** layout kind the game-logo fade was decided for (a rotation re-decides it) */
+  private logoKind: string | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.stage = new OverlayStage(ctx, 'introScreen');
@@ -143,6 +146,25 @@ export class IntroScreen implements GameModule {
     if (!this.open) return;
     this.stage.layout();
     this.cards.layout(introRects(this.ctx.layout), this.res());
+    if (!this.closing && this.logoKind !== null && this.logoKind !== this.ctx.layout.kind) this.fadeGameLogo(true, 0);
+  }
+
+  /**
+   * Where the intro's logo sits over the game's own logo (portrait: 240,90 over 240,40), the game
+   * logo layer fades with the dim; through the dimmer it would ghost as a second word-mark.
+   */
+  private fadeGameLogo(hide: boolean, duration: number): void {
+    const L = this.ctx.layout;
+    const a = introRects(L).logo;
+    const b = L.logo;
+    const under = a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const alpha = hide && under ? 0 : 1;
+    this.logoKind = hide ? L.kind : null;
+    const layer = this.ctx.layers.logo;
+    this.logoTween?.kill();
+    this.logoTween = null;
+    if (duration <= 0 || layer.alpha === alpha) layer.alpha = alpha;
+    else this.logoTween = gsap.to(layer, { alpha, duration, ease: 'power2.out' });
   }
 
   private show(): void {
@@ -154,6 +176,7 @@ export class IntroScreen implements GameModule {
     this.gate.open();
     this.stage.open({ dim: I.dim, fadeIn: sUi(I.dimIn) });
     this.layout();
+    this.fadeGameLogo(true, sUi(I.dimIn));
     this.cards.toggle.set(this.skip);
     this.catcher.handler = () => this.dismiss();
     this.offKey = onScreenKey((k) => {
@@ -178,6 +201,7 @@ export class IntroScreen implements GameModule {
     const I = SCREENS_TIMING.introCards;
     this.calls.push(
       gsap.delayedCall(sUi(I.out * 0.6), () => {
+        this.fadeGameLogo(false, sUi(I.out * 0.6));
         void this.stage.close(sUi(I.out * 0.6)).then(() => this.finish());
       }),
     );
@@ -196,6 +220,7 @@ export class IntroScreen implements GameModule {
     this.closing = false;
     for (const c of this.calls) c.kill();
     this.calls = [];
+    this.fadeGameLogo(false, 0);
     this.offKey?.();
     this.offKey = null;
     this.catcher.handler = null;

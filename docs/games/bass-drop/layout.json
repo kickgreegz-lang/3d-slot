@@ -35,34 +35,37 @@
       "meterChip": { "x": 112, "y": 478, "w": 272, "h": 56 },
       "fsPlate": { "x": 1514, "y": 300, "w": 344, "h": 110 },
       "mascots": {
+        "$comment": "2D Spine rigs (ANIMATION_SET 5): the 2x canvas (Gumbo 868x992, Croak 720x1260 units) contain-fits the rect, root (feet) on the rect's bottom centre. Croak stands behind the booth, a step further back (smaller scale).",
         "gumbo": {
-          "x": 0,
-          "y": 557,
-          "w": 434,
-          "h": 496,
-          "feet": { "x": 217, "y": 1053 }
+          "x": -2,
+          "y": 604,
+          "w": 400,
+          "h": 456,
+          "scale": 0.46,
+          "feet": { "x": 198, "y": 1060 }
         },
         "croak": {
-          "x": 1560,
-          "y": 430,
-          "w": 360,
-          "h": 630,
-          "feet": { "x": 1740, "y": 1060 }
+          "x": 1402,
+          "y": 512,
+          "w": 317,
+          "h": 554,
+          "scale": 0.44,
+          "feet": { "x": 1560.5, "y": 1066 }
         },
-        "booth": { "x": 1436, "y": 640, "w": 230, "h": 300 }
+        "booth": { "x": 1432, "y": 858, "w": 236, "h": 212 }
       },
       "tumblePlate": { "x": 960, "y": 961, "scale": 0.9 },
       "hud": {
-        "$comment": "Swamp Funk LANDSCAPE.hud (src/games/swamp-funk/layout.ts) unchanged except win.x.",
-        "spin": { "x": 1747, "y": 800, "size": 250, "tilt": 20 },
-        "autoplay": { "x": 1770, "y": 636 },
-        "turbo": { "x": 1841, "y": 662 },
-        "menu": { "x": 166, "y": 712 },
-        "bonusBuy": { "x": 150, "y": 846 },
-        "betMinus": { "x": 1529, "y": 1009 },
-        "betPlus": { "x": 1854, "y": 1009 },
-        "betValue": { "x": 1692, "y": 1000 },
-        "balance": { "x": 46, "y": 1000 },
+        "$comment": "Swamp Funk hex HUD (radii unchanged: small r 36, bonus buy r 88) re-placed around the 2D mascots: no hex on a head or torso. Spin size 250 -> 230.",
+        "spin": { "x": 1790, "y": 800, "size": 230, "tilt": 20 },
+        "autoplay": { "x": 1698, "y": 628 },
+        "turbo": { "x": 1866, "y": 628 },
+        "menu": { "x": 430, "y": 578 },
+        "bonusBuy": { "x": 378, "y": 836 },
+        "betMinus": { "x": 1575, "y": 1012 },
+        "betPlus": { "x": 1850, "y": 1012 },
+        "betValue": { "x": 1712, "y": 1000 },
+        "balance": { "x": 300, "y": 1000 },
         "win": { "x": 960, "y": 1030 },
         "smallButton": 72
       },
@@ -107,21 +110,24 @@
       "meterChip": { "x": 370, "y": 504, "w": 340, "h": 60 },
       "fsPlate": "meterChip",
       "mascots": {
+        "$comment": "Both stand on the beam top (y 520); Gumbo clear of the left horn and the meter ring, Croak behind the booth (feet hidden) clear of the right horn.",
         "gumbo": {
-          "x": 0,
-          "y": 150,
-          "w": 400,
-          "h": 430,
-          "feet": { "x": 200, "y": 580 }
+          "x": 119,
+          "y": 165,
+          "w": 321,
+          "h": 367,
+          "scale": 0.37,
+          "feet": { "x": 279.5, "y": 532 }
         },
         "croak": {
-          "x": 680,
-          "y": 150,
-          "w": 400,
-          "h": 430,
-          "feet": { "x": 880, "y": 580 }
+          "x": 720,
+          "y": 76,
+          "w": 260,
+          "h": 454,
+          "scale": 0.36,
+          "feet": { "x": 850, "y": 530 }
         },
-        "booth": { "x": 730, "y": 380, "w": 210, "h": 140 }
+        "booth": { "x": 718, "y": 320, "w": 210, "h": 200 }
       },
       "tumblePlate": { "x": 540, "y": 1434, "scale": 1.0 },
       "hud": {
@@ -161,7 +167,7 @@
       }
     },
     "tablet": {
-      "$comment": "Landscape composition moved down by 420 (as the current TABLET does); HUD = current TABLET.hud with win.x 960. Intro/buy = landscape + 420.",
+      "$comment": "Landscape composition moved down by 420 (as the current TABLET does), HUD = landscape HUD + 420 with the bottom row (balance / bet) at 1551..1563 and win (960, 1480). Intro/buy = landscape + 420.",
       "size": [1920, 1920],
       "offsetFromLandscape": { "x": 0, "y": 420 },
       "cell": 124,
@@ -182,32 +188,34 @@
       "fsPlate": { "x": 1514, "y": 720, "w": 344, "h": 110 },
       "mascots": {
         "gumbo": {
-          "x": 0,
-          "y": 977,
-          "w": 434,
-          "h": 496,
-          "feet": { "x": 217, "y": 1473 }
+          "x": -2,
+          "y": 1024,
+          "w": 400,
+          "h": 456,
+          "scale": 0.46,
+          "feet": { "x": 198, "y": 1480 }
         },
         "croak": {
-          "x": 1560,
-          "y": 850,
-          "w": 360,
-          "h": 630,
-          "feet": { "x": 1740, "y": 1480 }
+          "x": 1402,
+          "y": 932,
+          "w": 317,
+          "h": 554,
+          "scale": 0.44,
+          "feet": { "x": 1560.5, "y": 1486 }
         },
-        "booth": { "x": 1436, "y": 1060, "w": 230, "h": 300 }
+        "booth": { "x": 1432, "y": 1278, "w": 236, "h": 212 }
       },
       "tumblePlate": { "x": 960, "y": 1381, "scale": 0.9 },
       "hud": {
-        "spin": { "x": 1747, "y": 1220, "size": 250, "tilt": 20 },
-        "autoplay": { "x": 1770, "y": 1056 },
-        "turbo": { "x": 1841, "y": 1082 },
-        "menu": { "x": 166, "y": 1132 },
-        "bonusBuy": { "x": 150, "y": 1266 },
-        "betMinus": { "x": 1529, "y": 1560 },
-        "betPlus": { "x": 1854, "y": 1560 },
-        "betValue": { "x": 1692, "y": 1551 },
-        "balance": { "x": 46, "y": 1551 },
+        "spin": { "x": 1790, "y": 1220, "size": 230, "tilt": 20 },
+        "autoplay": { "x": 1698, "y": 1048 },
+        "turbo": { "x": 1866, "y": 1048 },
+        "menu": { "x": 430, "y": 998 },
+        "bonusBuy": { "x": 378, "y": 1256 },
+        "betMinus": { "x": 1575, "y": 1563 },
+        "betPlus": { "x": 1850, "y": 1563 },
+        "betValue": { "x": 1712, "y": 1551 },
+        "balance": { "x": 300, "y": 1551 },
         "win": { "x": 960, "y": 1480 },
         "smallButton": 72
       },

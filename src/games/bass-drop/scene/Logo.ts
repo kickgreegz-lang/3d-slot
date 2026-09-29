@@ -60,8 +60,8 @@ const bend = (w: BakedWord, radius: number): void => {
  *  - Crest lock-up (landscape / tablet, rect aspect < 3): the emblem contain-fitted to layout.logo, the
  *    two lines set on the banner and bent along its upward bow; BASS DROP may run past the banner face
  *    onto the ribbon ends (never past the rect).
- *  - Wide lock-up (portrait 600 x 110, compact 236 x 40): the emblem at the rect height, the two lines
- *    stacked beside it, the group centred.
+ *  - Wide lock-up (portrait 600 x 110, compact 236 x 40): the two lines alone, centred (the crest at
+ *    the rect height only showed a blank banner, and in portrait it met the status bar).
  * Emblem + word-mark are baked into ONE texture per layout kind and display resolution (the shared
  * glyph cache may be released by the screens at any time, so no live glyph sprite stays on screen).
  * Motion: static + a glint sweeping the word-mark every few seconds (UI time; not on the low tier),
@@ -172,28 +172,17 @@ export class Logo implements GameModule {
       return { comp, emblem: em };
     }
 
-    // wide lock-up: [emblem] [SWAMP FUNK / BASS DROP]
+    // wide lock-up (portrait 600 x 110, compact 236 x 40): the word-mark alone, centred. At the rect
+    // height the crest's banner cannot carry the lines (beside them it read as a blank ribbon), and
+    // in portrait the crest ran into the status bar (Hud: y 6, full width).
     const h = r.h;
-    const em = this.emblem ? new Sprite({ texture: this.emblem, anchor: 0.5 }) : null;
-    const eh = h * 1.04;
-    const ew = em ? (eh * E.w) / E.h : 0;
-    const gap = em ? h * 0.12 : 0;
-    const textMax = r.w - ew - gap;
-    const mainWord = word(main, MAIN_STYLE, h * 0.4, textMax, res);
+    const mainWord = word(main, MAIN_STYLE, h * 0.44, r.w, res);
     const mainW = mainWord.textWidth * mainWord.scale.x;
-    const topWord = word(top, TOP_STYLE, h * 0.22, Math.min(textMax, mainW * 0.9), res);
-    const textW = Math.max(mainW, topWord.textWidth * topWord.scale.x);
-    const x0 = -(ew + gap + textW) / 2;
-    if (em) {
-      em.scale.set(eh / E.h);
-      em.position.set(x0 + ew / 2, 0);
-      comp.addChild(em);
-    }
-    const tx = x0 + ew + gap + textW / 2;
-    topWord.position.set(tx, -h * 0.27);
-    mainWord.position.set(tx, h * 0.15);
+    const topWord = word(top, TOP_STYLE, h * 0.23, Math.min(r.w, mainW * 0.9), res);
+    topWord.position.set(0, -h * 0.27);
+    mainWord.position.set(0, h * 0.15);
     comp.addChild(topWord, mainWord);
-    return { comp, emblem: em };
+    return { comp, emblem: null };
   }
 
   // ======================================================================= shine

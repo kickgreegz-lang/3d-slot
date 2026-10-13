@@ -92,3 +92,35 @@ jobs:
         run: node --test tools/licence/test/audit.test.mjs
       - name: provenance chain (matte -> variants -> key -> flipbook -> pack -> audit)
         run: tools/.venv/bin/python tools/assets/test/test_chain.py
+
+  # docs/new-slot: the new-game kit. Unit tests (environment director, scaffold lib), then a probe
+  # game is scaffolded, type-checked with every other game, gated, built and approval-smoked, so the
+  # scaffold can never rot while the engine moves on.
+  new-game-kit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: kit unit tests
+        run: pnpm test:kit
+      - name: scaffold a probe game, typecheck every game, kit gates, build
+        run: |
+          node tools/new-game/scaffold.mjs ci-probe --title "CI Probe"
+          pnpm typecheck
+          node tools/new-game/kit-check.mjs ci-probe
+          pnpm build:ci-probe
+      - name: approval smoke on the probe (7 viewports, host allowlist, zero console output)
+        run: |
+          npx playwright install --with-deps chromium
+          GAME=ci-probe node tools/qa/approval.mjs --serve --port 4173 --out screenshots/approval-ci-probe
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: approval-ci-probe
+          path: screenshots/approval-ci-probe

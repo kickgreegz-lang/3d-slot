@@ -1,0 +1,25 @@
+{
+  "$comment": "3-star scorecard (docs/new-slot/STAKE_3_STAR.md §3). OUR rubric, not Stake's: one copy per reviewer. Scores use Stake's scale only: 0, 0.33, 0.67, 1, 1.33, 1.67, 2, 2.33, 2.67, 3. reviewerScore = min(weighted mean, lowest pillar + 0.67), and capped at 2.0 when any cap is true. Ship gate: every reviewer >= 2.67 average and no pillar < 2.33.",
+  "game": "{{ID}}",
+  "build": "",
+  "reviewer": { "id": "", "brief": "A lobby player on a phone | B slot-studio art director | C Stake reviewer with the checklist | human" },
+  "pillars": {
+    "P1_mechanic_creativity": { "weight": 15, "score": null, "evidence": [], "fix": "" },
+    "P2_world_art_uniqueness": { "weight": 15, "score": null, "evidence": [], "fix": "" },
+    "P3_animation_completeness": { "weight": 15, "score": null, "evidence": [], "fix": "" },
+    "P4_game_feel": { "weight": 15, "score": null, "evidence": [], "fix": "" },
+    "P5_win_feature_presentation": { "weight": 10, "score": null, "evidence": [], "fix": "" },
+    "P6_audio": { "weight": 10, "score": null, "evidence": [], "fix": "" },
+    "P7_smoothness_performance": { "weight": 10, "score": null, "evidence": [], "fix": "" },
+    "P8_detail_ux": { "weight": 10, "score": null, "evidence": [], "fix": "" }
+  },
+  "caps": {
+    "symbol_missing_core_state": false,
+    "static_background": false,
+    "p95_frame_over_20ms_reference_android": false,
+    "baked_text_in_art_or_video": false,
+    "approval_gate_failing": false
+  },
+  "reviewerScore": null,
+  "topThreeFixes": []
+}

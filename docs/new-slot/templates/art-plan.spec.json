@@ -1,0 +1,49 @@
+{
+  "$comment": "Higgsfield batch spec for `pnpm gen:hf-ingest plan --spec docs/games/{{ID}}/hf/x01.spec.json --max-credits 40` (docs/new-slot/HIGGSFIELD_PLAYBOOK.md §3.1). x01 = style exploration: one direction per job group (A..D), each with a premium symbol, the wild and a background thumbnail. Replace every TODO with the game's briefs (DESIGN.md §7/§9) before planning; vars override the template placeholders, so the briefs never come from another game's art bible. Copy this file to s01/e01/b01 specs for the production batches.",
+  "batch": "{{ID}}-x01",
+  "model": "nano_banana_pro",
+  "purpose": "{{TITLE}}: 4 style directions (premium symbol, wild, background thumbnail)",
+  "planTier": "Higgsfield Ultra",
+  "resolution": "2k",
+  "aspect_ratio": "1:1",
+  "jobs": [
+    {
+      "name": "{{ID}}_x01_A_H1",
+      "asset": "{{ID}}_x01_A_H1",
+      "template": "symbol.txt",
+      "vars": {
+        "SUBJECT": "TODO one-sentence brief of the top premium symbol, adult proportions, no text",
+        "STYLE_FORMULA": "TODO direction A style formula (outline rule, rendering, palette, light)",
+        "FILL_PCT": "85",
+        "KEY_HEX": "#00FF00"
+      }
+    },
+    {
+      "name": "{{ID}}_x01_A_W",
+      "asset": "{{ID}}_x01_A_W",
+      "template": "symbol.txt",
+      "vars": {
+        "SUBJECT": "TODO wild symbol brief (an object or emblem, no letters; WILD stays live text)",
+        "STYLE_FORMULA": "TODO direction A style formula (same text as above)",
+        "FILL_PCT": "85",
+        "KEY_HEX": "#00FF00"
+      }
+    },
+    {
+      "name": "{{ID}}_x01_A_bg",
+      "asset": "{{ID}}_x01_A_bg",
+      "template": "background.txt#A",
+      "resolution": "2k",
+      "aspect_ratio": "21:9",
+      "stage": "backgrounds",
+      "vars": {
+        "STYLE_FORMULA": "TODO direction A environment formula",
+        "SETTING": "TODO the world of the game (no characters, no text, no signage)",
+        "LEFT_MASS": "TODO the bright mass at the far left",
+        "RIGHT_MASS": "TODO the bright mass at the far right",
+        "TOP_DETAIL": "TODO the ceiling or sky detail",
+        "VARIANT_NOTE": ""
+      }
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+# TEMPLATE rig.yaml for one symbol -> art/source/symbols/<ID>/rig.yaml (docs/new-slot/ANIMATION_STATES.md §2).
+# Format reference: tools/spine/README.md "rig.yaml reference". Coordinates: image space of the 360x360 @2x canvas
+# (x right, y down), the same space as parts.json. Build:
+#   pnpm spine:gen art/source/symbols/<ID>/rig.yaml -o build/spine/sym_<ID>.json
+#   pnpm spine:validate build/spine/sym_<ID>.json --kind auto
+#   pnpm spine:pack --images art/source/spine/images --skeleton build/spine/sym_<ID>.json --out build/spine --name sym_<ID>
+#   pnpm spine:capture --skel build/spine/sym_<ID>.json --atlas build/spine/sym_<ID>.atlas --out qa/sym_<ID>/spine
+# Unknown keys are errors. Top-level keys starting with x_ are comments (x_miss below holds the planned `miss`
+# parameters; motion.<anim> only accepts animations the generator builds). Budgets: <= 30 bones, <= 250 mesh vertices, <= 8 slots, <= 4 physics chains, no clipping.
+#
+# State map (the five core states the kit requires, ANIMATION_STATES.md §1):
+#   spin    -> `blur` (region swap to <part>_blur; the runtime also stretches the body) - generated below
+#   land    -> `land` (contact on frame 0, squash 0.83-0.87 on the `squash` bone)       - generated below
+#   miss    -> procedural for premium/low tiers (engine delta E1); specials get a Spine `miss` once
+#              tools/spine gains the builder (engine delta E5) - see x_miss at the end
+#   connect -> `win` + `win_loop` (pop to ~125 %, `win_peak` event)                     - generated below
+#   explode -> `explode` (`explode_burst` on frame 2-3, ends at alpha 0)                - generated below
+symbol: TODO_ID                # e.g. H1 -> skeleton sym_H1, attachments sym_H1/<part>
+parts: parts.json              # written by the master cut (HIGGSFIELD_PLAYBOOK.md §3.2)
+kind: high                     # high | special | royal (validator profile)
+
+bones:
+  # one bone per moving part; joint = pivot, tip = direction + length (needed for rotation physics)
+  - {name: TODO_part, parent: body, joint: [180.0, 200.0], tip: [180.0, 120.0]}
+  # appendages that should overlap after the land and the pop: a 2-bone physics chain each
+  - {name: phys_TODO_1, parent: body, joint: [150.0, 110.0], tip: [160.0, 60.0]}
+  - {name: phys_TODO_2, parent: phys_TODO_1, joint: [160.0, 60.0], tip: [175.0, 20.0]}
+  - {name: fx_glow, parent: root, joint: [180.0, 185.0]}
+
+meshes:
+  # parts that bend instead of rotating rigidly
+  TODO_part: {type: trace, spacing: 14, weights: {mode: idw, bones: [TODO_part], power: 4}}
+
+physics:
+  # presets: floppy 3 Hz (cables, tails) | default 3.5 Hz | stiff 4 Hz (antenna tips) | jelly
+  - {bone: phys_TODO_1, preset: default, rotate: 0.7, inertia: 0.6}
+  - {bone: phys_TODO_2, preset: default, rotate: 0.8, inertia: 0.6}
+
+motion:
+  idle: {frames: 90, sway: 1.5}
+  blur: {frames: 1}
+  land: {squash: 0.85, rebound: 0.06, frames: 12}
+  win: {pop: 1.25, wiggle: 4}
+  win_loop: {frames: 40, beats: 2, sway: 2}
+  explode: {frames: 15, burst_frame: 2, fade_from: 5, scatter: 80, spin: 40, burst_scale: 1.15, end_scale: 1.2, body_fade: [3, 9]}
+  # specials only (kind: special): anticipation: {frames: 16}
+
+accents:
+  land:
+    - {bone: TODO_part, type: wiggle, amount: 5, at: impact+1, count: 2, frames: 10}
+  win_loop:
+    - {bone: TODO_part, type: pulse, amount: 0.06, beats: 2}
+
+events:
+  # payloads are real SfxId / FX ids (src/game/events.ts, ANIMATION_CONTRACT §8.2)
+  win: [{name: vfx, at: peak, string: fx_sparkle}]
+
+# planned `miss` state (move under motion: as `miss` once spinegen ships the builder, engine delta E5)
+x_miss: {frames: 9, deflate: 0.94, desaturate: 0.4}

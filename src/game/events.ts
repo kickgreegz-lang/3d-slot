@@ -1,7 +1,7 @@
 import type { GameSceneEvents } from '@game/events';
 import type { Container } from 'pixi.js';
 import type { ClusterWin, GameType, Position } from '../book/types';
-import type { WinTierKey } from '../config/game';
+import type { LandWeight, WinTierKey } from '../config/game';
 import type { LayoutSpec } from '../config/layout';
 import type { SpeedProfile } from '../core/timing';
 import type { SymbolLook, SymbolPlayOptions } from '../symbols/types';
@@ -194,6 +194,14 @@ export type CoreGameEvents = {
    * for 'impact' crushes. Orbs, link snaps and count pops sync to it. Synchronous.
    */
   'board:burst': { positions: Position[] };
+  /**
+   * Emitted BY the Board at each column impact it voices (the moments its land SFX play): drop-in
+   * columns with the column's heaviest land weight (columns landing together are merged), every
+   * scatter land ('special'), the first impact of each tumble refill column (tumble: true), and
+   * transform 'drop' / 'impact' contacts. For background / frame / feature reactions
+   * (docs/new-slot/ANIMATION_STATES.md §3 `land`). Synchronous.
+   */
+  'board:land': { weight: LandWeight; tumble: boolean };
 
   /** Multiplier spots changed (animate only cells where value differs). */
   'spots:update': { grid: number[][]; previous: number[][] };

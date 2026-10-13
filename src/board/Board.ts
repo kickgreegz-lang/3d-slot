@@ -425,7 +425,7 @@ export class Board implements GameModule {
         const prev = sfxAt.get(t);
         if (!prev || WEIGHT_RANK[heaviest] > WEIGHT_RANK[prev]) sfxAt.set(t, heaviest);
       }
-      for (const [t, w] of sfxAt) tl.call(() => this.sfx(LAND_SFX[w]), [], s(t));
+      for (const [t, w] of sfxAt) tl.call(() => this.landed(w, false), [], s(t));
 
       // ---- anticipation phases --------------------------------------------
       const antColor = SYMBOLS.S?.color ?? 0xffd54a;
@@ -504,6 +504,7 @@ export class Board implements GameModule {
     const p = slotPos(this.ctx.layout, reel, row);
     const def = getSymbolDef(sv.id);
     this.sfx(SCATTER_SFX[Math.min(n, SCATTER_SFX.length) - 1]);
+    this.ctx.game.broadcast('board:land', { weight: 'special', tumble: false });
     this.ctx.game.broadcast('fx:burst', { kind: 'scatter', x: p.x, y: p.y, color: def.color, count: 26, power: 0.9 });
     this.elevate(sv);
     if (keepAnticipating) {
@@ -721,7 +722,10 @@ export class Board implements GameModule {
         const t = Math.round(firstImpact);
         if (Number.isFinite(firstImpact) && !sfxTimes.has(t)) {
           sfxTimes.add(t);
-          tl.call(() => this.sfx('tumble_drop'), [], s(t));
+          tl.call(() => {
+            this.sfx('tumble_drop');
+            this.ctx.game.broadcast('board:land', { weight: 'medium', tumble: true });
+          }, [], s(t));
         }
       }
 
@@ -799,7 +803,7 @@ export class Board implements GameModule {
     this.boardIds[c.reel][c.row] = c.id;
     this.ctx.game.broadcast('fx:burst', { kind: 'sparkle', x: p.x, y: p.y, color: def.color, count: 18, power: 0.8 });
     this.ctx.game.broadcast('fx:shake', { trauma: BOARD_TIMING.transformTrauma * 0.6 });
-    this.sfx(LAND_SFX[def.landWeight]);
+    this.landed(def.landWeight, false);
     await sv.land({ velocity: 2400, silent: true });
   }
 
@@ -883,7 +887,7 @@ export class Board implements GameModule {
       land = sv.land({ velocity: (g * T) / 1000, silent: true });
       this.ctx.game.broadcast('fx:shake', { trauma: BOARD_TIMING.transformTrauma });
       this.ctx.game.broadcast('fx:burst', { kind: 'dust', x: p.x, y: p.y + L.cell * 0.4, color: def.color, power: 0.9 });
-      this.sfx(LAND_SFX[def.landWeight]);
+      this.landed(def.landWeight, false);
     }, [], s(T));
     await this.play(tl);
     await Promise.all([burst, land]);
@@ -1031,6 +1035,12 @@ export class Board implements GameModule {
     for (let reel = 0; reel < GRID.reels; reel++) {
       for (let row = GRID.firstVisibleRow; row <= GRID.lastVisibleRow; row++) fn(this.slots[reel][row], reel, row);
     }
+  }
+
+  /** A voiced column / contact impact: its land SFX + the board:land scene event. */
+  private landed(weight: LandWeight, tumble: boolean): void {
+    this.sfx(LAND_SFX[weight]);
+    this.ctx.game.broadcast('board:land', { weight, tumble });
   }
 
   private sfx(id: SfxId, extra: { volume?: number; rate?: number } = {}): void {

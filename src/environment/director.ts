@@ -10,7 +10,7 @@ import { ENV_CHANNELS, ENV_TIMING as T, type EnvChannel, type EnvState } from '.
  *
  *   round:start                  spinStart()     hold 'spin'
  *   board:reveal (anticipation)  reveal(true)    hold 'anticipation' (only when the book says so)
- *   sfx land_* / tumble_drop     land(weight)    kick per column impact; releases 'spin'
+ *   board:land                   land(weight)    kick per column impact; releases 'spin'
  *   board:showWins               wins(colour)    hold 'connect' in the winner's colour
  *   board:tumble                 tumble()        releases 'connect'
  *   board:burst                  burst()         explode kick

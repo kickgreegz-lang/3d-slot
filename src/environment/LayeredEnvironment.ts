@@ -75,11 +75,7 @@ export class LayeredEnvironment implements GameModule {
       g.on('layout:change', ({ layout }) => this.layout(layout)),
       g.on('round:start', () => d.spinStart()),
       g.on('board:reveal', ({ anticipation }) => d.reveal(anticipation.some((a) => a > 0))),
-      g.on('sfx', ({ id }) => {
-        if (id.startsWith('land_')) d.land(LAND_WEIGHT[id.slice(5)] ?? 1);
-        else if (id === 'tumble_drop') d.land(0.8);
-        else if (id.startsWith('scatter_land_')) d.land(LAND_WEIGHT.special);
-      }),
+      g.on('board:land', ({ weight, tumble }) => d.land((LAND_WEIGHT[weight] ?? 1) * (tumble ? 0.8 : 1))),
       g.on('board:showWins', ({ wins }) => {
         if (!wins.length) return;
         const top = wins.reduce((a, b) => (b.win > a.win ? b : a));

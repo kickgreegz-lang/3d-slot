@@ -108,5 +108,5 @@ export const ENV_TIMING = registerTiming('environment', {
   placeholderResolution: 0.5,
 });
 
-/** Land weight -> kick multiplier (mirrors TIMING.land.weight). */
+/** board:land weight -> kick multiplier (mirrors TIMING.land.weight). */
 export const LAND_WEIGHT: Record<string, number> = { light: 0.7, medium: 1, heavy: 1.35, special: 1.6 };

@@ -103,7 +103,7 @@ The background reacts to the same moments as the board. In a new game, `LayeredE
 |---|---|---|---|
 | idle | always | per-layer drift; a slow light breath | breath 0.07 over 4.6 s |
 | spin | `round:start` | the scene leans in (zoom about the board centre, more on near layers) and the lights rise; **held** until the first land | zoom +1%, light +0.12 |
-| land | one per column impact (the board's per-column land SFX: `land_*`, `tumble_drop`, `scatter_land_*`) | a parallax thump: near layers dip and spring back, weighted like the symbol | lift 4 px × weight (0.7–1.6) |
+| land | `board:land` (one per voiced column impact: drop-in columns, scatters, tumble refills ×0.8, transform contacts) | a parallax thump: near layers dip and spring back, weighted like the symbol | lift 4 px × weight (0.7–1.6) |
 | miss | `round:end` with no win | the plates exhale (dim), then recover | dim 0.14 for 650 ms |
 | connect | `board:showWins` | the light layers glow and **tint to the top winner's colour**, pulsing; **held** until the tumble | light 0.55, tint 1, pulse 2.2 Hz |
 | explode | `board:burst` | a light flash + zoom punch + upward jolt, spaced ≥ 334 ms (≤ 3/s, IRIS) | light 0.6, zoom +1.6%, lift −6 px |
@@ -139,7 +139,7 @@ These are what the runtime still lacks for the full state set. Each is a small, 
 | Id | Delta | Where |
 |---|---|---|
 | **E1** | **Done (procedural part).** `SymbolView.setMiss`: the losers of `Board.showWins` deflate (sy −6%, sx +2.5%) toward their feet and sink 3 px on top of the win dim, then spring back with it (`SYMBOL_TIMING.miss`, lab section `symbol`). It is opt-in per game with `FEATURES.missState` (the scaffold turns it on; Swamp Funk and Bass Drop are unchanged). **Still to do:** play a rig's Spine `miss` for specials once E5 exists, and an optional desaturate in `symbolFxShader` | `src/symbols/SymbolRig.ts` (`setMiss`, `applyBody`), `src/board/Board.ts` (`dim(…, miss)`), `src/symbols/types.ts`, `src/symbols/symbolTiming.ts` (`miss`), `src/config/game.ts` (`GameFeatures.missState`) |
-| **E2** | `board:land {reel, weight}` scene event per column impact, so the background, frame and feature modules stop reading SFX ids | `src/board/Board.ts:414-428` (per-column land SFX), `src/game/events.ts` |
+| **E2** | **Done.** `board:land {weight, tumble}`: the Board emits it at every impact it voices (`Board.landed`), and `LayeredEnvironment` listens to it instead of SFX ids. Frames and feature modules can use it too | `src/board/Board.ts` (`landed`), `src/game/events.ts` |
 | **E3** | Idle accents for low symbols when they have a rig or a glint (`Board.idleTick` skips royals) | `src/board/Board.ts:947-950` |
 | **E4** | Low-kind Spine rigs for L1–L5: contract kind `low` (budgets in §2.3), `symbolKinds` L1–L5 → `low`, the spinegen kind whitelist, the validator kind lists, and the royal-only branches in `SymbolRig` only when there is no rig | `tools/spine/contract.json` (`kinds` :74, `symbolKinds` :86), `tools/spine/spinegen/rig.py:171-173`, `tools/spine/validate.mjs:118,121`, `src/symbols/SymbolRig.ts:406,443,661,1103`, the game's `SYMBOL_SPINE` |
 | **E5** | Spine `miss` in the contract (`loop: false`, 6–12 f, required for `special`, ends on its held pose) + a spinegen builder | `tools/spine/contract.json` `animations`, `tools/spine/spinegen/motion.py` (`DEFAULTS` :23, `ORDER` :89, `BUILDERS` :436), `tools/spine/README.md`, the rig template's `x_miss` |

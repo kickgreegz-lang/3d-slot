@@ -305,8 +305,20 @@ def _norm(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", s.lower())
 
 
+def owner_overrides(route: str, model: str, deny: dict | None = None) -> list[dict]:
+    """Denylist entries the project owner overrode (entry.ownerOverride) that this model matches."""
+    deny = deny if deny is not None else load_json(DENYLIST_PATH)
+    ids = set(_raw_denylist_hits(route, model, deny))
+    return [e for e in deny.get("entries", []) if e.get("ownerOverride") and e["id"] in ids]
+
+
 def denylist_hits(route: str, model: str, deny: dict | None = None) -> list[str]:
     deny = deny if deny is not None else load_json(DENYLIST_PATH)
+    overridden = {e["id"] for e in deny.get("entries", []) if e.get("ownerOverride")}
+    return [h for h in _raw_denylist_hits(route, model, deny) if h not in overridden]
+
+
+def _raw_denylist_hits(route: str, model: str, deny: dict) -> list[str]:
     hits = []
     m_low = model.lower()
     for pat, did in FAMILY_DENY:
@@ -340,7 +352,10 @@ def gate(route: str, model: str) -> dict:
     hits = denylist_hits(route, model)
     if hits:
         raise GenError(f"REFUSED: {route}:{model} matches licenses/denylist.json {hits}", 3)
-    lid, vendor, slug = ROUTES[route]
+    route_lid, vendor, slug = ROUTES[route]
+    overrides = owner_overrides(route, model)
+    # an owner-overridden model generates under its own pending licence, so its output can never ship by accident
+    lid = overrides[0]["ownerOverride"]["licenseId"] if overrides else route_lid
     entries = {e["id"]: e for e in allow["entries"]}
     if lid is None:
         cands = [e for e in allow["entries"] if model in e.get("modelIds", [])]
@@ -354,6 +369,10 @@ def gate(route: str, model: str) -> dict:
         if entry.get("modelIds") and model not in entry["modelIds"]:
             raise GenError(f"REFUSED: {model!r} not in allowlist[{lid}].modelIds {entry['modelIds']}", 3)
     warnings = []
+    if overrides:
+        o = overrides[0]
+        warnings.append(f"owner override of denylist '{o['id']}' ({o['ownerOverride']['date']}): "
+                        f"{o['ownerOverride']['scope']} only, licence '{lid}'")
     if entry.get("clearance") != "cleared" and entry.get("clearance") != "not-required":
         warnings.append(f"clearance for '{entry['id']}' is '{entry.get('clearance')}': build now, but outputs "
                         f"cannot ship until licenses/clearances/ holds the written answer")

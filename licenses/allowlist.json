@@ -1229,6 +1229,27 @@
       "source": [
         "https://github.com/yisibl/resvg-js/blob/main/LICENSE"
       ]
+    },
+    {
+      "id": "higgsfield-openai-owner-override",
+      "name": "OpenAI GPT Image via Higgsfield, under the owner override (licenses/denylist.json openai-gpt-image.ownerOverride)",
+      "vendor": "Higgsfield",
+      "kind": "service",
+      "stages": [
+        "exploration"
+      ],
+      "licenseId": "LicenseRef-Higgsfield-ToU-2026-08-27",
+      "allowedUses": [
+        "concept and mood references only"
+      ],
+      "conditions": [
+        "Not shippable while clearance is pending: OpenAI's usage policy lists 'real money gambling' as a prohibited use. Clear it in writing, or replace the asset, before release."
+      ],
+      "clearance": "pending",
+      "verified": false,
+      "source": [
+        "https://openai.com/policies/usage-policies/"
+      ]
     }
   ]
 }

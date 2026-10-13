@@ -21,7 +21,14 @@
       "appliesTo": ["gpt-image-2", "gpt-image-2.5-sunburst", "gpt-image-2.5-flare", "gpt-image-1.5", "higgsfield:gpt_image_2", "higgsfield:gpt_image_2_5"],
       "unblockIf": "Written confirmation from OpenAI that producing art for a licensed real-money slot is permitted.",
       "alternative": "vertex-nano-banana-pro + toonout/birefnet matting; ideogram-v3-api for native alpha after clearance.",
-      "source": ["https://github.com/OpenTermsArchive/genai-versions/blob/main/ChatGPT/Acceptable%20Use%20Policy.md", "https://openai.com/policies/usage-policies/", "https://openai.com/policies/commerce-policies/"]
+      "source": ["https://github.com/OpenTermsArchive/genai-versions/blob/main/ChatGPT/Acceptable%20Use%20Policy.md", "https://openai.com/policies/usage-policies/", "https://openai.com/policies/commerce-policies/"],
+      "ownerOverride": {
+        "date": "2026-10-13",
+        "by": "project owner",
+        "scope": "exploration and concept references",
+        "licenseId": "higgsfield-openai-owner-override",
+        "note": "The owner reads OpenAI's 'real money gambling' prohibition as not covering game art and chose GPT Image 2.5 for concept boards. Generation is allowed; every output carries the pending licence above, so licence:audit --release refuses to ship it until the owner clears that entry. Delete this block to restore the refusal."
+      }
     },
     {
       "id": "openai-gpt-6-astra",

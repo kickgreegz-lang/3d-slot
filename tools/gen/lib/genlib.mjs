@@ -248,7 +248,18 @@ export const FAMILY_DENY = [
 
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
+/** Denylist entries the project owner overrode (entry.ownerOverride) that this model matches. */
+export function ownerOverrides(route, model, deny = loadJson(DENYLIST_PATH)) {
+  const ids = new Set(rawDenylistHits(route, model, deny));
+  return (deny.entries ?? []).filter((e) => e.ownerOverride && ids.has(e.id));
+}
+
 export function denylistHits(route, model, deny = loadJson(DENYLIST_PATH)) {
+  const overridden = new Set((deny.entries ?? []).filter((e) => e.ownerOverride).map((e) => e.id));
+  return rawDenylistHits(route, model, deny).filter((id) => !overridden.has(id));
+}
+
+function rawDenylistHits(route, model, deny) {
   const hits = new Set();
   const low = model.toLowerCase();
   for (const [re, id] of FAMILY_DENY) if (re.test(low)) hits.add(id);
@@ -284,7 +295,10 @@ export function gate(route, model) {
   const allow = loadJson(ALLOWLIST_PATH);
   const hits = denylistHits(route, model);
   if (hits.length) throw new GenError(`REFUSED: ${route}:${model} matches licenses/denylist.json ${JSON.stringify(hits)}`, 3);
-  const [lid, vendor, slug] = ROUTES[route];
+  const [routeLid, vendor, slug] = ROUTES[route];
+  const override = ownerOverrides(route, model)[0];
+  // an owner-overridden model generates under its own pending licence, so its output can never ship by accident
+  const lid = override?.ownerOverride.licenseId ?? routeLid;
   let entry;
   if (lid === null) {
     entry = allow.entries.find((e) => (e.modelIds ?? []).includes(model));
@@ -295,6 +309,7 @@ export function gate(route, model) {
     if (entry.modelIds && !entry.modelIds.includes(model)) throw new GenError(`REFUSED: ${model} not in allowlist[${lid}].modelIds`, 3);
   }
   const warnings = [];
+  if (override) warnings.push(`owner override of denylist '${override.id}' (${override.ownerOverride.date}): ${override.ownerOverride.scope} only, licence '${lid}'`);
   if (entry.clearance !== 'cleared' && entry.clearance !== 'not-required') {
     warnings.push(`clearance for '${entry.id}' is '${entry.clearance}': build now, but outputs cannot ship until licenses/clearances/ holds the written answer`);
   }

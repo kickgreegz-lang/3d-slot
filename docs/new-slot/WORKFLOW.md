@@ -64,7 +64,7 @@ Typical calendar for one game with the engine as it is (one person + agents): A 
    - `i18n.ts`: copy plus social wording.
 2. Book events → handlers → scene events (`book.ts`, `events.ts`), with resume and replay folding.
 3. Feature modules in `modules.ts`, one job each, all events and timing tables (`registerTiming`).
-4. **Engine deltas** E1–E8 ([ANIMATION_STATES §5](ANIMATION_STATES.md#5-engine-deltas-build-these-in-phase-b-owner-gameplay-engineer)) plus the mechanic deltas from the design.
+4. **Engine deltas** E1–E9 ([ANIMATION_STATES §5](ANIMATION_STATES.md#5-engine-deltas-build-these-in-phase-b-owner-gameplay-engineer)) plus the mechanic deltas from the design.
 5. Fixture books for every scenario in `mock/games/<id>/books/` (math-engineer) until the certified books land.
 6. Wire your existing menus and UI to the `ui:*` / `hud:*` events.
 
@@ -159,7 +159,7 @@ Typical calendar for one game with the engine as it is (one person + agents): A 
 
 - **Do:**
   - `/verify-slot <id> --release` must report READY;
-  - `/star-review <id>` must predict 3 stars with margin (every reviewer ≥ 2.67, no pillar < 2.33);
+  - `/star-review <id>` must predict 3 stars with margin (the ship gate of STAKE_3_STAR.md §3: every reviewer's score ≥ 2.67, no pillar < 2.33);
   - a person plays 50 spins on a phone and fills a scorecard too;
   - run EA IRIS on the big-win, feature and anticipation captures.
 - **Gate:** READY + the rating margin + `pnpm licence:audit --release --strict` green + IRIS pass.

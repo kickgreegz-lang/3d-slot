@@ -34,8 +34,8 @@ There are two tiers. Low is chosen when any of these is true, checked in order:
 | Active Spine instances | 12 | 24 |
 | Symbol idle glint / breath shaders | off | on |
 | Mascot render target (if used) | 341×512, 2× MSAA, 30 fps | 512×768, 4× MSAA, 60 fps |
-| Half-density Spine atlases | from 0.9 px per unit | from 0.62 px per unit |
-| Plates halved on the GPU | at ≤ 0.75 display px per texel | at ≤ 0.6 |
+| Half-density Spine atlases (Bass Drop's own modules only) | from 0.9 px per unit | from 0.62 px per unit |
+| Plates halved on the GPU (Bass Drop's own background only; `LayeredEnvironment` does not, delta E9) | at ≤ 0.75 display px per texel | at ≤ 0.6 |
 | Bake resolution (procedural art) | 1 | 1.5 |
 | Logo / frame shine sweeps | off | on |
 
@@ -55,6 +55,7 @@ There are two tiers. Low is chosen when any of these is true, checked in order:
 - `LayeredEnvironment` uses no filters or render targets.
 - 3–5 plate layers + 1 light layer per look; only the orientation on screen is loaded.
 - Feature looks load at the trigger and are dropped after the crossfade back.
+- Plate memory: a plate costs width × height × 4 bytes on the GPU (2560×1280 = 12.5 MiB, 2048×1024 = 8 MiB). Until delta E9 every tier loads the same plates and the base look stays resident while a feature look shows, so keep base + the largest feature look ≤ 48 MiB of plates: `maxSize: 2048` in the `tools/bg/layers.py` specs (1600 for the mid/front layers) and 3–4 layers per look rather than 5. Check it in §5 with the texture-memory reading on the low tier during free spins.
 - The video loop is high tier only, with one decoder at a time, ≤ 1080 px tall stacked alpha, and a static plate fallback.
 
 **FX:**
@@ -83,6 +84,7 @@ There are two tiers. Low is chosen when any of these is true, checked in order:
 | ~~E6~~ | **Done:** context loss now stops the loop and shows a reload dialog; a restored context reloads, and the round resumes (`src/render/contextLoss.ts`) | — |
 | E7 | AssetPack output is built but the runtime still loads single files; the low-tier `@0.5x` variants are unused | Extra memory and download on low-end phones |
 | E8 | The background feature look is pre-uploaded at the trigger (`renderer.prepare`); the FX atlases and big-win skeletons are not yet | A first-use hitch at the most-watched moment |
+| E9 | `LayeredEnvironment` (every scaffolded game) has no tier logic: no GPU plate halving, and the base look stays resident while the feature look shows | Two resident looks of 2560 px plates can exceed the 120 MB low-tier budget on their own (see §3, backgrounds) |
 | — | `?tier=` is honoured in production builds; the dev lab chunk is emitted to `dist/` and reachable with `?dev=lab` | Not a Stake rule, but gate both behind DEV for a clean build |
 
 ## 5. How to measure (`performance-engineer` routine)

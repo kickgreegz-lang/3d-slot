@@ -42,6 +42,11 @@
         "LEFT_MASS": "TODO the bright mass at the far left",
         "RIGHT_MASS": "TODO the bright mass at the far right",
         "TOP_DETAIL": "TODO the ceiling or sky detail",
+        "VALUE_STRUCTURE": "TODO dark style: delete these five lines (the dark-neon defaults apply); bright style: the values in HIGGSFIELD_PLAYBOOK.md §4 (bright styles)",
+        "FLOOR": "TODO see VALUE_STRUCTURE",
+        "VARIANT_KEEP": "TODO see VALUE_STRUCTURE",
+        "PORTRAIT_CENTRE": "TODO see VALUE_STRUCTURE",
+        "PORTRAIT_FLOOR": "TODO see VALUE_STRUCTURE",
         "VARIANT_NOTE": ""
       }
     }

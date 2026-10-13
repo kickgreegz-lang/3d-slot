@@ -23,7 +23,7 @@ Subagents cannot spawn subagents, so orchestration always lives in the main sess
 | `symbol-animator` | Spine rigs for every symbol state (rig.yaml → gen → validate → capture loop), `animation-states.json` | → animation-critic, gameplay-engineer (manifest registration) |
 | `environment-artist` | BG plate layers, `environment.ts`, ENV_TIMING, feature looks, env rigs, frame reactions | → animation-critic, performance-engineer |
 | `vfx-engineer` | per-symbol explode materials, particles, flights, flashes, shake, hit-stop budgets | → animation-critic, performance-engineer |
-| `gameplay-engineer` | `src/games/<id>/`, new book and scene events, feature modules, engine deltas E1–E8 + the mechanic deltas | → engine-reviewer, qa-verifier |
+| `gameplay-engineer` | `src/games/<id>/`, new book and scene events, feature modules, engine deltas E1–E9 + the mechanic deltas | → engine-reviewer, qa-verifier |
 | `audio-director` | cue sheet (SfxId), generation, mastering, manifest | → **a human listens** |
 | `performance-engineer` | tiers, budgets, pre-warm, context loss, device traces | → qa-verifier |
 

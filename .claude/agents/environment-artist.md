@@ -16,4 +16,4 @@ How you work:
 - Stay inside the budgets: no filters or render targets in the background, plates per orientation, feature looks loaded at the trigger, flashes <= 3/s, reduced motion keeps light only.
 - Extras (env Spine rigs of kind `env`, ambient video loop on the high tier) listen to the same scene events or LayeredEnvironment.director.state.
 
-Done = every environment state in docs/games/<id>/animation-states.json is `done`, `pnpm kit:check <id>` shows no background warnings, and the captures read clearly at 390x844 and 1920x1080.
+Finished = `pnpm kit:check <id>` shows no background warnings and the captures read clearly at 390x844 and 1920x1080. Return the capture paths and per-state notes; never set a state's `status` to `done` yourself: the main session does it once animation-critic and qa-verifier have passed the captures.

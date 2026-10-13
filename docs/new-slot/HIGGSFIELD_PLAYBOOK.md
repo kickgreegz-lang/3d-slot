@@ -43,7 +43,7 @@ What every asset has to do once it is in the engine is in [ANIMATION_STATES.md](
 | Royals / low symbols | `recraft_v4_1` (`model_type: vector`) → `nano_banana_pro` material pass | 2k | Vector glyph first (clean silhouette and outline), then an NBP edit pass for the material. Royals also need all five states, so plan them as rigs, not stickers |
 | Wild / Scatter hero 3D turn | `generate_3d` (image → GLB) | from the beauty master | Feeds `pnpm blender:symbol --mesh … --clip turn` (a baked 3D turn inside the Spine rig). Optional; only when the design wants a real 3D spin |
 | **Board**: frame pieces, panel, corner caps | `nano_banana_pro` | **4k**, on magenta `#FF00FF` | Beam, post, sill and cap as separate straight-on pieces → matte → 3- or 9-slice. Never one baked frame image (it cannot adapt to 4 layouts) |
-| **Background plate** (base game) | `nano_banana_pro` | **4k**, 21:9 | Crop to 2:1 for landscape. Keep the centre **calm and low-detail** (the board covers it). Its **value depends on the style**: a dark neon world darkens the centre and puts the brightest masses at the edges (Swamp Funk); a bright casual world (Sugar-Gates-style) keeps the centre at the same light value and puts big rounded props in the bottom corners, because the dark board well provides the contrast. Override `background.txt#A`'s darker-centre line with `--var`/spec vars for bright styles |
+| **Background plate** (base game) | `nano_banana_pro` | **4k**, 21:9 | Crop to 2:1 for landscape. Keep the centre **calm and low-detail** (the board covers it). Its **value depends on the style**: a dark neon world darkens the centre and puts the brightest masses at the edges (Swamp Funk); a bright casual world (Sugar-Gates-style) keeps the centre at the same light value and puts big rounded props in the bottom corners, because the dark board well provides the contrast. The value structure is five template vars (`VALUE_STRUCTURE`, `FLOOR`, `VARIANT_KEEP`, `PORTRAIT_CENTRE`, `PORTRAIT_FLOOR`) whose defaults are the dark-neon structure; a bright style overrides all five in the spec `vars` (§4, bright styles) |
 | Portrait plate | `flux_2_pro_outpaint` (or `outpaint`) from the 21:9 plate | expand top and bottom | Gives the 1:2 portrait master **in the same scene**. Regenerating would give a different scene |
 | **BG layers for parallax** | `image_decompose` (`standard`) on the approved plate | — | Splits the plate into back / mid / front / prop layers for parallax and per-layer reactions. If the split is poor, regenerate the plate as separate layers with the same refs: `background.txt#B` |
 | BG feature variants (free spins, super feature) | `nano_banana_pro` edit of the base plate | 4k, plate as ref | Same composition, new lighting/mood ("same scene at a blood-moon, red rim light …"). The runtime cross-fades between them |
@@ -101,8 +101,8 @@ In a cloud session, add the CDN host (`d8j0ntlcm91z4.cloudfront.net`) to the env
 ### 3.2 Symbols: from master to animatable parts
 
 1. **Matte and fit** onto the 360×360 @2x canvas, with no halo:
-   `pnpm matte art/_raw/sym_<ID>/vNN/raw.png "build/pack/symbols{tps}/sym_<ID>.png" --symbol <ID> --key <measured hex> --emit-master art/source/symbols/<ID>/master_2048.png`.
-   **Measure the key from the corners.** The requested `#00FF00` is not guaranteed: it came back olive once.
+   `pnpm matte art/_raw/sym_<ID>/vNN/raw.png "build/pack/symbols{tps}/sym_<ID>.png" --symbol <ID> --expect-key <KEY_HEX> --emit-master art/source/symbols/<ID>/master_2048.png`.
+   The default `--key auto` measures the key from the border and **fails (exit 1, regenerate) when the background is not flat** (the keyUniform gate). The requested `#00FF00` is not guaranteed (it came back olive once): `--expect-key` reports the drift, `--max-key-drift N` makes it fatal. Never force `--key <hex>` to get past a failed gate; forcing is only for the `--alpha-from` route (tools/matte/README.md).
 2. **Variants:** `pnpm matte:variants … --symbol <ID>` gives `_blur` (the spin state) and `_glow` (the connect state).
 3. **Cut parts from the rig-ready master** (the "master cut", the production route since Bass Drop phase C):
    - Every pixel visible at rest comes from the approved master, partitioned along its painted outlines.
@@ -120,12 +120,12 @@ In a cloud session, add the CDN host (`d8j0ntlcm91z4.cloudfront.net`) to the env
 3. Generate the **emissive or light layer**: neon, magic glow, lava, windows, anything that can pulse. It is a separate additive layer (`background.txt#C`) so the runtime can drive its intensity per state.
 4. Optionally generate the **ambient loop** for the high tier (`kling3_0`, start = end = plate, no camera move). Then deflicker, key or stack, and encode with `pnpm video:stacked … --shipped`.
 5. Make the **feature variants** as edits of the same plate, so the cross-fade lines up pixel for pixel.
-6. **Pack the layers:** write `docs/games/<id>/bg/<look>_<orient>.layers.json` (layer id, source, depth, role, `blur`, `parentId`), then run `tools/.venv/bin/python tools/bg/layers.py --spec … --manifest art/manifest.json` ([tools/bg](../../tools/bg/README.md)). It blurs each layer offline, writes the WebP plates to `public/assets/<id>/bg/`, records provenance, and prints the `src` lines for `environment.ts`.
+6. **Pack the layers:** write `docs/games/<id>/bg/<look>_<orient>.layers.json` (layer id, source, depth, role, `blur`, `parentId`), then run `tools/.venv/bin/python tools/bg/layers.py --spec … --manifest art/manifest.json` ([tools/bg](../../tools/bg/README.md)). It blurs each layer offline, writes the WebP plates to `public/assets/<id>/bg/`, records provenance, and prints the `src` lines for `environment.ts`. Every gate runs on every layer first: if one layer fails, nothing is written except the QA report.
 7. Hand the layers to `environment-artist`, who wires the state reactions ([ANIMATION_STATES §3](ANIMATION_STATES.md#3-background-states)).
 
 ### 3.4 Board
 
-Generate the frame pieces on magenta, matte them with `--key FF00FF`, and assemble them in code as 3- or 9-slices per layout space. Two optional extras:
+Generate the frame pieces on magenta, matte them with `--expect-key FF00FF` (measured key, keyUniform gate on), and assemble them in code as 3- or 9-slices per layout space. Two optional extras:
 - an **emissive trim layer**, so the frame can light up on connect, explode and feature;
 - a **glass panel** texture behind the symbols.
 
@@ -138,6 +138,11 @@ Generate the frame pieces on magenta, matte them with `--key FF00FF`, and assemb
 - **One subject, centred, with the full silhouette inside the frame, on a flat key colour.** No cast shadow on the background (it breaks the matte).
 - Symbols must differ in **silhouette and dominant colour**, not just in detail. Gate: a 64 px greyscale silhouette matrix must show no confusable pairs.
 - Backgrounds: "no characters, no UI, no text or readable signage, a calm low-detail centre". Darken the centre only for dark, neon styles; bright styles keep it light and rely on the board's dark well.
+- **Bright styles** (pastel, daylight, candy, casual): override the five value-structure vars of `background.txt` in every A/E/F job, for example
+  `"VALUE_STRUCTURE": "calm, evenly lit, lower-detail pastel area in the central 60% where the reel grid sits, lighter than the edges but lower in contrast than the symbols; the most saturated, most detailed rounded masses at the far left and far right edges and in the bottom corners"`,
+  `"FLOOR": "a soft, light ground at the bottom"`, `"VARIANT_KEEP": "the calm, light, lower-detail central 60% and the saturated rounded masses at the edges"`,
+  `"PORTRAIT_CENTRE": "a calm, light, lower-detail central column over the middle 60% of the width from one third of the height down, where the reel grid sits"`, `"PORTRAIT_FLOOR": "a soft, light ground across the bottom fifth"`.
+  Left at their defaults, every plate asks for the dark-neon structure.
 - Soft-focus backgrounds: generate them only **moderately** soft (shapes still readable, so `image_decompose` can split the layers), then blur each layer **at build time** (offline, per depth). Never put a full-screen runtime blur filter on the background: it costs a filter pass every frame on low-tier phones.
 - Avoid meme-adjacent and IP-adjacent designs (Bass Drop's first frog read as a well-known meme frog). The art director checks every character for resemblance to known IP.
 - Keep 6–14 references per batch: the approved paintover heroes plus the best of the previous batch. Never re-use a rejected image as a reference.

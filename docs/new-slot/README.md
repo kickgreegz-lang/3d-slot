@@ -26,7 +26,7 @@ Then, in Claude Code, opened at the repo root:
 |---|---|
 | [WORKFLOW.md](WORKFLOW.md) | The full path, phase by phase: owner agent, commands, outputs, gates, your decision points |
 | [TECH_STACK.md](TECH_STACK.md) | The runtime "combo" (Pixi 8 + Spine 4.3 + GSAP one clock + springs + shaders + layered environment + optional three.js) and the production pipeline, with pinned versions |
-| [ANIMATION_STATES.md](ANIMATION_STATES.md) | spin, land, miss, connect and explode for **every** symbol, the 9 background states, the board, the cheapest technique per tier, budgets, engine deltas E1–E8 |
+| [ANIMATION_STATES.md](ANIMATION_STATES.md) | spin, land, miss, connect and explode for **every** symbol, the 9 background states, the board, the cheapest technique per tier, budgets, engine deltas E1–E9 |
 | [PERFORMANCE.md](PERFORMANCE.md) | Mobile targets (p95 < 16.7 ms), tiers, rules per layer, how to measure, known gaps |
 | [HIGGSFIELD_PLAYBOOK.md](HIGGSFIELD_PLAYBOOK.md) | Which Higgsfield model for which asset, the paid-job ledger route, the asset list and credits, prompt rules |
 | [STAKE_3_STAR.md](STAKE_3_STAR.md) | Stake's official rating process and tiers, every approval gate mapped to a repo check, our 3-star scorecard, the internal review protocol |
@@ -40,7 +40,7 @@ Then, in Claude Code, opened at the repo root:
 | `src/environment/` | **LayeredEnvironment** + **EnvironmentDirector**: the opt-in background module that plays every background state (unit-tested) |
 | `tools/new-game/` | `scaffold.mjs` (`pnpm new-game`, `--remove` to undo), `kit-check.mjs` (`pnpm kit:check`, `--release`, `--init-states`), `lib.mjs`, `template/`, `test/` (`pnpm test:kit`) |
 | `tools/build/all.mjs` | `pnpm build:all`: typecheck + build every game into `dist/<id>/` |
-| `.claude/agents/`, `.claude/skills/`, `.claude/settings.json` | the agent team, the slash commands, and safe-command permissions (paid generation always asks) |
+| `.claude/agents/`, `.claude/skills/`, `.claude/settings.json` | the agent team, the slash commands, and safe-command permissions. Every credit-spending Higgsfield tool is an `ask` rule under the three names the connector goes by (`Higgsfield` in cloud sessions, `claude_ai_Higgsfield` for the claude.ai connector in the local CLI, `higgsfield` for a hand-added server). If yours differs (`/mcp` shows it), add the same rules for that name |
 | `.github/workflows/qa.yml` → `new-game-kit` | CI scaffolds a probe game on every push: unit tests, typecheck, kit gates, build, approval smoke |
 
 ## Worked example

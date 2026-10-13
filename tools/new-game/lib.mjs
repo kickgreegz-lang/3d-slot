@@ -14,17 +14,93 @@ export const defaultGame = () => {
 };
 export const tsconfigFor = (game) => (game === defaultGame() ? 'tsconfig.json' : `tsconfig.${game}.json`);
 
-/** Symbols of a game config: [{id, kind}] in declaration order (regex, like the pipeline tools). */
-export const parseSymbols = (configText) => {
-  const out = [];
-  const seen = new Set();
-  for (const m of configText.matchAll(/id:\s*'([A-Za-z0-9_]+)',\s*kind:\s*'([a-z]+)'/g)) {
-    if (!seen.has(m[1])) out.push({ id: m[1], kind: m[2] }), seen.add(m[1]);
+/**
+ * Skip a string literal or comment starting at `i` (or return i when there is none).
+ * Enough of a tokenizer for config object literals: '..', "..", `..` (no nested ${}), //, /* *\/.
+ */
+const skipNoise = (t, i) => {
+  const c = t[i];
+  if (c === "'" || c === '"' || c === '`') {
+    for (let j = i + 1; j < t.length; j++) {
+      if (t[j] === '\\') j++;
+      else if (t[j] === c) return j + 1;
+    }
+    return t.length;
   }
-  // helper constructors such as royal('L1', ...): the helper body declares the kind
-  for (const h of configText.matchAll(/const\s+(\w+)\s*=\s*\([^)]*\)\s*:\s*SymbolDef\s*=>\s*\(\{[\s\S]*?kind:\s*'([a-z]+)'/g)) {
-    for (const m of configText.matchAll(new RegExp(`${h[1]}\\(\\s*'([A-Za-z0-9_]+)'`, 'g'))) {
-      if (!seen.has(m[1])) out.push({ id: m[1], kind: h[2] }), seen.add(m[1]);
+  if (c === '/' && t[i + 1] === '/') {
+    const j = t.indexOf('\n', i);
+    return j < 0 ? t.length : j;
+  }
+  if (c === '/' && t[i + 1] === '*') {
+    const j = t.indexOf('*/', i + 2);
+    return j < 0 ? t.length : j + 2;
+  }
+  return i;
+};
+
+/** Top-level `key: value` entries of the object literal opening at `open` (index of its `{`). */
+const objectEntries = (t, open) => {
+  const entries = [];
+  let depth = 0;
+  let valueStart = -1;
+  let key = null;
+  for (let i = open; i < t.length; ) {
+    const j = skipNoise(t, i);
+    if (j !== i) {
+      i = j;
+      continue;
+    }
+    const c = t[i];
+    if (c === '{' || c === '(' || c === '[') depth++;
+    else if (c === '}' || c === ')' || c === ']') {
+      depth--;
+      if (depth === 0) {
+        if (key !== null) entries.push({ key, value: t.slice(valueStart, i).trim() });
+        return entries;
+      }
+    } else if (depth === 1 && c === ',' && key !== null) {
+      entries.push({ key, value: t.slice(valueStart, i).trim() });
+      key = null;
+    } else if (depth === 1 && key === null) {
+      const m = /^\s*['"]?([A-Za-z0-9_]+)['"]?\s*:/.exec(t.slice(i));
+      if (m) {
+        key = m[1];
+        i += m[0].length;
+        valueStart = i;
+        continue;
+      }
+    }
+    i++;
+  }
+  return entries;
+};
+
+const quoted = "['\"]([A-Za-z0-9_]+)['\"]";
+
+/**
+ * Symbols of a game config: [{id, kind}] in declaration order. Reads the `SYMBOLS` object literal
+ * entry by entry (any field order, either quote style, comments allowed); entries built by a helper
+ * such as `royal('L1', ...)` take the kind the helper's body declares. Entries whose id or kind
+ * cannot be read are returned with kind null (kit-check fails on them instead of skipping them).
+ */
+export const parseSymbols = (configText) => {
+  const t = configText;
+  const decl = /export const SYMBOLS\b[^=]*=\s*\{/.exec(t);
+  if (!decl) return [];
+  const helpers = {};
+  for (const h of t.matchAll(/const\s+(\w+)\s*=\s*\([^)]*\)\s*:\s*SymbolDef\s*=>\s*\(\{([\s\S]*?)\}\);/g)) {
+    const k = new RegExp(`\\bkind:\\s*${quoted}`).exec(h[2]);
+    if (k) helpers[h[1]] = k[1];
+  }
+  const out = [];
+  for (const { key, value } of objectEntries(t, decl.index + decl[0].length - 1)) {
+    if (value.startsWith('{')) {
+      const id = new RegExp(`\\bid:\\s*${quoted}`).exec(value)?.[1] ?? key;
+      const kind = new RegExp(`\\bkind:\\s*${quoted}`).exec(value)?.[1] ?? null;
+      out.push({ id, kind });
+    } else {
+      const call = new RegExp(`^(\\w+)\\(\\s*${quoted}`).exec(value);
+      out.push({ id: call?.[2] ?? key, kind: call ? (helpers[call[1]] ?? null) : null });
     }
   }
   return out;

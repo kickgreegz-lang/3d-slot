@@ -21,7 +21,10 @@ licence inherited from `parentId`, so Higgsfield-derived plates stay unshippable
   tools/.venv/bin/python tools/bg/layers.py --spec docs/games/<game>/bg/base_landscape.layers.json \\
       [--out public/assets/<game>/bg] [--manifest art/manifest.json] [--shipped] [--license-id ID] [--dry-run]
 
-Exit: 0 ok · 1 a layer failed a gate (missing file, too small, wrong role) · 2 usage.
+Every gate runs on every layer before anything is written: one failed layer means no plate, no provenance
+row and no snippet for the whole spec (re-run after fixing it). The QA report is always written.
+
+Exit: 0 ok · 1 a layer failed a gate (missing file, no licence, too small, wrong role, holed back plate) · 2 usage.
 """
 from __future__ import annotations
 
@@ -80,17 +83,25 @@ def main(argv=None) -> int:
     report = {"spec": prov.rel(a.spec), "game": game, "look": look, "orient": orient, "layers": [], "passed": True}
     rows, snippet = [], []
 
+    # pass 1: every gate (sources, roles, size, opaque back plate, licence) on every layer, nothing written
+    prepared = []
+    manifest_rows = prov.lookup_manifest(a.manifest)
     for layer in spec["layers"]:
         lid, src, role = layer.get("id"), layer.get("src"), layer.get("role", "plate")
         entry = {"id": lid, "src": src, "role": role, "problems": []}
         report["layers"].append(entry)
+        if not lid:
+            entry["problems"].append("layer has no id")
         if role not in ROLES:
             entry["problems"].append(f"role {role!r} not in {sorted(ROLES)}")
         src_path = prov.REPO / src if src and not Path(src).is_absolute() else Path(src or "")
         if not src or not src_path.is_file():
             entry["problems"].append(f"source {src!r} not found")
+        parents = [layer["parentId"]] if layer.get("parentId") else []
+        lic = a.license_id or prov.inherit_license(parents, manifest=manifest_rows, default=None)
+        if not lic:
+            entry["problems"].append("no licence: give the layer a parentId (its source row) or pass --license-id")
         if entry["problems"]:
-            report["passed"] = False
             continue
         img = Image.open(src_path).convert("RGBA")
         scale = min(1.0, max_size / max(img.size))
@@ -98,32 +109,30 @@ def main(argv=None) -> int:
             img = img.resize((round(img.width * scale), round(img.height * scale)), Image.LANCZOS)
         if max(img.size) < MIN_LONG_SIDE:
             entry["problems"].append(f"long side {max(img.size)} px < {MIN_LONG_SIDE} (regenerate at 4k or upscale the master)")
-            report["passed"] = False
         img = premultiplied_blur(img, float(layer.get("blur", 0)))
         opaque = img.split()[3].getextrema() == (255, 255)
         if role == "plate" and layer.get("depth", 0) == 0 and not opaque:
             entry["problems"].append("the back plate (depth 0) has transparency: fill it or parallax will show holes")
-            report["passed"] = False
         name = f"{look}_{lid}_{orient}.webp"
-        dst = out_dir / name
-        entry.update({"out": prov.rel(dst), "size": list(img.size), "alpha": not opaque, "blur": layer.get("blur", 0)})
-        if not a.dry_run:
-            out_dir.mkdir(parents=True, exist_ok=True)
-            (img.convert("RGB") if opaque else img).save(dst, "WEBP", quality=a.quality, method=6)
-            entry["bytes"] = dst.stat().st_size
-            parents = [layer["parentId"]] if layer.get("parentId") else []
-            lic = a.license_id or prov.inherit_license(parents, manifest=prov.lookup_manifest(a.manifest), default=None)
-            if not lic:
-                entry["problems"].append("no licence: give the layer a parentId (its source row) or pass --license-id")
-                report["passed"] = False
-                continue
-            digest = prov.sha256_file(dst)
-            rows.append(prov.make_row(
-                id=prov.safe_id(f"{game}.bg.{look}.{lid}.{orient}", "webp", digest[:8]), path=dst, stage="backgrounds",
-                sha256=digest, vendor="self", model="tools/bg/layers.py", version="1", license_id=lic,
-                ref_hashes=[prov.sha256_file(src_path)], parents=parents, shipped=a.shipped,
-                notes=f"depth {layer.get('depth', 0)}, role {role}, blur {layer.get('blur', 0)} px, {img.width}x{img.height}"))
-        snippet.append(f"// {lid}: src: {{ {orient}: './assets/{game}/bg/{name}' }},")
+        entry.update({"out": prov.rel(out_dir / name), "size": list(img.size), "alpha": not opaque, "blur": layer.get("blur", 0)})
+        prepared.append((layer, entry, img, opaque, name, src_path, parents, lic))
+    report["passed"] = all(not e["problems"] for e in report["layers"])
+
+    # pass 2: write the plates, provenance and snippet only when EVERY layer passed (a failed spec ships nothing)
+    if report["passed"]:
+        for layer, entry, img, opaque, name, src_path, parents, lic in prepared:
+            dst = out_dir / name
+            if not a.dry_run:
+                out_dir.mkdir(parents=True, exist_ok=True)
+                (img.convert("RGB") if opaque else img).save(dst, "WEBP", quality=a.quality, method=6)
+                entry["bytes"] = dst.stat().st_size
+                digest = prov.sha256_file(dst)
+                rows.append(prov.make_row(
+                    id=prov.safe_id(f"{game}.bg.{look}.{entry['id']}.{orient}", "webp", digest[:8]), path=dst, stage="backgrounds",
+                    sha256=digest, vendor="self", model="tools/bg/layers.py", version="1", license_id=lic, route="code",
+                    ref_hashes=[prov.sha256_file(src_path)], parents=parents, shipped=a.shipped,
+                    notes=f"depth {layer.get('depth', 0)}, role {entry['role']}, blur {layer.get('blur', 0)} px, {img.width}x{img.height}"))
+            snippet.append(f"// {entry['id']}: src: {{ {orient}: './assets/{game}/bg/{name}' }},")
 
     qa_dir = prov.REPO / "build/qa/bg" / f"{game}_{look}_{orient}"
     if not a.dry_run:
@@ -134,7 +143,10 @@ def main(argv=None) -> int:
     for e in report["layers"]:
         state = "ok " if not e["problems"] else "FAIL"
         print(f"{state} {e['id']}: {e.get('out', '-')} {e.get('size', '')} {'; '.join(e['problems'])}")
-    print("\nenvironment.ts (merge per layer id):\n" + "\n".join(snippet))
+    if report["passed"]:
+        print("\nenvironment.ts (merge per layer id):\n" + "\n".join(snippet))
+    else:
+        print("\nnothing written to the shipping folder or the manifest: fix the failed layer(s) and re-run", file=sys.stderr)
     return 0 if report["passed"] else 1
 
 

@@ -14,7 +14,12 @@
       "LEFT_MASS": "a shelf of glowing firefly jars and a cyan light bar",
       "RIGHT_MASS": "a neon gator-silhouette sign (icon only, no letters) above a magenta booth",
       "TOP_DETAIL": "sagging string lights and violet spotlight cones",
-      "VARIANT_NOTE": ""
+      "VARIANT_NOTE": "",
+      "VALUE_STRUCTURE": "Darker, lower-detail area in the central 60% where the reel grid sits; brightest neon masses at the far left and far right edges",
+      "FLOOR": "dark floor at the bottom",
+      "VARIANT_KEEP": "the darker, lower-detail central 60% where the reel grid sits and the brightest neon masses at the far left and far right edges",
+      "PORTRAIT_CENTRE": "a darker, lower-detail central column over the middle 60% of the width from one third of the height down, where the reel grid sits",
+      "PORTRAIT_FLOOR": "dark floor across the bottom fifth"
     }
   },
   "frame_piece.txt": {

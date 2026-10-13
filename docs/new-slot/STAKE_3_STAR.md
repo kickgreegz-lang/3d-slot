@@ -31,7 +31,7 @@ A game first has to pass approval. Only then does its star rating decide where i
 | 2.67 | 2.33 | 2.33 | 2.44 | **2** |
 | 3 | 2.33 | 2 | 2.44 | **2** |
 
-**The consequence:** one lukewarm reviewer (2.0) is survivable only if the other two give 3. **Design so that every reviewer gives at least 2.67.**
+**The consequence:** 3 stars needs at least 23 of the 27 thirds. A lukewarm reviewer at 2.0 (6 thirds) is survivable only if the other two add up to at least 17 thirds (3 + 3, or 3 + 2.67); two reviewers at 2.33 sink it whatever the third gives. **Design so that every reviewer gives at least 2.67.**
 
 ### 1.2 Tiers and what each one gets you (verbatim descriptions)
 
@@ -140,7 +140,7 @@ Each reviewer scores **every pillar on Stake's own scale** (0 to 3 in thirds). T
 | **P7** | **Smoothness and performance** (10) | A steady 60 fps (p95 frame < 16.7 ms) on a mid-range Android and an iPhone. First spin in ≤ 5 s on 4G. No hitch on a feature start (textures uploaded early). No memory growth over 500 spins | Hitches when a feature starts; jank on tumbles; long loading; frame drops in big wins |
 | **P8** | **Attention to detail and UX** (10) | Pixel-clean at all 7 viewports and in the popout; legible in turbo; clear rules with every value; a polished replay screen; a bright, punchy tile; consistent copy; social-mode wording right | Clipped UI at 320×568; misaligned frame pieces; typos; a dark tile; rules missing values |
 
-**Ship target:** at least **2.67 on every pillar** from every internal reviewer, and an internal Stake-formula average of **at least 2.67**. That leaves one third of slack for a stricter real reviewer.
+**Ship gate** (the one gate the whole kit uses: §4 step 6, WORKFLOW phase H, `/star-review`, scorecard.json): every internal reviewer's score (`reviewerScore`) is **at least 2.67** and **no pillar is below 2.33** for any reviewer (which also puts the Stake-formula average at 2.67 or more). That leaves one third of slack per reviewer for a stricter real one.
 
 **Automatic caps** (any one of them caps that reviewer's score at 2.0, whatever the pillars say):
 - a royal or any other symbol without the five core states;
@@ -168,7 +168,7 @@ This mirrors Stake's own process: three independent reviewers, the same scale, t
 3. **Run three blind reviewers.** `/star-review <id>` spawns `star-rating-reviewer` three times with different reviewer briefs: (A) a lobby player on a phone, (B) a slot-studio art director, (C) a Stake reviewer working from the checklist. They cannot see each other's output, and each fills in `scorecard.json`.
 4. **Add at least one person.** A human plays 50 spins on a real phone and fills in the same scorecard. The judges see frames, not motion, and none of them can hear.
 5. **Compute the result** with Stake's formula: average, then round, with the below-1.0 rule. Report each reviewer, the average, the predicted stars and the three weakest pillars.
-6. **Gate:** submit only when the internal average is **at least 2.67** and **no pillar is below 2.33** for any reviewer. Otherwise fix the weakest pillar first and repeat from step 1.
+6. **Gate** (the ship gate in §3): submit only when every internal reviewer's score (`reviewerScore`) is **at least 2.67** and **no pillar is below 2.33** for any reviewer (which also puts the Stake-formula average at 2.67 or more). Otherwise fix the weakest pillar first and repeat from step 1.
 
 ---
 

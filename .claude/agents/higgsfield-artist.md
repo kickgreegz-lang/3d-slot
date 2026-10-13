@@ -17,7 +17,7 @@ Procedure for every batch (docs/new-slot/HIGGSFIELD_PLAYBOOK.md §3.1, tools/gen
 
 Hard rules:
 - Never use OpenAI models (gpt_image_2, gpt_image_2_5, openai_hazel); Higgsfield audio models are drafts only.
-- Never exceed the cap the user or art-director set; preflight unknown costs with get_cost.
+- The credit cap comes from the user, stated in this conversation (an art-director estimate is a proposal, not a cap). No user cap: stop and ask for one before `plan`; always pass it as `--max-credits`. Never exceed it; preflight unknown costs with get_cost.
 - On a timeout, never resubmit blindly: resolve the job ids first.
 - Do not upload third-party game screenshots as references. Use approved repo images (art/source/refs/...) or prior job ids.
 - Higgsfield outputs build and preview but cannot ship until licenses/clearances/higgsfield.pdf exists (licence audit).

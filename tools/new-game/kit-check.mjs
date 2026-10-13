@@ -18,7 +18,8 @@
  * --strict: warnings fail too. Exit 0 pass · 1 fail · 2 usage.
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { dirname, resolve, sep } from 'node:path';
 import { ENV_STATES, ROOT, animationStates, defaultGame, parseSymbols, tierOf, tsconfigFor } from './lib.mjs';
 
 const args = process.argv.slice(2);
@@ -39,6 +40,15 @@ const release = has('--release');
 const strict = has('--strict');
 const initStates = has('--init-states');
 const game = args.shift();
+// --json writes a report: only into build/, qa/, screenshots/ or the temp dir (never over a source file)
+if (jsonOut) {
+  const abs = resolve(jsonOut);
+  const okRoots = ['build', 'qa', 'screenshots'].map((d) => resolve(ROOT, d) + sep).concat(resolve(tmpdir()) + sep);
+  if (!okRoots.some((r) => abs.startsWith(r)) || !abs.endsWith('.json')) {
+    console.error(`refused: --json must be a .json path under build/, qa/, screenshots/ or ${tmpdir()} (got ${jsonOut})`);
+    process.exit(2);
+  }
+}
 if (!game || args.length) {
   console.error('usage: node tools/new-game/kit-check.mjs <game> [--release] [--strict] [--json <file>] | <game> --init-states');
   process.exit(2);
@@ -159,13 +169,17 @@ const statesPath = resolve(docs, 'animation-states.json');
 const symbols = parseSymbols(config);
 const coverage = { done: 0, placeholder: 0, todo: 0 };
 
-/** Built skeleton JSON for a symbol, if any (build output, or a shipped JSON export). */
-const skeletonFor = (sid) =>
-  [
-    resolve(ROOT, `build/spine/sym_${sid}.json`),
-    resolve(ROOT, `public/assets/${game}/spine/sym_${sid}.json`),
-    resolve(ROOT, `public/assets/spine/sym_${sid}.json`),
-  ].find((p) => existsSync(p));
+/**
+ * Built skeleton JSON for a symbol. Symbol ids (H1, W, L1 ...) repeat across games, so the game's own
+ * paths win; the shared build/spine/ and public/assets/spine/ copies may belong to another game and
+ * are only accepted with a warning (and never in --release).
+ */
+const skeletonFor = (sid) => {
+  const own = [resolve(ROOT, `public/assets/${game}/spine/sym_${sid}.json`), resolve(ROOT, `build/spine/${game}/sym_${sid}.json`)].find((p) => existsSync(p));
+  if (own) return { path: own, shared: false };
+  const shared = [resolve(ROOT, `build/spine/sym_${sid}.json`), resolve(ROOT, `public/assets/spine/sym_${sid}.json`)].find((p) => existsSync(p));
+  return shared ? { path: shared, shared: true } : null;
+};
 
 if (!existsSync(statesPath)) fail('A1', `docs/games/${game}/animation-states.json missing (scaffold generates it from config.ts)`);
 else {
@@ -179,7 +193,9 @@ else {
     const listed = Object.keys(st.symbols ?? {});
     const notListed = symbols.map((s) => s.id).filter((id) => !listed.includes(id));
     const stale = listed.filter((id) => !symbols.some((s) => s.id === id));
-    if (!symbols.length) fail('A1', 'no symbols parsed from config.ts (keep the `id: \'X\', kind: \'y\'` literal shape)');
+    const unreadable = symbols.filter((x) => !x.kind).map((x) => x.id);
+    if (unreadable.length) fail('A1', `SYMBOLS entries without a readable kind: ${unreadable.join(', ')} (use a literal or a helper whose body sets kind)`);
+    if (!symbols.length) fail('A1', 'no SYMBOLS object found in config.ts');
     else if (notListed.length || stale.length)
       fail('A1', `animation-states.json out of sync with SYMBOLS: ${[notListed.length ? `missing ${notListed.join(', ')}` : '', stale.length ? `stale ${stale.join(', ')}` : ''].filter(Boolean).join('; ')}`);
     else pass('A1', `animation-states.json lists all ${symbols.length} symbols`);
@@ -200,13 +216,15 @@ else {
         const skel = skeletonFor(sid);
         if (!skel) {
           const done = spineStates.filter(([, v]) => v.status === 'done').map(([k]) => k);
-          if (done.length) fail('A3', `${sid}: ${done.join(', ')} marked done but no built skeleton (build/spine/sym_${sid}.json)`);
+          if (done.length) fail('A3', `${sid}: ${done.join(', ')} marked done but no built skeleton (public/assets/${game}/spine/ or build/spine/${game}/sym_${sid}.json)`);
           else warn('A3', `${sid}: Spine rig not built yet (${spineStates.map(([k]) => k).join(', ')})`);
         } else {
-          const anims = Object.keys(readJson(skel).animations ?? {});
+          const where = skel.path.replace(`${ROOT}/`, '');
+          if (skel.shared) warn('A3', `${sid}: only a shared skeleton (${where}) exists; it may be another game's rig: build this game's into build/spine/${game}/`);
+          const anims = Object.keys(readJson(skel.path).animations ?? {});
           const lacking = spineStates.flatMap(([k, v]) => [v.clip, v.loop].filter(Boolean).filter((c) => !anims.includes(c)).map((c) => `${k}:${c}`));
-          if (lacking.length) fail('A3', `${sid}: skeleton ${skel.replace(`${ROOT}/`, '')} lacks ${lacking.join(', ')}`);
-          else pass('A3', `${sid}: skeleton has every planned clip`);
+          if (lacking.length) fail('A3', `${sid}: skeleton ${where} lacks ${lacking.join(', ')}`);
+          else if (!skel.shared) pass('A3', `${sid}: skeleton has every planned clip`);
         }
       }
       if (!absent.length && !bad.length) pass('A2', `${sid} (${tierOf(kind)}): ${need.length} states planned`);

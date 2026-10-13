@@ -7,12 +7,29 @@ import { ENV_STATES, ROOT, animationStates, parseSymbols, tierOf } from '../lib.
 
 const cfg = (g) => readFileSync(resolve(ROOT, 'src/games', g, 'config.ts'), 'utf8');
 
-test('parses literal symbols and helper-built royals (swamp-funk)', () => {
+test('parses literal symbols and helper-built royals in declaration order (swamp-funk)', () => {
   const s = parseSymbols(cfg('swamp-funk'));
   assert.deepEqual(
     s.map((x) => `${x.id}:${x.kind}`),
-    ['H1:high', 'H2:high', 'H3:high', 'H4:high', 'W:wild', 'S:scatter', 'L1:royal', 'L2:royal', 'L3:royal', 'L4:royal', 'L5:royal'],
+    ['H1:high', 'H2:high', 'H3:high', 'H4:high', 'L1:royal', 'L2:royal', 'L3:royal', 'L4:royal', 'L5:royal', 'W:wild', 'S:scatter'],
   );
+});
+
+test('any field order, either quote style, braces in comments/strings; unknown helpers -> kind null', () => {
+  const t = [
+    'export const SYMBOLS: Record<string, SymbolDef> = {',
+    '  // a comment with a } brace',
+    '  H5: { label: "Gator {x}", kind: "high", id: "H5", art: { static: "a" } },',
+    "  L1: royal('L1', 'A'),",
+    "  Z9: mystery('Z9'),",
+    '};',
+    "const royal = (id: string, g: string): SymbolDef => ({ id, kind: 'royal', cellScale: 1 });",
+  ].join('\n');
+  assert.deepEqual(parseSymbols(t), [
+    { id: 'H5', kind: 'high' },
+    { id: 'L1', kind: 'royal' },
+    { id: 'Z9', kind: null },
+  ]);
 });
 
 test('parses bass-drop (no scatter)', () => {

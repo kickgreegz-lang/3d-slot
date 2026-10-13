@@ -660,6 +660,8 @@ function cmdPlan(a) {
     for (const w of gate('higgsfield-mcp', model).warnings) warnings.add(w);
     const ctx = jobContext({ name: j.name, template: j.template, vars: j.vars ?? {} });
     const r = render(j.template, buildValues(j.template, { symbol: ctx.symbol, mascot: ctx.mascot, rigReady: ctx.rigReady, overrides: ctx.overrides }));
+    // the scaffolded spec templates mark every brief the game must write as TODO: never pay for one
+    if (/\bTODO\b/.test(r.text)) throw new GenError(`spec.jobs[${i}] (${j.name}): the rendered prompt still contains TODO; write the game's brief into vars first`);
     const resolution = j.resolution ?? spec.resolution ?? '2k';
     const aspect = j.aspect_ratio ?? spec.aspect_ratio ?? '1:1';
     if (!/^\d+:\d+$/.test(aspect)) throw new GenError(`spec.jobs[${i}]: bad aspect_ratio ${aspect}`);

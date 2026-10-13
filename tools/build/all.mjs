@@ -17,7 +17,12 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const args = process.argv.slice(2);
 const onlyAt = args.indexOf('--only');
-const only = onlyAt >= 0 ? (args[onlyAt + 1] ?? '').split(',').filter(Boolean) : null;
+const onlyArg = onlyAt >= 0 ? args[onlyAt + 1] : undefined;
+if (onlyAt >= 0 && (!onlyArg || onlyArg.startsWith('--') || !onlyArg.split(',').some(Boolean))) {
+  console.error('--only needs a comma-separated list of game ids, e.g. --only swamp-funk,bass-drop');
+  process.exit(2);
+}
+const only = onlyArg ? onlyArg.split(',').filter(Boolean) : null;
 const skipTypecheck = args.includes('--skip-typecheck');
 
 const defaultGame =

@@ -19,4 +19,4 @@ Per layer:
 - **provenance:** rows with stage `backgrounds` and the licence inherited from each layer's `parentId`, so Higgsfield-derived plates stay unshippable until the clearance is filed.
 - **output:** `public/assets/<game>/bg/<look>_<id>_<orient>.webp`, plus `build/qa/bg/<game>_<look>_<orient>/{qa.json,manifest.json}` and the `src` lines for `src/games/<game>/environment.ts`.
 
-The spec format is in the script's docstring. Exit codes: 0 ok · 1 a gate failed · 2 usage.
+The spec format is in the script's docstring. Every gate (source, role, licence, size, holed back plate) runs on every layer before anything is written: one failed layer means no plate, no provenance row and no snippet for the whole spec. Provenance rows carry `route: "code"` (a local derivative, not a vendor call). Exit codes: 0 ok · 1 a gate failed · 2 usage.

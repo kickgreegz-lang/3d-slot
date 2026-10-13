@@ -8,8 +8,8 @@ disable-model-invocation: true
 Run the Higgsfield batch: $ARGUMENTS
 
 Delegate to the `higgsfield-artist` agent with these exact steps (docs/new-slot/HIGGSFIELD_PLAYBOOK.md §3.1):
-1. `balance`; refuse if the cap exceeds the balance.
-2. `pnpm gen:hf-ingest plan --spec <spec> --max-credits <n>` (fix the spec and re-plan on exit 2; exit 4 = over the cap).
+1. Stop and ask the user for a cap if `--max-credits <n>` is missing from the arguments above (never pick one yourself). Then `balance`; refuse if the cap exceeds the balance.
+2. `pnpm gen:hf-ingest plan --spec <spec> --max-credits <n>` (fix the spec and re-plan on exit 2, which includes a prompt still containing TODO; exit 4 = over the cap).
 3. For each calls[i]: generate_image_batch → save the reply → `pnpm gen:hf-ingest record --plan <plan> --from <reply>` at once.
 4. jobs_wait in groups of at most 12 → `pnpm gen:hf-ingest record --from <wait reply>`.
 5. `NODE_USE_ENV_PROXY=1 pnpm gen:hf-ingest --batch <batch>`; on exit 6 report the CDN host to allow in the environment's network settings.

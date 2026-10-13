@@ -120,7 +120,8 @@ In a cloud session, add the CDN host (`d8j0ntlcm91z4.cloudfront.net`) to the env
 3. Generate the **emissive or light layer**: neon, magic glow, lava, windows, anything that can pulse. It is a separate additive layer (`background.txt#C`) so the runtime can drive its intensity per state.
 4. Optionally generate the **ambient loop** for the high tier (`kling3_0`, start = end = plate, no camera move). Then deflicker, key or stack, and encode with `pnpm video:stacked … --shipped`.
 5. Make the **feature variants** as edits of the same plate, so the cross-fade lines up pixel for pixel.
-6. Hand the layers to `environment-artist`, who wires the state reactions ([ANIMATION_STATES §3](ANIMATION_STATES.md#3-background-states)).
+6. **Pack the layers:** write `docs/games/<id>/bg/<look>_<orient>.layers.json` (layer id, source, depth, role, `blur`, `parentId`), then run `tools/.venv/bin/python tools/bg/layers.py --spec … --manifest art/manifest.json` ([tools/bg](../../tools/bg/README.md)). It blurs each layer offline, writes the WebP plates to `public/assets/<id>/bg/`, records provenance, and prints the `src` lines for `environment.ts`.
+7. Hand the layers to `environment-artist`, who wires the state reactions ([ANIMATION_STATES §3](ANIMATION_STATES.md#3-background-states)).
 
 ### 3.4 Board
 

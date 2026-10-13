@@ -52,7 +52,9 @@ export class LayeredEnvironment implements GameModule {
   private plates = new Container({ label: 'envPlates' });
   private lights = new Container({ label: 'envLights' });
   private looks = new Map<string, LookView>();
-  private loading = new Map<string, Promise<LookView>>();
+  private loading = new Map<string, Promise<LookView | null>>();
+  /** shipped plate URL -> number of layer views holding its (shared, Assets-cached) texture */
+  private urlRefs = new Map<string, number>();
   private shown = 'base';
   private orient: EnvOrient = 'landscape';
   private vis = { x: 0, y: 0, w: 1920, h: 1080, cover: 1 };
@@ -90,7 +92,7 @@ export class LayeredEnvironment implements GameModule {
         d.featureTrigger();
         // build the feature look and upload it to the GPU during the trigger celebration, so the
         // crossfade at mode:change never pays a texture upload (engine delta E8)
-        if (spec.featureLook) void this.ensureLook(spec.featureLook).then((v) => this.prewarm(v));
+        if (spec.featureLook) void this.ensureLook(spec.featureLook).then((v) => (v ? this.prewarm(v) : undefined));
       }),
       g.on('mode:change', ({ gameType }) => d.mode(gameType)),
       g.on('board:set', () => d.reset()),
@@ -103,7 +105,7 @@ export class LayeredEnvironment implements GameModule {
     this.measure(this.ctx.layout);
     this.orient = this.orientFor(this.ctx.layout);
     const base = await this.ensureLook('base');
-    this.attach(base, 1);
+    if (base) this.attach(base, 1);
     this.offs.push(clock.onUpdate((dt) => this.tick(dt)));
   }
 
@@ -117,7 +119,7 @@ export class LayeredEnvironment implements GameModule {
       const keep = this.shown;
       for (const name of [...this.looks.keys()]) if (name !== keep) this.dropLook(name);
       void this.ensureLook(keep).then((v) => {
-        if (this.shown === keep && v.orient === this.orient) this.attach(v, 1);
+        if (v && this.shown === keep && v.orient === this.orient) this.attach(v, 1);
       });
     }
   }
@@ -129,7 +131,7 @@ export class LayeredEnvironment implements GameModule {
     const from = this.looks.get(this.shown);
     this.shown = name;
     const to = await this.ensureLook(name);
-    if (this.shown !== name || to.orient !== this.orient) return;
+    if (!to || this.shown !== name || to.orient !== this.orient) return;
     this.attach(to, 0);
     const dur = sUi(T.feature.crossfadeMs);
     gsap.to([to.plates, to.lights], { alpha: 1, duration: dur, ease: 'sine.inOut' });
@@ -146,7 +148,12 @@ export class LayeredEnvironment implements GameModule {
     }
   }
 
-  private ensureLook(name: string): Promise<LookView> {
+  /**
+   * The look for the current orientation, built on demand. A build that finishes after the screen
+   * turned back to the other orientation is discarded (never replacing the view on screen); the
+   * caller then gets the current view, or null.
+   */
+  private ensureLook(name: string): Promise<LookView | null> {
     const have = this.looks.get(name);
     if (have && have.orient === this.orient) return Promise.resolve(have);
     const key = `${name}:${this.orient}`;
@@ -154,6 +161,11 @@ export class LayeredEnvironment implements GameModule {
     if (!p) {
       p = this.buildLook(name, this.orient).then((v) => {
         this.loading.delete(key);
+        if (v.orient !== this.orient) {
+          this.disposeView(v);
+          const cur = this.looks.get(name);
+          return cur && cur.orient === this.orient ? cur : null;
+        }
         const old = this.looks.get(name);
         if (old && old !== v) this.dropLook(name);
         this.looks.set(name, v);
@@ -196,7 +208,9 @@ export class LayeredEnvironment implements GameModule {
     const url = l.src?.[orient] ?? l.src?.landscape ?? null;
     if (url) {
       try {
-        return { tex: await Assets.load<Texture>(url), baked: false, url };
+        const tex = await Assets.load<Texture>(url);
+        this.urlRefs.set(url, (this.urlRefs.get(url) ?? 0) + 1);
+        return { tex, baked: false, url };
       } catch {
         // fall through to the placeholder (a broken plate never blanks the scene)
       }
@@ -238,11 +252,27 @@ export class LayeredEnvironment implements GameModule {
     const v = this.looks.get(name);
     if (!v) return;
     this.looks.delete(name);
+    this.disposeView(v);
+  }
+
+  /**
+   * Free a view: baked placeholders are its own; a shipped plate's texture is shared through the
+   * Assets cache (a portrait look falling back to the landscape file, a rebuilt look), so its URL
+   * is unloaded only when the last view holding it goes.
+   */
+  private disposeView(v: LookView): void {
     gsap.killTweensOf([v.plates, v.lights]);
     this.detach(v);
     for (const l of v.layers) {
       if (l.baked) l.baked.destroy(true);
-      else if (l.url) void Assets.unload(l.url).catch(() => undefined);
+      else if (l.url) {
+        const n = (this.urlRefs.get(l.url) ?? 1) - 1;
+        if (n > 0) this.urlRefs.set(l.url, n);
+        else {
+          this.urlRefs.delete(l.url);
+          void Assets.unload(l.url).catch(() => undefined);
+        }
+      }
     }
     v.plates.destroy({ children: true });
     v.lights.destroy({ children: true });

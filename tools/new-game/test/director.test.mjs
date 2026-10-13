@@ -172,3 +172,21 @@ test('reset drops every hold and settles at rest', () => {
   assert.deepEqual(d.activeHolds(), []);
   assert.equal(d.value('zoom'), 0);
 });
+
+test('free spins: each reveal ends the previous spin\'s holds (no round:start between them)', () => {
+  const { d } = make();
+  d.spinStart();
+  d.reveal(true);
+  d.land(1);
+  d.featureTrigger();
+  assert.ok(!d.activeHolds().includes('anticipation'), 'the trigger releases anticipation');
+  d.mode('freegame');
+  d.reveal(false);
+  d.wins(0x33ff66);
+  d.bigWin();
+  assert.ok(d.activeHolds().includes('bigwin'));
+  d.reveal(false); // next free spin
+  assert.deepEqual(d.activeHolds(), []);
+  run(d, 2);
+  assert.ok(d.value('dim') < 0.02 && Math.abs(d.value('zoom')) < 0.002, `settled: dim ${d.value('dim')} zoom ${d.value('zoom')}`);
+});

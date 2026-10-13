@@ -198,8 +198,9 @@ export type CoreGameEvents = {
    * Emitted BY the Board at each column impact it voices (the moments its land SFX play): drop-in
    * columns with the column's heaviest land weight (columns landing together are merged), every
    * scatter land ('special'), the first impact of each tumble refill column (tumble: true), and
-   * transform 'drop' / 'impact' contacts. For background / frame / feature reactions
-   * (docs/new-slot/ANIMATION_STATES.md §3 `land`). Synchronous.
+   * transform 'drop' / 'morph' contacts. Not transform 'impact': its caller voices that contact itself
+   * (see board:transform) and emits board:land if it wants the reactions. For background / frame /
+   * feature reactions (docs/new-slot/ANIMATION_STATES.md §3 `land`). Synchronous.
    */
   'board:land': { weight: LandWeight; tumble: boolean };
 
@@ -289,6 +290,11 @@ export type UiEvents = {
   'ui:buy': { mode: string };
   'ui:menu': { open: boolean; page?: 'paytable' | 'rules' | 'settings' | 'guide' };
   'ui:sound': { enabled: boolean };
+  /**
+   * A fatal client-side failure (render/contextLoss.ts: WebGL context lost): the flow stops autoplay,
+   * enters its terminal error state (no spin / buy / autoplay) and shows `text` as the blocking error.
+   */
+  'ui:fatal': { text: string };
 };
 
 /** Flow -> HUD state snapshots (HUD renders; it never computes money). */

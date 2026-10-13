@@ -237,6 +237,7 @@ export class FlowController {
       else this.stopAutoplay();
     });
     ui.on('ui:buy', (p) => this.buy(p.mode));
+    ui.on('ui:fatal', ({ text }) => this.fatalClient(text));
     ui.on('ui:sound', (p) => {
       this.soundEnabled = p.enabled;
       this.broadcastState();
@@ -745,6 +746,15 @@ export class FlowController {
 
   private asRgsError(e: unknown): RgsError {
     return isRgsError(e) ? e : new RgsError('ERR_GEN', e instanceof Error ? e.message : String(e), 0);
+  }
+
+  /** A fatal client-side failure (`ui:fatal`, e.g. a lost WebGL context): terminal like a session error. */
+  private fatalClient(text: string): void {
+    if (this.auto) this.auto.stopRequested = true;
+    this.fatal = true;
+    this.to('error');
+    this.message(text, 'error');
+    this.broadcastState();
   }
 
   /** Show the error; session-level (or forced) failures are terminal, others return to idle. */

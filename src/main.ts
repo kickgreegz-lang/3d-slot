@@ -30,6 +30,7 @@ const boot = async (): Promise<void> => {
   configureI18n({ lang: params.lang, social: params.social });
   await loadFonts();
   const app = await createApp(tier);
+  const contextLoss = watchContextLoss(app);
   const layers = createLayers(app.stage);
   const emitters = createEmitters();
   const art = await createArt(app);
@@ -49,7 +50,6 @@ const boot = async (): Promise<void> => {
 
   const layout = new LayoutManager(ctx, tier === 'low' ? 1.5 : 2);
   layout.update(true);
-  watchContextLoss(app, ctx.hud);
 
   // the active game's modules (src/games/<GAME>/modules.ts, resolved through @game)
   const modules: GameModule[] = createModules(ctx);
@@ -59,12 +59,15 @@ const boot = async (): Promise<void> => {
   installDevHooks(ctx, clock);
 
   if (params.dev === 'lab' || params.dev === 'gallery') {
+    contextLoss.connect((text) => ctx.hud.broadcast('hud:message', { text, kind: 'error' }));
     const { startLab } = await import('./dev/lab');
     await startLab(ctx, params.dev);
     return;
   }
 
   const flow = new FlowController(ctx);
+  // a lost GPU context is terminal for the session: the flow refuses every play until the reload
+  contextLoss.connect((text) => ctx.ui.broadcast('ui:fatal', { text }));
   await flow.start();
 };
 

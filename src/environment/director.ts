@@ -9,14 +9,15 @@ import { ENV_CHANNELS, ENV_TIMING as T, type EnvChannel, type EnvState } from '.
  * spring back), so overlapping states blend and nothing ever snaps:
  *
  *   round:start                  spinStart()     hold 'spin'
- *   board:reveal (anticipation)  reveal(true)    hold 'anticipation' (only when the book says so)
+ *   board:reveal                 reveal(ant)     ends the previous spin's holds (free spins have no
+ *                                                round:start); hold 'anticipation' only when the book says so
  *   board:land                   land(weight)    kick per column impact; releases 'spin'
  *   board:showWins               wins(colour)    hold 'connect' in the winner's colour
  *   board:tumble                 tumble()        releases 'connect'
  *   board:burst                  burst()         explode kick
  *   round:end                    roundEnd(win)   win 0 -> timed 'miss' hold; else back to idle
  *   bigwin:show                  bigWin()        hold 'bigwin' until the round ends
- *   fs:trigger                   featureTrigger  light kick in the feature colour
+ *   fs:trigger                   featureTrigger  releases 'anticipation'; light kick in the feature colour
  *   mode:change                  mode(type)      look crossfade (base <-> feature)
  *   board:set                    reset()         resume / replay start
  *
@@ -92,6 +93,8 @@ export class EnvironmentDirector {
   }
 
   reveal(anticipation: boolean): void {
+    // every reveal starts a spin; free spins have no round:start, so the previous spin's holds end here
+    this.release('anticipation', 'connect', 'miss', 'bigwin');
     if (!anticipation) return;
     const A = T.anticipation;
     this.color = this.colors.anticipation;
@@ -151,6 +154,7 @@ export class EnvironmentDirector {
   }
 
   featureTrigger(): void {
+    this.release('anticipation');
     this.color = this.colors.feature;
     this.kick('light', T.feature.light);
     this.kick('zoom', T.feature.zoom);

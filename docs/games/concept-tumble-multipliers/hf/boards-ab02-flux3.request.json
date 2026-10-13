@@ -1,0 +1,20 @@
+{
+  "requests": [
+    {
+      "index": 2,
+      "name": "ctm_board2_kintsugi_flux3",
+      "params": {
+        "model": "flux_3_image",
+        "prompt": "Finished AAA mobile slot game screenshot, 16:9, at the rendering quality of the reference image. Use the reference for STYLE AND FINISH ONLY: chunky, glossy, almost-3D cartoon symbols with thick dark-brown outlines, rich saturated colours, big soft white highlights and crisp hotspots, deep bevelled cartoon-gold trim, a soft-focus bright pastel painted world. Do not copy any object, character, column, candy, coin, logo or layout from the reference. All 35 cells of the grid are filled and every symbol is BIG, filling about 90% of its cell, so the board reads as a dense, juicy, colourful block. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy glossy cobalt porcelain frame with white wave scrolls, gold seams and cartoon-gold trim: a shallow bowl-rim top band holding a gold-seamed white disc, gold plum-blossom corners, a thin gold sill. Inside, a near-black slate well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on cut-corner octagonal plaques with bronze borders: a cobalt lidded jar on celadon, a cinnabar teapot with a bamboo handle on deep teal, a plum tea bowl on blossom pink, a black gold-banded gourd vase on pale sky. Smaller frameless lows: a pink blossom sprig, a green bamboo segment, an orange persimmon, a cerulean wave crest, a yellow ginkgo leaf. One oversized tall white vase laced with glowing gold seams; two eight-lobed gold-rimmed dishes with blank white centres. Behind four symbols, flat matte celadon, violet and pink floor tiles show gold-seamed edges. Around it, a blurred sunlit pottery garden: plum trees left, a glowing kiln right, big jars in the corners. No text, numbers, script, seals or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "4k",
+        "medias": [
+          {
+            "value": "b345ed41-63a4-45f7-9020-e1d0c0e414e6",
+            "role": "image_references"
+          }
+        ]
+      }
+    }
+  ]
+}

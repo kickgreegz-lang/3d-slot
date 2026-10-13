@@ -1,0 +1,136 @@
+{
+  "requests": [
+    {
+      "index": 0,
+      "name": "ctm_board_kintsugi_v1",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy glossy cobalt porcelain frame with white wave scrolls, gold seams and cartoon-gold trim: a shallow bowl-rim top band holding a gold-seamed white disc, gold plum-blossom corners, a thin gold sill. Inside, a near-black slate well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on cut-corner octagonal plaques with bronze borders: a cobalt lidded jar on celadon, a cinnabar teapot with a bamboo handle on deep teal, a plum tea bowl on blossom pink, a black gold-banded gourd vase on pale sky. Smaller frameless lows: a pink blossom sprig, a green bamboo segment, an orange persimmon, a cerulean wave crest, a yellow ginkgo leaf. One oversized tall white vase laced with glowing gold seams; two eight-lobed gold-rimmed dishes with blank white centres. Behind four symbols, flat matte celadon, violet and pink floor tiles show gold-seamed edges. Around it, a blurred sunlit pottery garden: plum trees left, a glowing kiln right, big jars in the corners. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, numbers, script, seals or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 1,
+      "name": "ctm_board_kintsugi_v2",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy glossy cobalt porcelain frame with white wave scrolls, gold seams and cartoon-gold trim: a shallow bowl-rim top band holding a gold-seamed white disc, gold plum-blossom corners, a thin gold sill. Inside, a near-black slate well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on cut-corner octagonal plaques with bronze borders: a cobalt lidded jar on celadon, a cinnabar teapot with a bamboo handle on deep teal, a plum tea bowl on blossom pink, a black gold-banded gourd vase on pale sky. Smaller frameless lows: a pink blossom sprig, a green bamboo segment, an orange persimmon, a cerulean wave crest, a yellow ginkgo leaf. One oversized tall white vase laced with glowing gold seams; two eight-lobed gold-rimmed dishes with blank white centres. Behind four symbols, flat matte celadon, violet and pink floor tiles show gold-seamed edges. Around it, a blurred sunlit pottery garden: plum trees left, a glowing kiln right, big jars in the corners. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, numbers, script, seals or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 2,
+      "name": "ctm_board_saffron_souk_v1",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy polished brass and cartoon-gold frame: a flat pierced-brass top band with a saffron gem and a small lantern hanging at each end, slim turquoise tile-strip sides, curled gold corner brackets holding spice bowls, a thin brass sill. Inside, a near-black indigo-plum well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on cushion-shaped tiles with riveted brass rims: a pierced-brass lantern on deep teal, a split ruby pomegranate on saffron, a turquoise tagine on coral, a cobalt glass rosewater sprinkler on pale mint. Smaller frameless lows: a violet crocus, a spearmint sprig, a lemon, a cinnamon-stick bundle, a top-down hot-pink rose. One oversized ivory-and-gold brocade pouch with a crimson tasselled cord, glowing saffron; two beaded brass trays with blank ruby centres. Behind four symbols, flat matte turquoise, cobalt and saffron floor tiles show plain rims. Around it, a blurred sunny spice courtyard: striped awnings, spice cones left, lanterns right, spice sacks in the corners. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, calligraphy, star patterns, arches, domes or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 3,
+      "name": "ctm_board_saffron_souk_v2",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy polished brass and cartoon-gold frame: a flat pierced-brass top band with a saffron gem and a small lantern hanging at each end, slim turquoise tile-strip sides, curled gold corner brackets holding spice bowls, a thin brass sill. Inside, a near-black indigo-plum well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on cushion-shaped tiles with riveted brass rims: a pierced-brass lantern on deep teal, a split ruby pomegranate on saffron, a turquoise tagine on coral, a cobalt glass rosewater sprinkler on pale mint. Smaller frameless lows: a violet crocus, a spearmint sprig, a lemon, a cinnamon-stick bundle, a top-down hot-pink rose. One oversized ivory-and-gold brocade pouch with a crimson tasselled cord, glowing saffron; two beaded brass trays with blank ruby centres. Behind four symbols, flat matte turquoise, cobalt and saffron floor tiles show plain rims. Around it, a blurred sunny spice courtyard: striped awnings, spice cones left, lanterns right, spice sacks in the corners. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, calligraphy, star patterns, arches, domes or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 4,
+      "name": "ctm_board_bulbfever_v1",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy Golden Age picture frame of Delft-blue lacquer and cartoon-gold carving: a flat gold cartouche top band with a centred golden tulip, slim rope-twist sides, tulip-leaf corners, a thin planter-rim sill. Inside, a near-black navy well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on gilded picture-frame plaques: a red-and-white flamed tulip on cobalt, a blue-and-white tiered tulip vase on saffron, a brass scale weighing a copper bulb against gold nuggets on emerald, a teal tower windmill with cream sails on lilac. Smaller frameless lows: a yellow star-shaped lily tulip, a hot-pink ball-shaped double tulip, a violet bearded iris, a copper trowel, a verdigris watering can. One oversized glowing gold tulip bulb; two carved-gold oval medallions with blank crimson centres. Behind four symbols, flat matte green, lilac and coral soil tiles show leaves curling in at the corners. Around it, a blurred spring canal town: gabled houses left, windmills over tulip fields right. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, hallmarks, signs, flags, ships or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 5,
+      "name": "ctm_board_bulbfever_v2",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy Golden Age picture frame of Delft-blue lacquer and cartoon-gold carving: a flat gold cartouche top band with a centred golden tulip, slim rope-twist sides, tulip-leaf corners, a thin planter-rim sill. Inside, a near-black navy well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on gilded picture-frame plaques: a red-and-white flamed tulip on cobalt, a blue-and-white tiered tulip vase on saffron, a brass scale weighing a copper bulb against gold nuggets on emerald, a teal tower windmill with cream sails on lilac. Smaller frameless lows: a yellow star-shaped lily tulip, a hot-pink ball-shaped double tulip, a violet bearded iris, a copper trowel, a verdigris watering can. One oversized glowing gold tulip bulb; two carved-gold oval medallions with blank crimson centres. Behind four symbols, flat matte green, lilac and coral soil tiles show leaves curling in at the corners. Around it, a blurred spring canal town: gabled houses left, windmills over tulip fields right. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, hallmarks, signs, flags, ships or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 6,
+      "name": "ctm_board_skyfair_v1",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy Art Deco frame of polished aluminium and cartoon gold: a flat gently bowed top band with speed lines and a propeller-and-sunburst crest, slim riveted struts, propeller-blade corners, a thin cream-and-teal wing-edge sill. Inside, a near-black navy well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on riveted instrument-panel plates: a cream-and-teal racing biplane on crimson, a crimson-and-cream blimp on sky cyan, a sunflower-yellow gyrocopter on emerald, amber-lensed brass goggles on coral; canopies closed and empty, no markings. Smaller frameless lows: an orange striped windsock, an aqua propeller, a lemon storm lantern, a hot-pink silk scarf, a lime flight gauntlet. One oversized gilded royal-blue-and-gold hot-air balloon with a glowing burner; two brass altimeter gauges with blank cream faces. Behind four symbols, flat matte sky-blue, violet and coral cloud tiles show scalloped rims. Around it, a blurred golden-hour sky: towering cream clouds, a Deco hangar left, a distant balloon right. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, numbers, roundels, pilots or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 7,
+      "name": "ctm_board_skyfair_v2",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy Art Deco frame of polished aluminium and cartoon gold: a flat gently bowed top band with speed lines and a propeller-and-sunburst crest, slim riveted struts, propeller-blade corners, a thin cream-and-teal wing-edge sill. Inside, a near-black navy well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on riveted instrument-panel plates: a cream-and-teal racing biplane on crimson, a crimson-and-cream blimp on sky cyan, a sunflower-yellow gyrocopter on emerald, amber-lensed brass goggles on coral; canopies closed and empty, no markings. Smaller frameless lows: an orange striped windsock, an aqua propeller, a lemon storm lantern, a hot-pink silk scarf, a lime flight gauntlet. One oversized gilded royal-blue-and-gold hot-air balloon with a glowing burner; two brass altimeter gauges with blank cream faces. Behind four symbols, flat matte sky-blue, violet and coral cloud tiles show scalloped rims. Around it, a blurred golden-hour sky: towering cream clouds, a Deco hangar left, a distant balloon right. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, numbers, roundels, pilots or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 8,
+      "name": "ctm_board_chrome_v1",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy custom-shop frame of candy-apple red enamel, chrome and cartoon gold: a chrome grille top band edged in gold pinstripes with a piston-and-spark crest, slim chrome exhaust-pipe sides, gold scroll corners, a thin chrome bumper sill. Inside, a near-black oil-black well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on pinstriped, bolted chrome-bezel plaques: a candy-red supercharger with chrome scoops on violet, a black fuel tank with gold-and-teal ghost flames on turquoise, a turquoise-rimmed steering wheel on cherry red, a chrome shifter with a ruby knob on lemon. Smaller frameless lows: a cobalt spark plug, two hot-pink dice, a violet wrench, a tangerine oil can, a lime coil spring. One oversized glowing gold ignition key; two chrome spinner hubcaps with blank candy-red centres. Behind four symbols, flat matte diamond-plate tiles glow cherry, orange and yellow in their tread. Around it, a blurred sunny desert garage: a half-open door to turquoise sky, tyres left, a hot-rod nose right. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, badges, licence plates or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 9,
+      "name": "ctm_board_chrome_v2",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy custom-shop frame of candy-apple red enamel, chrome and cartoon gold: a chrome grille top band edged in gold pinstripes with a piston-and-spark crest, slim chrome exhaust-pipe sides, gold scroll corners, a thin chrome bumper sill. Inside, a near-black oil-black well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on pinstriped, bolted chrome-bezel plaques: a candy-red supercharger with chrome scoops on violet, a black fuel tank with gold-and-teal ghost flames on turquoise, a turquoise-rimmed steering wheel on cherry red, a chrome shifter with a ruby knob on lemon. Smaller frameless lows: a cobalt spark plug, two hot-pink dice, a violet wrench, a tangerine oil can, a lime coil spring. One oversized glowing gold ignition key; two chrome spinner hubcaps with blank candy-red centres. Behind four symbols, flat matte diamond-plate tiles glow cherry, orange and yellow in their tread. Around it, a blurred sunny desert garage: a half-open door to turquoise sky, tyres left, a hot-rod nose right. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, badges, licence plates or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 10,
+      "name": "ctm_board_mirrorball_v1",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy Art Deco frame of plum-black lacquer and cartoon gold: a flat stepped top band with a sunburst fan holding a small mirrorball, slim sides inset with tiny mirror tiles, gold fan corners, a thin stepped gold sill. Inside, a near-black plum well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on gold-bordered stepped Deco plaques: an empty hot-pink platform ankle boot on teal, a gold saxophone on crimson, a cobalt sequin top hat on tangerine, a cherry sequin clutch on violet. Smaller frameless lows: a lemon plumed headband, a violet velvet bow tie, a tangerine gold-cased lipstick, a lime satin waistcoat, a cyan ostrich-feather fan. One oversized mirrorball with big white facets and a magenta glow; two gold-bezelled spotlight lenses with blank dark plum glass. Behind four symbols, flat matte frosted tiles show etched cyan, violet and pink sunburst rays. Around it, a blurred sunset rooftop pavilion: streamer-draped speakers left, a big mirrorball right. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, signs, logos, legs, hands or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    },
+    {
+      "index": 11,
+      "name": "ctm_board_mirrorball_v2",
+      "params": {
+        "model": "nano_banana_pro",
+        "prompt": "16:9 screenshot of a casual mobile slot game. Just left of centre, filling the height above an empty dark taupe strip along the bottom eighth: a top-heavy Art Deco frame of plum-black lacquer and cartoon gold: a flat stepped top band with a sunburst fan holding a small mirrorball, slim sides inset with tiny mirror tiles, gold fan corners, a thin stepped gold sill. Inside, a near-black plum well split into EXACTLY 7 columns by 5 rows of square cells. Premiums on gold-bordered stepped Deco plaques: an empty hot-pink platform ankle boot on teal, a gold saxophone on crimson, a cobalt sequin top hat on tangerine, a cherry sequin clutch on violet. Smaller frameless lows: a lemon plumed headband, a violet velvet bow tie, a tangerine gold-cased lipstick, a lime satin waistcoat, a cyan ostrich-feather fan. One oversized mirrorball with big white facets and a magenta glow; two gold-bezelled spotlight lenses with blank dark plum glass. Behind four symbols, flat matte frosted tiles show etched cyan, violet and pink sunburst rays. Around it, a blurred sunset rooftop pavilion: streamer-draped speakers left, a big mirrorball right. Board style: thick near-black warm-brown outlines, two-to-three-step soft gradients without texture, saturated glossy enamel with deeper same-hue shadow rims, upper-left soft highlights and crisp white hotspots, chunky rounded volumes; surroundings pastel, soft-focus, outline-free. No text, signs, logos, legs, hands or people.",
+        "aspect_ratio": "16:9",
+        "resolution": "2k",
+        "count": 1
+      }
+    }
+  ]
+}

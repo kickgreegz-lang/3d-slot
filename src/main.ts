@@ -17,6 +17,7 @@ import { FlowController } from './flow/controller';
 import { type GameContext, type GameModule, createEmitters } from './game/context';
 import { LAYOUTS } from './config/layout';
 import { createApp } from './render/app';
+import { watchContextLoss } from './render/contextLoss';
 import { createLayers } from './render/layers';
 import { LayoutManager } from './render/layout';
 
@@ -48,6 +49,7 @@ const boot = async (): Promise<void> => {
 
   const layout = new LayoutManager(ctx, tier === 'low' ? 1.5 : 2);
   layout.update(true);
+  watchContextLoss(app, ctx.hud);
 
   // the active game's modules (src/games/<GAME>/modules.ts, resolved through @game)
   const modules: GameModule[] = createModules(ctx);

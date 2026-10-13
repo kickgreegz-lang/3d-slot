@@ -176,6 +176,7 @@ export const EN: Record<string, string> = {
   'err.ERR_GEN': 'A server error occurred. Please try again.',
   'err.ERR_MAINTENANCE': 'The game is under maintenance. Please try again later.',
   'err.NETWORK': 'Connection lost. Check your internet connection and reload the game.',
+  'err.GRAPHICS': 'The graphics device was reset. Reload the game to continue; an unfinished round resumes automatically.',
 
   // ── replay ─────────────────────────────────────────────────────────────
   'replay.start': 'START REPLAY',

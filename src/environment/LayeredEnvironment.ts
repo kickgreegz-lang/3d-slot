@@ -1,5 +1,6 @@
 import { gsap } from 'gsap';
 import { Assets, Container, Sprite, Texture } from 'pixi.js';
+import 'pixi.js/prepare';
 import { SYMBOLS } from '../config/game';
 import type { LayoutSpec } from '../config/layout';
 import { clock } from '../core/clock';
@@ -87,7 +88,9 @@ export class LayeredEnvironment implements GameModule {
       g.on('bigwin:show', () => d.bigWin()),
       g.on('fs:trigger', () => {
         d.featureTrigger();
-        if (spec.featureLook) void this.ensureLook(spec.featureLook);
+        // build the feature look and upload it to the GPU during the trigger celebration, so the
+        // crossfade at mode:change never pays a texture upload (engine delta E8)
+        if (spec.featureLook) void this.ensureLook(spec.featureLook).then((v) => this.prewarm(v));
       }),
       g.on('mode:change', ({ gameType }) => d.mode(gameType)),
       g.on('board:set', () => d.reset()),
@@ -209,6 +212,13 @@ export class LayeredEnvironment implements GameModule {
       T.placeholderResolution,
     );
     return { tex, baked: true, url: null };
+  }
+
+  /** Upload a look's textures before it is first drawn (Pixi PrepareSystem, a few per frame). */
+  private async prewarm(v: LookView): Promise<void> {
+    const prepare = this.ctx.app.renderer.prepare;
+    if (!prepare) return;
+    await prepare.upload([v.plates, v.lights]).catch(() => undefined);
   }
 
   private attach(v: LookView, alpha: number): void {

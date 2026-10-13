@@ -82,7 +82,7 @@ There are two tiers. Low is chosen when any of these is true, checked in order:
 |---|---|---|
 | ~~E6~~ | **Done:** context loss now stops the loop and shows a reload dialog; a restored context reloads, and the round resumes (`src/render/contextLoss.ts`) | — |
 | E7 | AssetPack output is built but the runtime still loads single files; the low-tier `@0.5x` variants are unused | Extra memory and download on low-end phones |
-| E8 | No pre-warm of the feature look, FX atlases or big-win skeletons | A first-use hitch at the most-watched moment |
+| E8 | The background feature look is pre-uploaded at the trigger (`renderer.prepare`); the FX atlases and big-win skeletons are not yet | A first-use hitch at the most-watched moment |
 | — | `?tier=` is honoured in production builds; the dev lab chunk is emitted to `dist/` and reachable with `?dev=lab` | Not a Stake rule, but gate both behind DEV for a clean build |
 
 ## 5. How to measure (`performance-engineer` routine)

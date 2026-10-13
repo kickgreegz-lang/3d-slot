@@ -4,7 +4,7 @@ import type { EnvPlaceholder } from './spec';
 /**
  * Procedural stand-ins for environment layers (spec.ts EnvPlaceholder), so a new game shows a
  * reacting, parallaxed background on day one, before its Higgsfield plates exist. Baked once per
- * orientation at low resolution (backgrounds are soft); the central 60% stays calm and dark like
+ * orientation at low resolution (backgrounds are soft); the centre stays calm and low-detail like
  * the production brief asks (docs/new-slot/HIGGSFIELD_PLAYBOOK.md §4).
  */
 

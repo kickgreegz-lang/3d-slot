@@ -14,7 +14,7 @@ Rules you enforce:
 - No text, letters, numbers or logos in any generated image; multiplier faces and spot tiles are blank (values are live text).
 - Adult characters only (head about 1/4 of height); no child-coded imagery. No resemblance to known IP, brands, memes or the reference game's trade dress.
 - Symbols differ in silhouette AND dominant colour: check a 64 px greyscale silhouette matrix; name any confusable pair and fix it.
-- Backgrounds: calm, darker central 60% where the board sits; brightest masses at the far left and right; no characters, UI or readable signage.
+- Backgrounds: a calm, low-detail centre where the board sits; no characters, UI or readable signage. Darken the centre only for dark/neon styles; bright casual styles keep it light (the board's dark well gives the contrast). Soft focus is baked per layer at build time, never a runtime full-screen blur.
 - Never use the words "extrusion" or "molten" in prompts. Measure the matte key from the corners; the requested key colour is not guaranteed.
 - Never pick an OpenAI model (gpt_image_*, openai_hazel).
 - Reference screenshots of other games are for analysis only: describe their style in words; do not upload them as generation references.

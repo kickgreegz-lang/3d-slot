@@ -79,12 +79,13 @@ mock/games/<id>/        mock.json (bet modes) + books/ (fixtures; every file opt
 - Engine code never imports `src/games/**` except through `@game/*` or the shims; a game may import
   engine modules and, when it shares a world, another game's modules (Bass Drop reuses Swamp Funk's
   scene and placeholder symbols).
-- New game: copy a game folder, add `mock/games/<id>/`, a `tsconfig.<id>.json` (exclude the other game
-  folders) and `dev:<id>` / `build:<id>` scripts; `pnpm build:all` picks it up automatically.
+- New game: `pnpm new-game <id> --title "<Title>"` does all of it (copies the template game, adds
+  `mock/games/<id>/`, `tsconfig.<id>.json` + the excludes, the `dev:<id>` / `build:<id>` scripts and the docs);
+  `pnpm build:all` picks it up automatically. See [docs/new-slot/](docs/new-slot/README.md).
 
 ## Documentation
 
-Start with **[docs/README.md](docs/README.md)**. The key documents:
+Start with **[docs/README.md](docs/README.md)**. **New game? Go to [docs/new-slot/](docs/new-slot/README.md)**: `pnpm new-game <id> --title "…"`, the workflow, the agent team (`.claude/agents`, `/new-slot`, `/verify-slot`, `/star-review`) and the 3-star rules. The key documents:
 
 - **[docs/STACK.md](docs/STACK.md)** — the recommended AI-controllable tool stack: what to buy, costs, install checklist, what still needs a human.
 - **[docs/PIPELINE.md](docs/PIPELINE.md)** — the end-to-end production workflow, step by step.

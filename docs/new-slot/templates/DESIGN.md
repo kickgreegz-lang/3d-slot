@@ -1,6 +1,6 @@
 # {{TITLE}}: game design and presentation spec
 
-This is the binding spec for the front end and the brief for the math. **Fill it in during phase A** ([WORKFLOW](../../new-slot/WORKFLOW.md#phase-a--design-the-mechanic-and-the-world)), before writing any feature code or generating production art. Every `TODO` must be resolved, or moved to §14 with an owner, before phase B starts.
+This is the binding spec for the front end and the brief for the math. **Fill it in during phase A** ([WORKFLOW](../../new-slot/WORKFLOW.md#phase-a-design-the-mechanic-and-the-world)), before writing any feature code or generating production art. Every `TODO` must be resolved, or moved to §14 with an owner, before phase B starts.
 
 - **Game id:** `{{ID}}` (folder `src/games/{{ID}}/`, `GAME={{ID}}`)
 - **Status:** draft

@@ -12,6 +12,7 @@ This is a premium, animation-first video slot for **Stake Engine**, produced wit
 
 | If you want to… | Read |
 |---|---|
+| **Build a new game (new mechanic, new world) with the agent team, aiming at 3 stars** | **[new-slot/](new-slot/README.md)**: workflow, tech stack, animation states, performance, Higgsfield playbook, Stake 3-star rules, agents |
 | Know what to buy, install and pay for, and what AI can't do | **[STACK.md](STACK.md)** (start with the TL;DR and "Image route") |
 | Run production step by step | **[PIPELINE.md](PIPELINE.md)** (start with "Tooling status" and "How Claude runs the pipeline") |
 | Run one pipeline tool (flags, outputs, gates, exit codes) | Its README: [gen](../tools/gen/README.md), [matte](../tools/matte/README.md), [spine](../tools/spine/README.md), [blender](../tools/blender/README.md), [gltf](../tools/gltf/README.md), [video](../tools/video/README.md), [audio](../tools/audio/README.md), [assets](../tools/assets/README.md), [licence](../tools/licence/README.md) |

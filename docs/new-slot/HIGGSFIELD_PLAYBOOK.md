@@ -20,7 +20,7 @@ What every asset has to do once it is in the engine is in [ANIMATION_STATES.md](
    - Nobody downloads by hand. This keeps provenance, sha256 hashes and costs ([tools/gen/README](../../tools/gen/README.md#higgsfield-mcp-route-plan--pay--record--ingest-pnpm-genhf-ingest)).
 2. **Prompts are rendered, never typed.**
    - Templates live in `art/bible/prompts/*.txt` and are filled from `art/bible/artbible.json` (`python3 tools/gen/genlib.py render …`).
-   - A new game first gets **its own style formula and symbol briefs** in the bible ([WORKFLOW phase 1](WORKFLOW.md#phase-1--world-and-style-lock)).
+   - A new game first gets **its own style formula and symbol briefs** in the bible ([WORKFLOW phase 1](WORKFLOW.md#phase-a-design-the-mechanic-and-the-world)).
 3. **Never use an OpenAI model** (`gpt_image_2`, `gpt_image_2_5`, `openai_hazel`). OpenAI's usage policy prohibits real-money gambling. The plan, record and ingest steps all refuse them (exit 3).
    - Higgsfield audio models (`mirelo_text_to_audio`, `sonilo_music`) are for drafts only.
    - The Soul models are for photoreal people; they are useless here.
@@ -54,7 +54,7 @@ What every asset has to do once it is in the engine is in [ANIMATION_STATES.md](
 | Loop clean-up | `video_deflicker`, then `topaz_video` (frame interpolation) | — | Then `pnpm video:key` / `video:stacked` locally (seam crossfade, encode) |
 | FX elements (explosion, smoke, energy burst, debris) | `kling3_0` / `seedance_2_0` on a black or key background → `video_background_remover` | 1080p, 2–3 s | → `tools/video/flipbook.py` → an AssetPack folder. Seeded live particles carry most FX; flipbooks are for hero moments |
 | **Animatics / motion reference** for symbol states | `kling3_0` (start frame = master) | 720p, 5 s, sound off | Reference only, **never shipped**: "the crab snaps its claws and bursts into gold coins". The Spine animator (Claude via `rig.yaml`, or a human) matches the timing and poses |
-| Characters (if the game has any) | Higgsfield character-sheet workflow, then `mascot_turnaround.txt` | 4k 21:9 sheets | Adult proportions, approved by a human. 2D Spine character rigs are cheaper than 3D on mobile; see [TECH_STACK](TECH_STACK.md#layer-6--characters-2d-spine-first-3d-optional) |
+| Characters (if the game has any) | Higgsfield character-sheet workflow, then `mascot_turnaround.txt` | 4k 21:9 sheets | Adult proportions, approved by a human. 2D Spine character rigs are cheaper than 3D on mobile; see [TECH_STACK](TECH_STACK.md) (runtime layer 6) |
 
 **Cost** in credits, measured 2026-09-26: NBP 2 per 2k image and 4 per 4k; NB2 1.5 at 1k and 2 at 2k; Seedream 4.5 1. Video and 3D costs vary: take them from the cost preview or `models_explore get` before the batch. `--max-credits` on `hf-ingest plan` fails closed on unknown rates (exit 4).
 

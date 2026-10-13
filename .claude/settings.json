@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm test:kit)",
+      "Bash(pnpm kit:check *)",
+      "Bash(pnpm build)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm qa:approval)",
+      "Bash(pnpm qa:review *)",
+      "Bash(pnpm capture *)",
+      "Bash(pnpm spine:gen *)",
+      "Bash(pnpm spine:validate *)",
+      "Bash(pnpm spine:pack *)",
+      "Bash(pnpm spine:capture *)",
+      "Bash(pnpm licence:audit*)",
+      "Bash(pnpm gen:hf-ingest status*)",
+      "Bash(pnpm gen:hf-ingest check*)",
+      "Bash(node tools/new-game/kit-check.mjs *)",
+      "Bash(node tools/qa/approval.mjs *)",
+      "Bash(node tools/build/all.mjs*)",
+      "mcp__higgsfield__balance",
+      "mcp__higgsfield__models_explore",
+      "mcp__higgsfield__jobs_wait",
+      "mcp__higgsfield__show_generation_by_ids"
+    ],
+    "ask": [
+      "mcp__higgsfield__generate_image",
+      "mcp__higgsfield__generate_image_batch",
+      "mcp__higgsfield__generate_video",
+      "mcp__higgsfield__generate_video_batch",
+      "mcp__higgsfield__generate_3d",
+      "mcp__higgsfield__upscale_image",
+      "mcp__higgsfield__upscale_video"
+    ]
+  }
+}

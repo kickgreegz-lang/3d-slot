@@ -447,7 +447,7 @@ class HfIngestTests(unittest.TestCase):
         self.assertEqual((v / "prompt.txt").read_text(), "the prompt as it was when paid for")
         self.assertEqual(json.loads((v / "job.json").read_text())["prompt"]["source"], "stored")
 
-        for model, reported in (("gpt_image_2", None), ("nano_banana_pro", "openai_hazel")):
+        for model, reported in (("openai_hazel", None), ("nano_banana_pro", "openai_hazel")):
             shutil.rmtree(self.raw, ignore_errors=True)
             jj = self.job("sym_H1", 18, url, "symbol.txt", {"symbol": "H1"})
             if reported:
@@ -549,8 +549,8 @@ class HfIngestTests(unittest.TestCase):
         self.assertTrue((self.prompts / f"{t3['jobs'][0]['promptHash']}.txt").is_file())
         self.assertEqual(self.run_tool("check").returncode, 0)
 
-        # refusals: OpenAI model, unknown job without a plan
-        req["requests"][0]["params"]["model"] = "gpt_image_2"
+        # refusals: an OpenAI model outside the owner override, unknown job without a plan
+        req["requests"][0]["params"]["model"] = "openai_hazel"
         (self.w / "req.json").write_text(json.dumps(req))
         (self.w / "sub4.json").write_text(json.dumps({"jobs": [{"index": 0, "job_id": J[23], "status": "queued"}]}))
         r = self.run_tool("record", "--batch", "t4", "--request", str(self.w / "req.json"), "--from", str(self.w / "sub4.json"))

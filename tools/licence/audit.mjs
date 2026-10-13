@@ -3,7 +3,7 @@
 // <-> public/assets. Intended as a REQUIRED CI status check (docs/PIPELINE.md 0.3 / 8.1).
 import fs from 'node:fs';
 import path from 'node:path';
-import { denylistHits } from '../gen/lib/genlib.mjs';
+import { denylistHits, ownerOverrides } from '../gen/lib/genlib.mjs';
 import { REPO, digestFiles, isMain, sha256File } from '../gen/lib/provenance.mjs';
 import { validate } from './schema-lite.mjs';
 
@@ -208,6 +208,11 @@ export function audit(opt) {
     if (typeof r.model === 'string') {
       const hits = denylistHits(scope, r.model, deny);
       if (hits.length) E(`${tag}: model '${r.model}' matches denylist ${JSON.stringify(hits)}`);
+      // an owner-overridden model is allowed only under the override's own (pending) licence
+      const ov = ownerOverrides(scope, r.model, deny)[0];
+      if (ov && r.licenseId !== ov.ownerOverride.licenseId) {
+        E(`${tag}: model '${r.model}' is allowed only under the owner override of '${ov.id}', which requires licenseId '${ov.ownerOverride.licenseId}' (got '${r.licenseId}')`);
+      }
     }
     // modelIds bind the vendor call itself; derivatives (route code/ffmpeg/...) inherit the licence id
     if (entry?.modelIds && !LOCAL_ROUTES.has(String(r.route ?? '')) && !entry.modelIds.includes(r.model)) {

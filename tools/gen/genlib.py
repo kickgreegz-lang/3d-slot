@@ -306,15 +306,17 @@ def _norm(s: str) -> str:
 
 
 def owner_overrides(route: str, model: str, deny: dict | None = None) -> list[dict]:
-    """Denylist entries the project owner overrode (entry.ownerOverride) that this model matches."""
+    """Denylist entries this route + model is cleared from by the project owner (entry.ownerOverride): the model must
+    be listed in ownerOverride.models and the route in ownerOverride.routes; anything else the entry covers stays refused."""
     deny = deny if deny is not None else load_json(DENYLIST_PATH)
     ids = set(_raw_denylist_hits(route, model, deny))
-    return [e for e in deny.get("entries", []) if e.get("ownerOverride") and e["id"] in ids]
+    return [e for e in deny.get("entries", []) if e.get("ownerOverride") and e["id"] in ids
+            and route in e["ownerOverride"].get("routes", []) and model in e["ownerOverride"].get("models", [])]
 
 
 def denylist_hits(route: str, model: str, deny: dict | None = None) -> list[str]:
     deny = deny if deny is not None else load_json(DENYLIST_PATH)
-    overridden = {e["id"] for e in deny.get("entries", []) if e.get("ownerOverride")}
+    overridden = {e["id"] for e in owner_overrides(route, model, deny)}
     return [h for h in _raw_denylist_hits(route, model, deny) if h not in overridden]
 
 

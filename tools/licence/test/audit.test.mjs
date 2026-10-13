@@ -80,8 +80,14 @@ test('good fixture passes (vendor row without ToS is only a warning)', () => {
 });
 
 test('denied model (OpenAI through Higgsfield) fails', () => {
-  const rep = fixture('denied', (c) => c.rows.push(row({ id: 'x.raw.v01', path: 'art/_raw/x/v01/raw.png', route: 'higgsfield-cli', vendor: 'Higgsfield', model: 'gpt_image_2', licenseId: 'higgsfield', sha256: 'c'.repeat(64) })));
-  assert.ok(has(rep, /model 'gpt_image_2' matches denylist/));
+  const rep = fixture('denied', (c) => c.rows.push(row({ id: 'x.raw.v01', path: 'art/_raw/x/v01/raw.png', route: 'higgsfield-cli', vendor: 'Higgsfield', model: 'openai_hazel', licenseId: 'higgsfield', sha256: 'c'.repeat(64) })));
+  assert.ok(has(rep, /model 'openai_hazel' matches denylist/));
+});
+
+test('owner-overridden model (GPT Image through Higgsfield) needs the override licence', () => {
+  const rep = fixture('override-lic', (c) => c.rows.push(row({ id: 'x.raw.v01', path: 'art/_raw/x/v01/raw.png', route: 'higgsfield-cli', vendor: 'Higgsfield', model: 'gpt_image_2', licenseId: 'higgsfield', sha256: 'c'.repeat(64) })));
+  assert.ok(has(rep, /allowed only under the owner override of 'openai-gpt-image', which requires licenseId 'higgsfield-openai-owner-override'/));
+  assert.ok(!has(rep, /model 'gpt_image_2' matches denylist/));
 });
 
 test('unknown and denylisted licenseId fail', () => {

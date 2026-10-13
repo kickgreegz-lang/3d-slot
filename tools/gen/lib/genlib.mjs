@@ -248,14 +248,18 @@ export const FAMILY_DENY = [
 
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-/** Denylist entries the project owner overrode (entry.ownerOverride) that this model matches. */
+/**
+ * Denylist entries this route + model is cleared from by the project owner (entry.ownerOverride): the model must be
+ * listed in ownerOverride.models and the route in ownerOverride.routes; anything else the entry covers stays refused.
+ */
 export function ownerOverrides(route, model, deny = loadJson(DENYLIST_PATH)) {
   const ids = new Set(rawDenylistHits(route, model, deny));
-  return (deny.entries ?? []).filter((e) => e.ownerOverride && ids.has(e.id));
+  return (deny.entries ?? []).filter((e) => e.ownerOverride && ids.has(e.id)
+    && (e.ownerOverride.routes ?? []).includes(route) && (e.ownerOverride.models ?? []).includes(model));
 }
 
 export function denylistHits(route, model, deny = loadJson(DENYLIST_PATH)) {
-  const overridden = new Set((deny.entries ?? []).filter((e) => e.ownerOverride).map((e) => e.id));
+  const overridden = new Set(ownerOverrides(route, model, deny).map((e) => e.id));
   return rawDenylistHits(route, model, deny).filter((id) => !overridden.has(id));
 }
 

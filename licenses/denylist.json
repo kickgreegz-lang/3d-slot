@@ -26,6 +26,8 @@
         "date": "2026-10-13",
         "by": "project owner",
         "scope": "exploration and concept references",
+        "routes": ["higgsfield-mcp", "higgsfield-cli"],
+        "models": ["gpt_image_2", "gpt_image_2_5"],
         "licenseId": "higgsfield-openai-owner-override",
         "note": "The owner reads OpenAI's 'real money gambling' prohibition as not covering game art and chose GPT Image 2.5 for concept boards. Generation is allowed; every output carries the pending licence above, so licence:audit --release refuses to ship it until the owner clears that entry. Delete this block to restore the refusal."
       }

@@ -67,7 +67,8 @@ CASES = [
 GATE_CASES = [
     ("higgsfield-cli", "nano_banana_2", True), ("higgsfield-cli", "nano_banana_flash", True),
     ("higgsfield-cli", "seedance_2_0", True), ("higgsfield-cli", "kling3_0", True),
-    ("higgsfield-cli", "gpt_image_2", False), ("higgsfield-cli", "gpt_image_2_5", False),
+    # GPT Image on Higgsfield: allowed only under the owner override (licenses/denylist.json, own pending licence)
+    ("higgsfield-cli", "gpt_image_2", True), ("higgsfield-cli", "gpt_image_2_5", True),
     ("higgsfield-cli", "openai_hazel", False), ("higgsfield-cli", "sora_2", False),
     ("higgsfield-cli", "mirelo_text_to_audio", False), ("higgsfield-cli", "sonilo_music", False),
     ("higgsfield-cli", "hunyuan_image_3", False), ("higgsfield-cli", "flux_1_dev", False),
@@ -210,6 +211,23 @@ class GateTests(unittest.TestCase):
                     genlib.gate(route, model)
                 self.assertEqual(cm.exception.code, 3)
 
+    def test_owner_override_scope(self):
+        g = genlib.gate("higgsfield-mcp", "gpt_image_2_5")
+        self.assertEqual(g["licenseId"], "higgsfield-openai-owner-override")
+        self.assertTrue(any(w.startswith("owner override of denylist 'openai-gpt-image'") for w in g["warnings"]))
+        self.assertEqual(genlib.gate("higgsfield-mcp", "nano_banana_pro")["licenseId"], "higgsfield")
+        # outside the override's models or routes the entry still refuses
+        for route, model in (("higgsfield-mcp", "openai_hazel"), ("scenario", "gpt-image-2.5-sunburst")):
+            with self.assertRaises(genlib.GenError, msg=f"{route}:{model}") as cm:
+                genlib.gate(route, model)
+            self.assertEqual(cm.exception.code, 3)
+        # deleting the ownerOverride block restores the refusal
+        deny = genlib.load_json(genlib.DENYLIST_PATH)
+        for e in deny["entries"]:
+            e.pop("ownerOverride", None)
+        self.assertIn("openai-gpt-image", genlib.denylist_hits("higgsfield-mcp", "gpt_image_2_5", deny))
+        self.assertEqual(genlib.owner_overrides("higgsfield-mcp", "gpt_image_2_5", deny), [])
+
     def test_vertex_license_by_model(self):
         self.assertEqual(genlib.gate("vertex", "gemini-3-pro-image")["licenseId"], "vertex-nano-banana-pro")
         self.assertEqual(genlib.gate("vertex", "gemini-3.1-flash-image")["licenseId"], "vertex-nano-banana-2")
@@ -250,7 +268,7 @@ class HiggsfieldTests(unittest.TestCase):
         self.assertIn("--duration 5", cmd)
 
     def test_refusals(self):
-        r = self.hf("--template", "symbol.txt", "--symbol", "H1", "--model", "gpt_image_2", "--dry-run")
+        r = self.hf("--template", "symbol.txt", "--symbol", "H1", "--model", "openai_hazel", "--dry-run")
         self.assertEqual(r.returncode, 3)
         r = self.hf("--template", "symbol.txt", "--symbol", "H1", "--model", "mirelo_text_to_audio", "--dry-run")
         self.assertEqual(r.returncode, 3)

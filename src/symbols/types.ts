@@ -134,6 +134,8 @@ export interface SymbolView {
   setAnticipation(on: boolean): void;
   /** Dim (non-winning / non-anticipating) with tint tween. */
   setDim(on: boolean, animate?: boolean): void;
+  /** Miss (FEATURES.missState): deflate + sink while a loser is dimmed during a win; off springs back. */
+  setMiss(on: boolean, animate?: boolean): void;
   /** Win: pop + win animation (+ shine). Ends in 'postWin' (still visible, highlighted). */
   win(): Promise<void>;
   /**

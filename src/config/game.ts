@@ -120,6 +120,12 @@ export interface GameFeatures {
    * fx/particles.ts configureParticleBudget). Default 0 (Fx may use the whole budget).
    */
   particleReserve?: number;
+  /**
+   * Losing symbols play the `miss` state while wins show (docs/new-slot/ANIMATION_STATES.md §1): a short
+   * deflate + sink (SYMBOL_TIMING.miss) on top of the win dim, released with it. Default false: the plain
+   * dim tint only (the behaviour of games made before the new-slot kit).
+   */
+  missState?: boolean;
 }
 
 /** Deterministic idle board before the first spin (flow/attract.ts). */

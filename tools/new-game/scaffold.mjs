@@ -216,6 +216,16 @@ write(
 );
 write(resolve(dst, 'modules.ts'), fill(readFileSync(resolve(TEMPLATE, 'game/modules.ts'), 'utf8')));
 write(resolve(dst, 'environment.ts'), fill(readFileSync(resolve(TEMPLATE, 'game/environment.ts'), 'utf8')));
+// new games play the `miss` state on losing symbols (FEATURES.missState, ANIMATION_STATES.md §1)
+const cfgPath = resolve(dst, 'config.ts');
+if (!dryRun) {
+  const cfg = readFileSync(cfgPath, 'utf8');
+  const next = cfg.replace(/(export const FEATURES: GameFeatures = \{[\s\S]*?)\n\};/, (all, body) =>
+    body.includes('missState') ? all : `${body}\n  /** losing symbols deflate + sink while wins show (docs/new-slot/ANIMATION_STATES.md §1) */\n  missState: true,\n};`,
+  );
+  if (next === cfg && !cfg.includes('missState')) console.warn('  warn    FEATURES not found in config.ts: add missState: true by hand');
+  writeFileSync(cfgPath, next);
+}
 // the template game's own name in the rules footer
 const info = resolve(dst, 'gameInfo.ts');
 if (!dryRun && existsSync(info)) {

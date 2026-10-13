@@ -108,6 +108,21 @@ export const SYMBOL_TIMING = registerTiming('symbol', {
     wiggles: 3,
     sparkleCount: 14,
   },
+  /**
+   * `miss` (FEATURES.missState): the losers of a win presentation deflate toward their feet and sink a
+   * little while dimmed, then spring back when the dim is released (tumble survivors, next spin).
+   */
+  miss: {
+    /** ms, s()-scaled */
+    duration: 180,
+    release: 140,
+    ease: 'back.out(1.6)',
+    /** scale Y lost and scale X gained at full miss */
+    deflate: 0.06,
+    widen: 0.025,
+    /** design px toward the feet */
+    sink: 3,
+  },
   explode: {
     /** White "charge-up" during the squeeze. */
     chargeFlash: 0.7,

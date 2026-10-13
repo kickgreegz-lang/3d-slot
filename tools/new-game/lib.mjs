@@ -42,7 +42,7 @@ export const PLAN = {
   premium: {
     spin: { tech: 'texture', asset: '_blur', status: 'placeholder' },
     land: { tech: 'spine', clip: 'land', status: 'todo' },
-    miss: { tech: 'procedural', status: 'todo', note: 'engine delta E1 (SymbolView.miss)' },
+    miss: { tech: 'procedural', status: 'placeholder', note: 'FEATURES.missState: deflate + sink + dim (SYMBOL_TIMING.miss); tune in the lab' },
     connect: { tech: 'spine', clip: 'win', loop: 'win_loop', status: 'todo' },
     explode: { tech: 'spine', clip: 'explode', status: 'todo' },
     idle: { tech: 'spine', clip: 'idle', status: 'todo' },
@@ -50,7 +50,7 @@ export const PLAN = {
   special: {
     spin: { tech: 'texture', asset: '_blur', status: 'placeholder' },
     land: { tech: 'spine', clip: 'land', status: 'todo' },
-    miss: { tech: 'spine', clip: 'miss', status: 'todo', note: 'tease-fail / shrug; engine delta E1' },
+    miss: { tech: 'spine', clip: 'miss', status: 'todo', note: 'tease-fail / shrug: Spine miss needs E5; until then the procedural miss plays' },
     connect: { tech: 'spine', clip: 'win', loop: 'win_loop', status: 'todo' },
     explode: { tech: 'spine', clip: 'explode', status: 'todo' },
     idle: { tech: 'spine', clip: 'idle', status: 'todo' },
@@ -59,7 +59,7 @@ export const PLAN = {
   low: {
     spin: { tech: 'texture', asset: '_blur', status: 'placeholder' },
     land: { tech: 'procedural', status: 'placeholder', note: 'squash spring + jelly mesh; per-royal land weight' },
-    miss: { tech: 'procedural', status: 'todo', note: 'engine delta E1 (SymbolView.miss)' },
+    miss: { tech: 'procedural', status: 'placeholder', note: 'FEATURES.missState: deflate + sink + dim (SYMBOL_TIMING.miss)' },
     connect: { tech: 'spine', clip: 'win', loop: 'win_loop', status: 'todo', note: 'low kind rig (engine delta E4)' },
     explode: { tech: 'spine', clip: 'explode', status: 'todo', note: 'low kind rig + shards in the royal colour' },
   },

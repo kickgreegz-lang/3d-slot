@@ -547,7 +547,7 @@ export class Board implements GameModule {
       const winners = new Set<SymbolView>();
       for (const w of wins) for (const p of w.positions) winners.add(this.slots[p.reel][p.row]);
       this.forVisible((sv) => {
-        if (!winners.has(sv)) this.dim(sv, true);
+        if (!winners.has(sv)) this.dim(sv, true, true, FEATURES.missState === true);
       });
       this.ctx.game.broadcast('mascot:cue', { cue: this.tumblesSinceReveal > 0 ? 'reactTumble' : 'reactSmall' });
       const started = new Set<SymbolView>();
@@ -1047,13 +1047,16 @@ export class Board implements GameModule {
     if (this.elevated.delete(sv)) sv.setElevated(false);
   }
 
-  private dim(sv: SymbolView, on: boolean, animate = true): void {
+  /** `miss`: the dim of a win presentation's losers also plays their miss state (FEATURES.missState). */
+  private dim(sv: SymbolView, on: boolean, animate = true, miss = false): void {
     if (on) {
       if (this.dimmed.has(sv)) return;
       this.dimmed.add(sv);
       sv.setDim(true, animate);
+      if (miss) sv.setMiss(true, animate);
     } else if (this.dimmed.delete(sv)) {
       sv.setDim(false, animate);
+      sv.setMiss(false, animate);
     }
   }
 

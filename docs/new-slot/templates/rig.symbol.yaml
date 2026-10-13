@@ -11,7 +11,7 @@
 # State map (the five core states the kit requires, ANIMATION_STATES.md §1):
 #   spin    -> `blur` (region swap to <part>_blur; the runtime also stretches the body) - generated below
 #   land    -> `land` (contact on frame 0, squash 0.83-0.87 on the `squash` bone)       - generated below
-#   miss    -> procedural for premium/low tiers (engine delta E1); specials get a Spine `miss` once
+#   miss    -> procedural for every tier (FEATURES.missState: deflate + sink + dim); specials get a Spine `miss` once
 #              tools/spine gains the builder (engine delta E5) - see x_miss at the end
 #   connect -> `win` + `win_loop` (pop to ~125 %, `win_peak` event)                     - generated below
 #   explode -> `explode` (`explode_burst` on frame 2-3, ends at alpha 0)                - generated below

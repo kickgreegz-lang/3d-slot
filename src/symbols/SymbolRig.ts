@@ -136,6 +136,9 @@ export class SymbolRig implements SymbolView {
   private readonly fx: SymbolFxParams = { shine: -1, shineWidth: 0.16, shineIntensity: 0, flash: 0, dissolve: 0 };
   private readonly glowState = { a: 0, s: 1 };
   private readonly dim = { t: 0, target: 0 };
+  /** `miss` amount 0..1 (FEATURES.missState), folded into applyBody */
+  private readonly missAmt = { t: 0, target: 0 };
+  private missTween: gsap.core.Tween | null = null;
   /** second dim channel (board:focus); the darker of dim / focus shows */
   private readonly focus = { t: 0, target: 0, tint: 0xcccccc };
   private focusTween: gsap.core.Tween | null = null;
@@ -641,6 +644,30 @@ export class SymbolRig implements SymbolView {
     }
   }
 
+  setMiss(on: boolean, animate = true): void {
+    const target = on ? 1 : 0;
+    if (target === this.missAmt.target && (animate || this.missAmt.t === target)) return;
+    this.missAmt.target = target;
+    this.missTween?.kill();
+    this.missTween = null;
+    if (animate) {
+      this.missTween = followSpeed(
+        gsap.to(this.missAmt, {
+          t: target,
+          duration: s(on ? T.miss.duration : T.miss.release),
+          ease: on ? T.miss.ease : 'power2.out',
+          onUpdate: () => this.applyBody(),
+          onComplete: () => {
+            this.missTween = null;
+          },
+        }),
+      );
+    } else {
+      this.missAmt.t = target;
+      this.applyBody();
+    }
+  }
+
   idleAccent(): void {
     // a look-holder already loops its rest clip
     if (this._state !== 'static' || this.loop.running || this.destroyed || this.look) return;
@@ -698,6 +725,10 @@ export class SymbolRig implements SymbolView {
     this.focus.t = 0;
     this.focus.target = 0;
     this.applyDim();
+    this.missTween?.kill();
+    this.missTween = null;
+    this.missAmt.t = 0;
+    this.missAmt.target = 0;
     this.overlay.kill();
     this.decor.alpha = 1;
     for (const sp of [this.squash, this.rock, this.bulge, this.lag, this.shear]) sp.reset(0);
@@ -1092,8 +1123,9 @@ export class SymbolRig implements SymbolView {
     const a = this.squash.x * this.squashGain;
     const sy = Math.max(0.3, 1 - a * (1 - squashY));
     const o = this.overlay;
-    this.body.scale.set(Math.pow(sy, -p) * o.sx, sy * o.sy);
-    this.body.position.set(o.x, this.frame.feetY - this.hop.h + o.y);
+    const m = this.missAmt.t;
+    this.body.scale.set(Math.pow(sy, -p) * o.sx * (1 + m * T.miss.widen), sy * o.sy * (1 - m * T.miss.deflate));
+    this.body.position.set(o.x, this.frame.feetY - this.hop.h + o.y + m * T.miss.sink);
     this.body.rotation = this.rock.x;
   }
 

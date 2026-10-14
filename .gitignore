@@ -21,3 +21,6 @@ build/
 tools/.venv-*/
 # third-party reference captures (tools/reference) — study only, never commit
 art/_reference/
+
+# personal Claude Code overrides
+.claude/settings.local.json

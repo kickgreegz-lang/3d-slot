@@ -30,9 +30,20 @@ sequence. 4+ scatters trigger the bonus (spots persist through the free spins). 
 | 5 | CHROME | Hubcap Heat | custom-car garage: diamond-plate floor heats cherry → white-hot gold |
 | 6 | MIRRORBALL | Mirrorball Nights | Deco dance floor: etched sunbursts light up panel by panel |
 
-![round 1 overview](boards/overview.jpg)
+![round 4 overview: GPT Image 2.5](boards/overview_gpt.jpg)
 
 ## Board rounds
+
+**Round 4: the reference boards** (`gpt_image_2_5` Sunburst, quality high, 4k 3840×2160, text-only prompts, 12 boards,
+about 51 credits; batch `ctm-boards-b04-gpt25`). Every board holds the full 7×5 grid with dense, glossy, near-3D symbols, deep
+gold frames and complete themed worlds: this is the quality bar. Per-board files: `boards/gpt_<theme>_v1|v2.webp`. Notes for
+production:
+- Backgrounds came out sharp and busy; the reference keeps its world soft-focus so the board pops (STYLE.md). The real plates
+  are generated separately with the bright-style value vars and blurred at build time (`tools/bg/layers.py`).
+- In BULBFEVER and SKYFAIR the lows sit on tiles like the premiums; the tier rule (framed premiums, frameless lows) must hold
+  in the symbol masters.
+- These boards were made under the owner's GPT Image override (`licenses/denylist.json` → `openai-gpt-image.ownerOverride`):
+  they are concept references with the pending licence `higgsfield-openai-owner-override` and cannot ship until cleared.
 
 **Round 1** (`nano_banana_pro`, 2k, text-only, 12 boards, 24 credits): the board structure is right on the best ones
 (KINTSUGI v1, SAFFRON SOUK v1, MIRRORBALL v1, SKYFAIR v1), but the owner's verdict is that the rendering is too flat and
@@ -49,13 +60,10 @@ cheap next to the reference: small icon-like symbols in empty cells, little glos
 Lesson: **never pass the competitor's screenshot as an image reference**; it leaks their IP into the output. Text-only
 prompts with the measured style rules (STYLE.md) are the safe route.
 
-**Round 3 (prepared, not yet run):** `hf/boards-b03-sd45.request.json` (Seedream 4.5 high, 2 per theme, 12 credits) and
-`hf/boards-b03-nb21.request.json` (Nano Banana 2.1 4k, 1 per theme, 18 credits), with a stronger text-only rendering brief.
+**Round 3 (prepared, not run; superseded by round 4):** `hf/boards-b03-sd45.request.json` (Seedream 4.5 high) and
+`hf/boards-b03-nb21.request.json` (Nano Banana 2.1 4k) remain as the non-OpenAI fallback with the same prompts.
 
-**Open model decision:** the owner prefers GPT Image 2.5 (Sunburst high 4k, 4.25 credits a board). The repo's licence gate
-refuses it (`licenses/denylist.json` → `openai-gpt-image`: OpenAI's usage policy lists "real money gambling" as a
-prohibited use). Using it is the owner's call; it needs that denylist entry changed by the owner (or the change approved),
-ideally so GPT outputs carry a separate pending licence and can never ship by accident.
+![round 1 overview](boards/overview.jpg)
 
 ## Next steps
 

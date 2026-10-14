@@ -2718,6 +2718,69 @@
           "bytes": 10198644
         }
       ]
+    },
+    {
+      "id": "ctm-kintsugi-c01",
+      "date": "2026-10-14",
+      "purpose": "KINTSUGI component pilot: symbol sheet, empty frame, soft background (composited in code)",
+      "model": "gpt_image_2_5",
+      "planTier": "Higgsfield Ultra",
+      "jobs": [
+        {
+          "name": "ctm_kintsugi_c01_symbols",
+          "index": 0,
+          "job_id": "6020cf6c-f6d7-4a16-b2e4-15bba803d340",
+          "status": "completed",
+          "template": null,
+          "promptHash": "710c6cf3df88845b0e77193b9966ecb3172746b8b20f39babbcccc4c2b930d50",
+          "resolution": "4k",
+          "aspect_ratio": "3:2",
+          "credits": 4.25,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JByJN2n2DcPpFYKyVnp3JMPofp/hf_20261014_102654_6020cf6c-f6d7-4a16-b2e4-15bba803d340.png",
+          "model": "gpt_image_2_5",
+          "type": "image",
+          "sha256": "9a9208affe94bd5f965ac6905ce3e7f57fd66f6a17ed1b1431b80aed8e523b29",
+          "width": 3504,
+          "height": 2336,
+          "bytes": 8112933
+        },
+        {
+          "name": "ctm_kintsugi_c01_frame",
+          "index": 1,
+          "job_id": "7300c28f-c001-44fc-9f98-d63324bca619",
+          "status": "completed",
+          "template": null,
+          "promptHash": "61fa2599980917346062ab3f81432646a438d3039ee8f4d7b7c9b4baa9f2aa1b",
+          "resolution": "4k",
+          "aspect_ratio": "16:9",
+          "credits": 4.25,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JByJN2n2DcPpFYKyVnp3JMPofp/hf_20261014_102653_7300c28f-c001-44fc-9f98-d63324bca619.png",
+          "model": "gpt_image_2_5",
+          "type": "image",
+          "sha256": "32faa26ec7f919d0d049a42352601b1a2b64955807b963039e8699c9a724f862",
+          "width": 3840,
+          "height": 2160,
+          "bytes": 5018939
+        },
+        {
+          "name": "ctm_kintsugi_c01_bg",
+          "index": 2,
+          "job_id": "523ffc87-721a-448b-a9f4-fc6aaa96d488",
+          "status": "completed",
+          "template": null,
+          "promptHash": "4bc6cad789b77e361dd4715024eea05b4b044bd5ec90623369b42c9d0e5a6aad",
+          "resolution": "4k",
+          "aspect_ratio": "16:9",
+          "credits": 4.25,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JByJN2n2DcPpFYKyVnp3JMPofp/hf_20261014_102654_523ffc87-721a-448b-a9f4-fc6aaa96d488.png",
+          "model": "gpt_image_2_5",
+          "type": "image",
+          "sha256": "982498daad131bdb12f73a38d001994fc1f65a27dedbd1df912eee93f8e87e2d",
+          "width": 3840,
+          "height": 2160,
+          "bytes": 8193405
+        }
+      ]
     }
   ]
 }

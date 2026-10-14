@@ -32,7 +32,28 @@ sequence. 4+ scatters trigger the bonus (spots persist through the free spins). 
 
 ![round 4 overview: GPT Image 2.5](boards/overview_gpt.jpg)
 
-## Board rounds
+## The method that works: build the board from parts (round 5, KINTSUGI pilot)
+
+![KINTSUGI composed board](boards/kintsugi_composed.jpg)
+
+Whole-board prompts (rounds 1–4) always read as generic AI slot ads: every element competes, low symbols get tiles like
+premiums, backgrounds come out sharp and busy, and the "glossy 3D" render looks plastic. Studios build the board from parts,
+and so does this kit:
+
+1. **Symbol sprite sheet** on a transparent background, one generation (4×3: 4 framed premiums, 5 frameless lows, scatter,
+   2 blank multiplier dishes), in the clean 2D style: bold uniform dark-brown outline, 2–3-tone cel shading, one highlight,
+   no 3D gloss, no filigree. Review: [kintsugi_symbols_review.png](boards/kintsugi_symbols_review.png) (in-game size + 64 px
+   greyscale silhouettes).
+2. **Frame alone**, transparent, with an empty opening (9-sliced in code to a 7:5 opening).
+3. **Background plate**, soft and low-detail, blurred again at composite time.
+4. **Composite in code** (`tools/concept/compose_board.py`): the well inset over the frame (flourishes tuck behind it), an
+   exact 7×5 grid, per-tier symbol sizes, flat spot tiles with live values, multiplier numerals, empty HUD band. This is
+   how the engine renders the board, so the mockup is honest.
+
+Batch `ctm-kintsugi-c01`: 3 GPT Image 2.5 jobs (owner override), about 13 credits per theme. Run it per theme:
+`tools/.venv/bin/python tools/concept/compose_board.py <symbols.png> <frame.png> <bg.png> <out_dir>`.
+
+## Board rounds (whole-board prompts, superseded)
 
 **Round 4: the reference boards** (`gpt_image_2_5` Sunburst, quality high, 4k 3840×2160, text-only prompts, 12 boards,
 about 51 credits; batch `ctm-boards-b04-gpt25`). Every board holds the full 7×5 grid with dense, glossy, near-3D symbols, deep

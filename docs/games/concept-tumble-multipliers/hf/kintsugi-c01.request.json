@@ -1,0 +1,43 @@
+{
+  "requests": [
+    {
+      "index": 0,
+      "name": "ctm_kintsugi_c01_symbols",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "4k",
+        "aspect_ratio": "3:2",
+        "background": "transparent",
+        "prompt": "Production sprite sheet of 12 slot-game symbols on a fully transparent background, arranged in a strict grid of 4 columns by 3 rows of equal cells with wide empty gaps between them; every symbol is isolated, centred in its cell, with no shadow, glow or colour on the background. STYLE, identical for all 12: polished hand-drawn 2D casual slot art; one bold uniform dark-brown ink outline around every shape and thinner inner lines; clean cel shading with two or three flat tones per colour and one crisp white highlight from the upper left; chunky simplified volumes and bold silhouettes that read instantly at 64 px; a restrained palette with one dominant hue per symbol. No 3D render, no plastic gloss, no bloom, no texture noise, no filigree, no tiny details, no text, no numbers. ROW 1, four PREMIUM symbols, each object on its own rounded-square tile that fills the cell (a bevelled warm-bronze border around a flat saturated field colour; the object fills about 80% of the tile and slightly breaks its top edge): 1) a deep-cobalt lidded porcelain jar on a celadon-green field; 2) a cinnabar-red porcelain teapot with a bamboo handle on a deep-teal field; 3) a plum-purple tea bowl on a blossom-pink field; 4) a black gourd-shaped vase with one gold band on a pale sky-blue field. ROW 2, four LOW symbols, frameless with no tile, the object alone at about 70% of the cell: 5) a pink plum-blossom sprig; 6) a green bamboo segment; 7) an orange persimmon; 8) a cerulean-blue wave crest. ROW 3: 9) a LOW symbol, a yellow ginkgo leaf, frameless; 10) the SCATTER, a tall white porcelain vase laced with bright gold mended cracks, frameless and a little taller than the cell; 11) a MULTIPLIER, a round porcelain dish with an eight-lobed gold rim and an empty plain cream centre; 12) the same dish with a richer double gold rim and an empty pale celadon centre. Every symbol has its own silhouette and hue."
+      }
+    },
+    {
+      "index": 1,
+      "name": "ctm_kintsugi_c01_frame",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "4k",
+        "aspect_ratio": "16:9",
+        "background": "transparent",
+        "prompt": "One slot-game reel frame alone on a fully transparent background, straight front view, centred; the rectangular opening inside the frame is completely empty and transparent, with a width-to-height ratio of 7 to 5, and the frame is about 80% of the image height. Top-heavy design: a crown band of cobalt-blue porcelain painted with white wave scrolls, with a small round white medallion crossed by gold mended cracks at its centre; slim cobalt porcelain side posts; gold plum-blossom flourishes at the four corners; a thin gold sill along the bottom. STYLE: polished hand-drawn 2D casual slot art; one bold uniform dark-brown ink outline; clean cel shading in two or three flat tones; one crisp highlight; cartoon gold in flat bands of lemon, orange and cream. No 3D render, no plastic gloss, no glow, no texture noise, no filigree, no text, nothing inside the opening."
+      }
+    },
+    {
+      "index": 2,
+      "name": "ctm_kintsugi_c01_bg",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "4k",
+        "aspect_ratio": "16:9",
+        "background": "opaque",
+        "prompt": "Background plate for a casual slot game, 16:9; no slot board, no frame, no UI, no text, no people. A sunlit spring pottery garden: at the far left a flowering pink plum tree above a low shelf of blue-and-white jars; at the far right a round brick kiln with a soft warm glow; large glazed jars in both bottom corners; a pale stone courtyard floor; a soft hazy morning sky. The middle 60% of the width is calm, open and low in detail, because the reel board will cover it. Painted in a soft, simple, hand-painted 2D style: gentle gradients, pastel high-key values, low contrast, few details, no outlines, slightly out of focus like a shallow depth of field; no clutter, no sharp detail."
+      }
+    }
+  ]
+}

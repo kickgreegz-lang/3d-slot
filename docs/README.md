@@ -6,6 +6,7 @@ This is a premium, animation-first video slot for **Stake Engine**, produced wit
 - **Games:** one shared engine, one folder per game (`src/games/<id>/`, picked with `GAME=<id>`):
   - `swamp-funk` (default): a 7×5 cluster-pays tumble game with multiplier spots;
   - `bass-drop` — **Swamp Funk: Bass Drop**: a 6×6 cluster tumble with a Groove Meter (Wilds every 10 connected symbols, Juke Jam at 40, Mega Mix at 60). Design: [games/bass-drop/](games/bass-drop/README.md).
+  - `magpie-heist` — **Magpie Heist**: a Le Bandit-style 6×5 cluster tumble under its own brand (glint squares, Shooting Star loot reveal, Night Prowl / Vault Raid / Starfall). Design: [games/magpie-heist/](games/magpie-heist/README.md).
 - **Front end:** Vite + TypeScript + PixiJS 8.21 + three 0.186 + spine-pixi-v8 4.3.13 + GSAP 3.15.
 
 ## Start here

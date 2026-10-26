@@ -3,7 +3,7 @@ import { BitmapText, Container, Sprite, type Texture } from 'pixi.js';
 import { s } from '../../../core/timing';
 import type { LootItem } from '../events';
 import { LOOT_COLOR } from '../timing';
-import { coinTexture, diamondTexture, nestTexture } from './art';
+import { coinTexture, cushionTexture, diamondTexture, nestTexture } from './art';
 
 /** Item kind as drawn (a coin's tier picks its art). */
 export type LootKind = 'bronze' | 'silver' | 'gold' | 'diamond' | 'nest';
@@ -25,6 +25,10 @@ export class LootView extends Container {
   readonly art: Sprite;
   readonly halo: Sprite;
   readonly text: BitmapText;
+  /** the velvet cushion that hides the symbol under the loot */
+  readonly cushion = new Sprite({ anchor: 0.5 });
+  /** the loot (halo, art, value) flips; the cushion stays square to the cell */
+  readonly body = new Container({ label: 'lootBody' });
   value = 0;
   mult = 1;
   private tweens: Array<gsap.core.Tween | gsap.core.Timeline> = [];
@@ -43,7 +47,8 @@ export class LootView extends Container {
     this.halo = new Sprite({ texture: glow, anchor: 0.5, blendMode: 'add', tint: LOOT_COLOR[this.kind], alpha: 0.55 });
     this.art = new Sprite({ texture: artFor(this.kind), anchor: 0.5 });
     this.text = new BitmapText({ text: '', style: { fontFamily: font, fontSize: 34 }, anchor: 0.5 });
-    this.addChild(this.halo, this.art, this.text);
+    this.body.addChild(this.halo, this.art, this.text);
+    this.addChild(this.cushion, this.body);
     if (item.kind === 'diamond') this.mult = item.mult;
     else this.value = item.value;
     this.paintText();
@@ -52,6 +57,8 @@ export class LootView extends Container {
   /** Fit to a cell of `cell` design px. */
   fit(cell: number): void {
     this.cell = cell;
+    this.cushion.texture = cushionTexture(cell);
+    this.cushion.scale.set((cell * 1.02) / this.cushion.texture.width);
     const k = (cell * FIT[this.kind]) / ART_PX[this.kind];
     this.artK = k;
     this.art.scale.set(k);
@@ -76,11 +83,16 @@ export class LootView extends Container {
 
   /** 3D-ish coin flip into view (scale-x through 0 with a lift), then a settle bounce. */
   flipIn(delayS = 0, ms = 300): gsap.core.Timeline {
-    this.scale.set(0, 0.2);
     this.alpha = 1;
+    this.cushion.alpha = 0;
+    this.cushion.scale.set(this.cushion.scale.x * 0.8);
+    const k = (this.cell * 1.02) / this.cushion.texture.width;
+    this.body.scale.set(0, 0.2);
     const tl = gsap.timeline({ delay: delayS });
-    tl.to(this.scale, { x: 1.18, y: 1.18, duration: s(ms * 0.6), ease: 'back.out(2.4)' })
-      .to(this.scale, { x: 1, y: 1, duration: s(ms * 0.4), ease: 'sine.inOut' })
+    tl.to(this.cushion, { alpha: 1, duration: s(ms * 0.35), ease: 'sine.out' }, 0)
+      .to(this.cushion.scale, { x: k, y: k, duration: s(ms * 0.5), ease: 'back.out(2)' }, 0)
+      .to(this.body.scale, { x: 1.18, y: 1.18, duration: s(ms * 0.6), ease: 'back.out(2.4)' }, 0)
+      .to(this.body.scale, { x: 1, y: 1, duration: s(ms * 0.4), ease: 'sine.inOut' })
       .fromTo(this.halo, { alpha: 1.2 }, { alpha: 0.55, duration: s(ms), ease: 'sine.out' }, 0)
       .fromTo(this.art, { rotation: -0.25 }, { rotation: 0, duration: s(ms * 0.9), ease: 'back.out(3)' }, 0);
     this.tweens.push(tl);
@@ -111,8 +123,8 @@ export class LootView extends Container {
     this.tweens.push(
       gsap
         .timeline()
-        .to(this.scale, { x: to, y: to, duration: s(ms * 0.35), ease: 'power2.out' })
-        .to(this.scale, { x: 1, y: 1, duration: s(ms * 0.65), ease: 'elastic.out(1, 0.45)' }),
+        .to(this.body.scale, { x: to, y: to, duration: s(ms * 0.35), ease: 'power2.out' })
+        .to(this.body.scale, { x: 1, y: 1, duration: s(ms * 0.65), ease: 'elastic.out(1, 0.45)' }),
     );
     this.tweens.push(gsap.fromTo(this.halo, { alpha: 1.3 }, { alpha: 0.55, duration: s(ms * 1.4), ease: 'sine.out' }));
   }
@@ -129,7 +141,7 @@ export class LootView extends Container {
 
   fadeOut(ms = 260, delayS = 0): gsap.core.Tween {
     const t = gsap.to(this, { alpha: 0, duration: s(ms), delay: delayS, ease: 'sine.in' });
-    this.tweens.push(t, gsap.to(this.scale, { x: 0.6, y: 0.6, duration: s(ms), delay: delayS, ease: 'back.in(2)' }));
+    this.tweens.push(t, gsap.to(this.body.scale, { x: 0.6, y: 0.6, duration: s(ms), delay: delayS, ease: 'back.in(2)' }));
     return t;
   }
 

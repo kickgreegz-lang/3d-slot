@@ -35,3 +35,7 @@ No characters, no UI elements, no text, no letters, no readable signage, no logo
 Same place as the reference, reframed as a tall portrait view for a phone screen: {LEFT_MASS} on the left side and {RIGHT_MASS} on the right side of the upper half; {TOP_DETAIL} across the top; a darker, lower-detail central column over the middle 60% of the width from one third of the height down, where the reel grid sits; dark floor across the bottom fifth. Keep every important shape inside the central 88% of the width.
 {STYLE_FORMULA}
 No characters, no UI elements, no text, no letters, no readable signage, no logos. Thinner, lower-contrast linework than the foreground; soft depth layering.
+
+## SECTION G: clean-up edit (Magpie Heist; edit with the approved plate as the only reference: remove a stray object)
+Same scene as the reference, identical framing, layout, perspective, lighting, palette and painting style. Only this change: {VARIANT_NOTE}
+No characters, no UI elements, no text, no letters, no readable signage, no logos.

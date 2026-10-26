@@ -159,6 +159,23 @@ def build_symbols() -> dict[str, list[str]]:
     return out
 
 
+def build_crest() -> list[str]:
+    """The logo crest: the Bandit Mask master WITHOUT the baked WILD text, 512 px."""
+    src = SRC / "symbols" / "W" / "master_1024.png"
+    im = Image.open(src).convert("RGBA")
+    bb = im.getbbox()
+    im = im.crop(bb)
+    k = 512 / max(im.size)
+    im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+    d = SRC / "ui"
+    d.mkdir(parents=True, exist_ok=True)
+    p = d / "logo_crest.png"
+    im.save(p, optimize=True)
+    mid = row_for(src)["id"]
+    record(p, "packaging", [mid], "logo crest: the Bandit Mask master (no text), trimmed, 512 px long side")
+    return [P.rel(p)]
+
+
 # ----------------------------------------------------------------------------------------------- background
 
 def build_bg() -> list[str]:
@@ -236,19 +253,28 @@ def ship_spec() -> None:
                           "encode": {"webp": {"lossless": True} if suf == "" else {"quality": 88}}})
     for n in ["base_landscape", "base_portrait"]:
         items.append({"src": f"art/source/magpie-heist/bg/{n}.webp", "dst": f"public/assets/magpie-heist/bg/{n}.webp", "encode": "copy"})
+    items.append({"src": "art/source/magpie-heist/ui/logo_crest.png", "dst": "public/assets/magpie-heist/ui/logo_crest.webp",
+                  "encode": {"webp": {"lossless": True}}})
     items.append({"src": "art/source/magpie-heist/mascot/monty_static.png", "dst": "public/assets/magpie-heist/mascot/monty_static.webp",
                   "encode": {"webp": {"quality": 92}}})
     spec = {"$comment": "Magpie Heist: board sprites, plates, mascot stand-in. Built by tools/mhart/build_art.py; ship with tools/.venv/bin/python tools/licence/ship.py tools/licence/ship/magpie_heist.json",
             "name": "magpie-heist", "items": items}
     p = REPO / "tools/licence/ship/magpie_heist.json"
+    # merge: keep the items other tracks added (rigs, mascot) and replace only the ones built here
+    if p.exists():
+        mine = {it["dst"] for it in items}
+        items[:0] = []
+        items += [it for it in json.loads(p.read_text()).get("items", []) if it["dst"] not in mine]
     p.write_text(json.dumps(spec, indent=1) + "\n")
     print(f"ship spec: {len(items)} items -> {P.rel(p)}")
 
 
 def main() -> int:
-    steps = sys.argv[1:] or ["symbols", "bg", "mascot", "ship-spec"]
+    steps = sys.argv[1:] or ["symbols", "crest", "bg", "mascot", "ship-spec"]
     if "symbols" in steps:
         build_symbols()
+    if "crest" in steps:
+        build_crest()
     if "bg" in steps:
         build_bg()
     if "mascot" in steps:

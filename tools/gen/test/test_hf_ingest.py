@@ -681,7 +681,7 @@ class HfIngestTests(unittest.TestCase):
         shipped.write_text(json.dumps(doc, indent=2))
         r = subprocess.run([*audit, "--manifest", str(shipped), "--release"], cwd=REPO, capture_output=True, text=True)
         self.assertEqual(r.returncode, 1, r.stdout)
-        self.assertIn("licence 'higgsfield' has clearance 'pending'", r.stdout)
+        self.assertIn("licence 'higgsfield' clearance 'pending'", r.stdout)
 
 
 if __name__ == "__main__":

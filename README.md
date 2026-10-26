@@ -9,6 +9,7 @@ math-sdk drive everything until the certified math lands.
 |---|---|---|
 | `swamp-funk` (default) | `src/games/swamp-funk/` | 7×5 cluster-pays tumble with heat-tier multiplier spots, scatter free spins |
 | `bass-drop` | `src/games/bass-drop/` | **Swamp Funk: Bass Drop** — 6×6 cluster tumble with a Groove Meter: a Bass Drop of Wilds every 10 connected symbols, Juke Jam at 40, Mega Mix at 60 ([design](docs/games/bass-drop/README.md)) |
+| `magpie-heist` | `src/games/magpie-heist/` | **Magpie Heist** — Le Bandit-style 6×5 cluster tumble with super cascades, glint squares, a Shooting Star that reveals coins / diamonds / nests, three heists (Night Prowl, Vault Raid, Starfall), feature spins and buys ([design](docs/games/magpie-heist/README.md)) |
 
 > "Swamp Funk" (gator bouncer + bullfrog DJ in a neon bayou juke joint) is a **placeholder theme**.
 > Every symbol, colour and label lives in the game folder (`src/games/<game>/config.ts`, `i18n.ts`)
@@ -20,6 +21,7 @@ math-sdk drive everything until the certified math lands.
 pnpm install
 pnpm dev                 # http://localhost:5173/  — Swamp Funk against the built-in mock RGS
 pnpm dev:bass-drop       # the same for Bass Drop (any game: GAME=<id> pnpm dev)
+pnpm dev:magpie-heist    # Magpie Heist
 pnpm lab                 # ?dev=lab     — animation lab: tune every timing live, scenarios, inspector
 pnpm gallery             # ?dev=gallery — every symbol in every animation state (both: GAME=<id> works)
 pnpm typecheck           # the engine against every game (tsconfig.json + tsconfig.bass-drop.json)

@@ -313,79 +313,167 @@ export const nestTexture = (size = 130): Texture => {
   });
 };
 
-/** The gold-leaf glint tile for one cell (rounded square), with a thin bright rim and engraved border. */
+/**
+ * The glint tile for one cell: a vault-gold square with a raised bevelled rim, a darker engraved channel,
+ * corner rivets and a soft lattice in the leaf (the symbol covers the centre, so the rim carries the look).
+ */
 export const glintTileTexture = (cell: number): Texture => {
   const s = shipped.get('glint');
   if (s) return s;
   return once(`glint:${Math.round(cell)}`, () => {
     const S = Math.round(cell * PX);
     const [c, g] = createCanvas(S, S);
-    const r = S * 0.12;
-    const inset = S * 0.03;
-    const path = (i: number): void => {
+    const R = S * 0.13;
+    const rr = (i: number, r = R): void => {
       g.beginPath();
-      g.roundRect(i, i, S - i * 2, S - i * 2, Math.max(2, r - i * 0.5));
+      g.roundRect(i, i, S - i * 2, S - i * 2, Math.max(2, r - i * 0.45));
     };
-    const leaf = g.createLinearGradient(0, 0, S, S);
-    leaf.addColorStop(0, '#fff2b8');
-    leaf.addColorStop(0.28, '#ffd35a');
-    leaf.addColorStop(0.62, '#e8a21c');
-    leaf.addColorStop(1, '#a8620a');
-    path(inset);
+    // outer rim: bright polished gold, lit upper left
+    const rim = g.createLinearGradient(0, 0, S, S);
+    rim.addColorStop(0, '#fff7cf');
+    rim.addColorStop(0.25, '#ffd24a');
+    rim.addColorStop(0.6, '#d48d12');
+    rim.addColorStop(1, '#7c4304');
+    rr(S * 0.02);
+    g.fillStyle = rim;
+    g.fill();
+    // engraved channel
+    rr(S * 0.075);
+    const ch = g.createLinearGradient(0, 0, S, S);
+    ch.addColorStop(0, '#8a5206');
+    ch.addColorStop(1, '#4a2702');
+    g.fillStyle = ch;
+    g.fill();
+    // leaf field: warm radial gold, brighter upper left
+    rr(S * 0.1);
+    const leaf = g.createRadialGradient(S * 0.32, S * 0.28, S * 0.05, S * 0.5, S * 0.5, S * 0.75);
+    leaf.addColorStop(0, '#f6dc8c');
+    leaf.addColorStop(0.35, '#e2b143');
+    leaf.addColorStop(0.75, '#c48a22');
+    leaf.addColorStop(1, '#8e540c');
     g.fillStyle = leaf;
     g.fill();
-    // brushed texture
-    g.globalAlpha = 0.12;
-    for (let i = 0; i < S; i += 3) {
-      g.strokeStyle = i % 6 ? '#ffffff' : '#7a4a06';
-      g.lineWidth = 1;
+    // lattice + brushed texture inside the field
+    g.save();
+    rr(S * 0.1);
+    g.clip();
+    g.globalAlpha = 0.16;
+    g.strokeStyle = '#7a4204';
+    g.lineWidth = S * 0.006;
+    const step = S / 7;
+    for (let x = -S; x < S * 2; x += step) {
+      g.beginPath();
+      g.moveTo(x, 0);
+      g.lineTo(x + S, S);
+      g.stroke();
+      g.beginPath();
+      g.moveTo(x + S, 0);
+      g.lineTo(x, S);
+      g.stroke();
+    }
+    g.globalAlpha = 0.08;
+    g.strokeStyle = '#ffffff';
+    for (let i = 0; i < S; i += 4) {
       g.beginPath();
       g.moveTo(0, i);
-      g.lineTo(S, i + S * 0.15);
+      g.lineTo(S, i + S * 0.1);
       g.stroke();
     }
     g.globalAlpha = 1;
-    // engraved inner border
-    g.lineWidth = S * 0.018;
-    g.strokeStyle = 'rgba(122,70,6,0.8)';
-    path(S * 0.1);
+    // inner shadow under the rim
+    const sh = g.createLinearGradient(0, 0, 0, S);
+    sh.addColorStop(0, 'rgba(70,35,0,0.45)');
+    sh.addColorStop(0.12, 'rgba(70,35,0,0)');
+    sh.addColorStop(0.9, 'rgba(255,240,180,0)');
+    sh.addColorStop(1, 'rgba(255,240,180,0.35)');
+    g.fillStyle = sh;
+    g.fillRect(0, 0, S, S);
+    g.restore();
+    // rim highlights: a bright inner line top-left, a dark one bottom-right
+    g.lineWidth = S * 0.012;
+    const hl = g.createLinearGradient(0, 0, S, S);
+    hl.addColorStop(0, 'rgba(255,255,255,0.95)');
+    hl.addColorStop(0.5, 'rgba(255,255,255,0)');
+    hl.addColorStop(1, 'rgba(60,25,0,0.7)');
+    g.strokeStyle = hl;
+    rr(S * 0.035);
     g.stroke();
-    g.lineWidth = S * 0.008;
-    g.strokeStyle = 'rgba(255,248,210,0.9)';
-    path(S * 0.115);
-    g.stroke();
-    // corner diamonds
-    g.fillStyle = 'rgba(255,250,220,0.9)';
+    // corner rivets
     for (const [x, y] of [
-      [S * 0.1, S * 0.1],
-      [S * 0.9, S * 0.1],
-      [S * 0.1, S * 0.9],
-      [S * 0.9, S * 0.9],
+      [0.06, 0.06],
+      [0.94, 0.06],
+      [0.06, 0.94],
+      [0.94, 0.94],
     ]) {
+      const cx = x * S;
+      const cy = y * S;
+      const r = S * 0.028;
+      const rv = g.createRadialGradient(cx - r * 0.4, cy - r * 0.4, r * 0.1, cx, cy, r);
+      rv.addColorStop(0, '#ffffff');
+      rv.addColorStop(0.4, '#ffd768');
+      rv.addColorStop(1, '#6a3a04');
+      g.fillStyle = rv;
       g.beginPath();
-      g.moveTo(x, y - S * 0.035);
-      g.lineTo(x + S * 0.035, y);
-      g.lineTo(x, y + S * 0.035);
-      g.lineTo(x - S * 0.035, y);
-      g.closePath();
+      g.arc(cx, cy, r, 0, Math.PI * 2);
       g.fill();
     }
-    // bevel: bright rim top-left, dark bottom-right
-    const bevel = g.createLinearGradient(0, 0, S, S);
-    bevel.addColorStop(0, 'rgba(255,255,255,0.95)');
-    bevel.addColorStop(0.5, 'rgba(255,255,255,0.1)');
-    bevel.addColorStop(1, 'rgba(60,30,0,0.8)');
-    g.lineWidth = S * 0.03;
-    g.strokeStyle = bevel;
-    path(inset + S * 0.015);
-    g.stroke();
-    g.lineWidth = S * 0.012;
-    g.strokeStyle = '#3a1e04';
-    path(inset);
+    // outline
+    g.lineWidth = S * 0.014;
+    g.strokeStyle = '#2a1402';
+    rr(S * 0.02);
     g.stroke();
     return canvasToTexture(c, PX);
   });
 };
+
+/**
+ * The velvet display cushion the loot sits on (covers the symbol under it): deep midnight velvet with
+ * a soft top sheen and an inner shadow, inset inside the gold rim.
+ */
+export const cushionTexture = (cell: number): Texture =>
+  once(`cushion:${Math.round(cell)}`, () => {
+    const S = Math.round(cell * PX);
+    const [c, g] = createCanvas(S, S);
+    const i = S * 0.1;
+    const R = S * 0.1;
+    g.beginPath();
+    g.roundRect(i, i, S - i * 2, S - i * 2, R);
+    const v = g.createRadialGradient(S * 0.5, S * 0.36, S * 0.05, S * 0.5, S * 0.55, S * 0.6);
+    v.addColorStop(0, '#3a2a6e');
+    v.addColorStop(0.55, '#1f1746');
+    v.addColorStop(1, '#0d0a24');
+    g.fillStyle = v;
+    g.fill();
+    g.save();
+    g.clip();
+    // tufted buttons (a quilted display cushion)
+    g.fillStyle = 'rgba(0,0,0,0.35)';
+    for (const [x, y] of [
+      [0.3, 0.3],
+      [0.7, 0.3],
+      [0.3, 0.7],
+      [0.7, 0.7],
+      [0.5, 0.5],
+    ]) {
+      g.beginPath();
+      g.arc(x * S, y * S, S * 0.018, 0, Math.PI * 2);
+      g.fill();
+    }
+    const inner = g.createLinearGradient(0, i, 0, S - i);
+    inner.addColorStop(0, 'rgba(0,0,0,0.55)');
+    inner.addColorStop(0.15, 'rgba(0,0,0,0)');
+    inner.addColorStop(0.85, 'rgba(0,0,0,0)');
+    inner.addColorStop(1, 'rgba(0,0,0,0.4)');
+    g.fillStyle = inner;
+    g.fillRect(0, 0, S, S);
+    g.restore();
+    g.lineWidth = S * 0.012;
+    g.strokeStyle = 'rgba(20,10,30,0.9)';
+    g.beginPath();
+    g.roundRect(i, i, S - i * 2, S - i * 2, R);
+    g.stroke();
+    return canvasToTexture(c, PX);
+  });
 
 /** A diagonal light band (white, additive) for the tiles' shimmer sweep. */
 export const shineTexture = (): Texture =>

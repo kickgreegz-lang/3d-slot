@@ -101,6 +101,15 @@
      "quality": 92
     }
    }
+  },
+  {
+   "src": "art/source/magpie-heist/ui/logo_crest.png",
+   "dst": "public/assets/magpie-heist/ui/logo_crest.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
   }
  ]
 }

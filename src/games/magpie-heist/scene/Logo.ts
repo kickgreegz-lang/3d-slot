@@ -1,5 +1,5 @@
 import { gsap } from 'gsap';
-import { Container, Sprite } from 'pixi.js';
+import { Assets, Container, Sprite, type Texture } from 'pixi.js';
 import type { LayoutSpec } from '../../../config/layout';
 import { clock } from '../../../core/clock';
 import { sUi } from '../../../core/timing';
@@ -32,10 +32,15 @@ export class Logo implements GameModule {
 
   constructor(private readonly ctx: GameContext) {}
 
-  init(): void {
+  async init(): Promise<void> {
     const { ctx } = this;
     this.halo.texture = glowTexture();
-    this.crest.texture = ctx.art.symbol('W');
+    // the plain Bandit Mask crest (no WILD text); the W board art until it ships
+    try {
+      this.crest.texture = await Assets.load<Texture>('./assets/magpie-heist/ui/logo_crest.webp');
+    } catch {
+      this.crest.texture = ctx.art.symbol('W');
+    }
     this.root.addChild(this.halo, this.crest);
     ctx.layers.logo.addChild(this.root);
     this.offs.push(
@@ -84,18 +89,18 @@ export class Logo implements GameModule {
       this.crest.visible = this.halo.visible = true;
       if (wide) {
         // portrait band: crest left of the word-mark
-        this.crestK = (R.h * 0.95) / 180;
+        this.crestK = (R.h * 0.95) / Math.max(this.crest.texture.width, this.crest.texture.height);
         this.crest.position.set(R.x + R.h * 0.55, R.y + R.h / 2);
         this.title.position.set(R.x + R.h * 1.1 + (R.w - R.h * 1.1) / 2, R.y + R.h * 0.52);
       } else {
-        this.crestK = (R.h * 0.62) / 180;
+        this.crestK = (R.h * 0.5) / Math.max(this.crest.texture.width, this.crest.texture.height) * 1.6;
         this.crest.position.set(R.x + R.w / 2, R.y + R.h * 0.24);
         this.title.position.set(R.x + R.w / 2, R.y + R.h * 0.66);
       }
       this.crestY = this.crest.y;
       this.crest.scale.set(this.crestK);
       this.halo.position.copyFrom(this.crest.position);
-      this.halo.scale.set((this.crestK * 360) / 256);
+      this.halo.scale.set((this.crestK * this.crest.texture.width * 1.1) / 256);
     }
     this.title.waveAmp = 2.5;
     this.root.addChild(this.title);

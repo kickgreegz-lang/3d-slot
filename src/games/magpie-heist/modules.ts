@@ -9,9 +9,11 @@ import { Hud } from '../../ui/hud/Hud';
 import { Background } from './scene/Background';
 import { Frame } from './scene/Frame';
 import { Logo } from './scene/Logo';
+import { Connections } from './connect/Connections';
 import { Glint } from './glint/Glint';
 import { HeistScreens } from './screens/HeistScreens';
 import { BuyScreen } from './screens/BuyScreen';
+import { IntroScreen } from './screens/IntroScreen';
 import { Monty } from './mascots/Monty';
 import { HeistSound } from './audio/HeistSound';
 
@@ -26,6 +28,7 @@ export const createModules = (ctx: GameContext): GameModule[] => [
   new Frame(ctx),
   new Logo(ctx),
   new Board(ctx),
+  new Connections(ctx),
   new Glint(ctx),
   new WinPresenter(ctx),
   new Fx(ctx),
@@ -35,6 +38,7 @@ export const createModules = (ctx: GameContext): GameModule[] => [
   new Hud(ctx),
   new DomUi(ctx),
   new BuyScreen(ctx),
+  new IntroScreen(ctx),
   new HeistSound(ctx),
   new Sound(ctx),
 ];

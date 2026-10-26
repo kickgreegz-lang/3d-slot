@@ -19596,6 +19596,78 @@
       "sha256": "0f26f9747631d444c949a75021ca518a1bca86b3083705d6af5a35ef0226992b",
       "notes": "magpie-heist: WebP re-encode {\"quality\": 92} of art/source/magpie-heist/mascot/monty_static.png",
       "route": "code"
+    },
+    {
+      "id": "mh.ui.logo_crest.4e4edacf",
+      "path": "art/source/magpie-heist/ui/logo_crest.png",
+      "stage": "packaging",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b3c1e4d8f02db408c200aed61a9f324268f55b60fc86b4a1b39167ab03c0f650"
+      ],
+      "parents": [
+        "mh.symbols.w.master_1024.b3c1e4d8"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:32:19Z",
+      "sha256": "4e4edacff3f5632672e6fc248ae53f7ef3edb3a07dbcc4f83dfcd9a201c01ae4",
+      "notes": "logo crest: the Bandit Mask master (no text), trimmed, 512 px long side",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.ui.logo_crest.2aa446f7",
+      "path": "public/assets/magpie-heist/ui/logo_crest.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "4e4edacff3f5632672e6fc248ae53f7ef3edb3a07dbcc4f83dfcd9a201c01ae4"
+      ],
+      "parents": [
+        "mh.ui.logo_crest.4e4edacf"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:32:53Z",
+      "sha256": "2aa446f7af762ce5d572d3155cb08495d6a5a1b96dbd0438db5877235c374da2",
+      "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/ui/logo_crest.png",
+      "route": "code"
     }
   ]
 }

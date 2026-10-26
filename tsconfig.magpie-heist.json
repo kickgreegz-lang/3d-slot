@@ -1,0 +1,11 @@
+{
+  "$comment": "Type-checks the engine against the magpie-heist game (@game -> src/games/magpie-heist). `pnpm typecheck` runs every game's config.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@game/*": ["./src/games/magpie-heist/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["src/games/swamp-funk", "src/games/bass-drop"]
+}

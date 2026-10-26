@@ -98,6 +98,8 @@ export class FlowController {
   private modes: Record<string, BetModeDef> = resolveBetModes(undefined);
   private bets = BetLadder.fromConfig(undefined);
   private activeMode = BASE_MODE;
+  /** FEATURE SPINS: the bet mode every spin / autoplay round plays (ui:spinMode; BASE when off) */
+  private spinMode = BASE_MODE;
   /** displayed balance (API units) */
   private balance = 0;
   /** displayed win of the current / last round (API units) */
@@ -237,6 +239,7 @@ export class FlowController {
       else this.stopAutoplay();
     });
     ui.on('ui:buy', (p) => this.buy(p.mode));
+    ui.on('ui:spinMode', (p) => this.setSpinMode(p.mode));
     ui.on('ui:sound', (p) => {
       this.soundEnabled = p.enabled;
       this.broadcastState();
@@ -248,7 +251,7 @@ export class FlowController {
   private onSpin(): void {
     switch (this.state) {
       case 'idle':
-        void this.guard(() => this.singleRound(BASE_MODE));
+        void this.guard(() => this.singleRound(this.spinMode));
         break;
       case 'spinning':
       case 'presenting':
@@ -323,6 +326,16 @@ export class FlowController {
     void this.guard(() => this.singleRound(def.key));
   }
 
+  /** FEATURE SPINS on / off: only between rounds, only a mode with `spin: true` (null = base game). */
+  private setSpinMode(mode: string | null): void {
+    if (this.state !== 'idle' || this.replay || this.fatal) return;
+    const key = mode ? mode.toUpperCase() : BASE_MODE;
+    if (key !== BASE_MODE && !this.modes[key]?.spin) return;
+    if (key === this.spinMode) return;
+    this.spinMode = key;
+    this.broadcastState();
+  }
+
   private stopAutoplay(): void {
     if (!this.auto || this.auto.stopRequested) return;
     this.auto.stopRequested = true;
@@ -352,7 +365,7 @@ export class FlowController {
     this.to('autoplay');
     let stop: FlowMessageKey | null = null;
     while (!auto.stopRequested && auto.remaining > 0) {
-      const cost = Math.round(this.bets.value * modeCost(this.modes, BASE_MODE));
+      const cost = Math.round(this.bets.value * modeCost(this.modes, this.spinMode));
       if (this.balance < cost) {
         stop = 'autoplayFunds';
         break;
@@ -363,7 +376,7 @@ export class FlowController {
         break;
       }
       auto.remaining -= 1;
-      const outcome = await this.playRound(BASE_MODE, 'autoplay');
+      const outcome = await this.playRound(this.spinMode, 'autoplay');
       if (!outcome || !this.is('autoplay')) break;
       if (auto.singleWinLimit !== null && outcome.win >= auto.singleWinLimit) {
         stop = 'autoplayWinLimit';
@@ -862,7 +875,9 @@ export class FlowController {
       betIndex: this.bets.position,
       betLevelCount: this.bets.count,
       betLevelTexts: this.levelTexts(),
-      canAfford: this.balance >= Math.round(this.bets.value * modeCost(this.modes, BASE_MODE)),
+      canAfford: this.balance >= Math.round(this.bets.value * modeCost(this.modes, this.spinMode)),
+      spinMode: this.spinMode,
+      spinModeCost: modeCost(this.modes, this.spinMode),
       slamStopAllowed: this.jur.slamStopAllowed,
       spacebarAllowed: this.jur.spacebarAllowed,
       fullscreenAllowed: this.jur.fullscreenAllowed,

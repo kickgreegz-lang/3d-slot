@@ -1,0 +1,10 @@
+{
+  "$comment": "Magpie Heist bet modes for the mock RGS (mirrors tools/mockmath/magpie-heist/config.mjs BET_MODES).",
+  "betModes": {
+    "BASE": { "costMultiplier": 1, "pool": "base" },
+    "HUNT": { "costMultiplier": 3, "pool": "hunt" },
+    "STARS": { "costMultiplier": 10, "pool": "stars" },
+    "PROWL": { "costMultiplier": 100, "pool": "prowl" },
+    "VAULT": { "costMultiplier": 250, "pool": "vault" }
+  }
+}

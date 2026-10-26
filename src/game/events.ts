@@ -279,6 +279,8 @@ export type UiEvents = {
   /** rounds may be Infinity; limits are RGS API money units */
   'ui:autoplay': { rounds: number; lossLimit?: number; singleWinLimit?: number } | null;
   'ui:buy': { mode: string };
+  /** switch FEATURE SPINS on (a bet mode with `spin: true`) or off (null = the base game) */
+  'ui:spinMode': { mode: string | null };
   'ui:menu': { open: boolean; page?: 'paytable' | 'rules' | 'settings' | 'guide' };
   'ui:sound': { enabled: boolean };
 };
@@ -312,6 +314,9 @@ export interface HudState {
   /** active bet mode key and its cost multiplier */
   mode?: string;
   modeCost?: number;
+  /** the FEATURE SPINS mode every spin plays (BASE when none) and its cost multiplier */
+  spinMode?: string;
+  spinModeCost?: number;
   /** bet as an index into ALL RGS bet levels, with preformatted level texts */
   betIndex?: number;
   betLevelCount?: number;

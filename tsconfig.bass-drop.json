@@ -7,5 +7,5 @@
     }
   },
   "include": ["src", "vite.config.ts"],
-  "exclude": ["src/games/swamp-funk"]
+  "exclude": ["src/games/swamp-funk", "src/games/magpie-heist"]
 }

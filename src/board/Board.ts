@@ -1011,7 +1011,7 @@ export class Board implements GameModule {
 
   /** Deterministic idle board shown before the first round (no scatters). */
   private attractBoard(): BoardIds {
-    const ids = Object.keys(SYMBOLS).filter((id) => !isScatter(id) && getSymbolDef(id).kind !== 'wild');
+    const ids = Object.keys(SYMBOLS).filter((id) => !isScatter(id) && getSymbolDef(id).kind !== 'wild' && getSymbolDef(id).kind !== 'special');
     const rnd = mulberry32(0xb0a4d);
     return Array.from({ length: GRID.reels }, () =>
       Array.from({ length: GRID.paddedRows }, () => ids[Math.floor(rnd() * ids.length)]),

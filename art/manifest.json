@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedBy": "tools/artqa",
+  "generatedBy": "tools/licence/ship.py",
   "rows": [
     {
       "id": "d_h1.raw.v01",
@@ -18391,6 +18391,1210 @@
       "date": "2026-09-29T10:51:36Z",
       "sha256": "292c816325cdb453bd605e3de881e1f158dfbb4d2cd8ac1fc1c123c858a3a0c9",
       "notes": "chr_croak rig, half texel density (PMA, page 632x512): atlas",
+      "route": "code"
+    },
+    {
+      "id": "mh_sym_h1_d.raw.v01",
+      "path": "art/_raw/mh_sym_H1_D/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-10-26",
+      "seed": null,
+      "jobId": "45cb539f-34b1-42d9-8021-a254b4edea38",
+      "promptPath": "art/_raw/mh_sym_H1_D/v01/prompt.txt",
+      "promptHash": "3fc359dec864d004e01835f8a2c01888ede38d1060ba9328ad5ce08bb4453586",
+      "template": "art/bible/prompts/symbol.txt",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-10-26T16:26:21Z",
+      "sha256": "7676580b39c2ba0267ce13e7ce49f7ab60a224aeacc49e7ff973323ec8367d83",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch mh_probe1 job mh_sym_H1.D; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "mh_sym_w.raw.v01",
+      "path": "art/_raw/mh_sym_W/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-10-26",
+      "seed": null,
+      "jobId": "3c1876ad-c6d7-4dcc-9429-8a704eb695f6",
+      "promptPath": "art/_raw/mh_sym_W/v01/prompt.txt",
+      "promptHash": "cf950457db6588a1d4aea28982b398f0bd66fece632fad5577f3c9347ac47ef9",
+      "template": "art/bible/prompts/symbol.txt",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-10-26T16:26:22Z",
+      "sha256": "805b367ea47c85dca7d4cde842642dde7728bb7362e9bc08db9b42969bf50697",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch mh_probe1 job mh_sym_W.M; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "mh_sym_r.raw.v01",
+      "path": "art/_raw/mh_sym_R/v01/raw.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-10-26",
+      "seed": null,
+      "jobId": "776d0bd9-59a9-4785-bb5e-1fb9b1dba7c0",
+      "promptPath": "art/_raw/mh_sym_R/v01/prompt.txt",
+      "promptHash": "765319803ebee911b519981237b9d6b9b47e15123c987c58f348212ded1cf5cd",
+      "template": "art/bible/prompts/symbol.txt",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 2,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-10-26T16:26:22Z",
+      "sha256": "ddf6d529c99269642de2cf91d81e79860a72360db89c23364d87749d5f6430c2",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch mh_probe1 job mh_sym_R.M; 2048x2048 (2k 1:1); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "mh_bg_base_landscape.raw.v01",
+      "path": "art/_raw/mh_bg_base_landscape/v01/raw.png",
+      "stage": "backgrounds",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-10-26",
+      "seed": null,
+      "jobId": "5c4e4d4d-3e22-4b7e-b95a-46c1bc1c9951",
+      "promptPath": "art/_raw/mh_bg_base_landscape/v01/prompt.txt",
+      "promptHash": "57350ed2919dcee6984b1fc7ca961a06b8078a1cc20a650b6f10535d4fa2f8a0",
+      "template": "art/bible/prompts/background.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 4,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-10-26T16:26:25Z",
+      "sha256": "f04826400600c2d894f9f1d6d9ba1bd495217fece5e8867e126b3463de9b29c5",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch mh_probe1 job mh_bg_base_landscape; 6336x2688 (4k 21:9); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "mh_mascot_monty_sheet.raw.v01",
+      "path": "art/_raw/mh_mascot_monty_sheet/v01/raw.png",
+      "stage": "mascot-sheets",
+      "shipped": false,
+      "vendor": "Higgsfield",
+      "model": "nano_banana_2",
+      "version": "higgsfield-mcp/nano_banana_pro@2026-10-26",
+      "seed": null,
+      "jobId": "d0036d38-333e-49e9-b53f-d8800aaee423",
+      "promptPath": "art/_raw/mh_mascot_monty_sheet/v01/prompt.txt",
+      "promptHash": "b1ff49436149af8fc0136e81026a6af826a4439db8c9244d30ab6a9e4f7ec957",
+      "template": "art/bible/prompts/mascot_turnaround.txt#A",
+      "refHashes": [],
+      "parents": [],
+      "planTier": "Higgsfield Plus",
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 4,
+        "currency": "credits",
+        "unit": "Higgsfield credits",
+        "estimated": true
+      },
+      "date": "2026-10-26T16:27:02Z",
+      "sha256": "101c93e0c354ce34ab0e246c4ca9780f902fc70546e9459ff7975c93f80271f8",
+      "notes": "upstream: Google Nano Banana Pro (gemini-3-pro-image); MCP request model nano_banana_pro; ledger art/ledger/higgsfield-jobs.json batch mh_probe1 job mh_mascot_monty_sheet.c1; 6336x2688 (4k 21:9); prompt rendered; clearance pending: not shippable until the written Higgsfield clearance is filed",
+      "route": "higgsfield-mcp"
+    },
+    {
+      "id": "mh.symbols.w.master_1024.b3c1e4d8",
+      "path": "art/source/magpie-heist/symbols/W/master_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "805b367ea47c85dca7d4cde842642dde7728bb7362e9bc08db9b42969bf50697"
+      ],
+      "parents": [
+        "mh_sym_w.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:03:59Z",
+      "sha256": "b3c1e4d8f02db408c200aed61a9f324268f55b60fc86b4a1b39167ab03c0f650",
+      "notes": "sym_W master: key matte of the approved raw (measured key), full resolution",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.w.board.535336dd",
+      "path": "art/source/magpie-heist/symbols/W/board.png",
+      "stage": "packaging",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b3c1e4d8f02db408c200aed61a9f324268f55b60fc86b4a1b39167ab03c0f650"
+      ],
+      "parents": [
+        "mh.symbols.w.master_1024.b3c1e4d8"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:03:59Z",
+      "sha256": "535336ddb33f44306dd3e3b917b89b7accfa53c4b070efdd3b6fc65a309d442d",
+      "notes": "sym_W board sprite: matte fitted on the 360 @2x canvas (cellScale); WILD baked on the banner from the bundled Luckiest Guy face (live-text stand-in)",
+      "route": "code"
+    },
+    {
+      "id": "board.blur.57ea738f",
+      "path": "art/source/magpie-heist/symbols/W/board_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "535336ddb33f44306dd3e3b917b89b7accfa53c4b070efdd3b6fc65a309d442d"
+      ],
+      "parents": [
+        "mh.symbols.w.board.535336dd"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:00Z",
+      "sha256": "57ea738f766d49605448e44c228ed0346bd822f015eb89b3198b6a4241d44314",
+      "notes": "blur variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "board.glow.28b29768",
+      "path": "art/source/magpie-heist/symbols/W/board_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "535336ddb33f44306dd3e3b917b89b7accfa53c4b070efdd3b6fc65a309d442d"
+      ],
+      "parents": [
+        "mh.symbols.w.board.535336dd"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:00Z",
+      "sha256": "28b297682ca8a43417054dbb5b77dc3b3b77d978f55a91e10e23f7ee10a39464",
+      "notes": "glow variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.r.master_1024.a0fd2075",
+      "path": "art/source/magpie-heist/symbols/R/master_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "ddf6d529c99269642de2cf91d81e79860a72360db89c23364d87749d5f6430c2"
+      ],
+      "parents": [
+        "mh_sym_r.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:12Z",
+      "sha256": "a0fd207558e14b2b6be00b8adcbf8bc2bbb42be533a63acfdaa2ed2a2117a030",
+      "notes": "sym_R master: key matte of the approved raw (measured key), full resolution",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.r.board.cbdd4a23",
+      "path": "art/source/magpie-heist/symbols/R/board.png",
+      "stage": "packaging",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a0fd207558e14b2b6be00b8adcbf8bc2bbb42be533a63acfdaa2ed2a2117a030"
+      ],
+      "parents": [
+        "mh.symbols.r.master_1024.a0fd2075"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:12Z",
+      "sha256": "cbdd4a2340cb136322a4d7576ce43ad0828fbdb57ab52d80b0583a60ab30ee85",
+      "notes": "sym_R board sprite: matte fitted on the 360 @2x canvas (cellScale)",
+      "route": "code"
+    },
+    {
+      "id": "board.blur.b8a636f2",
+      "path": "art/source/magpie-heist/symbols/R/board_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "cbdd4a2340cb136322a4d7576ce43ad0828fbdb57ab52d80b0583a60ab30ee85"
+      ],
+      "parents": [
+        "mh.symbols.r.board.cbdd4a23"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:14Z",
+      "sha256": "b8a636f21794e85833a3f3a1ab8fe4cdb0fe13a6c891c54d6f757717820c1eb6",
+      "notes": "blur variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "board.glow.2d3af25f",
+      "path": "art/source/magpie-heist/symbols/R/board_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "cbdd4a2340cb136322a4d7576ce43ad0828fbdb57ab52d80b0583a60ab30ee85"
+      ],
+      "parents": [
+        "mh.symbols.r.board.cbdd4a23"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:14Z",
+      "sha256": "2d3af25f32bb50f42afd8e40c45824e013b8e1c50f799a2f5147a5bd7bbcff44",
+      "notes": "glow variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h1.master_1024.9927161e",
+      "path": "art/source/magpie-heist/symbols/H1/master_1024.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "7676580b39c2ba0267ce13e7ce49f7ab60a224aeacc49e7ff973323ec8367d83"
+      ],
+      "parents": [
+        "mh_sym_h1_d.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:27Z",
+      "sha256": "9927161ebcf00d69bedcf4e45ddedf546be2dc37a70eb5d8e394b655464abe04",
+      "notes": "sym_H1 master: key matte of the approved raw (measured key), full resolution",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h1.board.a32f473c",
+      "path": "art/source/magpie-heist/symbols/H1/board.png",
+      "stage": "packaging",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9927161ebcf00d69bedcf4e45ddedf546be2dc37a70eb5d8e394b655464abe04"
+      ],
+      "parents": [
+        "mh.symbols.h1.master_1024.9927161e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:27Z",
+      "sha256": "a32f473c4e4bdecb283b06a6cf293e47b885a459a90512734e3b3ccfb49d5a72",
+      "notes": "sym_H1 board sprite: matte fitted on the 360 @2x canvas (cellScale)",
+      "route": "code"
+    },
+    {
+      "id": "board.blur.d2937370",
+      "path": "art/source/magpie-heist/symbols/H1/board_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a32f473c4e4bdecb283b06a6cf293e47b885a459a90512734e3b3ccfb49d5a72"
+      ],
+      "parents": [
+        "mh.symbols.h1.board.a32f473c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:28Z",
+      "sha256": "d2937370bbb0722e29c8aee49a0458c1f6b17ba27fc110f6745d6739330241fc",
+      "notes": "blur variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "board.glow.94ccc603",
+      "path": "art/source/magpie-heist/symbols/H1/board_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a32f473c4e4bdecb283b06a6cf293e47b885a459a90512734e3b3ccfb49d5a72"
+      ],
+      "parents": [
+        "mh.symbols.h1.board.a32f473c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:28Z",
+      "sha256": "94ccc6036ad1581ef053b8318f194a6c63efd1b18d2a1761636010e8da7b7a24",
+      "notes": "glow variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "mh.bg.base_landscape.e1fb6ac2",
+      "path": "art/source/magpie-heist/bg/base_landscape.webp",
+      "stage": "backgrounds",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "f04826400600c2d894f9f1d6d9ba1bd495217fece5e8867e126b3463de9b29c5"
+      ],
+      "parents": [
+        "mh_bg_base_landscape.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:30Z",
+      "sha256": "e1fb6ac2441f0812d12a196edeb0f722451b865cac32927f367bc0b04ccde9e8",
+      "notes": "base plate landscape: 2:1 centre crop of the 21:9 4K plate, Lanczos 2560x1280, WebP q90",
+      "route": "code"
+    },
+    {
+      "id": "mh.bg.base_portrait.0838be2b",
+      "path": "art/source/magpie-heist/bg/base_portrait.webp",
+      "stage": "backgrounds",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "f04826400600c2d894f9f1d6d9ba1bd495217fece5e8867e126b3463de9b29c5"
+      ],
+      "parents": [
+        "mh_bg_base_landscape.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:04:31Z",
+      "sha256": "0838be2b5ab6542a55801db6e30e7b5b0556918d342aa34f95e45cd9de900667",
+      "notes": "portrait stand-in: centre 1:2 column of the landscape plate (the portrait plate is a planned row)",
+      "route": "code"
+    },
+    {
+      "id": "mh.mascot.monty_static.179e1436",
+      "path": "art/source/magpie-heist/mascot/monty_static.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "101c93e0c354ce34ab0e246c4ca9780f902fc70546e9459ff7975c93f80271f8"
+      ],
+      "parents": [
+        "mh_mascot_monty_sheet.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:08:50Z",
+      "sha256": "179e1436539a23dd1fd05a01bcd38925ded000ef219d16c06cd1d8e8740823f8",
+      "notes": "Monty three-quarter view (2nd figure of the approved design sheet): key matte (halo gate overridden: the flagged edge texels are his plum cap and crimson scarf, key-hued by design; checked on navy, no spill), cut out, fitted to 2x of the landscape mascot rect (static stand-in until chr_monty)",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_w_2x.c44f95c8",
+      "path": "public/assets/magpie-heist/symbols/sym_W@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "535336ddb33f44306dd3e3b917b89b7accfa53c4b070efdd3b6fc65a309d442d"
+      ],
+      "parents": [
+        "mh.symbols.w.board.535336dd"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:08:50Z",
+      "sha256": "c44f95c87c7ad1c7ba03bc0ba58b72ea3399a1101b41d0e677a72a567f9d5283",
+      "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/symbols/W/board.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_w_blur_2x.2cefaa49",
+      "path": "public/assets/magpie-heist/symbols/sym_W_blur@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "57ea738f766d49605448e44c228ed0346bd822f015eb89b3198b6a4241d44314"
+      ],
+      "parents": [
+        "board.blur.57ea738f"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:08:54Z",
+      "sha256": "2cefaa49b16eed4087f6921ecd2fbb9b18a314354f7e3cb409976b2633da7a28",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/W/board_blur.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_w_glow_2x.25601009",
+      "path": "public/assets/magpie-heist/symbols/sym_W_glow@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "28b297682ca8a43417054dbb5b77dc3b3b77d978f55a91e10e23f7ee10a39464"
+      ],
+      "parents": [
+        "board.glow.28b29768"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:08:58Z",
+      "sha256": "25601009d6cd0a7956bab12f335f7969bf9b6fc68be9d36af823058ee1747812",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/W/board_glow.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_r_2x.ad1a0dd4",
+      "path": "public/assets/magpie-heist/symbols/sym_R@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "cbdd4a2340cb136322a4d7576ce43ad0828fbdb57ab52d80b0583a60ab30ee85"
+      ],
+      "parents": [
+        "mh.symbols.r.board.cbdd4a23"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:08:58Z",
+      "sha256": "ad1a0dd4b11a705d66a3fa5b35cd3dd0f30609de4b870e96214c0f9b6c6190f7",
+      "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/symbols/R/board.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_r_blur_2x.11f59fcd",
+      "path": "public/assets/magpie-heist/symbols/sym_R_blur@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "b8a636f21794e85833a3f3a1ab8fe4cdb0fe13a6c891c54d6f757717820c1eb6"
+      ],
+      "parents": [
+        "board.blur.b8a636f2"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:09:01Z",
+      "sha256": "11f59fcd2c33312375c005984cf123f84cc2e356af18990102d1a602bcc81777",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/R/board_blur.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_r_glow_2x.379db6ad",
+      "path": "public/assets/magpie-heist/symbols/sym_R_glow@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "2d3af25f32bb50f42afd8e40c45824e013b8e1c50f799a2f5147a5bd7bbcff44"
+      ],
+      "parents": [
+        "board.glow.2d3af25f"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:09:04Z",
+      "sha256": "379db6ad6996095449a41e57fc198050df3ef9b52525b209de4c42f6216b825c",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/R/board_glow.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h1_2x.b2085322",
+      "path": "public/assets/magpie-heist/symbols/sym_H1@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a32f473c4e4bdecb283b06a6cf293e47b885a459a90512734e3b3ccfb49d5a72"
+      ],
+      "parents": [
+        "mh.symbols.h1.board.a32f473c"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:09:05Z",
+      "sha256": "b208532200f2d051f0838548a161e6f0049818ee7b52ae60071209a93e7c910a",
+      "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/symbols/H1/board.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h1_blur_2x.5f30fc49",
+      "path": "public/assets/magpie-heist/symbols/sym_H1_blur@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "d2937370bbb0722e29c8aee49a0458c1f6b17ba27fc110f6745d6739330241fc"
+      ],
+      "parents": [
+        "board.blur.d2937370"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:09:08Z",
+      "sha256": "5f30fc490042e21a1255569e670687726fc39c63544d4fd7693a0c432fd2c0cb",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H1/board_blur.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h1_glow_2x.6a10cafa",
+      "path": "public/assets/magpie-heist/symbols/sym_H1_glow@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "94ccc6036ad1581ef053b8318f194a6c63efd1b18d2a1761636010e8da7b7a24"
+      ],
+      "parents": [
+        "board.glow.94ccc603"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:09:11Z",
+      "sha256": "6a10cafa0f1e9a1e15327d9a7e7ac8e0ae236f1321ee7c412bc328d7de00f6f7",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H1/board_glow.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.bg.base_landscape.e1fb6ac2",
+      "path": "public/assets/magpie-heist/bg/base_landscape.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "e1fb6ac2441f0812d12a196edeb0f722451b865cac32927f367bc0b04ccde9e8"
+      ],
+      "parents": [
+        "mh.bg.base_landscape.e1fb6ac2"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:09:11Z",
+      "sha256": "e1fb6ac2441f0812d12a196edeb0f722451b865cac32927f367bc0b04ccde9e8",
+      "notes": "magpie-heist: byte-identical copy of art/source/magpie-heist/bg/base_landscape.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.bg.base_portrait.0838be2b",
+      "path": "public/assets/magpie-heist/bg/base_portrait.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "0838be2b5ab6542a55801db6e30e7b5b0556918d342aa34f95e45cd9de900667"
+      ],
+      "parents": [
+        "mh.bg.base_portrait.0838be2b"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:09:11Z",
+      "sha256": "0838be2b5ab6542a55801db6e30e7b5b0556918d342aa34f95e45cd9de900667",
+      "notes": "magpie-heist: byte-identical copy of art/source/magpie-heist/bg/base_portrait.webp",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.mascot.monty_static.f0792655",
+      "path": "public/assets/magpie-heist/mascot/monty_static.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "179e1436539a23dd1fd05a01bcd38925ded000ef219d16c06cd1d8e8740823f8"
+      ],
+      "parents": [
+        "mh.mascot.monty_static.179e1436"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:09:19Z",
+      "sha256": "f079265535b067811584493d9fd5367886f353a49aac1047f75a3ad5f341384d",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 92} of art/source/magpie-heist/mascot/monty_static.png",
+      "route": "code"
+    },
+    {
+      "id": "mh.mascot.monty_static.29776be4",
+      "path": "art/source/magpie-heist/mascot/monty_static.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "101c93e0c354ce34ab0e246c4ca9780f902fc70546e9459ff7975c93f80271f8"
+      ],
+      "parents": [
+        "mh_mascot_monty_sheet.raw.v01"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:10:58Z",
+      "sha256": "29776be484445eaa622a6c9b7437b5a97000a584a691acbf8e8bbfd577b64df9",
+      "notes": "Monty three-quarter view (2nd figure of the approved design sheet): key matte (halo gate overridden: the flagged edge texels are his plum cap and crimson scarf, key-hued by design; checked on navy, no spill), cut out, fitted to 2x of the landscape mascot rect (static stand-in until chr_monty)",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.mascot.monty_static.0f26f974",
+      "path": "public/assets/magpie-heist/mascot/monty_static.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "29776be484445eaa622a6c9b7437b5a97000a584a691acbf8e8bbfd577b64df9"
+      ],
+      "parents": [
+        "mh.mascot.monty_static.29776be4"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "higgsfield",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:11:33Z",
+      "sha256": "0f26f9747631d444c949a75021ca518a1bca86b3083705d6af5a35ef0226992b",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 92} of art/source/magpie-heist/mascot/monty_static.png",
       "route": "code"
     }
   ]

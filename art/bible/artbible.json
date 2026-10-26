@@ -665,5 +665,135 @@
       },
       "wardrobeRule": "If an approved design sheet disagrees with these part lists, the approved sheet wins: fix the list, rebuild the plan and tell the animator."
     }
+  },
+  "magpieHeist": {
+    "$comment": "Magpie Heist (src/games/magpie-heist): a Le Bandit-style 6x5 cluster tumble with glint squares, a Shooting Star reveal (coins / diamond multipliers / the Nest collector) and three free-spin tiers. Per-asset values for docs/games/magpie-heist/ART_PLAN.md, passed to the templates as --var. Formula M = formula D's outline-and-light rules pushed toward a modern cartoon finish (STYLE_DECISION.md of the game).",
+    "version": "0.1.0",
+    "updated": "2026-10-26",
+    "game": "magpie-heist",
+    "styleFormula": "Premium cartoon slot-game art in a polished modern animated-feature style: a bold, clean, confident single-weight black outline around every shape and thinner dark interior lines; exaggerated chunky, rounded, playful shapes with strong readable silhouettes; vibrant saturated jewel-tone colours with smooth soft-gradient cel shading, a strong key light from the upper left, a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots; clean graphic surface detail that stays readable at small size; polished and expensive-looking; adult characters.",
+    "styleFormulaD": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+    "environmentFormula": "Hand-painted premium cartoon slot-game environment, painterly soft brushwork with clean graphic shapes, atmospheric perspective with softer and bluer detail in the distance, deep midnight-indigo and moonlit-teal night palette with warm gold lamp accents and crimson velvet, cinematic moonlight, high detail at the edges.",
+    "bannedPromptWords": {
+      "words": [
+        "extrusion",
+        "molten",
+        "magpie heist",
+        "night prowl",
+        "vault raid",
+        "starfall",
+        "le bandit"
+      ],
+      "why": "'extrusion' and 'molten' as in Bass Drop; game and feature titles would be painted as letters; never name the reference game."
+    },
+    "palette": {
+      "midnight": "#1B1F4A",
+      "navy": "#12163A",
+      "moonTeal": "#4FD1D9",
+      "gold": "#FFC53D",
+      "crimson": "#C8203A",
+      "magpieBlue": "#2E6BFF",
+      "magpieTeal": "#1FB89A",
+      "pearl": "#FFF4DC",
+      "plum": "#5B2A6E"
+    },
+    "symbols": {
+      "H1": {
+        "name": "Jeweled Crown",
+        "keyHex": "#00FF00",
+        "subject": "a heavy royal crown in polished solid gold with five rounded points each tipped with a big round pearl, a deep crimson velvet cap inside the band, and big faceted rubies and sapphires set around the band"
+      },
+      "H2": {
+        "name": "Jeweled Egg",
+        "keyHex": "#00FF00",
+        "subject": "an ornate jeweled egg standing on a small three-footed golden stand, a glossy royal-blue enamel shell wrapped in polished solid gold filigree bands, a ring of small pearls around its middle and a hinged golden top lid crowned with one big ruby"
+      },
+      "H3": {
+        "name": "Pocket Watch",
+        "keyHex": "#00FF00",
+        "subject": "a chunky polished gold pocket watch with its hinged front lid flipped open to one side, a cream-white face with bold black hour marks and no numbers, two ornate black hands, a knurled winding crown on top and a short loop of gold chain"
+      },
+      "H4": {
+        "name": "Ruby Chalice",
+        "keyHex": "#00FF00",
+        "subject": "an ornate golden chalice with a wide round cup brimming with glossy deep red wine, a slim knotted stem and a round foot, three big rubies set around the cup"
+      },
+      "H5": {
+        "name": "Key Ring",
+        "keyHex": "#00FF00",
+        "subject": "a big black iron ring holding three chunky ornate skeleton keys hanging side by side, one in polished gold, one in polished silver and one in polished bronze, each with a different decorative bow"
+      },
+      "W": {
+        "name": "Bandit Mask",
+        "keyHex": "#00FF00",
+        "kind": "wild",
+        "subject": "a bandit's glossy black satin domino eye mask with two almond-shaped eye holes, a thin polished gold trim and two short black ribbon ties fluttering at the sides, sitting above a blank wide cream-white ribbon banner with gold edges"
+      },
+      "S": {
+        "name": "Safe",
+        "keyHex": "#00FF00",
+        "kind": "scatter",
+        "subject": "a chunky cartoon steel safe painted deep crimson with polished gold trim and rivets, a big round polished gold combination dial and a gold lever handle on its front door, and four short stubby gold feet"
+      },
+      "R": {
+        "name": "Shooting Star",
+        "keyHex": "#00FF00",
+        "kind": "special",
+        "subject": "a plump five-pointed star in polished solid gold with softly rounded points and a faceted bevel, trailing a short curled comet tail of three violet, teal and white ribbon streaks behind it to the lower left"
+      }
+    },
+    "prizes": {
+      "coins": {
+        "keyHex": "#00FF00",
+        "subject": "three chunky thick round coins side by side with wide empty gaps: a bronze coin, a silver coin and a gold coin, each with a raised beaded rim, a ring of small embossed stars and a plain smooth flat blank centre medallion, frontal view"
+      },
+      "diamond": {
+        "keyHex": "#FF00FF",
+        "subject": "a big brilliant-cut diamond in icy cyan-white with crisp bold facets, held in a polished gold four-claw setting, frontal view"
+      },
+      "nest": {
+        "keyHex": "#00FF00",
+        "subject": "a round magpie's nest woven from chunky brown twigs, heaped high with glittering loot: stacked gold coins, a string of pearls and a few sparkling red and blue jewels spilling over its rim, no leaves"
+      },
+      "glint": {
+        "keyHex": "#FF00FF",
+        "subject": "a flat square gold-leaf tile seen straight on, polished solid gold with a soft brushed texture, a thin bevelled raised edge and a delicate engraved filigree border, the centre plain and smooth"
+      }
+    },
+    "mascots": {
+      "monty": {
+        "rig": "chr_monty",
+        "keyHex": "#FF00FF",
+        "facing": "toward the right side of the image",
+        "character": "Monty, a lanky adult magpie cat burglar with a slim tall build: a glossy black head, neck and chest with an iridescent blue sheen, a crisp white belly and white shoulder patches, long iridescent blue-and-teal wing feathers whose tips form four-fingered hands in thin white gloves, a long elegant iridescent blue-and-teal tail, a sharp black beak with a sly confident grin, sharp golden eyes behind a black domino eye mask, thin black legs with black bird feet, wearing a plum newsboy flat cap tilted to one side and a crimson neckerchief",
+        "poseNote": "His long tail hangs behind him to the ground, clear of both legs."
+      }
+    },
+    "backgrounds": {
+      "masters": {
+        "landscape": [
+          3072,
+          1536
+        ],
+        "portrait": [
+          1536,
+          3072
+        ]
+      },
+      "base": {
+        "setting": "a grand museum treasure hall at night with a polished checkered marble floor, tall marble columns, velvet rope barriers on brass posts and empty glass display cases on marble plinths",
+        "leftMass": "a tall arched window with a huge full moon behind it and a heavy crimson velvet curtain",
+        "rightMass": "a giant round bank-vault door in steel and polished gold, standing half open with warm golden light spilling out",
+        "topDetail": "a great glass dome skylight with pale moonbeams and thin crimson security laser beams criss-crossing high above"
+      },
+      "free": {
+        "variantNote": "the security alarm has gone off: deep crimson emergency light washes the hall, the laser beams are brighter and denser, and warm gold light pours from the vault door; the moonlight turns violet."
+      }
+    },
+    "logo": {
+      "keyHex": "#00FF00",
+      "subject": "a heist crest: a polished gold shield badge with a black bandit domino mask across its top, a big faceted ruby at the centre, two crossed gold skeleton keys behind it and a few gold coins tumbling at the bottom corners",
+      "palette": "polished solid gold (#FFC53D), glossy black, ruby crimson (#C8203A) and cream-white (#FFF4DC) banner"
+    }
   }
 }

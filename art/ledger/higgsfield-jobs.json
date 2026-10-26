@@ -2169,6 +2169,149 @@
           "bytes": 5229180
         }
       ]
+    },
+    {
+      "id": "mh_probe1",
+      "date": "2026-10-26",
+      "purpose": "Magpie Heist style probe: formula M (cartoon) vs formula D on H1; W, R, mascot sheet, base plate",
+      "model": "nano_banana_pro",
+      "planTier": "Higgsfield Plus",
+      "jobs": [
+        {
+          "name": "mh_sym_H1.D",
+          "index": 1,
+          "job_id": "45cb539f-34b1-42d9-8021-a254b4edea38",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "SUBJECT": "a heavy royal crown in polished solid gold with five rounded points each tipped with a big round pearl, a deep crimson velvet cap inside the band, and big faceted rubies and sapphires set around the band.",
+            "STYLE_FORMULA": "Premium hand-painted slot-game art with a clean, confident, single-weight bold black outline around every shape and thinner dark interior lines. Rich painterly rendering inside the lines: smooth layered shading with soft gradients, saturated jewel-tone colours, strong key light from the upper left with a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots, fine surface detail that stays readable at small size. Chunky, rounded, heroic proportions with clear three-dimensional volume; polished and expensive-looking; adult characters.",
+            "FILL_PCT": "85",
+            "KEY_HEX": "#00FF00",
+            "LIGHT_NOTE": "",
+            "RIG_READY_LINE": ""
+          },
+          "promptHash": "3fc359dec864d004e01835f8a2c01888ede38d1060ba9328ad5ce08bb4453586",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20261026_162510_45cb539f-34b1-42d9-8021-a254b4edea38.png",
+          "asset": "mh_sym_H1_D",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "7676580b39c2ba0267ce13e7ce49f7ab60a224aeacc49e7ff973323ec8367d83",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 5563957
+        },
+        {
+          "name": "mh_sym_W.M",
+          "index": 2,
+          "job_id": "3c1876ad-c6d7-4dcc-9429-8a704eb695f6",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "SUBJECT": "a bandit's glossy black satin domino eye mask with two almond-shaped eye holes, a thin polished gold trim and two short black ribbon ties fluttering at the sides, sitting above a blank wide cream-white ribbon banner with gold edges.",
+            "STYLE_FORMULA": "Premium cartoon slot-game art in a polished modern animated-feature style: a bold, clean, confident single-weight black outline around every shape and thinner dark interior lines; exaggerated chunky, rounded, playful shapes with strong readable silhouettes; vibrant saturated jewel-tone colours with smooth soft-gradient cel shading, a strong key light from the upper left, a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots; clean graphic surface detail that stays readable at small size; polished and expensive-looking; adult characters.",
+            "FILL_PCT": "85",
+            "KEY_HEX": "#00FF00",
+            "LIGHT_NOTE": "",
+            "RIG_READY_LINE": ""
+          },
+          "promptHash": "cf950457db6588a1d4aea28982b398f0bd66fece632fad5577f3c9347ac47ef9",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20261026_162510_3c1876ad-c6d7-4dcc-9429-8a704eb695f6.png",
+          "asset": "mh_sym_W",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "805b367ea47c85dca7d4cde842642dde7728bb7362e9bc08db9b42969bf50697",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4730477
+        },
+        {
+          "name": "mh_sym_R.M",
+          "index": 3,
+          "job_id": "776d0bd9-59a9-4785-bb5e-1fb9b1dba7c0",
+          "status": "completed",
+          "template": "symbol.txt",
+          "vars": {
+            "SUBJECT": "a plump five-pointed star in polished solid gold with softly rounded points and a faceted bevel, trailing a short curled comet tail of three violet, teal and white ribbon streaks behind it to the lower left.",
+            "STYLE_FORMULA": "Premium cartoon slot-game art in a polished modern animated-feature style: a bold, clean, confident single-weight black outline around every shape and thinner dark interior lines; exaggerated chunky, rounded, playful shapes with strong readable silhouettes; vibrant saturated jewel-tone colours with smooth soft-gradient cel shading, a strong key light from the upper left, a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots; clean graphic surface detail that stays readable at small size; polished and expensive-looking; adult characters.",
+            "FILL_PCT": "85",
+            "KEY_HEX": "#00FF00",
+            "LIGHT_NOTE": "",
+            "RIG_READY_LINE": ""
+          },
+          "promptHash": "765319803ebee911b519981237b9d6b9b47e15123c987c58f348212ded1cf5cd",
+          "resolution": "2k",
+          "aspect_ratio": "1:1",
+          "credits": 2,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20261026_162510_776d0bd9-59a9-4785-bb5e-1fb9b1dba7c0.png",
+          "asset": "mh_sym_R",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "ddf6d529c99269642de2cf91d81e79860a72360db89c23364d87749d5f6430c2",
+          "width": 2048,
+          "height": 2048,
+          "bytes": 4972757
+        },
+        {
+          "name": "mh_mascot_monty_sheet.c1",
+          "index": 4,
+          "job_id": "d0036d38-333e-49e9-b53f-d8800aaee423",
+          "status": "completed",
+          "template": "mascot_turnaround.txt#A",
+          "vars": {
+            "CHARACTER": "Monty, a lanky adult magpie cat burglar with a slim tall build: a glossy black head, neck and chest with an iridescent blue sheen, a crisp white belly and white shoulder patches, long iridescent blue-and-teal wing feathers whose tips form four-fingered hands in thin white gloves, a long elegant iridescent blue-and-teal tail, a sharp black beak with a sly confident grin, sharp golden eyes behind a black domino eye mask, thin black legs with black bird feet, wearing a plum newsboy flat cap tilted to one side and a crimson neckerchief",
+            "STYLE_FORMULA": "Premium cartoon slot-game art in a polished modern animated-feature style: a bold, clean, confident single-weight black outline around every shape and thinner dark interior lines; exaggerated chunky, rounded, playful shapes with strong readable silhouettes; vibrant saturated jewel-tone colours with smooth soft-gradient cel shading, a strong key light from the upper left, a warm bounce light and a thin cool rim light, glossy lacquered highlights and crisp white specular hotspots; clean graphic surface detail that stays readable at small size; polished and expensive-looking; adult characters.",
+            "KEY_HEX": "#FF00FF"
+          },
+          "promptHash": "b1ff49436149af8fc0136e81026a6af826a4439db8c9244d30ab6a9e4f7ec957",
+          "resolution": "4k",
+          "aspect_ratio": "21:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20261026_162510_d0036d38-333e-49e9-b53f-d8800aaee423.png",
+          "asset": "mh_mascot_monty_sheet",
+          "stage": "mascot-sheets",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "101c93e0c354ce34ab0e246c4ca9780f902fc70546e9459ff7975c93f80271f8",
+          "width": 6336,
+          "height": 2688,
+          "bytes": 23619255
+        },
+        {
+          "name": "mh_bg_base_landscape",
+          "index": 5,
+          "job_id": "5c4e4d4d-3e22-4b7e-b95a-46c1bc1c9951",
+          "status": "completed",
+          "template": "background.txt#A",
+          "vars": {
+            "SETTING": "a grand museum treasure hall at night with a polished checkered marble floor, tall marble columns, velvet rope barriers on brass posts and empty glass display cases on marble plinths",
+            "LEFT_MASS": "a tall arched window with a huge full moon behind it and a heavy crimson velvet curtain",
+            "RIGHT_MASS": "a giant round bank-vault door in steel and polished gold, standing half open with warm golden light spilling out",
+            "TOP_DETAIL": "a great glass dome skylight with pale moonbeams and thin crimson security laser beams criss-crossing high above",
+            "STYLE_FORMULA": "Hand-painted premium cartoon slot-game environment, painterly soft brushwork with clean graphic shapes, atmospheric perspective with softer and bluer detail in the distance, deep midnight-indigo and moonlit-teal night palette with warm gold lamp accents and crimson velvet, cinematic moonlight, high detail at the edges.",
+            "VARIANT_NOTE": ""
+          },
+          "promptHash": "57350ed2919dcee6984b1fc7ca961a06b8078a1cc20a650b6f10535d4fa2f8a0",
+          "resolution": "4k",
+          "aspect_ratio": "21:9",
+          "credits": 4,
+          "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3Jj6JangWBZMSyBbEsHWvI2D3ev/hf_20261026_162510_5c4e4d4d-3e22-4b7e-b95a-46c1bc1c9951.png",
+          "asset": "mh_bg_base_landscape",
+          "stage": "backgrounds",
+          "model": "nano_banana_2",
+          "type": "image",
+          "sha256": "f04826400600c2d894f9f1d6d9ba1bd495217fece5e8867e126b3463de9b29c5",
+          "width": 6336,
+          "height": 2688,
+          "bytes": 25306732
+        }
+      ]
     }
   ]
 }

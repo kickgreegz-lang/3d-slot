@@ -14,6 +14,11 @@ export interface BetModeDef {
   cost: number;
   /** bought feature (bonus buy button + confirm step when cost > 2) */
   buy: boolean;
+  /**
+   * FEATURE SPINS: a persistent mode the player switches on ('ui:spinMode'); every spin and every
+   * autoplay round then plays it at `cost` x the bet until it is switched off (e.g. a bonus hunt).
+   */
+  spin?: boolean;
   /** theoretical RTP (0..1), shown when jurisdiction.displayRTP */
   rtp: number;
   /** max win as a bet multiple (rules / replay info) */

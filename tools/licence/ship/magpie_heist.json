@@ -1,0 +1,106 @@
+{
+ "$comment": "Magpie Heist: board sprites, plates, mascot stand-in. Built by tools/mhart/build_art.py; ship with tools/.venv/bin/python tools/licence/ship.py tools/licence/ship/magpie_heist.json",
+ "name": "magpie-heist",
+ "items": [
+  {
+   "src": "art/source/magpie-heist/symbols/W/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_W@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/W/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_W_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/W/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_W_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/R/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_R@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/R/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_R_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/R/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_R_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H1/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H1@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H1/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H1_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H1/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H1_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/bg/base_landscape.webp",
+   "dst": "public/assets/magpie-heist/bg/base_landscape.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/magpie-heist/bg/base_portrait.webp",
+   "dst": "public/assets/magpie-heist/bg/base_portrait.webp",
+   "encode": "copy"
+  },
+  {
+   "src": "art/source/magpie-heist/mascot/monty_static.png",
+   "dst": "public/assets/magpie-heist/mascot/monty_static.webp",
+   "encode": {
+    "webp": {
+     "quality": 92
+    }
+   }
+  }
+ ]
+}

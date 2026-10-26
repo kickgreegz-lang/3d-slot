@@ -1,0 +1,9 @@
+{
+  "id": "magpie-heist",
+  "title": "Magpie Heist",
+  "rgsGameId": "magpie-heist-6x5",
+  "storagePrefix": "magpieheist",
+  "publicExclude": [
+    "assets/characters"
+  ]
+}

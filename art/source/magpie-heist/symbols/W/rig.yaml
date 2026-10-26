@@ -1,0 +1,56 @@
+# sym_W Bandit Mask (Magpie Heist wild, landWeight special, cellScale 1.04). Parts: parts.json (tools/mhart/rigs/cut_W.py,
+# master-cut). Coordinates: 360 x 360 @2x canvas, image space (y down); keypoints in build/qa/rigs/mh_sym_W/cut.json.
+# Build: tools/mhart/rigs/build.sh W [--cut] [--capture dir]   (mhgen.py = stock gen.py + bdgen clip layer + heist.yaml)
+# 8 slots, back to front: fx_glow, tie_L, tie_R (meshes on 2-bone flutter chains), banner (grid mesh on banner_L /
+# banner_face / banner_R: a slight wave), txt_wild (EMPTY: the runtime mounts the live word "WILD" there), mask,
+# lid_L (the wink: the mask's own left eye closed, alpha 0 at rest), fx_sheen (satin sweep frames + an eye glint,
+# normal blend on the mask bone, empty at rest).
+symbol: W
+parts: parts.json
+kind: special
+
+bones:
+  - {name: mask, parent: body, joint: [180.0, 137.0]}
+  - {name: lid_L, parent: mask, joint: [236.0, 126.0]}
+  # ties: an anchor along the knot (weights only) + a 2-bone flutter chain
+  - {name: tie_L, parent: mask, joint: [67.0, 122.0], tip: [61.0, 142.0]}
+  - {name: phys_tie_1_L, parent: tie_L, joint: [61.0, 140.0], tip: [46.5, 161.0]}
+  - {name: phys_tie_2_L, parent: phys_tie_1_L, joint: [46.5, 161.0], tip: [38.0, 196.0]}
+  - {name: tie_R, parent: mask, joint: [293.0, 122.0], tip: [299.0, 142.0]}
+  - {name: phys_tie_1_R, parent: tie_R, joint: [299.0, 140.0], tip: [313.5, 161.0]}
+  - {name: phys_tie_2_R, parent: phys_tie_1_R, joint: [313.5, 161.0], tip: [322.0, 196.0]}
+  # banner: the face (weights) and the two tails (pivots where they leave the face)
+  - {name: banner, parent: body, joint: [180.0, 252.0]}
+  - {name: banner_face, parent: banner, joint: [118.0, 254.0], tip: [242.0, 254.0]}
+  - {name: banner_L, parent: banner, joint: [96.0, 248.5], tip: [40.0, 236.0]}
+  - {name: banner_R, parent: banner, joint: [264.0, 248.5], tip: [320.0, 236.0]}
+  - {name: txt_wild, parent: banner, joint: [180.2, 252.5]}
+
+meshes:
+  tie_L: {type: trace, spacing: 13, pad: 3, weights: {mode: idw, power: 3, max: 3, bones: [tie_L, phys_tie_1_L, phys_tie_2_L]}}
+  tie_R: {type: trace, spacing: 13, pad: 3, weights: {mode: idw, power: 3, max: 3, bones: [tie_R, phys_tie_1_R, phys_tie_2_R]}}
+  banner: {type: grid, cols: 8, rows: 3, weights: {mode: idw, power: 3, max: 3, bones: [banner_L, banner_face, banner_R]}}
+
+# satin ribbons: loose but quick (3.3-3.8 Hz), the tip link looser than the knot link
+physics:
+  - {bone: phys_tie_1_L, f: 3.8, zeta: 0.24, rotate: 1, inertia: 0.6}
+  - {bone: phys_tie_2_L, f: 3.3, zeta: 0.2, rotate: 1, inertia: 0.65}
+  - {bone: phys_tie_1_R, f: 3.8, zeta: 0.24, rotate: 1, inertia: 0.6}
+  - {bone: phys_tie_2_R, f: 3.3, zeta: 0.2, rotate: 1, inertia: 0.65}
+
+motion:
+  idle: {frames: 72, sway: 1.2, breath: 0.012}
+  land: {squash: 0.85, rebound: 0.07, settle: 0.02, frames: 12}
+  win: {pop: 1.25, wiggle: 2.5, glow_peak: 1, glow_scale: 1.12}
+  win_loop: {frames: 44, beats: 2, pulse: 0.04, sway: 2, bounce: 0.03}
+  anticipation: {frames: 16, lub: 1.08, dub: 1.05, shake: 2.0, glow: [0.4, 1.0]}
+  anticipation_intro: {frames: 9, pop: 1.1}
+  anticipation_out: {frames: 8, dip: 0.96}
+  explode: {frames: 13, burst_frame: 2, burst_peak_frame: 4, squeeze: 0.86, burst_scale: 1.2, end_scale: 1.26,
+            scatter: 50, spin: 18, fade_from: 4, body_fade: [3, 9]}
+  appear: {frames: 9}
+  blur: {frames: 1}
+
+accents:
+  land:
+    - {bone: banner, type: squash, amount: 0.08, at: impact+1, frames: 9}

@@ -97,9 +97,20 @@ const rot = (x, y, cx, cy, deg) => {
 class Pic {
   constructor() {
     this.defs = [];
-    this.sil = [];
-    this.body = [];
+    this.parts = [];
     this.n = 0;
+    this.part('main');
+  }
+
+  /** Start a named layer (a rig part). Each layer carries its own outline, so the composite (layers stacked back
+   *  to front) is exactly what a rig shows at rest. `meta.joint` is the pivot in master px. */
+  part(name, meta = {}) {
+    const P = { name, meta, sil: [], body: [] };
+    if (this.parts.length === 1 && this.parts[0].name === 'main' && !this.parts[0].body.length) this.parts.pop();
+    this.parts.push(P);
+    this.sil = P.sil;
+    this.body = P.body;
+    return P;
   }
 
   uid(p) {
@@ -183,9 +194,11 @@ class Pic {
       `Q${f(cx - k)},${f(cy + k)} ${f(cx - r)},${f(cy)}Q${f(cx - k)},${f(cy - k)} ${f(cx)},${f(cy - r)}Z" fill="#fff" opacity="${op}"/>`);
   }
 
-  svg() {
+  svg(only = null) {
+    const layers = this.parts.filter((P) => !only || only.includes(P.name))
+      .map((P) => `<g id="${P.name}"><g>${P.sil.join('')}</g><g>${P.body.join('')}</g></g>`).join('');
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${N}" height="${N}" viewBox="0 0 ${N} ${N}">` +
-      `<defs>${this.defs.join('')}</defs><g>${this.sil.join('')}</g><g>${this.body.join('')}</g></svg>`;
+      `<defs>${this.defs.join('')}</defs>${layers}</svg>`;
   }
 }
 
@@ -234,6 +247,7 @@ function egg() {
   const along = (t, c, u) => [cx + u * W(t), T(t) + c * (1 - u * u)];
   const bottom = T(1);
 
+  p.part('stand', { joint: [cx, bottom + 4] });
   // ---- stand (behind the egg): a collar with three scroll legs and ball feet
   for (const sx of [-1, 1]) {
     const L = [[cx + sx * 60, bottom - 30], [cx + sx * 130, bottom + 4], [cx + sx * 186, bottom + 62], [cx + sx * 196, bottom + 118], [cx + sx * 178, bottom + 150]];
@@ -249,6 +263,7 @@ function egg() {
   gold(p, collar, { dx: -10, dy: -10 });
 
   // ---- shell
+  p.part('shell', { joint: [cx, cy] });
   p.fill(shell, p.rad(PAL.blue, 0.36, 0.3, 0.85, [0, 0.38, 0.8, 1]));
   p.shade(shell, PAL.blueShade, -50, -34, 0.55);
 
@@ -312,22 +327,6 @@ function egg() {
     p.spec(x - 3, y + 36, 3, 5, 0, 0.9);
   }
 
-  // ---- lid
-  const lidT = -0.6;
-  const lidD = poly([
-    ...contour(-1, lidT, 60).map((t) => [cx - W(t), T(t)]),
-    ...contour(-1, 1, 40).map((u) => [cx + u * W(lidT), T(lidT) + 30 * (1 - u * u)]),
-    ...contour(lidT, -1, 60).map((t) => [cx + W(t), T(t)]),
-  ]);
-  gold(p, lidD, { dx: -30, dy: -24 });
-  p.clip(lidD, [-0.62, -0.2, 0.2, 0.62].map((u) => {
-    const [x0, y0] = along(lidT, 30, u);
-    return `<path d="M${f(x0)},${f(y0)}Q${f(cx + u * 70)},${f(T(-0.88))} ${cx},${f(T(-1) + 4)}" fill="none" stroke="${PAL.goldDeep}" stroke-width="7" opacity="0.6"/>`;
-  }).join(''));
-  p.clip(lidD, `<ellipse cx="${cx - 70}" cy="${T(-0.8)}" rx="16" ry="38" transform="rotate(38 ${cx - 70} ${T(-0.8)})" fill="#fff" opacity="0.85"/>`);
-  const lip = band(lidT - 0.01, lidT + 0.075, 30, 32);
-  gold(p, lip, { stops: ['#FFF2A8', '#FFD24A', '#E8961C', '#A85A0A'], dx: -22, dy: -8 });
-
   // ---- pearl band
   const pb = band(0.02, 0.14, 34, 36);
   gold(p, pb, { dx: -18, dy: -8 });
@@ -347,6 +346,25 @@ function egg() {
   const lb = band(0.5, 0.57, 30, 30);
   gold(p, lb, { dx: -18, dy: -8 });
 
+  // ---- lid
+  const lidT = -0.6;
+  p.part('lid', { joint: [cx - W(lidT), T(lidT)] });
+  const lidD = poly([
+    ...contour(-1, lidT, 60).map((t) => [cx - W(t), T(t)]),
+    ...contour(-1, 1, 40).map((u) => [cx + u * W(lidT), T(lidT) + 30 * (1 - u * u)]),
+    ...contour(lidT, -1, 60).map((t) => [cx + W(t), T(t)]),
+  ]);
+  gold(p, lidD, { dx: -30, dy: -24 });
+  p.clip(lidD, [-0.62, -0.2, 0.2, 0.62].map((u) => {
+    const [x0, y0] = along(lidT, 30, u);
+    return `<path d="M${f(x0)},${f(y0)}Q${f(cx + u * 70)},${f(T(-0.88))} ${cx},${f(T(-1) + 4)}" fill="none" stroke="${PAL.goldDeep}" stroke-width="7" opacity="0.6"/>`;
+  }).join(''));
+  p.clip(lidD, `<ellipse cx="${cx - 70}" cy="${T(-0.8)}" rx="16" ry="38" transform="rotate(38 ${cx - 70} ${T(-0.8)})" fill="#fff" opacity="0.85"/>`);
+  const lip = band(lidT - 0.01, lidT + 0.075, 30, 32);
+  gold(p, lip, { stops: ['#FFF2A8', '#FFD24A', '#E8961C', '#A85A0A'], dx: -22, dy: -8 });
+
+
+  p.part('cradle', { joint: [cx, T(0.86)] });
   // ---- cradle: scalloped gold cup hugging the bottom of the shell
   const ct = 0.74;
   const cradle = poly([
@@ -364,20 +382,23 @@ function egg() {
   }
 
   // ---- finial: collar + big ruby
+  p.part('finial', { joint: [cx, T(-1) + 4] });
   const col = ell(cx, T(-1) + 4, 50, 17);
   gold(p, col, { dx: -8, dy: -6 });
   const stem = rrect(cx - 22, T(-1) - 28, 44, 34, 12);
   gold(p, stem, { dx: -8, dy: -4 });
   gem(p, cx, T(-1) - 70, 48, 48, PAL.ruby);
+  p.part('sparkle', { fx: true });
   p.twinkle(cx - 19, T(-1) - 87, 13);
   p.twinkle(cx - 226, cy - 60, 22);
-  return p.svg();
+  return p;
 }
 
 // ================================================================================================ H3 watch
 function watch() {
   const p = new Pic();
   const cx = 548, cy = 560, R = 286;
+  p.part('chain', { joint: [cx + 70, 112] });
   // chain (behind the bow): links along a quadratic curve to the right
   const q = (t) => {
     const P0 = [cx + 70, 112], P1 = [cx + 250, 40], P2 = [cx + 320, 230];
@@ -398,6 +419,7 @@ function watch() {
       gold(p, d, { dx: -4, dy: -6, line: 7 });
     }
   }
+  p.part('lid', { joint: [cx - R - 4, cy] });
   // opened lid on the left (behind the case)
   const lidC = [cx - R + 18, cy + 8];
   const lidOuter = ell(lidC[0] - 70, lidC[1], 122, R - 4, -4);
@@ -416,10 +438,12 @@ function watch() {
   gold(p, hinge, { dx: -6, dy: -8 });
 
   // stem, crown and bow
+  p.part('bow', { joint: [cx, 150] });
   const bowO = ell(cx, 108, 80, 66);
   const bowI = ell(cx, 104, 46, 34);
   gold(p, bowO + bowI, { rule: 'evenodd', dx: -12, dy: -14 });
   p.spec(cx - 50, 80, 9, 18, 40, 0.85);
+  p.part('crown', { joint: [cx, 286] });
   const stemD = rrect(cx - 30, 222, 60, 70, 10);
   gold(p, stemD, { dx: -8, dy: -4 });
   const crown = rrect(cx - 66, 160, 132, 82, 26);
@@ -428,6 +452,7 @@ function watch() {
   p.spec(cx - 40, 178, 18, 6, 0, 0.85);
 
   // case + bezel + face
+  p.part('case', { joint: [cx, cy] });
   const caseD = circ(cx, cy, R);
   gold(p, caseD, { dx: -34, dy: -40 });
   p.clip(caseD, `<circle cx="${cx}" cy="${cy}" r="${R - 12}" fill="none" stroke="#FFF6C8" stroke-width="10" opacity="0.55" stroke-dasharray="320 1600" transform="rotate(170 ${cx} ${cy})"/>`);
@@ -462,19 +487,24 @@ function watch() {
     return poly([at(-30, -w * 0.6), at(len - tip * 1.6, -w * 0.5), at(len - tip * 1.9, -tip), at(len - tip * 0.6, -tip * 0.7), at(len, 0),
       at(len - tip * 0.6, tip * 0.7), at(len - tip * 1.9, tip), at(len - tip * 1.6, w * 0.5), at(-30, w * 0.6)]);
   };
+  p.part('hand_hour', { joint: [cx, cy] });
   p.raw(`<path d="${hand(-62, 118, 14, 22)}" fill="${INK}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`);
+  p.part('hand_min', { joint: [cx, cy] });
   p.raw(`<path d="${hand(58, 172, 11, 18)}" fill="${INK}" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`);
+  p.part('cap', { joint: [cx, cy] });
   const cap = circ(cx, cy, 22);
   p.fill(cap, p.lin(PAL.gold), { line: 7, sil: false });
   p.spec(cx - 6, cy - 7, 6, 4);
   // glass glare
+  p.part('glass', { joint: [cx, cy] });
   p.clip(face, `<path d="M${cx - 230},${cy - 40}Q${cx - 120},${cy - 210} ${cx + 60},${cy - 236}L${cx + 40},${cy - 196}Q${cx - 110},${cy - 170} ${cx - 196},${cy - 20}Z" fill="#fff" opacity="0.42"/>` +
     `<path d="M${cx + 150},${cy + 120}Q${cx + 110},${cy + 170} ${cx + 40},${cy + 196}" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" opacity="0.35"/>`);
   p.spec(cx - 150, cy - 128, 30, 10, -40, 0.95);
   // case hotspots
   p.spec(cx - 196, cy - 196, 30, 12, -45, 0.9);
+  p.part('sparkle', { fx: true });
   p.twinkle(cx - 214, cy - 214, 22);
-  return p.svg();
+  return p;
 }
 
 // ================================================================================================ H4 chalice
@@ -482,6 +512,7 @@ function chalice() {
   const p = new Pic();
   const cx = 512, rimY = 292, rx = 300, ry = 74;
   // foot
+  p.part('foot', { joint: [cx, 852] });
   const footRim = ell(cx, 864, 214, 56);
   gold(p, footRim, { dx: -10, dy: -30 });
   const footTop = ell(cx, 850, 196, 44);
@@ -490,6 +521,7 @@ function chalice() {
   gold(p, dome, { dx: -24, dy: -10 });
   p.spec(cx - 100, 834, 30, 8, -12, 0.85);
   // stem + knot
+  p.part('stem', { joint: [cx, 760] });
   const stem = rrect(cx - 26, 600, 52, 170, 18);
   gold(p, stem, { dx: -10, dy: 0 });
   const knot = ell(cx, 680, 66, 48);
@@ -498,6 +530,7 @@ function chalice() {
   const collar = ell(cx, 612, 78, 22);
   gold(p, collar, { dx: -10, dy: -8 });
   // bowl
+  p.part('bowl', { joint: [cx, rimY + 316] });
   const bowl = `M${cx - rx},${rimY}C${cx - rx},${rimY + 196} ${cx - 160},${rimY + 316} ${cx},${rimY + 316}C${cx + 160},${rimY + 316} ${cx + rx},${rimY + 196} ${cx + rx},${rimY}Z`;
   gold(p, bowl, { dx: -40, dy: -30 });
   // decorative band with three rubies
@@ -532,20 +565,23 @@ function chalice() {
   // rim + wine
   const rim = ell(cx, rimY, rx, ry);
   gold(p, rim, { dx: -10, dy: 14, shadeColor: PAL.goldDeep, op: 0.5 });
+  p.part('wine', { joint: [cx, rimY + 4] });
   const wine = ell(cx, rimY + 4, rx - 32, ry - 20);
   p.fill(wine, p.rad(PAL.wine, 0.42, 0.62, 0.7), { line: 8, sil: false });
   p.shade(wine, '#4A0414', 0, 22, 0.55);
   p.raw(`<ellipse cx="${cx - 90}" cy="${rimY - 8}" rx="120" ry="16" fill="#fff" opacity="0.42"/>`);
   p.spec(cx - 150, rimY - 10, 30, 7, 0, 0.95);
   p.spec(cx + 120, rimY + 18, 14, 4, 0, 0.6);
+  p.part('drip', { joint: [cx + 96, rimY + ry - 14] });
   // a drip over the front rim, between the centre and right rubies
   const dx0 = cx + 96, dy0 = rimY + ry - 14;
   const drip = `M${dx0 - 13},${dy0}C${dx0 - 13},${dy0 + 26} ${dx0 - 17},${dy0 + 40} ${dx0 - 14},${dy0 + 56}C${dx0 - 11},${dy0 + 76} ${dx0 + 15},${dy0 + 76} ${dx0 + 16},${dy0 + 54}C${dx0 + 17},${dy0 + 38} ${dx0 + 12},${dy0 + 24} ${dx0 + 13},${dy0}Z`;
   p.fill(drip, p.lin(PAL.wine, 0.3, 0, 0.7, 1, [0, 0.5, 1]), { line: 7, sil: false });
   p.spec(dx0 - 5, dy0 + 52, 4, 8, 0, 0.9);
+  p.part('sparkle', { fx: true });
   p.spec(cx - 230, rimY - 30, 26, 8, -10, 0.95);
   p.twinkle(cx - 262, rimY - 26, 26);
-  return p.svg();
+  return p;
 }
 
 // ================================================================================================ H5 keys
@@ -593,18 +629,23 @@ function keys() {
     return [bx, byy];
   };
   // keys hang from the bottom of the ring: side keys first (behind)
+  p.part('key_silver', { joint: [410, 352] });
   key(410, 352, 24, PAL.silver, PAL.silverShade, 'quatrefoil');
+  p.part('key_bronze', { joint: [614, 352] });
   key(614, 352, -24, PAL.bronze, PAL.bronzeShade, 'ring');
+  p.part('key_gold', { joint: [512, 372] });
   key(512, 372, 0, PAL.gold, PAL.goldShade, 'trefoil');
   // iron ring over the bows
+  p.part('ring', { joint: ringC });
   const ring = circ(ringC[0], ringC[1], Ro) + circ(ringC[0], ringC[1], Ri);
   p.fill(ring, p.lin(PAL.iron, 0.2, 0, 0.8, 1), { rule: 'evenodd' });
   p.shade(ring, '#0E1020', -20, -26, 0.6, 'evenodd');
   p.clip(ring, `<circle cx="${ringC[0]}" cy="${ringC[1]}" r="${(Ro + Ri) / 2 + 6}" fill="none" stroke="#DDE6FF" stroke-width="12" stroke-linecap="round" stroke-dasharray="190 2000" transform="rotate(178 ${ringC[0]} ${ringC[1]})" opacity="0.85"/>` +
     `<circle cx="${ringC[0]}" cy="${ringC[1]}" r="${Ri + 6}" fill="none" stroke="#8FA2E0" stroke-width="6" stroke-dasharray="120 2000" transform="rotate(20 ${ringC[0]} ${ringC[1]})" opacity="0.7"/>`, 'evenodd');
   p.spec(ringC[0] - 112, ringC[1] - 70, 9, 20, 30, 0.9);
+  p.part('sparkle', { fx: true });
   p.twinkle(ringC[0] - 14, 856, 24);
-  return p.svg();
+  return p;
 }
 
 // ================================================================================================ S safe
@@ -612,9 +653,11 @@ function safe() {
   const p = new Pic();
   const x0 = 206, y0 = 230, w = 560, h = 560, d = 64;
   // feet (back right foot first)
+  p.part('foot_back', { joint: [x0 + w + d - 46, y0 + h - d + 6] });
   const foot = (x, y, s = 1) => rrect(x - 44 * s, y, 88 * s, 58 * s, 22 * s);
   for (const [x, y, s] of [[x0 + w + d - 46, y0 + h - d + 6, 0.8]]) gold(p, foot(x, y, s), { dx: -8, dy: -10 });
   // body: side + top faces, then the front
+  p.part('body', { joint: [x0 + w / 2, y0 + h] });
   const side = poly([[x0 + w - 4, y0 + 24], [x0 + w + d - 4, y0 - d + 24], [x0 + w + d, y0 + h - d - 20], [x0 + w, y0 + h - 4]]);
   p.fill(side, p.lin(['#C21A34', '#8E0E24', '#5E0716', '#3C040E'], 0, 0, 1, 1), {});
   const top = poly([[x0 + 24, y0], [x0 + d + 24, y0 - d], [x0 + w + d - 10, y0 - d], [x0 + w, y0 + 4]]);
@@ -645,8 +688,12 @@ function safe() {
     gold(p, hg, { dx: -6, dy: -8 });
     p.spec(x0 - 12, hy + 16, 5, 12, 0, 0.85);
   }
+  // glossy paint highlights
+  p.clip(front, `<path d="M${x0 + 26},${y0 + 150}Q${x0 + 26},${y0 + 30} ${x0 + 150},${y0 + 26}" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" opacity="0.7"/>`);
+  p.spec(x0 + 70, y0 + 40, 24, 9, -30, 0.9);
   // combination dial
   const dc = [x0 + w * 0.42, y0 + h * 0.5];
+  p.part('dial', { joint: dc });
   const dialO = circ(dc[0], dc[1], 132);
   gold(p, dialO, { dx: -22, dy: -26 });
   const dialRing = circ(dc[0], dc[1], 104);
@@ -661,11 +708,13 @@ function safe() {
   const knobTop = circ(dc[0], dc[1], 40);
   p.fill(knobTop, p.rad(['#FFF8D0', '#FFD84D', '#E39A22'], 0.35, 0.3, 0.8), { sil: false, line: 7 });
   p.spec(dc[0] - 14, dc[1] - 16, 12, 6, -35);
-  // pointer above the dial
-  p.fill(poly([[dc[0] - 18, dc[1] - 146], [dc[0] + 18, dc[1] - 146], [dc[0], dc[1] - 122]]), PAL.gold[1], { sil: false, line: 7 });
   p.spec(dc[0] - 70, dc[1] - 92, 26, 10, -40, 0.85);
+  // pointer above the dial
+  p.part('pointer', { joint: [dc[0], dc[1] - 134] });
+  p.fill(poly([[dc[0] - 18, dc[1] - 146], [dc[0] + 18, dc[1] - 146], [dc[0], dc[1] - 122]]), PAL.gold[1], { sil: false, line: 7 });
   // spoked lever wheel
   const hc = [x0 + w * 0.8, y0 + h * 0.5];
+  p.part('wheel', { joint: hc });
   for (const a of [90, 210, 330]) {
     const t = (a * Math.PI) / 180;
     const ex = hc[0] + 82 * Math.cos(t), ey = hc[1] + 82 * Math.sin(t);
@@ -677,26 +726,35 @@ function safe() {
   const hub = circ(hc[0], hc[1], 34);
   gold(p, hub, { dx: -10, dy: -10, line: 8 });
   p.spec(hc[0] - 10, hc[1] - 11, 9, 5);
-  // glossy paint highlights
-  p.clip(front, `<path d="M${x0 + 26},${y0 + 150}Q${x0 + 26},${y0 + 30} ${x0 + 150},${y0 + 26}" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" opacity="0.7"/>`);
-  p.spec(x0 + 70, y0 + 40, 24, 9, -30, 0.9);
   // front feet
+  p.part('feet', { joint: [x0 + w / 2, y0 + h + 20] });
   for (const fx of [x0 + 86, x0 + w - 86]) {
     const ft = foot(fx, y0 + h - 14);
     gold(p, ft, { dx: -10, dy: -14 });
     p.spec(fx - 22, y0 + h + 2, 12, 5, 0, 0.85);
   }
+  p.part('sparkle', { fx: true });
   p.twinkle(x0 + 30, y0 - 10, 26);
-  return p.svg();
+  return p;
 }
 
 // ------------------------------------------------------------------------------------------ main
 const BUILDERS = { H2: egg, H3: watch, H4: chalice, H5: keys, S: safe };
+const png = (svg) => new Resvg(svg, { fitTo: { mode: 'original' }, background: 'rgba(0,0,0,0)' }).render().asPng();
 fs.mkdirSync(OUT_DIR, { recursive: true });
 for (const id of only.length ? only : Object.keys(BUILDERS)) {
-  const svg = BUILDERS[id]();
+  const p = BUILDERS[id]();
+  const svg = p.svg();
   fs.writeFileSync(path.join(OUT_DIR, `${id}.svg`), svg);
-  const png = new Resvg(svg, { fitTo: { mode: 'original' }, background: 'rgba(0,0,0,0)' }).render().asPng();
-  fs.writeFileSync(path.join(OUT_DIR, `${id}.png`), png);
-  console.log(`${id}: ${path.relative(process.cwd(), path.join(OUT_DIR, `${id}.png`))}`);
+  fs.writeFileSync(path.join(OUT_DIR, `${id}.png`), png(svg));
+  // one 1024 px layer per part (the rig cut: tools/mhart/rigs/cut_vector.py) + the part list with pivots
+  const dir = path.join(OUT_DIR, id);
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.mkdirSync(dir, { recursive: true });
+  const parts = p.parts.map((P, z) => {
+    fs.writeFileSync(path.join(dir, `${P.name}.png`), png(p.svg([P.name])));
+    return { name: P.name, z, ...P.meta };
+  });
+  fs.writeFileSync(path.join(OUT_DIR, `${id}.parts.json`), JSON.stringify({ symbol: id, master: 1024, parts }, null, 1) + '\n');
+  console.log(`${id}: ${parts.map((q) => q.name).join(', ')}`);
 }

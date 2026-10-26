@@ -3,87 +3,6 @@
  "name": "magpie-heist",
  "items": [
   {
-   "src": "art/source/magpie-heist/symbols/W/board.png",
-   "dst": "public/assets/magpie-heist/symbols/sym_W@2x.webp",
-   "encode": {
-    "webp": {
-     "lossless": true
-    }
-   }
-  },
-  {
-   "src": "art/source/magpie-heist/symbols/W/board_blur.png",
-   "dst": "public/assets/magpie-heist/symbols/sym_W_blur@2x.webp",
-   "encode": {
-    "webp": {
-     "quality": 88
-    }
-   }
-  },
-  {
-   "src": "art/source/magpie-heist/symbols/W/board_glow.png",
-   "dst": "public/assets/magpie-heist/symbols/sym_W_glow@2x.webp",
-   "encode": {
-    "webp": {
-     "quality": 88
-    }
-   }
-  },
-  {
-   "src": "art/source/magpie-heist/symbols/R/board.png",
-   "dst": "public/assets/magpie-heist/symbols/sym_R@2x.webp",
-   "encode": {
-    "webp": {
-     "lossless": true
-    }
-   }
-  },
-  {
-   "src": "art/source/magpie-heist/symbols/R/board_blur.png",
-   "dst": "public/assets/magpie-heist/symbols/sym_R_blur@2x.webp",
-   "encode": {
-    "webp": {
-     "quality": 88
-    }
-   }
-  },
-  {
-   "src": "art/source/magpie-heist/symbols/R/board_glow.png",
-   "dst": "public/assets/magpie-heist/symbols/sym_R_glow@2x.webp",
-   "encode": {
-    "webp": {
-     "quality": 88
-    }
-   }
-  },
-  {
-   "src": "art/source/magpie-heist/symbols/H1/board.png",
-   "dst": "public/assets/magpie-heist/symbols/sym_H1@2x.webp",
-   "encode": {
-    "webp": {
-     "lossless": true
-    }
-   }
-  },
-  {
-   "src": "art/source/magpie-heist/symbols/H1/board_blur.png",
-   "dst": "public/assets/magpie-heist/symbols/sym_H1_blur@2x.webp",
-   "encode": {
-    "webp": {
-     "quality": 88
-    }
-   }
-  },
-  {
-   "src": "art/source/magpie-heist/symbols/H1/board_glow.png",
-   "dst": "public/assets/magpie-heist/symbols/sym_H1_glow@2x.webp",
-   "encode": {
-    "webp": {
-     "quality": 88
-    }
-   }
-  },
-  {
    "src": "art/source/magpie-heist/symbols/H2/board.png",
    "dst": "public/assets/magpie-heist/symbols/sym_H2@2x.webp",
    "encode": {
@@ -245,6 +164,162 @@
      "quality": 92
     }
    }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H1/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H1@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H1/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H1_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H1/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H1_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/spine/sym_H1.json",
+   "dst": "public/assets/magpie-heist/spine/sym_H1.json",
+   "encode": "copy",
+   "note": "rig skeleton (tools/mhart/rigs/build.sh)"
+  },
+  {
+   "src": "art/source/magpie-heist/spine/sym_H1.atlas",
+   "dst": "public/assets/magpie-heist/spine/sym_H1.atlas",
+   "encode": "copy",
+   "note": "rig atlas (page sym_H1.webp)"
+  },
+  {
+   "src": "art/source/magpie-heist/spine/sym_H1.png",
+   "dst": "public/assets/magpie-heist/spine/sym_H1.webp",
+   "encode": {
+    "webp": {
+     "lossless": true,
+     "exact": true,
+     "quality": 100,
+     "method": 6
+    }
+   },
+   "note": "PMA atlas page, lossless WebP (premultiplied texels kept exactly)"
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/W/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_W@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/W/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_W_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/W/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_W_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/spine/sym_W.json",
+   "dst": "public/assets/magpie-heist/spine/sym_W.json",
+   "encode": "copy",
+   "note": "rig skeleton (tools/mhart/rigs/build.sh)"
+  },
+  {
+   "src": "art/source/magpie-heist/spine/sym_W.atlas",
+   "dst": "public/assets/magpie-heist/spine/sym_W.atlas",
+   "encode": "copy",
+   "note": "rig atlas (page sym_W.webp)"
+  },
+  {
+   "src": "art/source/magpie-heist/spine/sym_W.png",
+   "dst": "public/assets/magpie-heist/spine/sym_W.webp",
+   "encode": {
+    "webp": {
+     "lossless": true,
+     "exact": true,
+     "quality": 100,
+     "method": 6
+    }
+   },
+   "note": "PMA atlas page, lossless WebP (premultiplied texels kept exactly)"
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/R/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_R@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/R/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_R_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/R/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_R_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/spine/sym_R.json",
+   "dst": "public/assets/magpie-heist/spine/sym_R.json",
+   "encode": "copy",
+   "note": "rig skeleton (tools/mhart/rigs/build.sh)"
+  },
+  {
+   "src": "art/source/magpie-heist/spine/sym_R.atlas",
+   "dst": "public/assets/magpie-heist/spine/sym_R.atlas",
+   "encode": "copy",
+   "note": "rig atlas (page sym_R.webp)"
+  },
+  {
+   "src": "art/source/magpie-heist/spine/sym_R.png",
+   "dst": "public/assets/magpie-heist/spine/sym_R.webp",
+   "encode": {
+    "webp": {
+     "lossless": true,
+     "exact": true,
+     "quality": 100,
+     "method": 6
+    }
+   },
+   "note": "PMA atlas page, lossless WebP (premultiplied texels kept exactly)"
   }
  ]
 }

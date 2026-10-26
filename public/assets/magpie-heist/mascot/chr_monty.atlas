@@ -1,0 +1,96 @@
+chr_monty.webp
+size: 1360,1024
+filter: Linear,Linear
+pma: true
+chr_monty/cap
+bounds: 359,455,343,177
+offsets: 3,3,349,183
+chr_monty/eye_L/closed
+bounds: 791,515,33,33
+offsets: 3,3,39,39
+chr_monty/eye_L/half
+bounds: 791,550,33,33
+offsets: 3,3,39,39
+chr_monty/eye_L/open
+bounds: 660,289,33,33
+offsets: 3,3,39,39
+chr_monty/eye_L/wide
+bounds: 660,324,33,33
+offsets: 3,3,39,39
+chr_monty/eye_R/closed
+bounds: 908,938,85,57
+offsets: 3,3,91,63
+chr_monty/eye_R/half
+bounds: 995,938,85,57
+offsets: 3,3,91,63
+chr_monty/eye_R/open
+bounds: 513,932,85,57
+offsets: 3,3,91,63
+chr_monty/eye_R/wide
+bounds: 704,515,85,57
+offsets: 3,3,91,63
+chr_monty/foot_L
+bounds: 630,930,276,91
+offsets: 3,3,282,97
+chr_monty/foot_R
+bounds: 115,861,118,144
+offsets: 3,3,124,150
+chr_monty/forearm_L
+bounds: 1049,687,214,200
+offsets: 3,3,220,206
+chr_monty/forearm_R
+bounds: 990,281,244,228
+offsets: 3,3,250,234
+chr_monty/hand_L/fist
+bounds: 235,861,120,142
+offsets: 3,3,126,148
+chr_monty/hand_L/open
+bounds: 1017,2,157,226
+offsets: 3,3,163,232
+chr_monty/hand_L/point
+bounds: 1236,228,120,201
+offsets: 3,3,126,207
+chr_monty/hand_R/fist
+bounds: 2,861,111,156
+offsets: 3,3,117,162
+chr_monty/hand_R/open
+bounds: 908,687,139,249
+offsets: 3,3,145,255
+chr_monty/hand_R/point
+bounds: 1176,2,111,224
+offsets: 3,3,117,230
+chr_monty/head
+bounds: 2,607,355,252
+offsets: 3,3,361,258
+chr_monty/kerchief
+bounds: 704,289,284,224
+chr_monty/neck
+bounds: 831,515,276,170
+chr_monty/pupil_L
+bounds: 852,281,8,8
+offsets: 3,3,14,14
+chr_monty/pupil_R
+bounds: 235,1005,17,16
+offsets: 3,3,23,22
+chr_monty/shin_L
+bounds: 748,2,102,279
+offsets: 3,3,108,285
+chr_monty/shin_R
+bounds: 660,2,86,285
+offsets: 3,3,92,291
+chr_monty/tail
+bounds: 313,2,345,451
+chr_monty/thigh_L
+bounds: 513,634,115,296
+offsets: 3,3,121,302
+chr_monty/thigh_R
+bounds: 359,634,152,331
+offsets: 3,3,158,337
+chr_monty/torso
+bounds: 2,2,309,603
+chr_monty/upper_arm_L
+bounds: 852,2,163,277
+offsets: 3,3,169,283
+chr_monty/upper_arm_R
+bounds: 630,634,199,294
+offsets: 3,3,205,300

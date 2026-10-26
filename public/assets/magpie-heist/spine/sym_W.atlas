@@ -1,0 +1,51 @@
+sym_W.webp
+size: 1020,512
+filter: Linear,Linear
+pma: true
+sym_W/banner
+bounds: 2,364,314,111
+sym_W/banner_blur
+bounds: 318,364,304,129
+offsets: 5,5,314,139
+sym_W/glint
+bounds: 432,302,62,62
+offsets: 1,1,64,64
+sym_W/glow
+bounds: 2,2,360,360
+sym_W/lid_L
+bounds: 364,303,66,42
+offsets: 3,3,72,48
+sym_W/mask
+bounds: 364,2,232,148
+offsets: 3,3,238,154
+sym_W/mask_blur
+bounds: 624,2,232,172
+offsets: 3,5,238,182
+sym_W/sheen_1
+bounds: 985,134,33,50
+offsets: 2,4,104,124
+sym_W/sheen_2
+bounds: 570,252,80,109
+offsets: 3,2,178,133
+sym_W/sheen_3
+bounds: 858,134,125,116
+offsets: 22,12,216,134
+sym_W/sheen_4
+bounds: 858,2,132,130
+offsets: 66,2,216,134
+sym_W/sheen_5
+bounds: 477,152,91,116
+offsets: 89,14,182,134
+sym_W/sheen_6
+bounds: 2,495,10,15
+offsets: 106,95,130,134
+sym_W/tie_L
+bounds: 652,252,63,104
+sym_W/tie_L_blur
+bounds: 421,176,54,124
+offsets: 4,5,63,132
+sym_W/tie_R
+bounds: 624,363,64,105
+sym_W/tie_R_blur
+bounds: 364,176,55,125
+offsets: 5,5,64,133

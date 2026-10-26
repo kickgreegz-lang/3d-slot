@@ -1,0 +1,184 @@
+{
+  "$comment": "sym_W Bandit Mask parts: master-cut mask / tie_L / tie_R / banner from art/source/magpie-heist/symbols/W/master_1024.png (ties and banner continued under the mask); lid_L (the wink) and the fx sprites (sheen_1..6, glint, glow: a halo ring, so the eye holes stay dark) drawn by tools/mhart/rigs/cut_W.py. The word WILD is live text (slot txt_wild). Canvas 360 @2x, content = cellScale 1.04 x 300.",
+  "symbol": "W",
+  "canvas": [
+    360,
+    360
+  ],
+  "images": "../../spine/images",
+  "$blur": [
+    "tie_L",
+    "tie_R",
+    "banner",
+    "mask"
+  ],
+  "parts": [
+    {
+      "name": "glow",
+      "bbox": [
+        0,
+        -15,
+        360,
+        360
+      ],
+      "slot": "fx_glow",
+      "z": 0,
+      "bone": "fx_glow",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        179.6,
+        165.4
+      ]
+    },
+    {
+      "name": "tie_L",
+      "bbox": [
+        19,
+        108,
+        63,
+        104
+      ],
+      "z": 1,
+      "bone": "mask",
+      "blur": true
+    },
+    {
+      "name": "tie_R",
+      "bbox": [
+        277,
+        107,
+        64,
+        105
+      ],
+      "z": 1.1,
+      "bone": "mask",
+      "blur": true
+    },
+    {
+      "name": "banner",
+      "bbox": [
+        23,
+        189,
+        314,
+        111
+      ],
+      "z": 2,
+      "bone": "banner",
+      "blur": true
+    },
+    {
+      "name": "mask",
+      "bbox": [
+        61,
+        60,
+        238,
+        154
+      ],
+      "z": 3,
+      "bone": "mask",
+      "blur": true
+    },
+    {
+      "name": "lid_L",
+      "bbox": [
+        200,
+        123,
+        72,
+        48
+      ],
+      "z": 4,
+      "bone": "lid_L",
+      "color": "ffffff00"
+    },
+    {
+      "name": "sheen_1",
+      "bbox": [
+        70,
+        82,
+        104,
+        124
+      ],
+      "z": 5,
+      "bone": "mask",
+      "slot": "fx_sheen",
+      "hidden": true
+    },
+    {
+      "name": "sheen_2",
+      "bbox": [
+        70,
+        73,
+        178,
+        133
+      ],
+      "z": 5,
+      "bone": "mask",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "sheen_3",
+      "bbox": [
+        70,
+        72,
+        216,
+        134
+      ],
+      "z": 5,
+      "bone": "mask",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "sheen_4",
+      "bbox": [
+        74,
+        72,
+        216,
+        134
+      ],
+      "z": 5,
+      "bone": "mask",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "sheen_5",
+      "bbox": [
+        108,
+        72,
+        182,
+        134
+      ],
+      "z": 5,
+      "bone": "mask",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "sheen_6",
+      "bbox": [
+        160,
+        72,
+        130,
+        134
+      ],
+      "z": 5,
+      "bone": "mask",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "glint",
+      "bbox": [
+        76,
+        95,
+        64,
+        64
+      ],
+      "z": 5,
+      "bone": "mask",
+      "slot": "fx_sheen",
+      "joint": [
+        107.9,
+        127.5
+      ]
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+# sym_H1 Jeweled Crown: the Magpie Heist clip layer, applied by tools/mhart/rigs/mhgen.py after the stock generator
+# (bassdrop.yaml syntax: rows [frame, value, ease leaving the key]; scale rows [sx, sy] or one number; 30 fps).
+# Prong rotations: + = counter-clockwise, so a LEFT prong flares OUT with + and a RIGHT prong with -.
+# Feel: heavy crown. land = 0.845 squash with the prongs flaring under the weight, pearls squashing; win = crouch,
+# pop to 1.26 with a hop and a 6 deg tilt, prongs fan open on the pop (pearls whip), gems flash + band sheen at
+# win_peak; win_loop = a proud bob on each beat, sheen sweep, a glint on the ruby then on the top pearl;
+# idle (played once) = sheen across the band, ruby glint, a pearl wobble rippling left to right.
+kind: high
+budgets: {physics: 5}            # one rotate spring per prong: the five pearls whip independently
+cell: 360                        # highs: the @2x authoring canvas (tools/spine/README "Headroom")
+untouched: [fx_glint]            # a star glint, keyed here (not a glow)
+island_meshes:
+  pearls: {bones: [pearl_1_L, pearl_2_L, pearl_mid, pearl_2_R, pearl_1_R], pad: 2}
+
+region_scale: {glow: 2}          # the soft halo is stored at half resolution (mhcut add_sprite scale=2)
+
+clips:
+  land:
+    merge: true
+    bones:
+      phys_prong_1_L: {rotate: [[0, 0, expo_out], [2, 9], [5, -5], [9, 2], [12, 0]]}
+      phys_prong_2_L: {rotate: [[0, 0, expo_out], [2, 6], [5, -3.5], [9, 1.5], [12, 0]]}
+      phys_prong_mid: {rotate: [[0, 0, expo_out], [2, -3], [5, 2], [9, -1], [12, 0]]}
+      phys_prong_2_R: {rotate: [[0, 0, expo_out], [2, -6], [5, 3.5], [9, -1.5], [12, 0]]}
+      phys_prong_1_R: {rotate: [[0, 0, expo_out], [2, -9], [5, 5], [9, -2], [12, 0]]}
+      pearl_1_L: {scale: [[0, 1, expo_out], [2, [1.14, 0.84]], [5, [0.94, 1.08]], [9, 1]]}
+      pearl_2_L: {scale: [[0, 1, expo_out], [2, [1.14, 0.84]], [5, [0.94, 1.08]], [9, 1]]}
+      pearl_mid: {scale: [[0, 1, expo_out], [2, [1.14, 0.84]], [5, [0.94, 1.08]], [9, 1]]}
+      pearl_2_R: {scale: [[0, 1, expo_out], [2, [1.14, 0.84]], [5, [0.94, 1.08]], [9, 1]]}
+      pearl_1_R: {scale: [[0, 1, expo_out], [2, [1.14, 0.84]], [5, [0.94, 1.08]], [9, 1]]}
+
+  win:
+    merge: true
+    bones:
+      # crouch: prongs pinch in; pop (f8): they fan OPEN and the pearls whip; then a damped return
+      phys_prong_1_L: {rotate: [[0, 0, sine_out], [4, -4, expo_out], [8, 13], [11, -6], [15, 3], [19, -1], [24, 0]]}
+      phys_prong_2_L: {rotate: [[0, 0, sine_out], [4, -3, expo_out], [8, 9], [11, -5], [15, 2.5], [19, -0.8], [24, 0]]}
+      phys_prong_mid: {rotate: [[0, 0, sine_out], [4, 0, expo_out], [8, 4], [12, -3], [16, 1.2], [24, 0]]}
+      phys_prong_2_R: {rotate: [[0, 0, sine_out], [4, 3, expo_out], [8, -9], [11, 5], [15, -2.5], [19, 0.8], [24, 0]]}
+      phys_prong_1_R: {rotate: [[0, 0, sine_out], [4, 4, expo_out], [8, -13], [11, 6], [15, -3], [19, 1], [24, 0]]}
+      pearl_1_L: {scale: [[0, 1, sine_out], [4, [1.1, 0.9], expo_out], [8, [0.88, 1.16]], [11, [1.07, 0.94]], [15, 1], [24, 1]]}
+      pearl_2_L: {scale: [[0, 1, sine_out], [4, [1.1, 0.9], expo_out], [8, [0.88, 1.16]], [11, [1.07, 0.94]], [15, 1], [24, 1]]}
+      pearl_mid: {scale: [[0, 1, sine_out], [4, [1.1, 0.9], expo_out], [8, [0.88, 1.16]], [11, [1.07, 0.94]], [15, 1], [24, 1]]}
+      pearl_2_R: {scale: [[0, 1, sine_out], [4, [1.1, 0.9], expo_out], [8, [0.88, 1.16]], [11, [1.07, 0.94]], [15, 1], [24, 1]]}
+      pearl_1_R: {scale: [[0, 1, sine_out], [4, [1.1, 0.9], expo_out], [8, [0.88, 1.16]], [11, [1.07, 0.94]], [15, 1], [24, 1]]}
+      velvet: {scale: [[0, 1, sine_out], [4, [1.05, 0.9], expo_out], [8, [0.95, 1.12]], [12, [1.03, 0.96]], [16, 1], [24, 1]]}
+      # the star glint flashes on the ruby (moved to where the popped, hopping ruby is at f8-f13), then resets unseen
+      fx_glint: {scale: [[0, 1, stepped], [7, 0.3, expo_out], [9, 1.8, sine_in_out], [14, 0.6, stepped], [15, 1], [24, 1]],
+                 translate: [[0, [0, 0], stepped], [7, [-2, 14], sine_in_out], [14, [-2, 9], stepped], [15, [0, 0]], [24, [0, 0]]]}
+    slots:
+      fx_gems: {alpha: [[0, 0], [7, 0, expo_out], [8, 1], [12, 0.55, quad_in], [17, 0], [24, 0]]}
+      fx_sheen: {attachment: [[0, null], [8, sheen_1], [9, sheen_2], [10, sheen_3], [11, sheen_4], [12, sheen_5], [13, sheen_6], [14, null]]}
+      fx_glint: {alpha: [[0, 0], [7, 0, expo_out], [9, 1], [14, 0], [24, 0]]}
+
+  win_loop:
+    merge: true
+    bones:
+      body: {translate: [[0, [0, 0], quad_out], [4, [0, 7]], [13, [0, 0]], [22, [0, 0], quad_out], [26, [0, 7]], [35, [0, 0]], [44, [0, 0]]]}
+      phys_prong_1_L: {rotate: [[0, 0, quad_out], [3, 5], [8, -2], [13, 0], [22, 0, quad_out], [25, 5], [30, -2], [35, 0], [44, 0]]}
+      phys_prong_2_L: {rotate: [[0, 0, quad_out], [3, 3], [8, -1.2], [13, 0], [22, 0, quad_out], [25, 3], [30, -1.2], [35, 0], [44, 0]]}
+      phys_prong_2_R: {rotate: [[0, 0, quad_out], [3, -3], [8, 1.2], [13, 0], [22, 0, quad_out], [25, -3], [30, 1.2], [35, 0], [44, 0]]}
+      phys_prong_1_R: {rotate: [[0, 0, quad_out], [3, -5], [8, 2], [13, 0], [22, 0, quad_out], [25, -5], [30, 2], [35, 0], [44, 0]]}
+      # glint: the ruby on beat 1 (f14), the top pearl's highlight after the sheen (f37); repositioned while invisible
+      fx_glint: {scale: [[0, 1, stepped], [13, 0.3, quad_out], [15, 1.3, sine_in_out], [19, 0.5, stepped], [20, 1, stepped],
+                         [35, 0.3, quad_out], [37, 1.5, sine_in_out], [41, 0.5, stepped], [42, 1], [44, 1]],
+                 translate: [[0, [0, 0], stepped], [13, [0, -2], stepped], [20, [0, 0], stepped], [35, [-10, 120], stepped],
+                             [42, [0, 0]], [44, [0, 0]]]}
+    slots:
+      fx_sheen: {attachment: [[0, null], [28, sheen_1], [29, sheen_2], [30, sheen_3], [31, sheen_4], [32, sheen_5], [33, sheen_6], [34, null]]}
+      fx_glint: {alpha: [[0, 0], [13, 0, quad_out], [15, 1], [19, 0], [35, 0, quad_out], [37, 1], [41, 0], [44, 0]]}
+      fx_gems: {alpha: [[0, 0], [22, 0, quad_out], [24, 0.4], [30, 0], [44, 0]]}
+
+  idle:
+    merge: true
+    bones:
+      # a pearl wobble rippling left -> right after the sheen
+      phys_prong_1_L: {rotate: [[0, 0], [18, 0, quad_out], [21, 8], [25, -5.5], [29, 3], [33, -1.2], [37, 0], [72, 0]]}
+      phys_prong_2_L: {rotate: [[0, 0], [21, 0, quad_out], [24, 6.5], [28, -4.5], [32, 2.4], [36, -0.9], [40, 0], [72, 0]]}
+      phys_prong_mid: {rotate: [[0, 0], [24, 0, quad_out], [27, 5.5], [31, -4], [35, 2], [39, -0.7], [43, 0], [72, 0]]}
+      phys_prong_2_R: {rotate: [[0, 0], [27, 0, quad_out], [30, 6.5], [34, -4.5], [38, 2.4], [42, -0.9], [46, 0], [72, 0]]}
+      phys_prong_1_R: {rotate: [[0, 0], [30, 0, quad_out], [33, 8], [37, -5.5], [41, 3], [45, -1.2], [49, 0], [72, 0]]}
+      pearl_1_L: {scale: [[0, 1], [18, 1, quad_out], [20, [0.92, 1.1]], [24, 1], [72, 1]]}
+      pearl_2_L: {scale: [[0, 1], [21, 1, quad_out], [23, [0.92, 1.1]], [27, 1], [72, 1]]}
+      pearl_mid: {scale: [[0, 1], [24, 1, quad_out], [26, [0.92, 1.1]], [30, 1], [72, 1]]}
+      pearl_2_R: {scale: [[0, 1], [27, 1, quad_out], [29, [0.92, 1.1]], [33, 1], [72, 1]]}
+      pearl_1_R: {scale: [[0, 1], [30, 1, quad_out], [32, [0.92, 1.1]], [36, 1], [72, 1]]}
+      fx_glint: {scale: [[0, 1, stepped], [8, 0.3, quad_out], [10, 1.35, sine_in_out], [15, 0.5, stepped], [16, 1], [72, 1]]}
+    slots:
+      fx_sheen: {attachment: [[0, null], [5, sheen_1], [6, sheen_2], [7, sheen_3], [8, sheen_4], [9, sheen_5], [10, sheen_6], [11, null]]}
+      fx_glint: {alpha: [[0, 0], [8, 0, quad_out], [10, 1], [15, 0], [72, 0]]}
+      fx_gems: {alpha: [[0, 0], [9, 0, quad_out], [11, 0.3], [17, 0], [72, 0]]}
+
+  explode:
+    merge: true
+    override: true
+    bones:
+      # the pearls shoot off along their prongs (a pearl bone's x axis = its prong), spinning; the prongs splay; the
+      # velvet cap pops up and puffs; everything is gone by f10 (the burst FX carries the rest)
+      pearl_1_L: {translate: [[0, [0, 0]], [2, [0, 0], expo_out], [8, [72, 8]], [13, [84, 4]]],
+                  rotate: [[0, 0], [2, 0, cubic_out], [13, 200]], scale: [[0, 1], [2, 1, expo_out], [4, 1.3], [13, 1.05]]}
+      pearl_2_L: {translate: [[0, [0, 0]], [2, [0, 0], expo_out], [8, [80, 6]], [13, [92, 2]]],
+                  rotate: [[0, 0], [2, 0, cubic_out], [13, 150]], scale: [[0, 1], [2, 1, expo_out], [4, 1.3], [13, 1.05]]}
+      pearl_mid: {translate: [[0, [0, 0]], [2, [0, 0], expo_out], [8, [86, 0]], [13, [98, 0]]],
+                  rotate: [[0, 0], [2, 0, cubic_out], [13, -130]], scale: [[0, 1], [2, 1, expo_out], [4, 1.35], [13, 1.05]]}
+      pearl_2_R: {translate: [[0, [0, 0]], [2, [0, 0], expo_out], [8, [80, -6]], [13, [92, -2]]],
+                  rotate: [[0, 0], [2, 0, cubic_out], [13, -150]], scale: [[0, 1], [2, 1, expo_out], [4, 1.3], [13, 1.05]]}
+      pearl_1_R: {translate: [[0, [0, 0]], [2, [0, 0], expo_out], [8, [72, -8]], [13, [84, -4]]],
+                  rotate: [[0, 0], [2, 0, cubic_out], [13, -200]], scale: [[0, 1], [2, 1, expo_out], [4, 1.3], [13, 1.05]]}
+      phys_prong_1_L: {rotate: [[0, 0, quad_in], [2, -5, expo_out], [6, 26], [13, 32]]}
+      phys_prong_2_L: {rotate: [[0, 0, quad_in], [2, -4, expo_out], [6, 18], [13, 22]]}
+      phys_prong_2_R: {rotate: [[0, 0, quad_in], [2, 4, expo_out], [6, -18], [13, -22]]}
+      phys_prong_1_R: {rotate: [[0, 0, quad_in], [2, 5, expo_out], [6, -26], [13, -32]]}
+      velvet: {scale: [[0, 1, quad_in], [2, [1.06, 0.88], expo_out], [5, [1.22, 1.3]], [13, [1.3, 1.36]]]}
+      fx_glint: {scale: [[0, 0.5], [2, 0.5, expo_out], [4, 2.4], [8, 1.3], [13, 1]]}
+    slots:
+      velvet: {alpha: [[0, 1], [4, 1, quad_in], [10, 0], [13, 0]]}
+      points: {alpha: [[0, 1], [4, 1, quad_in], [9, 0], [13, 0]]}
+      band: {alpha: [[0, 1], [4, 1, quad_in], [9, 0], [13, 0]]}
+      pearls: {alpha: [[0, 1], [5, 1, quad_in], [11, 0], [13, 0]]}
+      fx_sheen: {alpha: [[0, 1], [13, 1]]}
+      fx_gems: {alpha: [[0, 0], [1, 0, expo_out], [2, 1], [5, 0.5], [8, 0], [13, 0]]}
+      fx_glint: {alpha: [[0, 0], [1, 0, expo_out], [3, 1], [8, 0], [13, 0]]}

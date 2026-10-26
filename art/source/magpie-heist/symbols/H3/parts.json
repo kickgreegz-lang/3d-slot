@@ -1,0 +1,309 @@
+{
+ "$comment": "sym_H3 parts: owned-code vector layers from tools/mhart/vector/standins.mjs (one layer per part, each with its own outline; the master is the layers stacked); fx sprites (glow, case_lit, sheen_1..6, glint) drawn by tools/mhart/rigs/cut_vector.py. Canvas 360 @2x, content = cellScale 0.96 x 300.",
+ "symbol": "H3",
+ "canvas": [
+  360,
+  360
+ ],
+ "images": "../../spine/images",
+ "$blur": [
+  "chain",
+  "lid",
+  "bow",
+  "crown",
+  "case",
+  "hand_hour",
+  "hand_min",
+  "cap",
+  "glass"
+ ],
+ "parts": [
+  {
+   "name": "glow",
+   "bbox": [
+    108,
+    120,
+    165,
+    165
+   ],
+   "slot": "fx_glow",
+   "z": 0,
+   "bone": "fx_glow",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    190.0,
+    203.0
+   ],
+   "$src": "code"
+  },
+  {
+   "name": "chain",
+   "bbox": [
+    216,
+    43,
+    110,
+    79
+   ],
+   "z": 1,
+   "bone": "chain",
+   "$src": "code",
+   "joint": [
+    226.2,
+    66.3
+   ]
+  },
+  {
+   "name": "lid",
+   "bbox": [
+    34,
+    115,
+    106,
+    214
+   ],
+   "z": 2,
+   "bone": "lid",
+   "$src": "code",
+   "joint": [
+    103.2,
+    219.4
+   ]
+  },
+  {
+   "name": "bow",
+   "bbox": [
+    164,
+    31,
+    77,
+    68
+   ],
+   "z": 3,
+   "bone": "bow",
+   "$src": "code",
+   "joint": [
+    202.3,
+    79.3
+   ]
+  },
+  {
+   "name": "crown",
+   "bbox": [
+    169,
+    72,
+    67,
+    67
+   ],
+   "z": 4,
+   "bone": "crown",
+   "$src": "code",
+   "joint": [
+    202.3,
+    125.8
+   ]
+  },
+  {
+   "name": "case",
+   "bbox": [
+    93,
+    111,
+    218,
+    217
+   ],
+   "z": 5,
+   "bone": "case",
+   "$src": "code",
+   "joint": [
+    202.3,
+    219.4
+   ]
+  },
+  {
+   "name": "case_lit",
+   "bbox": [
+    93,
+    111,
+    218,
+    217
+   ],
+   "z": 6,
+   "bone": "case",
+   "slot": "fx_lit",
+   "color": "ffffff00",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_1",
+   "bbox": [
+    97,
+    154,
+    101,
+    171
+   ],
+   "z": 7,
+   "bone": "case",
+   "slot": "fx_sheen",
+   "hidden": true,
+   "$src": "code"
+  },
+  {
+   "name": "sheen_2",
+   "bbox": [
+    97,
+    121,
+    153,
+    204
+   ],
+   "z": 7,
+   "bone": "case",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_3",
+   "bbox": [
+    97,
+    114,
+    193,
+    211
+   ],
+   "z": 7,
+   "bone": "case",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_4",
+   "bbox": [
+    115,
+    114,
+    193,
+    211
+   ],
+   "z": 7,
+   "bone": "case",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_5",
+   "bbox": [
+    155,
+    114,
+    153,
+    203
+   ],
+   "z": 7,
+   "bone": "case",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_6",
+   "bbox": [
+    206,
+    114,
+    102,
+    172
+   ],
+   "z": 7,
+   "bone": "case",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "hand_hour",
+   "bbox": [
+    161,
+    192,
+    58,
+    41
+   ],
+   "z": 8,
+   "bone": "hand_hour",
+   "$src": "code",
+   "joint": [
+    202.3,
+    219.4
+   ]
+  },
+  {
+   "name": "hand_min",
+   "bbox": [
+    187,
+    181,
+    71,
+    51
+   ],
+   "z": 9,
+   "bone": "hand_min",
+   "$src": "code",
+   "joint": [
+    202.3,
+    219.4
+   ]
+  },
+  {
+   "name": "cap",
+   "bbox": [
+    188,
+    205,
+    28,
+    28
+   ],
+   "z": 10,
+   "bone": "cap",
+   "$src": "code",
+   "joint": [
+    202.3,
+    219.4
+   ]
+  },
+  {
+   "name": "glass",
+   "bbox": [
+    122,
+    139,
+    137,
+    153
+   ],
+   "z": 11,
+   "bone": "glass",
+   "$src": "code",
+   "joint": [
+    202.3,
+    219.4
+   ]
+  },
+  {
+   "name": "sparkle",
+   "bbox": [
+    118,
+    136,
+    22,
+    21
+   ],
+   "z": 12,
+   "bone": "sparkle",
+   "$src": "code"
+  },
+  {
+   "name": "glint",
+   "bbox": [
+    99,
+    110,
+    72,
+    72
+   ],
+   "slot": "fx_glint",
+   "z": 13,
+   "bone": "fx_glint",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    135.3,
+    146.3
+   ],
+   "$src": "code"
+  }
+ ]
+}

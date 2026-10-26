@@ -1,0 +1,45 @@
+# sym_R Shooting Star (Magpie Heist special: the reveal trigger; landWeight special, cellScale 1.06). Parts: parts.json
+# (tools/mhart/rigs/cut_R.py, master-cut). Coordinates: 360 x 360 @2x canvas, image space (y down); keypoints in
+# build/qa/rigs/mh_sym_R/cut.json. Build: tools/mhart/rigs/build.sh R [--cut] [--capture dir]
+# 8 slots, back to front: fx_glow (halo), fx_rays (10-ray burst), tail (mesh on a 3-link rotate-physics chain), star
+# (spins on its own bone in `win`), fx_rim (electric outline), fx_spark (arc flicker frames spark_1..3),
+# fx_twinkle_1, fx_twinkle_2 (4-point twinkles; the second slot clones the first, heist.yaml). Every fx slot is
+# additive on a root fx bone and alpha 0 at rest.
+symbol: R
+parts: parts.json
+kind: special
+
+bones:
+  - {name: star, parent: body, joint: [204.9, 165.8]}
+  # the ribbons' root under the star's edge (weights only) + the whipping chain along the tail's centre line
+  - {name: tail, parent: body, joint: [124.0, 204.0], tip: [119.0, 262.0]}
+  - {name: phys_tail_1, parent: tail, joint: [115.0, 233.0], tip: [80.0, 250.0]}
+  - {name: phys_tail_2, parent: phys_tail_1, joint: [80.0, 250.0], tip: [56.0, 285.0]}
+  - {name: phys_tail_3, parent: phys_tail_2, joint: [56.0, 285.0], tip: [43.0, 330.0]}
+  - {name: fx_twinkle_2, parent: root, joint: [298.0, 318.0]}
+
+meshes:
+  tail: {type: trace, spacing: 12, pad: 3, weights: {mode: idw, power: 3, max: 3, bones: [tail, phys_tail_1, phys_tail_2, phys_tail_3]}}
+
+# comet ribbons: quick at the root, looser toward the tip (3.0-3.8 Hz, never floaty)
+physics:
+  - {bone: phys_tail_1, f: 3.8, zeta: 0.24, rotate: 1, inertia: 0.6}
+  - {bone: phys_tail_2, f: 3.4, zeta: 0.22, rotate: 1, inertia: 0.6}
+  - {bone: phys_tail_3, f: 3.1, zeta: 0.2, rotate: 1, inertia: 0.65}
+
+motion:
+  idle: {frames: 72, sway: 1.5, breath: 0.015}
+  land: {squash: 0.84, rebound: 0.065, settle: 0.03, frames: 12, keys: [0, 2, 5, 8]}
+  win: {pop: 1.24, wiggle: 3, glow_peak: 1, glow_scale: 1.15}
+  win_loop: {frames: 44, beats: 2, pulse: 0.045, sway: 2, bounce: 0.035}
+  anticipation: {frames: 16, lub: 1.09, dub: 1.06, shake: 1.5, glow: [0.45, 1.0]}
+  anticipation_intro: {frames: 9, pop: 1.12}
+  anticipation_out: {frames: 8, dip: 0.95}
+  explode: {frames: 13, burst_frame: 2, burst_peak_frame: 4, squeeze: 0.84, burst_scale: 1.22, end_scale: 1.3,
+            scatter: 55, spin: 30, fade_from: 4, body_fade: [3, 9]}
+  appear: {frames: 9}
+  blur: {frames: 1}
+
+accents:
+  land:
+    - {bone: star, type: squash, amount: 0.1, at: impact+1, frames: 9}

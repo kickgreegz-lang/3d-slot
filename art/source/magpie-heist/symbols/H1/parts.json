@@ -1,0 +1,187 @@
+{
+  "$comment": "sym_H1 Jeweled Crown parts: master-cut band / points (prongs) / pearls / velvet from art/source/magpie-heist/symbols/H1/master_1024.png; the velvet is filled behind the prongs, a prong tip is painted under each pearl; fx sprites (gems_lit, sheen_1..6, glint, glow) drawn by tools/mhart/rigs/cut_H1.py. Canvas 360 @2x, content = cellScale 0.97 x 300.",
+  "symbol": "H1",
+  "canvas": [
+    360,
+    360
+  ],
+  "images": "../../spine/images",
+  "$blur": [
+    "velvet",
+    "points",
+    "pearls",
+    "band"
+  ],
+  "parts": [
+    {
+      "name": "glow",
+      "bbox": [
+        15,
+        25,
+        330,
+        330
+      ],
+      "slot": "fx_glow",
+      "z": 0,
+      "bone": "fx_glow",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        180.0,
+        190.4
+      ]
+    },
+    {
+      "name": "velvet",
+      "bbox": [
+        69,
+        108,
+        223,
+        78
+      ],
+      "z": 1,
+      "bone": "velvet",
+      "blur": true
+    },
+    {
+      "name": "points",
+      "bbox": [
+        44,
+        99,
+        272,
+        107
+      ],
+      "z": 2,
+      "bone": "band",
+      "blur": true
+    },
+    {
+      "name": "pearls",
+      "bbox": [
+        29,
+        72,
+        302,
+        87
+      ],
+      "z": 3,
+      "bone": "band",
+      "blur": true
+    },
+    {
+      "name": "band",
+      "bbox": [
+        64,
+        177,
+        232,
+        109
+      ],
+      "z": 4,
+      "bone": "band",
+      "blur": true
+    },
+    {
+      "name": "gems_lit",
+      "bbox": [
+        68,
+        184,
+        224,
+        62
+      ],
+      "z": 5,
+      "bone": "band",
+      "slot": "fx_gems",
+      "color": "ffffff00"
+    },
+    {
+      "name": "sheen_1",
+      "bbox": [
+        72,
+        188,
+        80,
+        89
+      ],
+      "z": 6,
+      "bone": "band",
+      "slot": "fx_sheen",
+      "hidden": true
+    },
+    {
+      "name": "sheen_2",
+      "bbox": [
+        72,
+        182,
+        135,
+        96
+      ],
+      "z": 6,
+      "bone": "band",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "sheen_3",
+      "bbox": [
+        72,
+        181,
+        188,
+        97
+      ],
+      "z": 6,
+      "bone": "band",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "sheen_4",
+      "bbox": [
+        106,
+        181,
+        182,
+        97
+      ],
+      "z": 6,
+      "bone": "band",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "sheen_5",
+      "bbox": [
+        158,
+        181,
+        130,
+        97
+      ],
+      "z": 6,
+      "bone": "band",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "sheen_6",
+      "bbox": [
+        214,
+        183,
+        74,
+        90
+      ],
+      "z": 6,
+      "bone": "band",
+      "slot": "fx_sheen"
+    },
+    {
+      "name": "glint",
+      "bbox": [
+        137,
+        170,
+        72,
+        72
+      ],
+      "slot": "fx_glint",
+      "z": 7,
+      "bone": "fx_glint",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        173.4,
+        206.4
+      ]
+    }
+  ]
+}

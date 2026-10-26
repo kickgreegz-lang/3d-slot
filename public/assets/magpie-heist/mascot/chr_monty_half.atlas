@@ -1,0 +1,70 @@
+chr_monty_half.webp
+size: 728,512
+filter: Linear,Linear
+pma: true
+chr_monty/cap
+bounds: 184,230,174,92
+chr_monty/eye_L/closed
+bounds: 538,237,20,20
+chr_monty/eye_L/half
+bounds: 560,237,20,20
+chr_monty/eye_L/open
+bounds: 158,230,20,20
+chr_monty/eye_L/wide
+bounds: 158,252,20,20
+chr_monty/eye_R/closed
+bounds: 408,260,46,32
+chr_monty/eye_R/half
+bounds: 265,476,46,32
+chr_monty/eye_R/open
+bounds: 313,476,46,32
+chr_monty/eye_R/wide
+bounds: 455,347,46,32
+chr_monty/foot_L
+bounds: 369,446,141,48
+chr_monty/foot_R
+bounds: 663,85,62,75
+chr_monty/forearm_L
+bounds: 595,237,110,103
+chr_monty/forearm_R
+bounds: 512,347,125,117
+chr_monty/hand_L/fist
+bounds: 663,162,63,74
+chr_monty/hand_L/open
+bounds: 538,2,82,116
+chr_monty/hand_L/point
+bounds: 598,120,63,104
+chr_monty/hand_R/fist
+bounds: 622,2,58,81
+chr_monty/hand_R/open
+bounds: 464,116,72,128
+chr_monty/hand_R/point
+bounds: 538,120,58,115
+chr_monty/head
+bounds: 2,306,180,129
+chr_monty/kerchief
+bounds: 394,2,142,112
+chr_monty/neck
+bounds: 455,260,138,85
+chr_monty/pupil_L
+bounds: 361,476,7,7
+chr_monty/pupil_R
+bounds: 582,237,12,10
+offsets: 0,0,12,11
+chr_monty/shin_L
+bounds: 408,116,54,142
+chr_monty/shin_R
+bounds: 360,154,46,146
+chr_monty/tail
+bounds: 158,2,172,226
+chr_monty/thigh_L
+bounds: 332,2,60,150
+offsets: 0,1,60,151
+chr_monty/thigh_R
+bounds: 184,324,79,168
+chr_monty/torso
+bounds: 2,2,154,302
+chr_monty/upper_arm_L
+bounds: 369,302,84,142
+chr_monty/upper_arm_R
+bounds: 265,324,102,150

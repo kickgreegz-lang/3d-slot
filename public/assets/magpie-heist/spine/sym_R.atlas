@@ -1,0 +1,35 @@
+sym_R.webp
+size: 708,1024
+filter: Linear,Linear
+pma: true
+sym_R/glow
+bounds: 543,746,160,160
+offsets: 5,5,170,170
+sym_R/rays
+bounds: 235,775,188,182
+offsets: 1,4,190,190
+sym_R/rim
+bounds: 2,2,301,299
+offsets: 2,2,305,303
+sym_R/spark_1
+bounds: 235,605,289,168
+offsets: 2,2,293,172
+sym_R/spark_2
+bounds: 2,605,231,293
+offsets: 6,8,239,306
+sym_R/spark_3
+bounds: 305,2,196,274
+offsets: 4,8,202,291
+sym_R/star
+bounds: 279,303,277,276
+offsets: 3,3,283,282
+sym_R/star_blur
+bounds: 2,303,275,300
+offsets: 4,5,283,310
+sym_R/tail
+bounds: 526,581,122,163
+sym_R/tail_blur
+bounds: 425,775,116,181
+offsets: 3,5,122,191
+sym_R/twinkle
+bounds: 425,958,64,64

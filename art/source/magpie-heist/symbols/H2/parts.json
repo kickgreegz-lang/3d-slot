@@ -1,0 +1,241 @@
+{
+ "$comment": "sym_H2 parts: owned-code vector layers from tools/mhart/vector/standins.mjs (one layer per part, each with its own outline; the master is the layers stacked); fx sprites (glow, shell_lit, sheen_1..6, glint) drawn by tools/mhart/rigs/cut_vector.py. Canvas 360 @2x, content = cellScale 0.96 x 300.",
+ "symbol": "H2",
+ "canvas": [
+  360,
+  360
+ ],
+ "images": "../../spine/images",
+ "$blur": [
+  "stand",
+  "shell",
+  "lid",
+  "cradle",
+  "finial"
+ ],
+ "parts": [
+  {
+   "name": "glow",
+   "bbox": [
+    97,
+    102,
+    165,
+    165
+   ],
+   "slot": "fx_glow",
+   "z": 0,
+   "bone": "fx_glow",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    179.5,
+    184.5
+   ],
+   "$src": "code"
+  },
+  {
+   "name": "stand",
+   "bbox": [
+    104,
+    236,
+    151,
+    93
+   ],
+   "z": 1,
+   "bone": "stand",
+   "$src": "code",
+   "joint": [
+    179.5,
+    261.4
+   ]
+  },
+  {
+   "name": "shell",
+   "bbox": [
+    87,
+    71,
+    185,
+    200
+   ],
+   "z": 2,
+   "bone": "shell",
+   "$src": "code",
+   "joint": [
+    179.5,
+    171.0
+   ]
+  },
+  {
+   "name": "shell_lit",
+   "bbox": [
+    87,
+    71,
+    185,
+    200
+   ],
+   "z": 3,
+   "bone": "shell",
+   "slot": "fx_lit",
+   "color": "ffffff00",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_1",
+   "bbox": [
+    91,
+    112,
+    97,
+    155
+   ],
+   "z": 4,
+   "bone": "shell",
+   "slot": "fx_sheen",
+   "hidden": true,
+   "$src": "code"
+  },
+  {
+   "name": "sheen_2",
+   "bbox": [
+    91,
+    82,
+    139,
+    185
+   ],
+   "z": 4,
+   "bone": "shell",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_3",
+   "bbox": [
+    91,
+    75,
+    170,
+    192
+   ],
+   "z": 4,
+   "bone": "shell",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_4",
+   "bbox": [
+    98,
+    75,
+    170,
+    192
+   ],
+   "z": 4,
+   "bone": "shell",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_5",
+   "bbox": [
+    125,
+    75,
+    143,
+    191
+   ],
+   "z": 4,
+   "bone": "shell",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_6",
+   "bbox": [
+    162,
+    75,
+    106,
+    172
+   ],
+   "z": 4,
+   "bone": "shell",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "lid",
+   "bbox": [
+    106,
+    71,
+    147,
+    73
+   ],
+   "z": 5,
+   "bone": "lid",
+   "$src": "code",
+   "joint": [
+    121.2,
+    117.4
+   ]
+  },
+  {
+   "name": "cradle",
+   "bbox": [
+    108,
+    222,
+    143,
+    49
+   ],
+   "z": 6,
+   "bone": "cradle",
+   "$src": "code",
+   "joint": [
+    179.5,
+    247.7
+   ]
+  },
+  {
+   "name": "finial",
+   "bbox": [
+    150,
+    31,
+    59,
+    68
+   ],
+   "z": 7,
+   "bone": "finial",
+   "$src": "code",
+   "joint": [
+    179.5,
+    83.0
+   ]
+  },
+  {
+   "name": "sparkle",
+   "bbox": [
+    100,
+    48,
+    81,
+    115
+   ],
+   "z": 8,
+   "bone": "sparkle",
+   "$src": "code"
+  },
+  {
+   "name": "glint",
+   "bbox": [
+    144,
+    24,
+    72,
+    72
+   ],
+   "slot": "fx_glint",
+   "z": 9,
+   "bone": "fx_glint",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    179.5,
+    60.2
+   ],
+   "$src": "code"
+  }
+ ]
+}

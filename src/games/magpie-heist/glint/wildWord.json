@@ -1,0 +1,17 @@
+{
+  "$comment": "The W's live ribbon word in the sym_W rig's txt_wild slot (rig units: the 360 @2x canvas, origin = the txt_wild bone on the banner face). One source for the runtime (./WildText.ts), the board-sprite stand-in (tools/mhart/rigs/render_board.mjs bakes exactly this text, rendered by Pixi, into board.png) and the rig contact sheets (tools/mhart/rigs/capture_mh.mjs). Change it here, then re-run tools/mhart/rigs/build.sh W --ship.",
+  "slot": "txt_wild",
+  "text": "WILD",
+  "i18nKey": "mh.wild",
+  "fontFamily": "Luckiest Guy",
+  "fontFile": "LuckiestGuy-Regular.woff2",
+  "fontSize": 46,
+  "fill": "#d42a43",
+  "stroke": "#1b0a12",
+  "strokeWidth": 6,
+  "shadow": "#6e0c1f",
+  "shadowDistance": 3,
+  "letterSpacing": 2,
+  "maxWidth": 150,
+  "y": 3
+}

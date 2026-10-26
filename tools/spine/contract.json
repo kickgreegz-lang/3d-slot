@@ -108,13 +108,13 @@
     "boneNames": {
       "core": ["root", "hips", "spine", "chest", "neck", "head"],
       "limbs": ["upper_arm", "forearm", "hand", "thigh", "shin", "foot"],
-      "words": ["jaw", "snout", "toothpick", "cooler", "cooler_lid", "pouch", "band", "cup", "mic", "tail"],
+      "words": ["jaw", "snout", "toothpick", "cooler", "cooler_lid", "pouch", "band", "cup", "mic", "tail", "cap", "kerchief"],
       "prefixes": ["ctrl_", "ik_", "phys_", "face_", "fx_", "txt_"]
     },
     "requiredBones": ["root", "hips", "spine", "chest", "neck", "head", "ctrl_look",
                       "upper_arm_L", "forearm_L", "hand_L", "thigh_L", "shin_L", "foot_L",
                       "upper_arm_R", "forearm_R", "hand_R", "thigh_R", "shin_R", "foot_R"],
-    "springWords": ["tail", "jowl", "belly", "chain", "pouch", "cable", "toothpick"],
+    "springWords": ["tail", "jowl", "belly", "chain", "pouch", "cable", "toothpick", "kerchief"],
     "faceStates": { "eyes": ["open", "half", "closed", "wide"], "slots": ["eye_L", "eye_R", "pupil_L", "pupil_R"] },
     "proportions": { "headMax": 0.27, "excludeSlots": ["band", "cup_L", "cup_R", "cable", "mic", "toothpick"] },
     "tracks": { "body": 0, "overlay": 1, "face": 2, "look": 3 },
@@ -125,6 +125,9 @@
       "idle":             { "loop": true,  "frames": [120, 180], "track": 0 },
       "idle_bored":       { "loop": true,  "frames": [120, 240], "track": 0 },
       "anticipation":     { "loop": true,  "frames": [30, 60],   "track": 0 },
+      "spin_start":       { "loop": false, "frames": [18, 36],   "track": 0 },
+      "react_tumble":     { "loop": false, "frames": [18, 36],   "track": 0 },
+      "feature_upgrade":  { "loop": false, "frames": [36, 75],   "track": 0 },
       "meter_heat":       { "loop": true,  "frames": [36, 72],   "track": 0 },
       "react_small":      { "loop": false, "frames": [36, 60],   "track": 0 },
       "react_point":      { "loop": false, "frames": [24, 45],   "track": 0 },
@@ -179,6 +182,24 @@
           "fs_trigger":       { "frames": 75,  "loop": false, "track": 0, "events": [{ "name": "sfx", "string": "mic_drop", "frame": 36 }] },
           "fs_end":           { "frames": 54,  "loop": false, "track": 0 },
           "blink":            { "frames": 5,   "loop": false, "track": 2 }
+        }
+      },
+      "chr_monty": {
+        "$comment": "Magpie Heist mascot MONTY (art/source/magpie-heist/mascot, tempo 1.08, faces screen-right, near side R). Le Bandit-style cue set: spin_start (cap tug), react_tumble (wing pump) and feature_upgrade are Magpie Heist clips; sfx are foley the runtime may forward.",
+        "attachments": { "hand_R": ["open", "fist", "point"], "hand_L": ["open", "fist", "point"] },
+        "clips": {
+          "idle":            { "frames": 150, "loop": true,  "track": 0 },
+          "idle_bored":      { "frames": 180, "loop": true,  "track": 0 },
+          "spin_start":      { "frames": 24,  "loop": false, "track": 0 },
+          "anticipation":    { "frames": 36,  "loop": true,  "track": 0 },
+          "react_small":     { "frames": 36,  "loop": false, "track": 0, "events": [{ "name": "sfx", "string": "ui_click", "frame": 9 }] },
+          "react_tumble":    { "frames": 24,  "loop": false, "track": 0 },
+          "win_big":         { "frames": 60,  "loop": false, "track": 0, "events": [{ "name": "sfx", "string": "wild_whoosh", "frame": 11 }, { "name": "sfx", "string": "land_light", "frame": 31 }] },
+          "celebrate":       { "frames": 72,  "loop": true,  "track": 0 },
+          "fs_trigger":      { "frames": 75,  "loop": false, "track": 0, "events": [{ "name": "sfx", "string": "wild_whoosh", "frame": 19 }, { "name": "sfx", "string": "land_heavy", "frame": 41 }] },
+          "feature_upgrade": { "frames": 54,  "loop": false, "track": 0 },
+          "fs_end":          { "frames": 54,  "loop": false, "track": 0 },
+          "blink":           { "frames": 5,   "loop": false, "track": 2 }
         }
       }
     }

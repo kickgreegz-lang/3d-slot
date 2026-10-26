@@ -1,0 +1,241 @@
+{
+ "$comment": "sym_H4 parts: owned-code vector layers from tools/mhart/vector/standins.mjs (one layer per part, each with its own outline; the master is the layers stacked); fx sprites (glow, bowl_lit, sheen_1..6, glint) drawn by tools/mhart/rigs/cut_vector.py. Canvas 360 @2x, content = cellScale 0.96 x 300.",
+ "symbol": "H4",
+ "canvas": [
+  360,
+  360
+ ],
+ "images": "../../spine/images",
+ "$blur": [
+  "foot",
+  "stem",
+  "bowl",
+  "wine",
+  "drip"
+ ],
+ "parts": [
+  {
+   "name": "glow",
+   "bbox": [
+    98,
+    75,
+    165,
+    165
+   ],
+   "slot": "fx_glow",
+   "z": 0,
+   "bone": "fx_glow",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    180.5,
+    157.5
+   ],
+   "$src": "code"
+  },
+  {
+   "name": "foot",
+   "bbox": [
+    85,
+    238,
+    191,
+    91
+   ],
+   "z": 1,
+   "bone": "foot",
+   "$src": "code",
+   "joint": [
+    180.5,
+    290.6
+   ]
+  },
+  {
+   "name": "stem",
+   "bbox": [
+    138,
+    176,
+    85,
+    94
+   ],
+   "z": 2,
+   "bone": "stem",
+   "$src": "code",
+   "joint": [
+    180.5,
+    254.6
+   ]
+  },
+  {
+   "name": "bowl",
+   "bbox": [
+    51,
+    30,
+    259,
+    177
+   ],
+   "z": 3,
+   "bone": "bowl",
+   "$src": "code",
+   "joint": [
+    180.5,
+    195.1
+   ]
+  },
+  {
+   "name": "bowl_lit",
+   "bbox": [
+    51,
+    30,
+    259,
+    177
+   ],
+   "z": 4,
+   "bone": "bowl",
+   "slot": "fx_lit",
+   "color": "ffffff00",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_1",
+   "bbox": [
+    54,
+    45,
+    104,
+    156
+   ],
+   "z": 5,
+   "bone": "bowl",
+   "slot": "fx_sheen",
+   "hidden": true,
+   "$src": "code"
+  },
+  {
+   "name": "sheen_2",
+   "bbox": [
+    54,
+    35,
+    167,
+    169
+   ],
+   "z": 5,
+   "bone": "bowl",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_3",
+   "bbox": [
+    54,
+    34,
+    218,
+    170
+   ],
+   "z": 5,
+   "bone": "bowl",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_4",
+   "bbox": [
+    103,
+    34,
+    202,
+    170
+   ],
+   "z": 5,
+   "bone": "bowl",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_5",
+   "bbox": [
+    166,
+    34,
+    141,
+    157
+   ],
+   "z": 5,
+   "bone": "bowl",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_6",
+   "bbox": [
+    232,
+    37,
+    75,
+    112
+   ],
+   "z": 5,
+   "bone": "bowl",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "wine",
+   "bbox": [
+    69,
+    45,
+    223,
+    56
+   ],
+   "z": 6,
+   "bone": "wine",
+   "$src": "code",
+   "joint": [
+    180.5,
+    72.9
+   ]
+  },
+  {
+   "name": "drip",
+   "bbox": [
+    206,
+    88,
+    25,
+    41
+   ],
+   "z": 7,
+   "bone": "drip",
+   "$src": "code",
+   "joint": [
+    218.1,
+    94.8
+   ]
+  },
+  {
+   "name": "sparkle",
+   "bbox": [
+    64,
+    48,
+    40,
+    27
+   ],
+   "z": 8,
+   "bone": "sparkle",
+   "$src": "code"
+  },
+  {
+   "name": "glint",
+   "bbox": [
+    42,
+    25,
+    72,
+    72
+   ],
+   "slot": "fx_glint",
+   "z": 9,
+   "bone": "fx_glint",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    77.9,
+    61.2
+   ],
+   "$src": "code"
+  }
+ ]
+}

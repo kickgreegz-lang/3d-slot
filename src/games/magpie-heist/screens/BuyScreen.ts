@@ -29,7 +29,7 @@ const OFFERS: Offer[] = [
   { mode: 'HUNT', kind: 'spin', title: 'buy.hunt.title', desc: 'buy.desc.hunt', art: 'S', accent: 0x4fd1d9 },
   { mode: 'STARS', kind: 'spin', title: 'buy.stars.title', desc: 'buy.desc.stars', art: 'R', accent: 0xb06cff },
   { mode: 'PROWL', kind: 'buy', title: 'heist.prowl.title', desc: 'buy.desc.prowl', art: 'W', accent: 0x4fd1d9 },
-  { mode: 'VAULT', kind: 'buy', title: 'heist.vault.title', desc: 'buy.desc.vault', art: 'S', accent: 0xffc53d },
+  { mode: 'VAULT', kind: 'buy', title: 'heist.vault.title', desc: 'buy.desc.vault', art: 'H5', accent: 0xffc53d },
 ];
 
 /** A tappable plate with a live label (UI time: hover lift, press squash). */
@@ -227,8 +227,8 @@ export class BuyScreen implements GameModule {
     glow.scale.set((W * 1.1) / 256);
     glow.y = -H * 0.2;
     const art = new Sprite({ texture: this.ctx.art.symbol(o.art), anchor: 0.5 });
-    art.scale.set((W * 0.62) / 180);
-    art.y = -H * 0.22;
+    art.scale.set((W * 0.54) / 180);
+    art.y = -H * 0.27;
     const tag = new BitmapText({
       text: o.kind === 'spin' ? label('buy.featureSpins', 'FEATURE SPINS') : label('buy.freeSpins', 'BUY FEATURE'),
       style: { fontFamily: this.labelFont, fontSize: 26 },
@@ -239,9 +239,9 @@ export class BuyScreen implements GameModule {
     const res = Math.min(2, this.ctx.app.renderer.resolution * this.ctx.scale * 1.1);
     const pal = o.mode === 'STARS' ? VIOLET : o.mode === 'VAULT' ? GOLD : o.mode === 'HUNT' ? MOON : MOON;
     const name = new Title([{ text: label(o.title, o.mode), style: style(54, pal, 0.08) }], res, { maxWidth: W * 0.9 });
-    name.y = H * 0.07;
+    name.y = -H * 0.055;
     const desc = new BitmapText({ text: label(o.desc, ''), style: { fontFamily: this.labelFont, fontSize: 26, wordWrap: true, wordWrapWidth: W * 0.84, align: 'center' }, anchor: 0.5 });
-    desc.y = H * 0.19;
+    desc.y = H * 0.07;
     const p = this.price(o.mode);
     const cost = BET_MODES[o.mode]?.cost ?? 1;
     const priceText = new BitmapText({
@@ -250,10 +250,11 @@ export class BuyScreen implements GameModule {
       anchor: 0.5,
     });
     if (priceText.width > W * 0.86) priceText.scale.set((W * 0.86) / priceText.width);
-    priceText.y = H * 0.31;
-    const mult = new BitmapText({ text: `×${cost}`, style: { fontFamily: this.labelFont, fontSize: 24 }, anchor: 0.5 });
-    mult.alpha = 0.7;
-    mult.y = H * 0.37;
+    priceText.y = H * 0.2;
+    const mult = new BitmapText({ text: `×${cost} ${label('bet', 'BET')}`, style: { fontFamily: this.labelFont, fontSize: 30 }, anchor: 0.5 });
+    mult.tint = 0xfff4dc;
+    mult.alpha = 0.85;
+    mult.y = H * 0.27;
     const btnLabel = o.kind === 'spin' ? (active ? label('buy.turnOff', 'TURN OFF') : label('buy.activate', 'ACTIVATE')) : label('buy.confirm', 'BUY');
     const btn = new Button(btnLabel, this.labelFont, active ? 0xc8203a : o.accent, W * 0.7, 74, () => this.choose(o, active));
     btn.y = H / 2 - 56;

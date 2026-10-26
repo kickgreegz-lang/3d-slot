@@ -1,0 +1,258 @@
+{
+ "$comment": "sym_S parts: owned-code vector layers from tools/mhart/vector/standins.mjs (one layer per part, each with its own outline; the master is the layers stacked); fx sprites (glow, dial_lit, sheen_1..6, glint) drawn by tools/mhart/rigs/cut_vector.py. Canvas 360 @2x, content = cellScale 1.04 x 300.",
+ "symbol": "S",
+ "canvas": [
+  360,
+  360
+ ],
+ "images": "../../spine/images",
+ "$blur": [
+  "foot_back",
+  "body",
+  "dial",
+  "pointer",
+  "wheel",
+  "feet"
+ ],
+ "parts": [
+  {
+   "name": "glow",
+   "bbox": [
+    101,
+    103,
+    165,
+    165
+   ],
+   "slot": "fx_glow",
+   "z": 0,
+   "bone": "fx_glow",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    183.5,
+    185.5
+   ],
+   "$src": "code"
+  },
+  {
+   "name": "foot_back",
+   "bbox": [
+    276,
+    270,
+    57,
+    47
+   ],
+   "z": 1,
+   "bone": "foot_back",
+   "$src": "code",
+   "joint": [
+    304.4,
+    283.3
+   ]
+  },
+  {
+   "name": "body",
+   "bbox": [
+    23,
+    19,
+    315,
+    303
+   ],
+   "z": 2,
+   "bone": "body",
+   "$src": "code",
+   "joint": [
+    171.9,
+    309.0
+   ]
+  },
+  {
+   "name": "sheen_1",
+   "bbox": [
+    26,
+    201,
+    67,
+    118
+   ],
+   "z": 3,
+   "bone": "body",
+   "slot": "fx_sheen",
+   "hidden": true,
+   "$src": "code"
+  },
+  {
+   "name": "sheen_2",
+   "bbox": [
+    26,
+    38,
+    167,
+    281
+   ],
+   "z": 3,
+   "bone": "body",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_3",
+   "bbox": [
+    27,
+    22,
+    264,
+    297
+   ],
+   "z": 3,
+   "bone": "body",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_4",
+   "bbox": [
+    83,
+    22,
+    251,
+    297
+   ],
+   "z": 3,
+   "bone": "body",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_5",
+   "bbox": [
+    183,
+    22,
+    151,
+    282
+   ],
+   "z": 3,
+   "bone": "body",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_6",
+   "bbox": [
+    283,
+    22,
+    50,
+    106
+   ],
+   "z": 3,
+   "bone": "body",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "dial",
+   "bbox": [
+    81,
+    113,
+    142,
+    143
+   ],
+   "z": 4,
+   "bone": "dial",
+   "$src": "code",
+   "joint": [
+    152.0,
+    184.6
+   ]
+  },
+  {
+   "name": "dial_lit",
+   "bbox": [
+    81,
+    113,
+    142,
+    143
+   ],
+   "z": 5,
+   "bone": "dial",
+   "slot": "fx_lit",
+   "color": "ffffff00",
+   "$src": "code"
+  },
+  {
+   "name": "pointer",
+   "bbox": [
+    137,
+    115,
+    30,
+    21
+   ],
+   "z": 6,
+   "bone": "pointer",
+   "$src": "code",
+   "joint": [
+    152.0,
+    125.1
+   ]
+  },
+  {
+   "name": "wheel",
+   "bbox": [
+    193,
+    145,
+    107,
+    98
+   ],
+   "z": 7,
+   "bone": "wheel",
+   "$src": "code",
+   "joint": [
+    246.6,
+    184.6
+   ]
+  },
+  {
+   "name": "feet",
+   "bbox": [
+    53,
+    290,
+    238,
+    51
+   ],
+   "z": 8,
+   "bone": "feet",
+   "$src": "code",
+   "joint": [
+    171.9,
+    317.9
+   ]
+  },
+  {
+   "name": "sparkle",
+   "bbox": [
+    46,
+    41,
+    30,
+    30
+   ],
+   "z": 9,
+   "bone": "sparkle",
+   "$src": "code"
+  },
+  {
+   "name": "glint",
+   "bbox": [
+    25,
+    20,
+    72,
+    72
+   ],
+   "slot": "fx_glint",
+   "z": 10,
+   "bone": "fx_glint",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    60.9,
+    55.8
+   ],
+   "$src": "code"
+  }
+ ]
+}

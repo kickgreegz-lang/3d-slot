@@ -1,0 +1,304 @@
+# chr_monty master cut (art/source/mascots/pipeline/mastercut.py, run through tools/mhart/mascot/build.sh).
+# Master = the approved three-quarter view art/source/magpie-heist/mascot/monty_static.png (2nd figure of the
+# design sheet mh_mascot_monty_sheet.raw.v01, matted, straight alpha, 862x1448 = 2x the landscape mascot rect
+# height). He faces screen-RIGHT: near side = his R (screen-left arm, the leg whose foot is lowest).
+# The setup pose is the master pixel for pixel; every area a moving part uncovers is filled (inpaint /
+# painted gradients, then an ink stroke on the new silhouette only where hidden at rest). Eye states are
+# painted over the master's own eye patch; the fist / point hands are painted by tools/mhart/mascot/hands.py
+# under the master's own glove cuff (no part sheets exist for Monty).
+# All coordinates: master px (862x1448, y down). Canvas 880x1448 @2x, root = feet point (master 430, 1440).
+skeleton: chr_monty
+canvas: [880, 1448]
+anchor: [0.5, 1.0]
+work: art/_work/magpie-heist/mascot/chr_monty
+out:
+  parts: art/source/magpie-heist/mascot/spine2d/parts.json
+  images: art/source/magpie-heist/mascot/spine2d/images
+  qa: build/qa/chr_monty/cut
+master: {image: art/source/magpie-heist/mascot/monty_static.png, key: auto}
+sheets:
+  hR_fist: {image: art/_work/magpie-heist/mascot/hands/hand_R_fist.png, key: auto}
+  hR_point: {image: art/_work/magpie-heist/mascot/hands/hand_R_point.png, key: auto}
+  hL_fist: {image: art/_work/magpie-heist/mascot/hands/hand_L_fist.png, key: auto}
+  hL_point: {image: art/_work/magpie-heist/mascot/hands/hand_L_point.png, key: auto}
+fit: {scale: 1.0, feet: [430, 1440]}
+inkLum: 0.065
+inkChroma: 0.08
+inkBand: 10
+seam: 8
+seamExact: 2.5
+seamSmooth: 2.0
+stroke: 7
+strokeKeep: 3.0
+landmarks:
+  hips: [445, 860]
+  spine: [450, 700]
+  chest: [455, 540]
+  neck: [450, 392]
+  head: [432, 282]
+  head_top: [430, 18]
+  look: [800, 205]
+  shoulder_R: [292, 465]
+  elbow_R: [205, 625]
+  wrist_R: [100, 778]
+  hand_R: [66, 920]
+  shoulder_L: [592, 478]
+  elbow_L: [668, 632]
+  wrist_L: [742, 762]
+  hand_L: [796, 890]
+  hip_R: [395, 842]
+  knee_R: [347, 1088]
+  ankle_R: [340, 1312]
+  toe_R: [352, 1426]
+  hip_L: [492, 862]
+  knee_L: [455, 1076]
+  ankle_L: [492, 1300]
+  toe_L: [660, 1334]
+cuts:
+  # elbows: perpendicular to the arm through the joint, across the feather fringe hanging under it
+  - {line: [[158, 596], [312, 690]], parts: {upper_arm_R: [250, 560], forearm_R: [190, 700]}}
+  - {line: [[620, 657], [716, 606]], parts: {upper_arm_L: [630, 580], forearm_L: [700, 690]}}
+  # head / neck: through the continuous black of the throat
+  - {line: [[296, 293], [602, 276]], parts: {head: [430, 240], neck: [430, 320]}}
+  # thighs / shins at the bottom of the feather fringe
+  - {line: [[318, 1094], [372, 1094]], parts: {thigh_R: [350, 1060], shin_R: [340, 1130]}}
+  - {line: [[440, 1084], [486, 1084]], parts: {thigh_L: [465, 1050], shin_L: [462, 1120]}}
+  # ankles
+  - {line: [[318, 1316], [364, 1316]], parts: {shin_R: [340, 1280], foot_R: [340, 1350]}}
+  - {line: [[470, 1294], [516, 1294]], parts: {shin_L: [490, 1260], foot_L: [520, 1320]}}
+joints:
+  elbow_R:    {at: [205, 625], r: 36, parent: upper_arm_R, child: forearm_R}
+  wrist_R:    {at: [100, 778], r: 30, parent: forearm_R, child: hand_R}
+  elbow_L:    {at: [668, 632], r: 34, parent: upper_arm_L, child: forearm_L}
+  wrist_L:    {at: [742, 762], r: 28, parent: forearm_L, child: hand_L}
+  # the feather fringe of a thigh covers its knee: the shin fills its hidden top under it
+  knee_R:     {at: [347, 1090], r: 26, parent: shin_R, child: thigh_R, take: false}
+  knee_L:     {at: [455, 1078], r: 24, parent: shin_L, child: thigh_L, take: false}
+  ankle_R:    {at: [340, 1314], r: 18, parent: shin_R, child: foot_R}
+  ankle_L:    {at: [492, 1298], r: 18, parent: shin_L, child: foot_L}
+  # far side behind the body: the far thigh / upper arm fill what the torso hides near their pivots
+  hip_L:      {at: [492, 862], r: 56, parent: thigh_L, child: torso, take: false}
+  shoulder_L: {at: [592, 478], r: 44, parent: upper_arm_L, child: torso, take: false, within: [upper_arm_L, torso, kerchief]}
+parts:
+  # ---------------------------------------------------------------- back: tail, far leg, far upper arm
+  - slot: tail
+    bone: phys_tail_1
+    seed:
+      - [[322, 862], [338, 880], [336, 1060], [300, 1120], [200, 1200], [90, 1255], [70, 1235], [150, 1120], [250, 985]]
+    # the tail root hidden behind the near thigh
+    extend: [[[330, 826], [392, 826], [415, 900], [400, 1000], [372, 1080], [364, 1120], [334, 1150], [318, 1110]]]
+    seamExact: 0
+    fillRadius: 10
+  - slot: shin_L
+    seed: [[[452, 1100], [470, 1100], [500, 1282], [486, 1286]]]
+  - slot: foot_L
+    seed: [[[425, 1305], [470, 1298], [530, 1300], [640, 1310], [676, 1330], [664, 1342], [560, 1342], [445, 1334], [420, 1318]]]
+  - slot: thigh_L
+    seamExact: 0
+    strokeKeep: 0.5
+    seed: [[[506, 852], [538, 866], [534, 960], [500, 1040], [462, 1062], [452, 1004], [482, 925]]]
+  - slot: upper_arm_L
+    seamExact: 0
+    strokeKeep: 0.5
+    seed:
+      - [[576, 424], [604, 436], [610, 500], [640, 556], [676, 616], [654, 634], [618, 598], [590, 540], [572, 480]]
+      - [[600, 610], [640, 640], [626, 655], [598, 640]]
+  # ---------------------------------------------------------------- body
+  - slot: torso
+    seamExact: 0
+    bone: spine
+    seed:
+      - [[330, 428], [440, 484], [528, 536], [550, 516], [556, 440], [584, 446], [590, 520], [576, 700], [556, 800], [520, 880], [462, 900], [430, 806], [356, 780], [318, 600], [330, 500]]
+    extend:
+      # the body side under the near shoulder patch (the arm swings off it): black back -> white belly side
+      - [[312, 384], [352, 384], [358, 560], [334, 640], [322, 600], [314, 556], [306, 500], [306, 430]]
+      # the chest and neck base under the kerchief
+      - [[318, 330], [578, 340], [566, 380], [556, 440], [548, 530], [440, 470], [330, 420]]
+      # the belly bottom under the thigh tops (the thighs rotate at the hips)
+      - [[352, 790], [430, 800], [470, 880], [440, 912], [380, 880], [352, 840]]
+    fill: telea
+    fillRadius: 12
+    post:
+      - {gradient: [[[290, 380], [362, 380], [362, 620], [290, 620]]], from: [330, 420, 22, 26, 50], to: [318, 600, 210, 208, 230], only: fill}
+      - {gradient: [[[362, 320], [600, 320], [600, 540], [362, 540]]], from: [460, 350, 20, 22, 42], to: [490, 520, 34, 80, 132], only: fill}
+      - {gradient: [[[300, 320], [362, 320], [362, 380], [300, 380]]], from: [330, 330, 20, 22, 42], to: [330, 380, 22, 26, 50], only: fill}
+  - slot: forearm_L
+    seamExact: 0
+    strokeKeep: 0.5
+    seed:
+      - [[690, 644], [730, 700], [746, 744], [726, 752], [690, 700], [664, 662]]
+      - [[618, 668], [660, 680], [690, 740], [672, 762], [636, 720]]
+      - [[578, 676], [596, 672], [596, 706], [582, 712]]
+  - slot: hand_L
+    attachment: open
+    seed: [[[710, 752], [768, 750], [790, 792], [848, 900], [838, 924], [792, 944], [742, 920], [722, 832], [708, 786]]]
+  - slot: hand_L
+    attachment: fist
+    source: {sheet: hL_fist, bbox: [600, 650, 862, 1000], from: [[0, 0], [100, 0]], to: [[0, 0], [100, 0]]}
+  - slot: hand_L
+    attachment: point
+    source: {sheet: hL_point, bbox: [600, 650, 862, 1100], from: [[0, 0], [100, 0]], to: [[0, 0], [100, 0]]}
+  # ---------------------------------------------------------------- near leg
+  - slot: shin_R
+    seed: [[[326, 1104], [352, 1104], [350, 1296], [328, 1296]]]
+  - slot: foot_R
+    seed: [[[302, 1326], [336, 1322], [366, 1328], [408, 1366], [412, 1420], [380, 1432], [342, 1420], [304, 1434], [292, 1392]]]
+  - slot: thigh_R
+    seed: [[[360, 792], [418, 794], [438, 860], [438, 1000], [418, 1056], [360, 1070], [352, 1000], [350, 850]]]
+  # ---------------------------------------------------------------- neck, kerchief, head
+  - slot: neck
+    seamExact: 0
+    seed: [[[318, 302], [584, 288], [580, 338], [555, 348], [518, 362], [470, 370], [420, 362], [380, 348], [342, 332], [322, 318]]]
+    extend: [[[306, 300], [578, 284], [580, 360], [560, 410], [450, 430], [330, 396], [312, 380]]]
+  - slot: kerchief
+    seamExact: 0
+    bone: phys_kerchief_1
+    seed:
+      - [[312, 336], [344, 342], [440, 384], [556, 356], [572, 384], [552, 420], [540, 505], [525, 508], [440, 462], [348, 404], [318, 388], [308, 372]]
+  - slot: head
+    seed:
+      - [[312, 178], [400, 152], [480, 150], [560, 142], [602, 172], [640, 246], [572, 268], [480, 272], [332, 284], [306, 232]]
+    extend:
+      # the crown under the cap (lifted on the tug, gone on the flip)
+      - [[296, 160], [298, 120], [318, 88], [360, 66], [430, 58], [500, 64], [540, 80], [566, 104], [580, 130], [584, 152], [560, 160]]
+    fillRadius: 12
+    post:
+      - {gradient: [[[290, 50], [600, 50], [600, 160], [290, 160]]], from: [430, 66, 38, 48, 92], to: [430, 150, 14, 14, 30], only: fill}
+  # ---- eyes: every state is the master eye patch, lids painted over it (identical size and centre)
+  # near eye (R): lid line (404,158)-(440,160)-(463,168), iris centre (444,170) r 11, pupil (444,168)
+  - slot: eye_R
+    attachment: open
+    bone: face_eye_R
+    parent: head
+    joint: [434, 168]
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [434, 168, 42, 28]}]
+    ops:
+      # the pupil painted out (the pupil slot carries it): iris orange under the lid line
+      - {gradient: [{ellipse: [444, 168, 6.5, 7.5]}], clipTo: [[[396, 159], [440, 160.5], [468, 169], [470, 196], [396, 196]]], from: [444, 161, 206, 104, 12], to: [444, 176, 242, 142, 26], feather: 0.6}
+  - slot: eye_R
+    attachment: half
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [434, 168, 42, 28]}]
+    ops:
+      - {gradient: [[[396, 146], [474, 146], [474, 173], [458, 173.5], [440, 173.5], [420, 172.5], [404, 171], [396, 170]]], clipTo: [[[401, 157], [440, 157.5], [465, 165.5], [468, 173], [458, 181], [436, 185], [416, 183], [404, 175]]], from: [434, 156, 14, 14, 30], to: [434, 173, 36, 42, 78], feather: 0.8}
+      - {paint: [{ellipse: [444, 176, 5, 3.5]}], color: [12, 6, 6], clipTo: [[[396, 174.5], [474, 174.5], [474, 196], [396, 196]]], feather: 0.6}
+      - {stroke: [[403, 171], [420, 173.5], [440, 174.5], [458, 174], [466, 171]], width: 3.6}
+  - slot: eye_R
+    attachment: closed
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [434, 168, 42, 28]}]
+    ops:
+      - {gradient: [[[401, 157], [440, 157.5], [465, 165.5], [468, 173], [458, 181], [436, 185], [416, 183], [404, 175]]], from: [434, 156, 14, 14, 30], to: [434, 183, 40, 46, 86], feather: 0.8}
+      - {stroke: [[402, 172], [416, 178], [434, 181], [452, 179], [466, 172]], width: 4.2}
+      - {stroke: [[410, 164], [434, 166], [458, 164]], width: 2.2, alpha: 0.45, color: [70, 84, 140]}
+  - slot: eye_R
+    attachment: wide
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [434, 168, 42, 28]}]
+    ops:
+      # the heavy lid lifts: sclera up to a rounder top line, full iris, small pupil, catchlight
+      - {paint: [[[402, 160], [410, 151], [428, 146], [448, 147], [463, 154], [469, 168], [466, 173], [456, 171], [440, 166], [404, 164]]], color: [254, 252, 240], feather: 0.7}
+      - {paint: [{circle: [444, 168, 11.5]}], color: [238, 134, 18], clipTo: [{ellipse: [434, 166, 33, 18]}], feather: 0.7}
+      - {paint: [{circle: [444, 168, 7.5]}], color: [214, 106, 10], feather: 0.7}
+      - {paint: [{circle: [444, 168, 4.6]}], color: [10, 6, 6], feather: 0.6}
+      - {paint: [{circle: [447.5, 164.5, 1.9]}], color: [255, 252, 240], feather: 0.4}
+      - {stroke: [[400, 162], [410, 150], [428, 144.5], [449, 145.5], [465, 153], [470, 167]], width: 4.2}
+  - slot: pupil_R
+    bone: face_pupil_R
+    parent: face_eye_R
+    joint: [444, 168]
+    noOwn: true
+    seam: 0
+    region: [[[436, 161], [452, 161], [451.5, 170], [448, 175], [444, 176], [440, 175], [436.5, 170]]]
+  # far eye (L): a sliver behind the beak root; catchlight (519,166)
+  - slot: eye_L
+    attachment: open
+    bone: face_eye_L
+    parent: head
+    joint: [526, 167]
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [526, 167, 16, 16]}]
+    ops:
+      - {paint: [{circle: [519.3, 166.2, 3.6]}], color: [6, 4, 8], feather: 0.6}
+  - slot: eye_L
+    attachment: half
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [526, 167, 16, 16]}]
+    ops:
+      - {gradient: [[[508, 150], [544, 150], [544, 168], [508, 167]]], clipTo: [[[513, 157], [537, 156], [538, 177], [528, 179.5], [516, 175]]], from: [526, 156, 14, 14, 30], to: [526, 168, 36, 42, 78], feather: 0.7}
+      - {stroke: [[514, 167], [526, 169], [538, 167]], width: 3.0}
+  - slot: eye_L
+    attachment: closed
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [526, 167, 16, 16]}]
+    ops:
+      - {gradient: [[[513, 157], [537, 156], [538, 177], [528, 179.5], [516, 175]]], from: [526, 156, 14, 14, 30], to: [526, 179, 40, 46, 86], feather: 0.7}
+      - {stroke: [[514, 169], [526, 174], [538, 168]], width: 3.2}
+  - slot: eye_L
+    attachment: wide
+    noOwn: true
+    seam: 0
+    region: [{ellipse: [526, 167, 16, 16]}]
+    ops:
+      - {paint: [{ellipse: [528, 166, 8, 11.5]}], color: [252, 250, 240], feather: 0.6}
+      - {paint: [{ellipse: [526.5, 166.5, 4.6, 7]}], color: [236, 132, 18], feather: 0.6}
+      - {paint: [{ellipse: [525.5, 166.5, 2.6, 4]}], color: [10, 6, 6], feather: 0.5}
+      - {paint: [{circle: [527, 163.5, 1.2]}], color: [255, 252, 240], feather: 0.3}
+      - {stroke: [[519, 158], [526, 154.5], [533, 156], [537, 162]], width: 3.0}
+  - slot: pupil_L
+    bone: face_pupil_L
+    parent: face_eye_L
+    joint: [519.5, 166]
+    noOwn: true
+    seam: 0
+    region: [{circle: [519.3, 166.2, 3.6]}]
+  - slot: cap
+    bone: cap
+    parent: head
+    joint: [442, 98]
+    tip: [602, 98]
+    seed: [[[278, 120], [292, 72], [340, 32], [430, 16], [530, 30], [590, 60], [620, 100], [600, 124], [520, 120], [430, 128], [320, 148], [286, 148]]]
+  # ---------------------------------------------------------------- near arm (in front of the body)
+  - slot: upper_arm_R
+    seed:
+      - [[242, 420], [300, 400], [322, 398], [350, 412], [352, 440], [350, 500], [322, 560], [282, 600], [240, 640], [190, 616], [212, 556], [236, 490]]
+  - slot: forearm_R
+    seed:
+      - [[176, 646], [226, 640], [288, 640], [300, 700], [252, 742], [200, 752], [130, 762], [116, 750], [150, 690]]
+  - slot: hand_R
+    attachment: open
+    seed: [[[62, 772], [120, 772], [140, 860], [150, 902], [92, 988], [30, 984], [20, 920], [46, 820]]]
+  - slot: hand_R
+    attachment: fist
+    source: {sheet: hR_fist, bbox: [0, 700, 260, 1000], from: [[0, 0], [100, 0]], to: [[0, 0], [100, 0]]}
+  - slot: hand_R
+    attachment: point
+    source: {sheet: hR_point, bbox: [0, 700, 260, 1100], from: [[0, 0], [100, 0]], to: [[0, 0], [100, 0]]}
+points:
+  tail_1: [345, 870]
+  tail_2: [268, 1000]
+  tail_3: [186, 1118]
+  tail_tip: [92, 1246]
+  kerchief_1: [462, 398]
+  kerchief_2: [505, 456]
+  kerchief_tip: [534, 514]
+  cap: [442, 98]
+  cap_tip: [602, 98]
+tests:
+  - {name: shoulder_R, joint: [292, 465], pieces: [upper_arm_R, forearm_R, hand_R], deg: [-60, 40, 120]}
+  - {name: shoulder_L, joint: [592, 478], pieces: [upper_arm_L, forearm_L, hand_L], deg: [-120, -40, 40]}
+  - {name: elbow_R, joint: [205, 625], pieces: [forearm_R, hand_R], deg: [-50, 60]}
+  - {name: elbow_L, joint: [668, 632], pieces: [forearm_L, hand_L], deg: [-60, 50]}
+  - {name: head, joint: [432, 282], pieces: [head, cap, eye_R, eye_L], deg: [-14, 14]}
+  - {name: cap, joint: [442, 98], pieces: [cap], deg: [-18, 18]}
+  - {name: tail, joint: [345, 870], pieces: [tail], deg: [-14, 14]}
+  - {name: thigh_R, joint: [395, 842], pieces: [thigh_R, shin_R, foot_R], deg: [-14, 14]}
+  - {name: kerchief, joint: [462, 398], pieces: [kerchief], deg: [-14, 14]}

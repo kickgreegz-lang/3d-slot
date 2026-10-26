@@ -1,0 +1,165 @@
+{
+  "$comment": "sym_R Shooting Star parts: master-cut star / tail from art/source/magpie-heist/symbols/R/master_1024.png (the ribbons continued under the star's edge); fx sprites (glow, rays, rim, spark_1..3, twinkle) drawn by tools/mhart/rigs/cut_R.py. Canvas 360 @2x, content = cellScale 1.06 x 300.",
+  "symbol": "R",
+  "canvas": [
+    360,
+    360
+  ],
+  "images": "../../spine/images",
+  "$blur": [
+    "tail",
+    "star"
+  ],
+  "parts": [
+    {
+      "name": "glow",
+      "bbox": [
+        120,
+        87,
+        170,
+        170
+      ],
+      "slot": "fx_glow",
+      "z": 0,
+      "bone": "fx_glow",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        204.9,
+        171.8
+      ]
+    },
+    {
+      "name": "rays",
+      "bbox": [
+        110,
+        71,
+        190,
+        190
+      ],
+      "slot": "fx_rays",
+      "z": 0.5,
+      "bone": "fx_rays",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        204.9,
+        165.8
+      ]
+    },
+    {
+      "name": "tail",
+      "bbox": [
+        19,
+        181,
+        122,
+        163
+      ],
+      "z": 1,
+      "bone": "tail",
+      "blur": true
+    },
+    {
+      "name": "star",
+      "bbox": [
+        57,
+        15,
+        283,
+        282
+      ],
+      "z": 2,
+      "bone": "star",
+      "blur": true
+    },
+    {
+      "name": "rim",
+      "bbox": [
+        46,
+        5,
+        305,
+        303
+      ],
+      "z": 3,
+      "slot": "fx_rim",
+      "bone": "fx_rim",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        204.9,
+        165.8
+      ]
+    },
+    {
+      "name": "spark_1",
+      "bbox": [
+        69,
+        -2,
+        293,
+        172
+      ],
+      "z": 4,
+      "slot": "fx_spark",
+      "bone": "fx_spark",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        204.9,
+        165.8
+      ]
+    },
+    {
+      "name": "spark_2",
+      "bbox": [
+        91,
+        13,
+        239,
+        306
+      ],
+      "z": 4,
+      "slot": "fx_spark",
+      "bone": "fx_spark",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        204.9,
+        165.8
+      ]
+    },
+    {
+      "name": "spark_3",
+      "bbox": [
+        60,
+        44,
+        202,
+        291
+      ],
+      "z": 4,
+      "slot": "fx_spark",
+      "bone": "fx_spark",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        204.9,
+        165.8
+      ]
+    },
+    {
+      "name": "twinkle",
+      "bbox": [
+        38,
+        38,
+        64,
+        64
+      ],
+      "slot": "fx_twinkle_1",
+      "z": 5,
+      "bone": "fx_twinkle_1",
+      "blend": "additive",
+      "color": "ffffff00",
+      "joint": [
+        70.0,
+        70.0
+      ]
+    }
+  ]
+}

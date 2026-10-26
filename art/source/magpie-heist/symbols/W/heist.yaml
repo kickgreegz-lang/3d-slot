@@ -1,0 +1,104 @@
+# sym_W Bandit Mask: the Magpie Heist clip layer, applied by tools/mhart/rigs/mhgen.py after the stock generator
+# (bassdrop.yaml syntax: rows [frame, value, ease leaving the key]; scale rows [sx, sy] or one number; 30 fps).
+# Tie rotations: + = counter-clockwise, so the LEFT tie flicks OUT (up and away) with - and the RIGHT tie with +.
+# Feel: cheeky. land = squash with both ties whipping down and flicking back; win = crouch, pop to 1.25 while the mask WINKS (its own left
+# eye closes f8-f14, the mask scrunches and tilts toward it), ties fling and flutter, the banner waves, glow flare at
+# win_peak, a satin sheen; win_loop = ties sway, banner wave, sheen + eye glint; idle (played once) = the ties drift,
+# a light band across the satin, an eye glint; anticipation = the contract pulse + the ties shivering on each beat.
+kind: special
+validate_kind: special   # config.ts kind 'wild', but the CR-8 `wild` kind requires Bass Drop's drop / sticky / mult clips,
+                         # the mult / sticky skins and txt_mult: the Magpie Heist wild is gated as a contract special
+cell: 368                # content 312 (cellScale 1.04): the land squash needs > 360 (tools/spine/README "Headroom")
+
+slots:
+  - {name: txt_wild, bone: txt_wild, after: banner}   # runtime BitmapText "WILD" (src/games/magpie-heist/glint/WildText.ts)
+
+region_scale: {glow: 2}          # the soft halo is stored at half resolution (mhcut add_sprite scale=2)
+
+clips:
+  land:
+    merge: true
+    bones:
+      # the ties keep falling when the mask stops: they whip DOWN and in, then flick back out
+      phys_tie_1_L: {rotate: [[0, 0, expo_out], [2, 16], [5, -7], [8, 3], [12, 0]]}
+      phys_tie_2_L: {rotate: [[0, 0, expo_out], [3, 14], [6, -8], [9, 3], [12, 0]]}
+      phys_tie_1_R: {rotate: [[0, 0, expo_out], [2, -16], [5, 7], [8, -3], [12, 0]]}
+      phys_tie_2_R: {rotate: [[0, 0, expo_out], [3, -14], [6, 8], [9, -3], [12, 0]]}
+
+  win:
+    merge: true
+    bones:
+      # the wink: the lid drops over the eye on the pop (f7-f9), holds, lifts (f14-f16); invisible otherwise
+      lid_L: {scale: [[0, 1, stepped], [7, [1, 0.15], expo_out], [9, [1, 1.06]], [10, 1], [14, 1, quad_in], [16, [1, 0.15], stepped], [17, 1], [24, 1]]}
+      mask: {rotate: [[0, 0, sine_out], [4, 2.5, expo_out], [8, -8], [13, -6.5], [17, 2], [21, -0.8], [24, 0]],
+             scale: [[0, 1, sine_out], [4, [1.07, 0.9], expo_out], [8, [0.92, 1.12]], [11, [1.05, 0.95]], [15, [0.99, 1.01]], [19, 1], [24, 1]]}
+      phys_tie_1_L: {rotate: [[0, 0, sine_out], [4, 9, expo_out], [8, -24], [11, 13], [14, -9], [17, 5], [20, -2], [24, 0]]}
+      phys_tie_2_L: {rotate: [[0, 0, sine_out], [5, 8, expo_out], [9, -22], [12, 14], [15, -9], [18, 5], [21, -2], [24, 0]]}
+      phys_tie_1_R: {rotate: [[0, 0, sine_out], [4, -9, expo_out], [8, 24], [11, -13], [14, 9], [17, -5], [20, 2], [24, 0]]}
+      phys_tie_2_R: {rotate: [[0, 0, sine_out], [5, -8, expo_out], [9, 22], [12, -14], [15, 9], [18, -5], [21, 2], [24, 0]]}
+      banner_L: {rotate: [[0, 0], [6, 0, quad_out], [9, -8], [13, 6], [17, -3], [21, 1], [24, 0]]}
+      banner_R: {rotate: [[0, 0], [7, 0, quad_out], [10, -8], [14, 6], [18, -3], [22, 1], [24, 0]]}
+      banner_face: {translate: [[0, [0, 0]], [8, [0, 0], quad_out], [10, [0, -4]], [14, [0, 3]], [18, [0, -1]], [24, [0, 0]]]}
+    slots:
+      lid_L: {alpha: [[0, 0], [7, 0, stepped], [8, 1], [16, 1, stepped], [17, 0], [24, 0]]}
+      fx_sheen: {attachment: [[0, null], [9, sheen_1], [10, sheen_2], [11, sheen_3], [12, sheen_4], [13, sheen_5], [14, sheen_6], [15, null]]}
+
+  win_loop:
+    merge: true
+    bones:
+      phys_tie_1_L: {rotate: [[0, 0], [11, -7], [33, 6], [44, 0]]}
+      phys_tie_2_L: {rotate: [[0, 0], [14, -6], [36, 6], [44, 0]]}
+      phys_tie_1_R: {rotate: [[0, 0], [11, 7], [33, -6], [44, 0]]}
+      phys_tie_2_R: {rotate: [[0, 0], [14, 6], [36, -6], [44, 0]]}
+      banner_L: {rotate: [[0, 0], [11, -4], [33, 4], [44, 0]]}
+      banner_R: {rotate: [[0, 0], [11, 4], [33, -4], [44, 0]]}
+      banner_face: {translate: [[0, [0, 0]], [11, [0, -2]], [33, [0, 2]], [44, [0, 0]]]}
+    slots:
+      fx_sheen: {attachment: [[0, null], [8, sheen_1], [9, sheen_2], [10, sheen_3], [11, sheen_4], [12, sheen_5], [13, sheen_6], [14, null],
+                              [30, glint], [35, null]],
+                 alpha: [[0, 1], [29, 1, stepped], [30, 0.2, quad_out], [32, 1], [35, 0.3, stepped], [36, 1], [44, 1]]}
+
+  idle:
+    merge: true
+    bones:
+      phys_tie_1_L: {rotate: [[0, 0], [12, -6], [30, 4], [46, -2], [60, 0], [72, 0]]}
+      phys_tie_2_L: {rotate: [[0, 0], [15, -6], [33, 5], [49, -2], [63, 0], [72, 0]]}
+      phys_tie_1_R: {rotate: [[0, 0], [14, 5], [32, -4], [48, 2], [62, 0], [72, 0]]}
+      phys_tie_2_R: {rotate: [[0, 0], [17, 5], [35, -5], [51, 2], [65, 0], [72, 0]]}
+    slots:
+      fx_sheen: {attachment: [[0, null], [6, sheen_1], [7, sheen_2], [8, sheen_3], [9, sheen_4], [10, sheen_5], [11, sheen_6], [12, null],
+                              [16, glint], [21, null]],
+                 alpha: [[0, 1], [15, 1, stepped], [16, 0.2, quad_out], [18, 1], [21, 0.3, stepped], [22, 1], [72, 1]]}
+
+  anticipation:
+    merge: true
+    bones:
+      phys_tie_1_L: {rotate: [[0, 0, expo_out], [2, -10], [5, 3], [6, 0, expo_out], [8, -8], [11, 3], [16, 0]]}
+      phys_tie_1_R: {rotate: [[0, 0, expo_out], [2, 10], [5, -3], [6, 0, expo_out], [8, 8], [11, -3], [16, 0]]}
+      mask: {scale: [[0, 1, quad_out], [2, [0.97, 1.05]], [4, 1], [6, 1, quad_out], [8, [0.98, 1.03]], [11, 1], [16, 1]]}
+
+  explode:
+    merge: true
+    override: true
+    bones:
+      # the ties fling out, the lid snaps shut (the mask "blinks" as it bursts), the banner drops
+      phys_tie_1_L: {rotate: [[0, 0, quad_in], [2, 8, expo_out], [6, -40], [13, -50]]}
+      phys_tie_2_L: {rotate: [[0, 0, quad_in], [2, 6, expo_out], [7, -30], [13, -40]]}
+      phys_tie_1_R: {rotate: [[0, 0, quad_in], [2, -8, expo_out], [6, 40], [13, 50]]}
+      phys_tie_2_R: {rotate: [[0, 0, quad_in], [2, -6, expo_out], [7, 30], [13, 40]]}
+      mask: {scale: [[0, 1, quad_in], [2, [1.08, 0.88], expo_out], [5, [0.95, 1.15]], [13, [1.1, 1.1]]]}
+      banner_L: {rotate: [[0, 0], [2, 0, expo_out], [7, -18], [13, -22]]}
+      banner_R: {rotate: [[0, 0], [2, 0, expo_out], [7, 18], [13, 22]]}
+    slots:
+      tie_L: {alpha: [[0, 1], [4, 1, quad_in], [10, 0], [13, 0]]}
+      tie_R: {alpha: [[0, 1], [4, 1, quad_in], [10, 0], [13, 0]]}
+      banner: {alpha: [[0, 1], [4, 1, quad_in], [9, 0], [13, 0]]}
+      txt_wild: {alpha: [[0, 1], [4, 1, quad_in], [9, 0], [13, 0]]}
+      mask: {alpha: [[0, 1], [4, 1, quad_in], [10, 0], [13, 0]]}
+      lid_L: {alpha: [[0, 0], [1, 0, stepped], [2, 1], [4, 1, quad_in], [10, 0], [13, 0]]}
+      fx_sheen: {alpha: [[0, 1], [13, 1]]}
+
+  appear:
+    merge: true
+    slots:
+      txt_wild: {alpha: [[0, 0, quad_out], [3, 1], [9, 1]]}

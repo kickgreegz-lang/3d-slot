@@ -1,0 +1,53 @@
+sym_H1.webp
+size: 844,512
+filter: Linear,Linear
+pma: true
+sym_H1/band
+bounds: 314,2,226,103
+offsets: 3,3,232,109
+sym_H1/band_blur
+bounds: 314,107,225,129
+offsets: 4,4,232,137
+sym_H1/gems_lit
+bounds: 306,314,218,56
+offsets: 3,3,224,62
+sym_H1/glint
+bounds: 314,238,70,70
+offsets: 1,1,72,72
+sym_H1/glow
+bounds: 2,2,310,310
+offsets: 10,10,330,330
+sym_H1/pearls
+bounds: 2,314,302,87
+sym_H1/pearls_blur
+bounds: 2,403,296,105
+offsets: 3,5,302,115
+sym_H1/points
+bounds: 300,403,272,107
+sym_H1/points_blur
+bounds: 574,2,266,125
+offsets: 3,5,272,135
+sym_H1/sheen_1
+bounds: 314,310,1,1
+offsets: 0,88,80,89
+sym_H1/sheen_2
+bounds: 740,337,68,84
+offsets: 5,3,135,96
+sym_H1/sheen_3
+bounds: 574,337,81,92
+offsets: 47,2,188,97
+sym_H1/sheen_4
+bounds: 657,337,81,92
+offsets: 66,3,182,97
+sym_H1/sheen_5
+bounds: 740,423,58,80
+offsets: 70,11,130,97
+sym_H1/sheen_6
+bounds: 314,313,1,1
+offsets: 0,89,74,90
+sym_H1/velvet
+bounds: 541,129,217,72
+offsets: 3,3,223,78
+sym_H1/velvet_blur
+bounds: 526,238,217,97
+offsets: 3,4,223,106

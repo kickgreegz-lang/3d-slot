@@ -1,0 +1,246 @@
+# MONTY (chr_monty): lanky adult magpie cat burglar, Magpie Heist mascot. Faces screen-RIGHT (toward the
+# reels), near side = his R (screen-left arm, the leg whose foot is lowest).
+# PRODUCTION rig on the approved art: parts.json + images/ come from the master cut of the approved
+# three-quarter view (cut.yaml, tools/mhart/mascot/cut.py -> art/source/mascots/pipeline/mastercut.py).
+# Canvas 880x1448 @2x (= 2x the landscape mascot rect 440x724), y down, root = feet point.
+# Pose values are facing-normalised (tools/spine/README.md): rot + = counter-clockwise for a right-facing
+# character (bow forward, nod down are negative; raising the near arm forward toward the board is positive,
+# raising the far arm forward/up is positive), x + = forward (toward the reels), y + = up.
+# Bird legs: the visible "knee" is the heel, bent BACKWARD in the setup pose, so the foot IK folds it back.
+kind: character
+skeleton: chr_monty
+parts: parts.json
+facing: right
+near: R
+tempo: 1.08                    # snappy cartoon timing: drag lags and settles a little shorter
+template: biped
+ik: {feet: true}               # planted bird feet; both arms FK (`reach` solves the hand targets)
+
+bones:
+  - {name: phys_tail_1, parent: hips, joint: [355, 878], tip: [278, 1008]}
+  - {name: phys_tail_2, parent: phys_tail_1, joint: [278, 1008], tip: [196, 1126]}
+  - {name: phys_tail_3, parent: phys_tail_2, joint: [196, 1126], tip: [102, 1254]}
+  - {name: phys_kerchief_1, parent: chest, joint: [472, 406], tip: [515, 464]}
+  - {name: phys_kerchief_2, parent: phys_kerchief_1, joint: [515, 464], tip: [544, 522]}
+
+meshes:
+  # the neck bends with the head: rigid to the head above the cut line, to the neck bone at the kerchief
+  neck: {type: trace, spacing: 30, weights: {mode: vertical, stops: [[head, 306], [neck, 384]]}}
+  torso: {type: trace, spacing: 44, weights: {mode: vertical, stops: [[chest, 470], [spine, 690], [hips, 862]]}}
+  tail: {type: trace, spacing: 36, weights: {mode: idw, bones: [hips, phys_tail_1, phys_tail_2, phys_tail_3], max: 3}}
+  kerchief: {type: trace, spacing: 26, weights: {mode: idw, bones: [neck, chest, phys_kerchief_1, phys_kerchief_2], max: 3, power: 2.5}}
+
+physics:
+  # a long floppy magpie tail (overlap on every hop and lean), the neckerchief flap a little stiffer
+  - {bone: phys_tail_1, f: 2.6, zeta: 0.42, rotate: 0.8, inertia: 0.5, mix: 0.6}
+  - {bone: phys_tail_2, f: 2.8, zeta: 0.4, rotate: 0.8, inertia: 0.5, mix: 0.6}
+  - {bone: phys_tail_3, f: 3.0, zeta: 0.38, rotate: 0.8, inertia: 0.5, mix: 0.6}
+  - {bone: phys_kerchief_1, f: 3.8, zeta: 0.4, rotate: 0.6, inertia: 0.5, mix: 0.75}
+  - {bone: phys_kerchief_2, f: 4.2, zeta: 0.38, rotate: 0.6, inertia: 0.5, mix: 0.75}
+
+look:                          # ctrl_look: runtime aim (track 3); head tilt + pupils follow it
+  head: {mix: 0.6, deg_per_100: 5, max: 12}
+  pupils: {per_100: 2, max: [3, 2]}   # small eyes: 3 units of travel keeps the pupil inside the iris
+
+face: {hide_pupils: [half, closed, wide]}   # half / closed / wide art carries its own pupil
+drag: {lag: 2, gain: 0.5, body: 0.5}
+
+stance: stance
+poses:
+  stance:                      # the in-game base pose every body clip starts and ends on
+    base: none
+    hips: {y: -12}
+    spine: {rot: -2}
+    chest: {rot: 1}
+    head: {rot: -1}
+    upper_arm_R: {rot: 5}
+    forearm_R: {rot: 4}
+    upper_arm_L: {rot: -4}
+    forearm_L: {rot: -3}
+    attach: {hand_R: open, hand_L: open, eyes: open}
+  # --- idle: a sly head tilt
+  tilt: {neck: {rot: 2}, head: {rot: 7}, look: [60, 140]}
+  # --- idle_bored: shifty glances, polishes the near glove on his chest, admires it
+  glance_back: {chest: {rot: 3}, neck: {rot: 2}, head: {rot: 5}, look: [-420, 60]}
+  glance_fwd: {spine: {rot: -3}, head: {rot: -4}, look: [420, -40]}
+  polish: {spine: {rot: -3}, head: {rot: -7}, look: [80, -260], reach: {hand_R: [470, 640]}, hand_R: {rot: 70}}
+  admire: {head: {rot: -4}, look: [120, -160], reach: {hand_R: [430, 600]}, hand_R: {rot: 110}}
+  # --- spin_start: reaches back and tugs the cap down over his brow
+  tug_reach: {head: {rot: 2}, reach: {hand_R: [318, 188]}, hand_R: {rot: -6}}
+  tug: {base: tug_reach, neck: {rot: -3}, head: {rot: -8}, cap: {rot: -14, y: -6}, reach: {hand_R: [328, 206]}}
+  # --- anticipation: leans toward the reels rubbing his gloves together
+  lean: {hips: {x: 8, y: -16}, spine: {rot: -6}, chest: {rot: -4}, neck: {rot: -1}, head: {rot: 3}, look: [320, -60], upper_arm_R: {rot: 72}, forearm_R: {rot: 78}, hand_R: {rot: -20}, upper_arm_L: {rot: -38}, forearm_L: {rot: 150}, hand_L: {rot: -30}}
+  # --- react_small: snap, then a finger gun at the board and a smug nod
+  snap_ready: {hips: {y: -16}, chest: {rot: 3}, head: {rot: 3}, upper_arm_R: {rot: 51}, forearm_R: {rot: 142}, hand_R: {rot: 0}, attach: {hand_R: fist}}
+  snap: {base: snap_ready, head: {rot: 6}, forearm_R: {rot: 132}, hand_R: {rot: 22}, attach: {hand_R: open}}
+  finger_gun: {hips: {x: 4, y: -14}, spine: {rot: -3}, chest: {rot: 2}, head: {rot: -2}, look: [300, -20], upper_arm_R: {rot: 112}, forearm_R: {rot: -6}, hand_R: {rot: -16}, attach: {hand_R: point}}
+  # --- react_tumble: a quick wing pump
+  wings_up: {hips: {y: -6}, chest: {rot: 4, sy: 1.04}, head: {rot: 5}, upper_arm_R: {rot: -100}, forearm_R: {rot: -16}, upper_arm_L: {rot: 104}, forearm_L: {rot: 14}}
+  wings_down: {hips: {y: -22}, chest: {rot: -3}, head: {rot: -3}, upper_arm_R: {rot: 18}, forearm_R: {rot: 10}, upper_arm_L: {rot: -14}, forearm_L: {rot: -8}}
+  # --- win_big / fs_trigger: crouch, leap with both wings up (fists), the cap twirls, land
+  crouch: {hips: {x: -4, y: -64}, spine: {rot: -12}, chest: {rot: -6}, neck: {rot: -3}, head: {rot: -8}, upper_arm_R: {rot: -26}, forearm_R: {rot: 16}, upper_arm_L: {rot: -18}, forearm_L: {rot: -10}, attach: {hand_R: fist, hand_L: fist}}
+  launch: {hips: {y: 70}, ik_foot_R: {y: 76}, ik_foot_L: {y: 74}, foot_L: {rot: -18}, spine: {rot: 6}, chest: {rot: 7, sy: 1.04}, neck: {rot: 3}, head: {rot: 9}, upper_arm_R: {rot: -122}, forearm_R: {rot: -8}, upper_arm_L: {rot: 128}, forearm_L: {rot: 10}, cap: {y: 40}, attach: {hand_R: fist, hand_L: fist}}
+  apex: {base: launch, hips: {y: 122}, ik_foot_R: {x: -10, y: 146}, ik_foot_L: {x: -8, y: 142}, spine: {rot: 4}, chest: {rot: 5, sy: 1.0}, head: {rot: 6}, upper_arm_R: {rot: -116}, upper_arm_L: {rot: 122}, cap: {y: 96}}
+  apex_a: {base: apex, cap: {y: 112, sx: -1}}
+  apex_b: {base: apex, hips: {y: 112}, ik_foot_R: {x: -10, y: 134}, ik_foot_L: {x: -8, y: 130}, cap: {y: 84, sx: 1}}
+  apex_c: {base: apex, hips: {y: 64}, ik_foot_R: {x: -4, y: 78}, ik_foot_L: {x: -4, y: 76}, foot_L: {rot: -8}, cap: {y: 40, sx: -1}}
+  touch: {hips: {y: -6}, spine: {rot: -4}, chest: {rot: -2}, head: {rot: -2}, upper_arm_R: {rot: -100}, forearm_R: {rot: -6}, upper_arm_L: {rot: 104}, forearm_L: {rot: 8}, cap: {y: 0}, attach: {hand_R: fist, hand_L: fist}}
+  land: {hips: {y: -60}, spine: {rot: -10}, chest: {rot: -5, sx: 1.03}, neck: {rot: -3}, head: {rot: -7}, upper_arm_R: {rot: -60}, forearm_R: {rot: 30}, upper_arm_L: {rot: 66}, forearm_L: {rot: -24}, cap: {y: -10}, attach: {hand_R: fist, hand_L: fist}}
+  yes_pose: {hips: {y: -18}, spine: {rot: 3}, chest: {rot: 6}, head: {rot: 7}, look: [40, 160], upper_arm_R: {rot: -100}, forearm_R: {rot: -36}, hand_R: {rot: -4}, upper_arm_L: {rot: -10}, forearm_L: {rot: 64}, hand_L: {rot: 10}, attach: {hand_R: fist, hand_L: fist}}
+  yes_pull: {base: yes_pose, hips: {y: -24}, chest: {rot: 2}, head: {rot: 3}, upper_arm_R: {rot: -78}, forearm_R: {rot: -70}, forearm_L: {rot: 84}}
+  # --- celebrate: points at the board with the near hand, then fist pumps
+  cel_base: {hips: {y: -16}, chest: {rot: 2}, head: {rot: 2}, upper_arm_R: {rot: -40}, forearm_R: {rot: -30}, upper_arm_L: {rot: -8}, forearm_L: {rot: 30}, attach: {hand_R: fist, hand_L: fist}}
+  point_board: {hips: {x: 6, y: -14}, spine: {rot: -4}, chest: {rot: -2}, head: {rot: -1}, look: [360, -30], upper_arm_R: {rot: 116}, forearm_R: {rot: -8}, hand_R: {rot: -18}, upper_arm_L: {rot: -10}, forearm_L: {rot: -14}, attach: {hand_R: point, hand_L: open}}
+  pump_up: {hips: {y: -8}, chest: {rot: 5}, head: {rot: 7}, look: [60, 160], upper_arm_R: {rot: -103}, forearm_R: {rot: -32}, hand_R: {rot: 0}, upper_arm_L: {rot: -6}, forearm_L: {rot: 56}, attach: {hand_R: fist, hand_L: fist}}
+  pump_down: {base: pump_up, hips: {y: -26}, chest: {rot: 1}, head: {rot: 1}, upper_arm_R: {rot: -72}, forearm_R: {rot: -78}, forearm_L: {rot: 76}}
+  # --- fs_trigger: the big leap
+  deep_crouch: {base: crouch, hips: {x: -6, y: -84}, spine: {rot: -16}, chest: {rot: -8}, head: {rot: -10}, upper_arm_R: {rot: -40}, upper_arm_L: {rot: -30}}
+  leap: {base: launch, hips: {x: 10, y: 100}, ik_foot_R: {x: 8, y: 108}, ik_foot_L: {x: 8, y: 106}, spine: {rot: 8}, chest: {rot: 9, sy: 1.05}, head: {rot: 11}, cap: {y: 30}}
+  leap_apex: {base: leap, hips: {x: 12, y: 156}, ik_foot_R: {x: -6, y: 184}, ik_foot_L: {x: -4, y: 180}, spine: {rot: 2}, chest: {rot: 3, sy: 1.0}, head: {rot: 5}, cap: {y: 46}}
+  leap_fall: {base: leap, hips: {x: 6, y: 80}, ik_foot_R: {x: 4, y: 88}, ik_foot_L: {x: 4, y: 86}, foot_L: {rot: -6}, spine: {rot: -2}, head: {rot: 2}, upper_arm_R: {rot: -90}, upper_arm_L: {rot: 96}, cap: {y: 30}}
+  big_land: {base: land, hips: {x: 4, y: -86}, spine: {rot: -14}, chest: {rot: -7, sx: 1.04}, head: {rot: -10}, cap: {y: -14, rot: -6}}
+  ta_da: {hips: {y: -10}, spine: {rot: 3}, chest: {rot: 5}, head: {rot: 6}, look: [60, 160], upper_arm_R: {rot: -46}, forearm_R: {rot: -10}, hand_R: {rot: -10}, upper_arm_L: {rot: 58}, forearm_L: {rot: 6}, attach: {hand_R: open, hand_L: open}}
+  # --- feature_upgrade: greedy hand rub, then double finger guns at the board and a wink
+  rub: {base: lean, hips: {x: 4, y: -14}, spine: {rot: -3}, chest: {rot: -1}, head: {rot: 4}, look: [200, 40]}
+  guns: {hips: {x: 8, y: -12}, spine: {rot: -5}, chest: {rot: -3}, head: {rot: -3}, look: [360, -40], upper_arm_R: {rot: 108}, forearm_R: {rot: -4}, hand_R: {rot: -16}, upper_arm_L: {rot: 58}, forearm_L: {rot: 4}, hand_L: {rot: 10}, attach: {hand_R: point, hand_L: point}}
+  guns_pop: {base: guns, hips: {x: 10, y: -8}, chest: {rot: 1}, upper_arm_R: {rot: 114}, upper_arm_L: {rot: 64}}
+  # --- fs_end: a gentleman thief's bow, near hand on the heart, far arm swept back
+  bow: {hips: {x: -10, y: -24}, spine: {rot: -24}, chest: {rot: -12}, neck: {rot: -4}, head: {rot: -12}, cap: {rot: -6}, reach: {hand_R: [470, 520]}, hand_R: {rot: 80}, upper_arm_L: {rot: 30}, forearm_L: {rot: 4}, attach: {hand_R: open, hand_L: open}}
+  bow_rise: {hips: {y: -12}, spine: {rot: 2}, chest: {rot: 3}, head: {rot: 5}, look: [60, 120], upper_arm_R: {rot: 4}, upper_arm_L: {rot: -2}}
+
+clips:
+  idle:                          # 150 f loop: two breaths, a weight shift, tail sway, a sly head tilt at f56-f98
+    keys:
+      56: {pose: tilt, ease: sine_in_out}
+      82: {pose: tilt, ease: linear}
+      100: {pose: rest, ease: sine_in_out}
+    swap: {eyes: {60: half, 94: open}}
+    layers:
+      - {preset: breathe, cycles: 2, amount: 0.022}
+      - {preset: weight_shift, amount: 7, dip: 3, cycles: 1, counter: 1.4}
+      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3], amount: 3, cycles: 2, lag: 5, grow: 1.2}
+      - {preset: sway, bone: upper_arm_R, amount: 1.6, cycles: 2, phase: 0.1}
+      - {preset: sway, bone: upper_arm_L, amount: -1.6, cycles: 2, phase: 0.35}
+      - {preset: sway, bone: phys_kerchief_1, amount: 1.5, cycles: 2, phase: 0.2}
+  idle_bored:                    # shifty glances back and forward, polishes the near glove on his chest, admires it
+    keys:
+      18: {pose: glance_back, ease: sine_in_out}
+      38: {pose: glance_back, ease: linear}
+      48: {pose: glance_fwd, ease: expo_out}
+      64: {pose: glance_fwd, ease: linear}
+      78: {pose: rest, ease: sine_in_out}
+      94: {pose: polish, ease: sine_in_out}
+      122: {pose: polish, ease: linear}
+      134: {pose: admire, ease: sine_in_out}
+      156: {pose: admire, ease: linear}
+      172: {pose: rest, ease: sine_in_out}
+    swap: {eyes: {20: half, 46: open, 96: half, 124: open}}
+    layers:
+      - {preset: breathe, cycles: 2, amount: 0.018}
+      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3], amount: 2.5, cycles: 2, lag: 5, grow: 1.2}
+      - {preset: sway, bone: forearm_R, amount: 9, cycles: 4, at: 96, frames: 26}
+  spin_start:                    # reach back, tug the cap down over the brow, smug
+    drag: {lag: 1, gain: 0.35, body: 0.4}
+    keys:
+      6: {pose: tug_reach, ease: sine_out}
+      9: {pose: tug, ease: expo_out}
+      14: {pose: tug, ease: linear}
+      24: {pose: rest, ease: sine_in_out}
+    swap: {eyes: {8: half, 20: open}}
+  anticipation:                  # leans toward the reels rubbing his gloves, tense
+    keys: {0: lean, 36: lean}
+    swap: {eyes: {0: half}}
+    layers:
+      - {preset: sway, bone: forearm_R, amount: 7, cycles: 3}
+      - {preset: sway, bone: forearm_L, amount: -5, cycles: 3, phase: 0.5}
+      - {preset: tremble, bone: head, amount: 0.6, hz: 6}
+      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3], amount: 2, cycles: 1, lag: 3}
+  react_small:                   # snap (ui_click f9), finger gun at the board, smug nod
+    drag: {lag: 1, gain: 0.35, body: 0.4}
+    keys:
+      6: {pose: snap_ready, ease: sine_in_out}
+      9: {pose: snap, ease: expo_out}
+      15: {pose: finger_gun, ease: expo_out}
+      26: {pose: finger_gun, ease: linear}
+      36: {pose: rest, ease: sine_in_out}
+    swap: {eyes: {11: half, 30: open}}
+    layers:
+      - {preset: nod, at: 15, count: 1, every: 12, amount: 7, bob: 4}
+      - {preset: flick, bone: hand_R, at: 9, amount: 14, frames: 8}
+  react_tumble:                  # a quick wing pump
+    drag: {lag: 1, gain: 0.4, body: 0.4}
+    keys:
+      5: {pose: wings_up, ease: expo_out}
+      10: {pose: wings_down, ease: sine_in}
+      15: {pose: wings_up, ease: sine_out}
+      24: {pose: rest, ease: sine_in_out}
+    swap: {eyes: {5: wide, 18: open}}
+    layers:
+      - {preset: jolt, bone: hips, at: 9, y: -6, attack: 2, hold: 0, recover: 8, overshoot: 0.3}
+  win_big:                       # crouch, leap (wild_whoosh f11) with both wings up, the cap twirls, land (land_light f31), fists on hips
+    drag: {lag: 1, gain: 0.35, body: 0.4}
+    keys:
+      7: {pose: crouch, ease: sine_in_out}
+      11: {pose: launch, ease: expo_out}
+      16: {pose: apex_a, ease: sine_out}
+      21: {pose: apex_b, ease: linear}
+      26: {pose: apex_c, ease: sine_in}
+      30: {pose: touch, ease: quad_in}
+      33: {pose: land, ease: expo_out}
+      40: {pose: yes_pose, ease: back_out}
+      44: {pose: yes_pull, ease: expo_out}
+      52: {pose: yes_pull, ease: linear}
+      60: {pose: rest, ease: sine_in_out}
+    swap: {eyes: {6: closed, 11: wide, 33: closed, 36: half, 54: open}}
+  celebrate:                     # 72 f loop: points at the board (f8-f26), then two fist pumps
+    keys:
+      0: cel_base
+      8: {pose: point_board, ease: expo_out}
+      26: {pose: point_board, ease: linear}
+      34: {pose: pump_up, ease: sine_in_out}
+      40: {pose: pump_down, ease: expo_out}
+      46: {pose: pump_up, ease: sine_out}
+      52: {pose: pump_down, ease: expo_out}
+      60: {pose: pump_up, ease: sine_out}
+      72: {pose: cel_base, ease: sine_in_out}
+    swap: {eyes: {10: half, 30: open}}
+    layers:
+      - {preset: nod, every: 18, amount: 4, bob: 5, chest: 0.3}
+      - {preset: sway, chain: [phys_tail_1, phys_tail_2, phys_tail_3], amount: 4, cycles: 2, lag: 3, grow: 1.1}
+  fs_trigger:                    # the big leap (wild_whoosh f19), land heavy (f41), ta-da
+    drag: {lag: 1, gain: 0.35, body: 0.4}
+    keys:
+      12: {pose: deep_crouch, ease: sine_in_out}
+      15: {pose: deep_crouch, ease: linear}
+      19: {pose: leap, ease: quad_out}
+      28: {pose: leap_apex, ease: sine_out}
+      34: {pose: leap_apex, ease: linear}
+      39: {pose: leap_fall, ease: sine_in}
+      41: {pose: big_land, ease: expo_out}
+      52: {pose: ta_da, ease: back_out}
+      64: {pose: ta_da, ease: linear}
+      75: {pose: rest, ease: sine_in_out}
+    swap: {eyes: {10: closed, 19: wide, 41: closed, 46: half, 66: open}}
+  feature_upgrade:               # greedy hand rub, then double finger guns at the board with a wink
+    drag: {lag: 1, gain: 0.35, body: 0.4}
+    keys:
+      6: {pose: rub, ease: sine_in_out}
+      18: {pose: rub, ease: linear}
+      23: {pose: guns, ease: expo_out}
+      27: {pose: guns_pop, ease: sine_out}
+      42: {pose: guns_pop, ease: linear}
+      54: {pose: rest, ease: sine_in_out}
+    swap: {eye_R: {8: half, 24: closed, 36: open}, eye_L: {8: half, 24: open}}
+    layers:
+      - {preset: sway, bone: forearm_R, amount: 8, cycles: 4, at: 5, frames: 15}
+      - {preset: nod, at: 24, count: 1, every: 12, amount: 6, bob: 3}
+  fs_end:                        # bow, near hand on the heart, far arm swept back
+    keys:
+      14: {pose: bow, ease: sine_in_out}
+      30: {pose: bow, ease: linear}
+      42: {pose: bow_rise, ease: sine_out}
+      54: {pose: rest, ease: sine_in_out}
+    swap: {eyes: {12: closed, 34: half, 46: open}}
+  blink:                         # track 2: lids closed f1-f3
+    track: 2
+    layers: [{preset: blink, at: 0, soft: false}]

@@ -1,0 +1,56 @@
+# sym_H1 Jeweled Crown (Magpie Heist high, landWeight heavy, cellScale 0.97). Parts: parts.json (tools/mhart/rigs/cut_H1.py,
+# master-cut). Coordinates: 360 x 360 @2x canvas, image space (y down); keypoints in build/qa/rigs/mh_sym_H1/cut.json.
+# Build: tools/mhart/rigs/build.sh H1 [--cut] [--capture dir]   (mhgen.py = stock gen.py + bdgen clip layer + heist.yaml)
+# 8 slots, back to front: fx_glow, velvet, points (mesh: band rim + 5 prong bones), pearls (island mesh: 5 quads on
+# the pearl bones), band, fx_gems (lit gems, normal blend, alpha 0 at rest), fx_sheen (sweep frames, empty at rest),
+# fx_glint (additive star). The prongs are rotate-physics bones (the pearls ride their tips and whip); the pearl
+# bones only matter in `explode`, where the pearls fly off.
+symbol: H1
+parts: parts.json
+kind: high
+
+bones:
+  - {name: band, parent: body, joint: [180.0, 227.4]}
+  # the band's top rim as two weight-only bones (the rim arcs: high in the middle), the prong mesh's anchor
+  - {name: band_rim_L, parent: band, joint: [74.0, 196.0], tip: [180.0, 183.0]}
+  - {name: band_rim_R, parent: band, joint: [180.0, 183.0], tip: [286.0, 196.0]}
+  - {name: velvet, parent: body, joint: [180.0, 187.0]}
+  - {name: phys_prong_1_L, parent: band, joint: [84.4, 192.4], tip: [55.1, 132.6]}
+  - {name: phys_prong_2_L, parent: band, joint: [118.0, 187.4], tip: [106.5, 111.0]}
+  - {name: phys_prong_mid, parent: band, joint: [180.0, 182.3], tip: [180.0, 100.9]}
+  - {name: phys_prong_2_R, parent: band, joint: [242.0, 187.4], tip: [253.4, 111.0]}
+  - {name: phys_prong_1_R, parent: band, joint: [275.4, 192.4], tip: [304.8, 132.6]}
+  - {name: pearl_1_L, parent: phys_prong_1_L, joint: [55.1, 132.6]}
+  - {name: pearl_2_L, parent: phys_prong_2_L, joint: [106.5, 111.0]}
+  - {name: pearl_mid, parent: phys_prong_mid, joint: [180.0, 100.9]}
+  - {name: pearl_2_R, parent: phys_prong_2_R, joint: [253.4, 111.0]}
+  - {name: pearl_1_R, parent: phys_prong_1_R, joint: [304.8, 132.6]}
+
+meshes:
+  points: {type: trace, spacing: 18, pad: 3,
+           weights: {mode: idw, power: 4, max: 3,
+                     bones: [band_rim_L, band_rim_R, phys_prong_1_L, phys_prong_2_L, phys_prong_mid, phys_prong_2_R, phys_prong_1_R]}}
+
+# the long outer prongs swing a little lower and looser than the short inner ones; never below 3.5 Hz (not floaty)
+physics:
+  - {bone: phys_prong_1_L, f: 3.6, zeta: 0.22, rotate: 1, inertia: 0.65}
+  - {bone: phys_prong_2_L, f: 4.2, zeta: 0.26, rotate: 1, inertia: 0.6}
+  - {bone: phys_prong_mid, f: 4.5, zeta: 0.28, rotate: 1, inertia: 0.6}
+  - {bone: phys_prong_2_R, f: 4.2, zeta: 0.26, rotate: 1, inertia: 0.6}
+  - {bone: phys_prong_1_R, f: 3.6, zeta: 0.22, rotate: 1, inertia: 0.65}
+
+motion:
+  idle: {frames: 72, sway: 1.2, breath: 0.012}
+  land: {squash: 0.845, rebound: 0.07, settle: 0.02, frames: 12, keys: [0, 2, 5, 9]}
+  win: {pop: 1.26, wiggle: 6, under: 1.04, over: 1.14, glow_scale: 1.1}
+  win_loop: {frames: 44, beats: 2, pulse: 0.035, sway: 2.5, bounce: 0.035}
+  explode: {frames: 13, burst_frame: 2, burst_peak_frame: 4, squeeze: 0.86, burst_scale: 1.2, end_scale: 1.26,
+            scatter: 42, spin: 14, fade_from: 4, body_fade: [3, 9]}
+  appear: {frames: 9}
+  blur: {frames: 1}
+
+accents:
+  land:
+    - {bone: velvet, type: squash, amount: 0.1, at: impact+1, frames: 9}
+  win:
+    - {bone: body, type: hop, amount: 20, at: dip, frames: 10}

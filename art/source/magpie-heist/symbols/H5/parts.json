@@ -1,0 +1,224 @@
+{
+ "$comment": "sym_H5 parts: owned-code vector layers from tools/mhart/vector/standins.mjs (one layer per part, each with its own outline; the master is the layers stacked); fx sprites (glow, key_gold_lit, sheen_1..6, glint) drawn by tools/mhart/rigs/cut_vector.py. Canvas 360 @2x, content = cellScale 0.95 x 300.",
+ "symbol": "H5",
+ "canvas": [
+  360,
+  360
+ ],
+ "images": "../../spine/images",
+ "$blur": [
+  "key_silver",
+  "key_bronze",
+  "key_gold",
+  "ring"
+ ],
+ "parts": [
+  {
+   "name": "glow",
+   "bbox": [
+    87,
+    112,
+    165,
+    165
+   ],
+   "slot": "fx_glow",
+   "z": 0,
+   "bone": "fx_glow",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    169.5,
+    194.5
+   ],
+   "$src": "code"
+  },
+  {
+   "name": "key_silver",
+   "bbox": [
+    51,
+    115,
+    116,
+    191
+   ],
+   "z": 1,
+   "bone": "key_silver",
+   "$src": "code",
+   "joint": [
+    134.1,
+    139.0
+   ]
+  },
+  {
+   "name": "key_bronze",
+   "bbox": [
+    170,
+    115,
+    139,
+    188
+   ],
+   "z": 2,
+   "bone": "key_bronze",
+   "$src": "code",
+   "joint": [
+    204.9,
+    139.0
+   ]
+  },
+  {
+   "name": "key_gold",
+   "bbox": [
+    127,
+    121,
+    86,
+    202
+   ],
+   "z": 3,
+   "bone": "key_gold",
+   "$src": "code",
+   "joint": [
+    169.5,
+    146.0
+   ]
+  },
+  {
+   "name": "key_gold_lit",
+   "bbox": [
+    127,
+    121,
+    86,
+    202
+   ],
+   "z": 4,
+   "bone": "key_gold",
+   "slot": "fx_lit",
+   "color": "ffffff00",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_1",
+   "bbox": [
+    131,
+    130,
+    78,
+    190
+   ],
+   "z": 5,
+   "bone": "key_gold",
+   "slot": "fx_sheen",
+   "hidden": true,
+   "$src": "code"
+  },
+  {
+   "name": "sheen_2",
+   "bbox": [
+    131,
+    124,
+    78,
+    196
+   ],
+   "z": 5,
+   "bone": "key_gold",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_3",
+   "bbox": [
+    131,
+    124,
+    78,
+    196
+   ],
+   "z": 5,
+   "bone": "key_gold",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_4",
+   "bbox": [
+    131,
+    124,
+    78,
+    196
+   ],
+   "z": 5,
+   "bone": "key_gold",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_5",
+   "bbox": [
+    131,
+    124,
+    78,
+    196
+   ],
+   "z": 5,
+   "bone": "key_gold",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "sheen_6",
+   "bbox": [
+    131,
+    124,
+    78,
+    187
+   ],
+   "z": 5,
+   "bone": "key_gold",
+   "slot": "fx_sheen",
+   "$src": "code"
+  },
+  {
+   "name": "ring",
+   "bbox": [
+    104,
+    32,
+    131,
+    131
+   ],
+   "z": 6,
+   "bone": "ring",
+   "$src": "code",
+   "joint": [
+    169.5,
+    97.4
+   ]
+  },
+  {
+   "name": "sparkle",
+   "bbox": [
+    153,
+    302,
+    23,
+    23
+   ],
+   "z": 7,
+   "bone": "sparkle",
+   "$src": "code"
+  },
+  {
+   "name": "glint",
+   "bbox": [
+    116,
+    113,
+    72,
+    72
+   ],
+   "slot": "fx_glint",
+   "z": 8,
+   "bone": "fx_glint",
+   "blend": "additive",
+   "color": "ffffff00",
+   "joint": [
+    152.2,
+    148.7
+   ],
+   "$src": "code"
+  }
+ ]
+}

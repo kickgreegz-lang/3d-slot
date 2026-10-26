@@ -100,7 +100,7 @@ Placeholder procedural SFX from the engine bank: gilds `spot_mark`, comet ticks 
 
 ## 10. Open items
 
-1. **Art still to generate** (Higgsfield daily cap, ART_PLAN §3): H2–H5, Safe, loot pieces, plate clean-up, portrait plate, heist plate variant, Monty hand poses. Until then: engine placeholder glyphs for H2–H5 / S and painted loot.
+1. **Art still to generate** (Higgsfield daily cap, ART_PLAN §3): H2–H5, Safe, loot pieces, plate clean-up, portrait plate, heist plate variant, Monty hand poses. Until then: owned-code vector stand-ins for H2–H5 / S (same outline and shading rules) and painted loot.
 2. **Certified math**: the books are a deterministic mock (`tools/mockmath/magpie-heist`), not RTP-tuned.
 3. **Dedicated SFX ids and music** (engine `SfxId` union) for the glint / loot / star beats.
 4. **Word-mark** by a typographer and a trademark search for the title.

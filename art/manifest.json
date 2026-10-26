@@ -19668,6 +19668,1426 @@
       "sha256": "2aa446f7af762ce5d572d3155cb08495d6a5a1b96dbd0438db5877235c374da2",
       "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/ui/logo_crest.png",
       "route": "code"
+    },
+    {
+      "id": "mh.symbols.h2.standin.2f25d46e",
+      "path": "art/source/magpie-heist/symbols/H2/standin.svg",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:02Z",
+      "sha256": "2f25d46e566c645e3f67092b9c7caff50d66b4aa01795027af47c258a64ebd1f",
+      "notes": "sym_H2 owned-code vector stand-in (formula M rules), written by tools/mhart/vector/standins.mjs",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h2.master_1024.fad5f0fd",
+      "path": "art/source/magpie-heist/symbols/H2/master_1024.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "2f25d46e566c645e3f67092b9c7caff50d66b4aa01795027af47c258a64ebd1f"
+      ],
+      "parents": [
+        "mh.symbols.h2.standin.2f25d46e"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:02Z",
+      "sha256": "fad5f0fdc2e1ebccf811cfa926135817fcb9205444f770618b4711dafc2cac0f",
+      "notes": "sym_H2 master: standin.svg rasterised 1024 px by @resvg/resvg-js (transparent)",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h2.board.67176bd9",
+      "path": "art/source/magpie-heist/symbols/H2/board.png",
+      "stage": "packaging",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "fad5f0fdc2e1ebccf811cfa926135817fcb9205444f770618b4711dafc2cac0f"
+      ],
+      "parents": [
+        "mh.symbols.h2.master_1024.fad5f0fd"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:03Z",
+      "sha256": "67176bd9d2bcce6c58b4e1e11523c1dc8045beda0ef1531ebb929b7994278633",
+      "notes": "sym_H2 board sprite: vector master fitted on the 360 @2x canvas (cellScale)",
+      "route": "code"
+    },
+    {
+      "id": "board.blur.5402a000",
+      "path": "art/source/magpie-heist/symbols/H2/board_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "67176bd9d2bcce6c58b4e1e11523c1dc8045beda0ef1531ebb929b7994278633"
+      ],
+      "parents": [
+        "mh.symbols.h2.board.67176bd9"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:04Z",
+      "sha256": "5402a000f87c6d6eacdd08f4ba7a2cce2447896a848df95e15929820e2f58598",
+      "notes": "blur variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "board.glow.00265f1d",
+      "path": "art/source/magpie-heist/symbols/H2/board_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "67176bd9d2bcce6c58b4e1e11523c1dc8045beda0ef1531ebb929b7994278633"
+      ],
+      "parents": [
+        "mh.symbols.h2.board.67176bd9"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:04Z",
+      "sha256": "00265f1ddbecec6b975c9829f11ddfdedc2be37411fe80ff86d70ddc5005ec7c",
+      "notes": "glow variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h3.standin.1aac1754",
+      "path": "art/source/magpie-heist/symbols/H3/standin.svg",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:04Z",
+      "sha256": "1aac1754cb4c15c502c8cfaa1c5c9279235cd2aad5926463b6b7713bb6cbd461",
+      "notes": "sym_H3 owned-code vector stand-in (formula M rules), written by tools/mhart/vector/standins.mjs",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h3.master_1024.a4aa0006",
+      "path": "art/source/magpie-heist/symbols/H3/master_1024.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "1aac1754cb4c15c502c8cfaa1c5c9279235cd2aad5926463b6b7713bb6cbd461"
+      ],
+      "parents": [
+        "mh.symbols.h3.standin.1aac1754"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:04Z",
+      "sha256": "a4aa00061f978773805c7a0051d77554df18fa1f23d7d00daaa84b918df7f2db",
+      "notes": "sym_H3 master: standin.svg rasterised 1024 px by @resvg/resvg-js (transparent)",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h3.board.d895c03b",
+      "path": "art/source/magpie-heist/symbols/H3/board.png",
+      "stage": "packaging",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a4aa00061f978773805c7a0051d77554df18fa1f23d7d00daaa84b918df7f2db"
+      ],
+      "parents": [
+        "mh.symbols.h3.master_1024.a4aa0006"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:05Z",
+      "sha256": "d895c03bf2d292b5e87488051b6b452ad87cb8dd22e7e31b9593cdf00fc90856",
+      "notes": "sym_H3 board sprite: vector master fitted on the 360 @2x canvas (cellScale)",
+      "route": "code"
+    },
+    {
+      "id": "board.blur.91fd63f1",
+      "path": "art/source/magpie-heist/symbols/H3/board_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "d895c03bf2d292b5e87488051b6b452ad87cb8dd22e7e31b9593cdf00fc90856"
+      ],
+      "parents": [
+        "mh.symbols.h3.board.d895c03b"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:06Z",
+      "sha256": "91fd63f1ce90428955245f302a958fd867d53d858e575392a46115812c69cd5a",
+      "notes": "blur variant, restAngle -8.0",
+      "route": "code"
+    },
+    {
+      "id": "board.glow.7c47ae36",
+      "path": "art/source/magpie-heist/symbols/H3/board_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "d895c03bf2d292b5e87488051b6b452ad87cb8dd22e7e31b9593cdf00fc90856"
+      ],
+      "parents": [
+        "mh.symbols.h3.board.d895c03b"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:06Z",
+      "sha256": "7c47ae36aaa1e340a8076d445b837841b3aeccd3c7aab0779ffa9d9cb4ce4aad",
+      "notes": "glow variant, restAngle -8.0",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h4.standin.80310748",
+      "path": "art/source/magpie-heist/symbols/H4/standin.svg",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:06Z",
+      "sha256": "80310748e9e7c0688be3212317bdf1a8b0612c36639ab0de50bc66dbbd38fe52",
+      "notes": "sym_H4 owned-code vector stand-in (formula M rules), written by tools/mhart/vector/standins.mjs",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h4.master_1024.e6d03acd",
+      "path": "art/source/magpie-heist/symbols/H4/master_1024.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "80310748e9e7c0688be3212317bdf1a8b0612c36639ab0de50bc66dbbd38fe52"
+      ],
+      "parents": [
+        "mh.symbols.h4.standin.80310748"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:06Z",
+      "sha256": "e6d03acdf2c0e2ad0f3649ae743259dae6c280abf43333ca033e066f5b1a6459",
+      "notes": "sym_H4 master: standin.svg rasterised 1024 px by @resvg/resvg-js (transparent)",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h4.board.3ce6837a",
+      "path": "art/source/magpie-heist/symbols/H4/board.png",
+      "stage": "packaging",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "e6d03acdf2c0e2ad0f3649ae743259dae6c280abf43333ca033e066f5b1a6459"
+      ],
+      "parents": [
+        "mh.symbols.h4.master_1024.e6d03acd"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:07Z",
+      "sha256": "3ce6837a6f4d7f7258a2b51ad75fd104f518fdccee76c5df53fc9d76fa41456d",
+      "notes": "sym_H4 board sprite: vector master fitted on the 360 @2x canvas (cellScale)",
+      "route": "code"
+    },
+    {
+      "id": "board.blur.26d092ad",
+      "path": "art/source/magpie-heist/symbols/H4/board_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3ce6837a6f4d7f7258a2b51ad75fd104f518fdccee76c5df53fc9d76fa41456d"
+      ],
+      "parents": [
+        "mh.symbols.h4.board.3ce6837a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:08Z",
+      "sha256": "26d092ad3c6a29c390e9af5c53c6f7174135104c9b1f9bf5faa83ad4313bf5e7",
+      "notes": "blur variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "board.glow.26fcc90b",
+      "path": "art/source/magpie-heist/symbols/H4/board_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3ce6837a6f4d7f7258a2b51ad75fd104f518fdccee76c5df53fc9d76fa41456d"
+      ],
+      "parents": [
+        "mh.symbols.h4.board.3ce6837a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:08Z",
+      "sha256": "26fcc90b9441f4140aac685245bdc5de870a88a75d97fc8b98ee5ba2677c8ead",
+      "notes": "glow variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h5.standin.1f5277a4",
+      "path": "art/source/magpie-heist/symbols/H5/standin.svg",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:08Z",
+      "sha256": "1f5277a469585de376ca2ac41bfde377b9593139e674f4283024d61c469f252b",
+      "notes": "sym_H5 owned-code vector stand-in (formula M rules), written by tools/mhart/vector/standins.mjs",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h5.master_1024.453ab5df",
+      "path": "art/source/magpie-heist/symbols/H5/master_1024.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "1f5277a469585de376ca2ac41bfde377b9593139e674f4283024d61c469f252b"
+      ],
+      "parents": [
+        "mh.symbols.h5.standin.1f5277a4"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:08Z",
+      "sha256": "453ab5dfa6c49c04994a22c468d06467b9da3a9938ee9f47ed14f1e82c0da218",
+      "notes": "sym_H5 master: standin.svg rasterised 1024 px by @resvg/resvg-js (transparent)",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.h5.board.9bad1a06",
+      "path": "art/source/magpie-heist/symbols/H5/board.png",
+      "stage": "packaging",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "453ab5dfa6c49c04994a22c468d06467b9da3a9938ee9f47ed14f1e82c0da218"
+      ],
+      "parents": [
+        "mh.symbols.h5.master_1024.453ab5df"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:09Z",
+      "sha256": "9bad1a06d9438a8f093b5923dd95f2610a3289a0d20bfff0f8dc74d5f5c2ccab",
+      "notes": "sym_H5 board sprite: vector master fitted on the 360 @2x canvas (cellScale)",
+      "route": "code"
+    },
+    {
+      "id": "board.blur.fe4bd37a",
+      "path": "art/source/magpie-heist/symbols/H5/board_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9bad1a06d9438a8f093b5923dd95f2610a3289a0d20bfff0f8dc74d5f5c2ccab"
+      ],
+      "parents": [
+        "mh.symbols.h5.board.9bad1a06"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:10Z",
+      "sha256": "fe4bd37a94363bbc533097bb08f75ab547cfeac69a16dcd4a9975c0a5ae797e2",
+      "notes": "blur variant, restAngle -10.0",
+      "route": "code"
+    },
+    {
+      "id": "board.glow.a5a22f92",
+      "path": "art/source/magpie-heist/symbols/H5/board_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9bad1a06d9438a8f093b5923dd95f2610a3289a0d20bfff0f8dc74d5f5c2ccab"
+      ],
+      "parents": [
+        "mh.symbols.h5.board.9bad1a06"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:10Z",
+      "sha256": "a5a22f92fd607bbd13ec4bf6468752ffe998a5f2e4f7f2aa84d85e95f4e40390",
+      "notes": "glow variant, restAngle -10.0",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.s.standin.768f1afc",
+      "path": "art/source/magpie-heist/symbols/S/standin.svg",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [],
+      "parents": [],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:10Z",
+      "sha256": "768f1afce0b859a36fed56b36ebe701335dce380e6441911f6af6a232d9830d5",
+      "notes": "sym_S owned-code vector stand-in (formula M rules), written by tools/mhart/vector/standins.mjs",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.s.master_1024.9824da84",
+      "path": "art/source/magpie-heist/symbols/S/master_1024.png",
+      "stage": "2d-image",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "768f1afce0b859a36fed56b36ebe701335dce380e6441911f6af6a232d9830d5"
+      ],
+      "parents": [
+        "mh.symbols.s.standin.768f1afc"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:10Z",
+      "sha256": "9824da84aa9fa2767e44d801d3f069f8eb6d1edef379563976ef0660a20e026d",
+      "notes": "sym_S master: standin.svg rasterised 1024 px by @resvg/resvg-js (transparent)",
+      "route": "code"
+    },
+    {
+      "id": "mh.symbols.s.board.981a191f",
+      "path": "art/source/magpie-heist/symbols/S/board.png",
+      "stage": "packaging",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/mhart/build_art.py",
+      "version": "mh-1",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9824da84aa9fa2767e44d801d3f069f8eb6d1edef379563976ef0660a20e026d"
+      ],
+      "parents": [
+        "mh.symbols.s.master_1024.9824da84"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:11Z",
+      "sha256": "981a191fb17d34ca8c808c08bf7f53ea7f90ad98bae405e693d6aa01aaaede8a",
+      "notes": "sym_S board sprite: vector master fitted on the 360 @2x canvas (cellScale)",
+      "route": "code"
+    },
+    {
+      "id": "board.blur.a37b660a",
+      "path": "art/source/magpie-heist/symbols/S/board_blur.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "981a191fb17d34ca8c808c08bf7f53ea7f90ad98bae405e693d6aa01aaaede8a"
+      ],
+      "parents": [
+        "mh.symbols.s.board.981a191f"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:13Z",
+      "sha256": "a37b660a3c291c8f9a6b48899da4d24f224207f1cb44a01c702b56fe8b025d1e",
+      "notes": "blur variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "board.glow.5ad7282b",
+      "path": "art/source/magpie-heist/symbols/S/board_glow.png",
+      "stage": "matting",
+      "shipped": false,
+      "vendor": "self",
+      "model": "tools/matte/variants.py",
+      "version": "dbed2ea5f62c",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "981a191fb17d34ca8c808c08bf7f53ea7f90ad98bae405e693d6aa01aaaede8a"
+      ],
+      "parents": [
+        "mh.symbols.s.board.981a191f"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:13Z",
+      "sha256": "5ad7282b6bd4b067d58c5cccfd9cfb17478ddc053cf02c2e85252b8bd04fa8c4",
+      "notes": "glow variant, restAngle 0.0",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h2_2x.091ed2ee",
+      "path": "public/assets/magpie-heist/symbols/sym_H2@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "67176bd9d2bcce6c58b4e1e11523c1dc8045beda0ef1531ebb929b7994278633"
+      ],
+      "parents": [
+        "mh.symbols.h2.board.67176bd9"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:43Z",
+      "sha256": "091ed2ee57d577f4a4b1a2e3c6bb5b247be029c9eb320974c7779e4c8d135924",
+      "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/symbols/H2/board.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h2_blur_2x.13f2e147",
+      "path": "public/assets/magpie-heist/symbols/sym_H2_blur@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "5402a000f87c6d6eacdd08f4ba7a2cce2447896a848df95e15929820e2f58598"
+      ],
+      "parents": [
+        "board.blur.5402a000"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:45Z",
+      "sha256": "13f2e147c4c72fdbe39be2e32c78cb17f76b5666a1b44a65fb2e49653199d534",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H2/board_blur.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h2_glow_2x.10c7de37",
+      "path": "public/assets/magpie-heist/symbols/sym_H2_glow@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "00265f1ddbecec6b975c9829f11ddfdedc2be37411fe80ff86d70ddc5005ec7c"
+      ],
+      "parents": [
+        "board.glow.00265f1d"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:48Z",
+      "sha256": "10c7de37f5f76f49c53b9cc762151afbed3038bdb8d4f3f058905aca8cdf3a68",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H2/board_glow.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h3_2x.c8656a75",
+      "path": "public/assets/magpie-heist/symbols/sym_H3@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "d895c03bf2d292b5e87488051b6b452ad87cb8dd22e7e31b9593cdf00fc90856"
+      ],
+      "parents": [
+        "mh.symbols.h3.board.d895c03b"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:48Z",
+      "sha256": "c8656a754b6d0b33901a4aab84e5ed22072fd82e4445a242af87b04068295663",
+      "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/symbols/H3/board.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h3_blur_2x.955d0ed9",
+      "path": "public/assets/magpie-heist/symbols/sym_H3_blur@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "91fd63f1ce90428955245f302a958fd867d53d858e575392a46115812c69cd5a"
+      ],
+      "parents": [
+        "board.blur.91fd63f1"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:51Z",
+      "sha256": "955d0ed9fa3f43d94999eb042c94788d86c37d20d757af577eaad45853eb0c63",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H3/board_blur.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h3_glow_2x.013fd808",
+      "path": "public/assets/magpie-heist/symbols/sym_H3_glow@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "7c47ae36aaa1e340a8076d445b837841b3aeccd3c7aab0779ffa9d9cb4ce4aad"
+      ],
+      "parents": [
+        "board.glow.7c47ae36"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:55Z",
+      "sha256": "013fd808911003fb1c5c27e9cb4303810cd6c1dfaf165a2cbd43def85095100e",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H3/board_glow.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h4_2x.fff7198c",
+      "path": "public/assets/magpie-heist/symbols/sym_H4@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "3ce6837a6f4d7f7258a2b51ad75fd104f518fdccee76c5df53fc9d76fa41456d"
+      ],
+      "parents": [
+        "mh.symbols.h4.board.3ce6837a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:55Z",
+      "sha256": "fff7198cd2c043d7d746b539b461e9f4ac3b845663a42a39f21ba06fc119a982",
+      "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/symbols/H4/board.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h4_blur_2x.6bcf2ff2",
+      "path": "public/assets/magpie-heist/symbols/sym_H4_blur@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "26d092ad3c6a29c390e9af5c53c6f7174135104c9b1f9bf5faa83ad4313bf5e7"
+      ],
+      "parents": [
+        "board.blur.26d092ad"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:58:57Z",
+      "sha256": "6bcf2ff2ef262a3d9b2a9006e125037967a06cbac61d324fe407ebeb2a91b998",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H4/board_blur.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h4_glow_2x.e6ff011b",
+      "path": "public/assets/magpie-heist/symbols/sym_H4_glow@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "26fcc90b9441f4140aac685245bdc5de870a88a75d97fc8b98ee5ba2677c8ead"
+      ],
+      "parents": [
+        "board.glow.26fcc90b"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:59:01Z",
+      "sha256": "e6ff011b85e3c091fdfb1dd4ad55fcb95fa968980c7b6413b8c8159917505e7f",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H4/board_glow.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h5_2x.789c59d5",
+      "path": "public/assets/magpie-heist/symbols/sym_H5@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "9bad1a06d9438a8f093b5923dd95f2610a3289a0d20bfff0f8dc74d5f5c2ccab"
+      ],
+      "parents": [
+        "mh.symbols.h5.board.9bad1a06"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:59:01Z",
+      "sha256": "789c59d591ee5dcd17a5557b2948e3c311a059c76db64f8e29b0ffb2dcc37a5c",
+      "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/symbols/H5/board.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h5_blur_2x.47aa6385",
+      "path": "public/assets/magpie-heist/symbols/sym_H5_blur@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "fe4bd37a94363bbc533097bb08f75ab547cfeac69a16dcd4a9975c0a5ae797e2"
+      ],
+      "parents": [
+        "board.blur.fe4bd37a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:59:05Z",
+      "sha256": "47aa63857687bf3c98f727ac275e6756f4cd7744d5533ec7fdfed0dafb69e6d0",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H5/board_blur.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_h5_glow_2x.c17fb633",
+      "path": "public/assets/magpie-heist/symbols/sym_H5_glow@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a5a22f92fd607bbd13ec4bf6468752ffe998a5f2e4f7f2aa84d85e95f4e40390"
+      ],
+      "parents": [
+        "board.glow.a5a22f92"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:59:08Z",
+      "sha256": "c17fb6336f1dbdf575f8cb413483a7ef4a07b5e482894f1ba49a509c0346e8d1",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/H5/board_glow.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_s_2x.64824602",
+      "path": "public/assets/magpie-heist/symbols/sym_S@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "981a191fb17d34ca8c808c08bf7f53ea7f90ad98bae405e693d6aa01aaaede8a"
+      ],
+      "parents": [
+        "mh.symbols.s.board.981a191f"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:59:09Z",
+      "sha256": "6482460228b1355ee4048f63f7176e067b7500d359b309cc52fd198429c727b8",
+      "notes": "magpie-heist: WebP re-encode {\"lossless\": true} of art/source/magpie-heist/symbols/S/board.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_s_blur_2x.3d2aecd6",
+      "path": "public/assets/magpie-heist/symbols/sym_S_blur@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "a37b660a3c291c8f9a6b48899da4d24f224207f1cb44a01c702b56fe8b025d1e"
+      ],
+      "parents": [
+        "board.blur.a37b660a"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:59:11Z",
+      "sha256": "3d2aecd6a5269bcf2679b23b24718ff91af4960b0437ccbfc6055c03bb1c13a0",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/S/board_blur.png",
+      "route": "code"
+    },
+    {
+      "id": "ship.magpie-heist.symbols.sym_s_glow_2x.856a802b",
+      "path": "public/assets/magpie-heist/symbols/sym_S_glow@2x.webp",
+      "stage": "packaging",
+      "shipped": true,
+      "vendor": "self",
+      "model": "tools/licence/ship.py",
+      "version": "ea6bc3bef5a2",
+      "seed": null,
+      "jobId": null,
+      "promptPath": null,
+      "promptHash": null,
+      "template": null,
+      "refHashes": [
+        "5ad7282b6bd4b067d58c5cccfd9cfb17478ddc053cf02c2e85252b8bd04fa8c4"
+      ],
+      "parents": [
+        "board.glow.5ad7282b"
+      ],
+      "planTier": null,
+      "tosVersion": null,
+      "licenseId": "owned-code",
+      "humanEditor": null,
+      "humanEditSummary": null,
+      "approvedBy": null,
+      "cost": {
+        "amount": 0,
+        "currency": "USD",
+        "unit": "local compute",
+        "estimated": false
+      },
+      "date": "2026-10-26T17:59:13Z",
+      "sha256": "856a802b1383086470f87e26f7281c511c1e6a2ab585ba169eab66fe914bae00",
+      "notes": "magpie-heist: WebP re-encode {\"quality\": 88} of art/source/magpie-heist/symbols/S/board_glow.png",
+      "route": "code"
     }
   ]
 }

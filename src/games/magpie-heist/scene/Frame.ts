@@ -36,7 +36,9 @@ export class Frame implements GameModule {
     const { ctx } = this;
     ctx.layers.panel.addChild(this.panel);
     ctx.layers.frame.addChild(this.frame, this.sweep, this.sweepMask, this.rubies);
-    this.sweep.texture = shineTexture();
+    this.sweep.texture = streakTexture();
+    this.sweep.anchor.set(0.5);
+    this.sweep.rotation = 0.36;
     this.sweep.mask = this.sweepMask;
     this.offs.push(
       ctx.game.on('layout:change', ({ layout }) => this.layout(layout)),
@@ -76,9 +78,9 @@ export class Frame implements GameModule {
     const F = L.frame;
     const P = L.panel;
     this.sweepMask.rect(F.x, F.y, F.w, F.h).fill(0xffffff).rect(P.x, P.y, P.w, P.h).cut();
-    this.sweep.height = F.h * 1.4;
-    this.sweep.width = F.h * 0.9;
-    this.sweep.y = F.y - F.h * 0.2;
+    this.sweep.height = F.h * 1.5;
+    this.sweep.width = F.h * 0.3;
+    this.sweep.y = F.y + F.h / 2;
     // corner rubies
     this.rubies.removeChildren().forEach((c) => c.destroy());
     const u = L.frameParts.post / 54;
@@ -105,7 +107,7 @@ export class Frame implements GameModule {
     const u = (this.time % period) / period;
     const k = Math.min(1, u / 0.28);
     this.sweep.alpha = calm * (k < 1 ? 0.55 * Math.sin(k * Math.PI) : 0);
-    this.sweep.x = F.x - F.h * 0.5 + (F.w + F.h) * k;
+    this.sweep.x = F.x - F.h * 0.4 + (F.w + F.h * 0.8) * k;
     this.rubies.children.forEach((c, i) => (c.alpha = calm * (0.25 + 0.2 * Math.sin(this.time * 2.2 + i * 1.7))));
     void GOLD_HOT;
   }
@@ -345,3 +347,29 @@ const paintFrame = (L: LayoutSpec, res: number): { tex: Texture; pad: number } =
   g.stroke();
   return { tex: canvasToTexture(c, res), pad };
 };
+
+let streak: Texture | null = null;
+/** The frame sweep: a soft vertical streak that fades out before every texture edge (rotated by the sprite),
+ *  so it never shows a clipped edge on the moulding. */
+function streakTexture(): Texture {
+  if (streak) return streak;
+  const [c, g] = createCanvas(64, 256);
+  const h = g.createLinearGradient(0, 0, 64, 0);
+  h.addColorStop(0, 'rgba(255,255,255,0)');
+  h.addColorStop(0.36, 'rgba(255,255,255,0.55)');
+  h.addColorStop(0.5, 'rgba(255,255,255,1)');
+  h.addColorStop(0.64, 'rgba(255,255,255,0.55)');
+  h.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = h;
+  g.fillRect(0, 0, 64, 256);
+  g.globalCompositeOperation = 'destination-in';
+  const v = g.createLinearGradient(0, 0, 0, 256);
+  v.addColorStop(0, 'rgba(0,0,0,0)');
+  v.addColorStop(0.18, 'rgba(0,0,0,1)');
+  v.addColorStop(0.82, 'rgba(0,0,0,1)');
+  v.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = v;
+  g.fillRect(0, 0, 64, 256);
+  streak = canvasToTexture(c);
+  return streak;
+}

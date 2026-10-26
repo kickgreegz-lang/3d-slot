@@ -3,11 +3,13 @@
 file (docs/games/magpie-heist/ART_PLAN.md). Shipping into public/assets is tools/licence/ship.py with the spec
 this script writes (tools/licence/ship/magpie_heist.json).
 
-    tools/.venv/bin/python tools/mhart/build_art.py [symbols] [bg] [mascot] [ship-spec]   (default: all)
+    tools/.venv/bin/python tools/mhart/build_art.py [symbols] [standins] [crest] [bg] [mascot] [ship-spec]   (default: all)
 
   symbols  matte every approved symbol raw (tools/matte/outline_matte.py: measured key, 360 @2x canvas fit,
            master_1024 emitted), bake the live-text stand-ins (W: "WILD" on its banner, Lilita One via the
            bundled font), then tools/matte/variants.py for _blur / _glow;
+  standins the owned-code vector stand-ins (tools/mhart/vector/standins.mjs) for the symbols Higgsfield has
+           not generated yet: rendered, fitted like a matte, _blur / _glow;
   bg       the painted plate: 21:9 4K -> 2:1 centre crop -> 2560 x 1280 WebP (+ a 1:2 portrait stand-in cut
            from the landscape plate until the portrait plate is generated);
   mascot   the approved design sheet: key matte at full resolution, the three-quarter view (2nd figure) cut
@@ -41,6 +43,9 @@ SYMBOLS = {
     "R": ("art/_raw/mh_sym_R/v01/raw.png", "mh_sym_r.raw.v01", "00FF00"),
     "H1": ("art/_raw/mh_sym_H1_D/v01/raw.png", "mh_sym_h1_d.raw.v01", "00FF00"),
 }
+# owned-code vector stand-ins (tools/mhart/vector/standins.mjs) for the symbols mh_c01 has not generated yet;
+# an id moves from here to SYMBOLS once its Higgsfield raw is approved
+STANDINS = ["H2", "H3", "H4", "H5", "S"]
 BG = ("art/_raw/mh_bg_base_landscape/v01/raw.png", "mh_bg_base_landscape.raw.v01")
 MASCOT = ("art/_raw/mh_mascot_monty_sheet/v01/raw.png", "mh_mascot_monty_sheet.raw.v01")
 
@@ -53,13 +58,13 @@ def row_for(path: Path) -> dict | None:
     return rows_by_path().get((P.rel(path), P.sha256_file(path)))
 
 
-def record(path: Path, stage: str, parents: list[str], notes: str) -> str:
+def record(path: Path, stage: str, parents: list[str], notes: str, license_id: str | None = None) -> str:
     """Append a code-route row for `path` (no-op when its current bytes already have one)."""
     have = row_for(path)
     if have:
         return have["id"]
     sha = P.sha256_file(path)
-    lic = P.inherit_license(parents, default="higgsfield")
+    lic = license_id or P.inherit_license(parents, default="higgsfield")
     rid = P.safe_id(f"mh.{P.rel(path).removeprefix('art/source/magpie-heist/').rsplit('.', 1)[0].replace('/', '.')}.{sha[:8]}")
     parent_rows = [r for r in P.read_manifest(P.MANIFEST)["rows"] if r["id"] in parents]
     row = P.make_row(id=rid, path=P.rel(path), stage=stage, sha256=sha, vendor="self", model=TOOL, version="mh-1",
@@ -159,6 +164,43 @@ def build_symbols() -> dict[str, list[str]]:
     return out
 
 
+def build_standins() -> dict[str, list[str]]:
+    """Render the vector stand-ins, fit each on the 360 @2x canvas (cellScale from config.ts, the matte's
+    fit_canvas), then _blur / _glow. Licence owned-code (drawn by this repository's code)."""
+    import os  # noqa: PLC0415
+
+    sys.path.insert(0, str(REPO / "tools/matte"))
+    os.environ["GAME"] = "magpie-heist"
+    import mattelib as ml  # noqa: PLC0415
+
+    ids = [i for i in STANDINS if i not in SYMBOLS]
+    vec = WORK / "vector"
+    r = subprocess.run(["node", "tools/mhart/vector/standins.mjs", "--out", str(vec), *ids], cwd=REPO, capture_output=True, text=True)
+    if r.returncode != 0:
+        print(r.stdout, r.stderr)
+        raise SystemExit("standins: render failed")
+    out: dict[str, list[str]] = {}
+    for sid in ids:
+        d = SRC / "symbols" / sid
+        d.mkdir(parents=True, exist_ok=True)
+        svg = d / "standin.svg"
+        svg.write_bytes((vec / f"{sid}.svg").read_bytes())
+        sid_svg = record(svg, "2d-image", [], f"sym_{sid} owned-code vector stand-in (formula M rules), written by tools/mhart/vector/standins.mjs", "owned-code")
+        master = d / "master_1024.png"
+        master.write_bytes((vec / f"{sid}.png").read_bytes())
+        mid = record(master, "2d-image", [sid_svg], f"sym_{sid} master: standin.svg rasterised 1024 px by @resvg/resvg-js (transparent)", "owned-code")
+        im = np.asarray(Image.open(master).convert("RGBA"), np.float32) / 255.0
+        rgb, a, _tf = ml.fit_canvas(im[..., :3], im[..., 3], ml.content_px_for(sid))
+        path = d / "board.png"
+        ml.save_rgba(path, rgb, a)
+        bid = record(path, "packaging", [mid], f"sym_{sid} board sprite: vector master fitted on the 360 @2x canvas (cellScale)", "owned-code")
+        run(PY, "tools/matte/variants.py", str(path), "--symbol", sid, "--parent-id", bid, "--manifest", "art/manifest.json",
+            "--license-id", "owned-code")
+        out[sid] = [P.rel(path), P.rel(d / "board_blur.png"), P.rel(d / "board_glow.png")]
+        print(f"standins: {sid} ok")
+    return out
+
+
 def build_crest() -> list[str]:
     """The logo crest: the Bandit Mask master WITHOUT the baked WILD text, 512 px."""
     src = SRC / "symbols" / "W" / "master_1024.png"
@@ -246,7 +288,7 @@ def build_mascot() -> list[str]:
 
 def ship_spec() -> None:
     items = []
-    for sid in SYMBOLS:
+    for sid in [*SYMBOLS, *[i for i in STANDINS if i not in SYMBOLS]]:
         for suf, name in [("", "board"), ("_blur", "board_blur"), ("_glow", "board_glow")]:
             items.append({"src": f"art/source/magpie-heist/symbols/{sid}/{name}.png",
                           "dst": f"public/assets/magpie-heist/symbols/sym_{sid}{suf}@2x.webp",
@@ -270,9 +312,11 @@ def ship_spec() -> None:
 
 
 def main() -> int:
-    steps = sys.argv[1:] or ["symbols", "crest", "bg", "mascot", "ship-spec"]
+    steps = sys.argv[1:] or ["symbols", "standins", "crest", "bg", "mascot", "ship-spec"]
     if "symbols" in steps:
         build_symbols()
+    if "standins" in steps:
+        build_standins()
     if "crest" in steps:
         build_crest()
     if "bg" in steps:

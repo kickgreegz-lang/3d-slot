@@ -1,13 +1,13 @@
 # Magpie Heist — art plan
 
-**Status (2026-10-26).** Probe `mh_probe1` is generated, ingested and adopted (5 jobs, 14 credits; [STYLE_DECISION.md](STYLE_DECISION.md)). Higgsfield then refused further jobs: the account is in a **"grace period" with a daily generation limit** (5 jobs accepted that day). Batches `mh_c01`–`mh_c03` are planned, rendered and cost-checked (30 credits; balance 148.7) and run as soon as the account accepts jobs. Everything else in the game is built and shipped; missing art falls back to painted / procedural stand-ins.
+**Status (2026-10-26).** Probe `mh_probe1` is generated, ingested and adopted (5 jobs, 14 credits; [STYLE_DECISION.md](STYLE_DECISION.md)). Higgsfield then refused further jobs: the account is in a **"grace period" with a daily generation limit** (5 jobs accepted that day). Batches `mh_c01`–`mh_c03` are planned, rendered and cost-checked (30 credits; balance 148.7) and run as soon as the account accepts jobs. Everything else in the game is built and shipped. Until `mh_c01` runs, H2–H5 and the Safe ship as **owned-code vector stand-ins** drawn to formula M's rules (`tools/mhart/vector/standins.mjs`: bold outer outline, thinner inner lines, hard cel shadows, gloss; `build_art.py standins`); loot pieces and plates fall back to painted / procedural stand-ins.
 
 Pipeline (the same one Bass Drop used, [docs/PIPELINE.md](../../PIPELINE.md)):
 
 1. **Values**: `art/bible/artbible.json` → `magpieHeist` (formula M, environment formula, palette, briefs per symbol / loot / mascot / plates).
 2. **Specs**: `python3 art/plan/magpie-heist/spec.py <batch> > art/_work/hf-plans/<batch>.spec.json` renders every prompt from the shared templates (`art/bible/prompts/*.txt`, genlib) with the batch's references (Higgsfield job ids of the approved anchors; nothing local is uploaded).
 3. **Plan → pay → record → ingest**: `pnpm gen:hf-ingest plan --spec … --max-credits N` prints the exact `generate_image_batch` call; the Higgsfield MCP pays it (model `nano_banana_pro`, never an OpenAI model); `pnpm gen:hf-ingest record --plan … --from <reply>` (and again with the `jobs_wait` reply); `NODE_USE_ENV_PROXY=1 pnpm gen:hf-ingest --batch <batch>` downloads into `art/_raw/<asset>/vNN/` with provenance rows. Ledger: `art/ledger/higgsfield-jobs.json`.
-4. **Build**: `tools/.venv/bin/python tools/mhart/build_art.py [symbols] [crest] [bg] [mascot] [ship-spec]` → `art/source/magpie-heist/**` (matte with the measured key, 360 @2x board sprites, _blur / _glow, plates, the Monty cut-out, the logo crest), one provenance row per file.
+4. **Build**: `tools/.venv/bin/python tools/mhart/build_art.py [symbols] [standins] [crest] [bg] [mascot] [ship-spec]` → `art/source/magpie-heist/**` (matte with the measured key, 360 @2x board sprites, _blur / _glow, plates, the Monty cut-out, the logo crest), one provenance row per file.
 5. **Rigs**: symbols `tools/mhart/rigs/build.sh <ID>` (cut → generator → validate → pack; [tools/mhart/rigs/README.md](../../../tools/mhart/rigs/README.md)); Monty: [art/source/magpie-heist/mascot/README.md](../../../art/source/magpie-heist/mascot/README.md).
 6. **Ship**: `tools/.venv/bin/python tools/licence/ship.py tools/licence/ship/magpie_heist.json` → `public/assets/magpie-heist/**` (+ rows, `shipped: true`); `node tools/licence/audit.mjs` must stay at 0 errors.
 
@@ -20,8 +20,8 @@ Pipeline (the same one Bass Drop used, [docs/PIPELINE.md](../../PIPELINE.md)):
 | 3 | `sym_R` | Shooting Star | `symbol.txt` | NBP · 2k · 1:1 | mh_probe1 | 2 | **adopted**, shipped, rig |
 | 4 | `mascot_monty_sheet` | Monty design sheet, 4 views | `mascot_turnaround.txt#A` | NBP · 4k · 21:9 | mh_probe1 | 4 | **adopted**; 3/4 view = rig master |
 | 5 | `bg_base_landscape` | Museum treasure hall plate | `background.txt#A` | NBP · 4k · 21:9 | mh_probe1 | 4 | **adopted** (clean-up edit planned) |
-| 6–9 | `sym_H2`…`sym_H5` | Jeweled Egg, Pocket Watch, Ruby Chalice, Key Ring | `symbol.txt` | NBP · 2k · 1:1 | mh_c01 | 8 | planned (refs H1, W, R) |
-| 10 | `sym_S` | Crimson safe scatter | `symbol.txt` | NBP · 2k · 1:1 | mh_c01 | 2 | planned |
+| 6–9 | `sym_H2`…`sym_H5` | Jeweled Egg, Pocket Watch, Ruby Chalice, Key Ring | `symbol.txt` | NBP · 2k · 1:1 | mh_c01 | 8 | planned (refs H1, W, R); vector stand-ins ship |
+| 10 | `sym_S` | Crimson safe scatter | `symbol.txt` | NBP · 2k · 1:1 | mh_c01 | 2 | planned; vector stand-in ships |
 | 11 | `prize_coins` | bronze / silver / gold coins with blank centres | `symbol.txt` | NBP · 2k · 16:9 | mh_c01 | 2 | planned (painted stand-ins ship) |
 | 12 | `prize_diamond` | brilliant diamond in a gold claw setting (#FF00FF) | `symbol.txt` | NBP · 2k · 1:1 | mh_c01 | 2 | planned (painted stand-in ships) |
 | 13 | `prize_nest` | twig nest heaped with loot | `symbol.txt` | NBP · 2k · 1:1 | mh_c01 | 2 | planned (painted stand-in ships) |
@@ -44,7 +44,8 @@ pnpm gen:hf-ingest plan --spec art/_work/hf-plans/mh_c01.spec.json --max-credits
 # pass calls[0].requests to the Higgsfield MCP generate_image_batch, save the reply, then:
 pnpm gen:hf-ingest record --plan art/_work/hf-plans/mh_c01.plan.json --from <reply.json>
 NODE_USE_ENV_PROXY=1 pnpm gen:hf-ingest --batch mh_c01
-# review, add the picks to tools/mhart/build_art.py SYMBOLS / BG / LOOT, rebuild, rig, ship
+# review, add the picks to tools/mhart/build_art.py SYMBOLS / BG / LOOT (an id in SYMBOLS overrides its vector
+# stand-in in STANDINS), rebuild, rig, ship
 ```
 
 ## 4. Review rubric

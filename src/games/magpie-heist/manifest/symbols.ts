@@ -7,7 +7,7 @@ import type { ManifestSpine, ManifestSymbol } from '../../../assets/manifest';
  * rigs (generated 4.3 JSON + per-rig PMA atlas). Shipped by tools/mhart/ship.py (provenance rows in
  * art/manifest.json). Rules: src/assets/manifest.ts. Never list a file that is not shipped.
  */
-export const SPRITE_IDS: readonly string[] = ['W', 'R', 'H1'];
+export const SPRITE_IDS: readonly string[] = ['W', 'R', 'H1', 'H2', 'H3', 'H4', 'H5', 'S'];
 export const SPINE_IDS: readonly string[] = [];
 const SUFFIX: Record<SymbolVariant, string> = { static: '', blur: '_blur', glow: '_glow' };
 

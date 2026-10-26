@@ -84,6 +84,141 @@
    }
   },
   {
+   "src": "art/source/magpie-heist/symbols/H2/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H2@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H2/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H2_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H2/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H2_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H3/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H3@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H3/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H3_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H3/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H3_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H4/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H4@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H4/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H4_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H4/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H4_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H5/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H5@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H5/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H5_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/H5/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_H5_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/S/board.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_S@2x.webp",
+   "encode": {
+    "webp": {
+     "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/S/board_blur.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_S_blur@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/symbols/S/board_glow.png",
+   "dst": "public/assets/magpie-heist/symbols/sym_S_glow@2x.webp",
+   "encode": {
+    "webp": {
+     "quality": 88
+    }
+   }
+  },
+  {
    "src": "art/source/magpie-heist/bg/base_landscape.webp",
    "dst": "public/assets/magpie-heist/bg/base_landscape.webp",
    "encode": "copy"
@@ -94,20 +229,20 @@
    "encode": "copy"
   },
   {
-   "src": "art/source/magpie-heist/mascot/monty_static.png",
-   "dst": "public/assets/magpie-heist/mascot/monty_static.webp",
-   "encode": {
-    "webp": {
-     "quality": 92
-    }
-   }
-  },
-  {
    "src": "art/source/magpie-heist/ui/logo_crest.png",
    "dst": "public/assets/magpie-heist/ui/logo_crest.webp",
    "encode": {
     "webp": {
      "lossless": true
+    }
+   }
+  },
+  {
+   "src": "art/source/magpie-heist/mascot/monty_static.png",
+   "dst": "public/assets/magpie-heist/mascot/monty_static.webp",
+   "encode": {
+    "webp": {
+     "quality": 92
     }
    }
   }
